@@ -1,0 +1,29 @@
+/*
+    전체 width 설정
+*/
+
+/* 기본: 모바일 */
+.app {
+  position: relative;
+  max-width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  margin-bottom: 61px; /* 하단 네비게이션 영역 확보 */
+}
+
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .app {
+    max-width: 720px;
+    border-inline: 1px solid #eee;
+  }
+}
+
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .app {
+    max-width: 720px;
+    border-inline: 1px solid #eee;
+  }
+}

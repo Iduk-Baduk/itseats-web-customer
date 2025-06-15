@@ -1,0 +1,9 @@
+:root {
+    /* Global */
+    --border-color-light: #eee;
+
+    /* Navigation Bar */
+    --nav-active-color: #161032;
+    --nav-inactive-color: #8E9EA6;
+    --nav-background-hover-color: #fafafa;
+}
