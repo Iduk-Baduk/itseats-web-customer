@@ -4,6 +4,8 @@
   scrollbar-width: none;
   white-space: nowrap;
   margin-top: 60px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color-light);
 }
 
 .tabsWrapper::-webkit-scrollbar {
