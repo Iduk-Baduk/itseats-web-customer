@@ -1,0 +1,49 @@
+.tabsWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+  margin-top: 60px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.tabsWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.tabsContainer {
+  display: inline-flex;
+  gap: 16px;
+  padding: 0 0;
+}
+
+.tabItem {
+  width: 84px;
+  padding: 10px 0 16px;
+  cursor: pointer;
+  position: relative;
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+}
+
+.tabItem::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: transparent;
+  transition: background-color 0.1s;
+}
+
+.active {
+  color: var(--theme-color);
+  font-weight: bold;
+}
+
+.active::after {
+  background-color: var(--theme-color);
+}
