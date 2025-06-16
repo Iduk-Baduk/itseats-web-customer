@@ -42,17 +42,6 @@ const RegistForm = ({ className = "" }) => {
         value={form.phone}
         onChange={handleChange}
       />
-      <select
-        name="usertype"
-        size="3"
-        value={form.usertype}
-        onChange={handleChange}
-      >
-        <option value="CUSTOMER">사용자</option>
-        <option value="OWNER">가맹점</option>
-        <option value="RIDER">라이더</option>
-      </select>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
       <button type="submit">가입하기</button>
     </form>
