@@ -7,6 +7,7 @@ import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
 import Address from "./pages/Address";
 import StackTest from "./pages/StackTest";
+import SearchResultList from "./pages/SearchResultList";
 import { AnimatePresence } from "framer-motion";
 
 function Root() {
@@ -22,10 +23,11 @@ function Root() {
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
+            <Route path="/search-result" element={<SearchResultList />} />
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
-            <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/address" element={<Address />} />
           </Route>
         </Routes>
       </AnimatePresence>

@@ -1,0 +1,54 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.imageRow {
+  display: flex;
+  gap: 8px;
+}
+
+.mainImage {
+  width: 510px;
+  height: 255px;
+  background: #ddd;
+  border-radius: 12px;
+}
+
+.subImages {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.subImage {
+  width: 120px;
+  height: 124px;
+  background: #ddd;
+  border-radius: 12px;
+}
+
+.info {
+  width: 100%;
+  padding: 8px 4px;
+}
+
+.storeName {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.details {
+  font-size: 14px;
+  color: #555;
+}
+
+.time {
+  font-size: 12px;
+  color: gray;
+  text-align: right;
+}
