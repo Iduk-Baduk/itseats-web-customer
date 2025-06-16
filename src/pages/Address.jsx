@@ -1,8 +1,17 @@
-import Header from "../components/common/Header";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SlideInFromRight from "../components/animation/SlideInFromRight";
 import styles from "./Address.module.css";
+
+const getIconByLabel = (label) => {
+  switch (label) {
+    case "집":
+      return "../icons/location/homeIcon.svg";
+    case "회사":
+      return "../icons/location/companyIcon.svg";
+    default:
+      return "../icons/location/mapmarkerIcon.svg";
+  }
+};
 
 const dummyAddresses = [
   {
@@ -39,7 +48,14 @@ export default function Address() {
         className={styles.searchInput}
       />
 
-      <button className={styles.locationBtn}>현재 위치로 주소 찾기</button>
+      <button
+        className={`${styles.locationBtn} ${
+          selectedId === 0 ? styles.selected : ""
+        }`}
+        onClick={() => setSelectedId(0)}
+      >
+        현재 위치로 주소 찾기
+      </button>
 
       <div className={styles.addressList}>
         {dummyAddresses.map((addr, index) => (
@@ -51,22 +67,35 @@ export default function Address() {
               onClick={() => setSelectedId(addr.id)}
             >
               <div className={styles.addressHeader}>
-                <div>
-                  <div className={styles.label}>{addr.label}</div>
-                  <div className={styles.address}>{addr.address}</div>
-                  {addr.wowZone && (
-                    <div>
-                      <span className={styles.wow}>WOW</span> 
-                      <span className={styles.wowText}>무료배송 가능 지역</span>
-                    </div>
-                  )}
+                <div className={styles.iconWithContent}>
+                  <img
+                    src={getIconByLabel(addr.label)}
+                    alt="address-type-icon"
+                    className={styles.icon}
+                  />
+                  <div>
+                    <div className={styles.label}>{addr.label}</div>
+                    <div className={styles.address}>{addr.address}</div>
+                    {addr.wowZone && (
+                      <div>
+                        <span className={styles.wow}>WOW</span>
+                        <span className={styles.wowText}>
+                          무료배송 가능 지역
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button className={styles.editBtn}>✏️</button>
               </div>
             </div>
 
             {/* 👇 첫 번째 주소 바로 뒤에 "회사 추가" 삽입 */}
-            {index === 0 && <div className={styles.companyAdd}>회사 추가</div>}
+            {index === 0 && <div className={styles.companyAdd}><img
+                    src={getIconByLabel("회사")}
+                    alt="address-type-icon"
+                    className={styles.icon}
+                  />회사 추가</div>}
           </div>
         ))}
       </div>
