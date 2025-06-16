@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const regist = async ({ username, password, nickname, email, phone, usertype }) => {
-  const res = await axios.post('/api/members/regist', {
+  const regist = await axios.post('/api/members/regist', {
     username,
     password,
     nickname,
@@ -9,5 +9,5 @@ export const regist = async ({ username, password, nickname, email, phone, usert
     phone,
     usertype
   });
-  return res.data;
+  return regist.data;
 };
