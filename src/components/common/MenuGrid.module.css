@@ -1,0 +1,42 @@
+.container {
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0 12px;
+  margin-top: 12px;
+  padding: 12px 0 0;
+}
+.expandedGrid {
+  padding-top: 0;
+  padding-bottom: 12px;
+}
+
+.menuItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s;
+}
+
+.menuItem:hover {
+  transform: scale(1.05);
+}
+
+.menuIcon {
+  width: 40px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.menuName {
+  font-size: 12px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
