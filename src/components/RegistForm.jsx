@@ -1,4 +1,3 @@
-// src/features/auth/components/SignUpForm.jsx
 import React from "react";
 import useRegistForm from "../hooks/useRegistForm";
 import TextInput from "./common/basic/TextInput";
