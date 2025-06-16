@@ -8,6 +8,8 @@ const getIconByLabel = (label) => {
       return "../icons/location/homeIcon.svg";
     case "회사":
       return "../icons/location/companyIcon.svg";
+    case "수정":
+      return "../icons/location/pencilIcon.svg";
     default:
       return "../icons/location/mapmarkerIcon.svg";
   }
@@ -41,12 +43,18 @@ export default function Address() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>주소관리</h1>
-
-      <input
-        type="text"
-        placeholder="도로명, 건물명 또는 지번으로 검색"
-        className={styles.searchInput}
-      />
+      <div className={styles.searchBox}>
+        <img
+          src="../icons/location/searchIcon.svg"
+          alt="search-icon"
+          className={styles.icon}
+        />
+        <input
+          type="text"
+          placeholder="도로명, 건물명 또는 지번으로 검색"
+          className={styles.searchInput}
+        />
+      </div>
 
       <button
         className={`${styles.locationBtn} ${
@@ -54,6 +62,11 @@ export default function Address() {
         }`}
         onClick={() => setSelectedId(0)}
       >
+        <img
+          src="../icons/location/gpsIcon.svg"
+          alt="gps-icon"
+          className={styles.gpsIcon}
+        />
         현재 위치로 주소 찾기
       </button>
 
@@ -86,16 +99,29 @@ export default function Address() {
                     )}
                   </div>
                 </div>
-                <button className={styles.editBtn}>✏️</button>
+                <button className={styles.editBtn}>
+                  <img
+                    src={getIconByLabel("수정")}
+                    alt="edit-icon"
+                    className={styles.icon}
+                  />
+                </button>
               </div>
             </div>
 
             {/* 👇 첫 번째 주소 바로 뒤에 "회사 추가" 삽입 */}
-            {index === 0 && <div className={styles.companyAdd}><img
+            {index === 0 && (
+              <div className={styles.companyAdd}>
+                <div className={styles.iconWithContent}>
+                  <img
                     src={getIconByLabel("회사")}
-                    alt="address-type-icon"
+                    alt="company-icon"
                     className={styles.icon}
-                  />회사 추가</div>}
+                  />
+                  <span className={styles.companyAddText}>회사 추가</span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
