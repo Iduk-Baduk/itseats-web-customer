@@ -1,6 +1,7 @@
 import styles from "./TextInput.module.css";
 
 export default function TextInput({
+  name,
   value,
   onChange,
   placeholder,
@@ -9,6 +10,7 @@ export default function TextInput({
 }) {
   return (
     <input
+      name={name}
       type={type}
       value={value}
       onChange={onChange}

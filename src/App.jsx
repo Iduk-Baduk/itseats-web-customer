@@ -10,7 +10,9 @@ import AddressSearch from "./pages/AddressSearch";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import StackTest from "./pages/StackTest";
+import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
+import Login from "./pages/Login";
 
 function Root() {
   const location = useLocation();
@@ -32,6 +34,8 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/regist" element={<Register />} />
+            <Route path="/login" element={<Login />} />
           </Route>
         </Routes>
       </AnimatePresence>
