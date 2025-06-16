@@ -1,5 +1,6 @@
 // src/hooks/useAddressManager.js
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const getIconByLabel = (label) => {
   switch (label) {
@@ -40,10 +41,18 @@ const initialAddresses = [
 ];
 
 export default function useAddressManager() {
+  const navigate = useNavigate();
+
   const [selectedId, setSelectedId] = useState(1);
   const [addressList, setAddressList] = useState(initialAddresses);
+  const [keyword, setKeyword] = useState("");
 
   const selectAddress = (id) => setSelectedId(id);
+
+  const handleSearch = () => { // 검색기능
+    if (keyword.trim() === "") return;
+    navigate(`/address/keyword=${encodeURIComponent(keyword)}`);
+  };
 
   const selectedAddress = addressList.find((addr) => addr.id === selectedId);
 
@@ -52,5 +61,8 @@ export default function useAddressManager() {
     selectedId,
     selectedAddress,
     selectAddress,
+    keyword,
+    setKeyword,
+    handleSearch,
   };
 }
