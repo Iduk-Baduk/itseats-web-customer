@@ -1,9 +1,12 @@
 :root {
     /* Global */
-    --border-color-light: #eee;
+    --black-700: #161032;
+    --theme-color: #00AFFE;
+
+    --border-color-light: #EEE;
+    --background-hover-color: #F4F4F4;
 
     /* Navigation Bar */
     --nav-active-color: #161032;
     --nav-inactive-color: #8E9EA6;
-    --nav-background-hover-color: #fafafa;
 }

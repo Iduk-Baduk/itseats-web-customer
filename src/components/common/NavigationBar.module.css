@@ -9,7 +9,7 @@
   height: 60px;
   margin: 0 auto;
   background: #fff;
-  border-top: 1px solid var(--border-color-light);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   z-index: 100;
   border-inline: 1px solid var(--border-color-light);
@@ -45,7 +45,7 @@
 }
 
 .item:hover {
-  background-color: var(--nav-background-hover-color);
+  background-color: var(--background-hover-color);
 }
 
 .active {
