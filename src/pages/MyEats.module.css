@@ -1,0 +1,13 @@
+.container {
+    margin: 0 20px;
+}
+
+.fullButton {
+    width: 100%;
+}
+
+.testButton {
+    color: var(--black-700);
+    border-color: var(--border-color);
+    width: 100%;
+}
