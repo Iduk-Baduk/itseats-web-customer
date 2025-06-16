@@ -6,7 +6,7 @@ import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
 import StackTest from "./pages/StackTest";
-import Regist from "./pages/Regist"
+import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
 
 function Root() {
@@ -25,7 +25,7 @@ function Root() {
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/stack-test" element={<StackTest />} />
-            <Route path="/regist" element={<Regist />} />
+            <Route path="/regist" element={<Register />} />
           </Route>
         </Routes>
       </AnimatePresence>
