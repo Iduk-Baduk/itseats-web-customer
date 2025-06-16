@@ -2,6 +2,7 @@ import styles from "./Header.module.css";
 
 export default function Header({
   leftButtonAction,
+  rightButtonAction,
   title = "ItsEats",
   shadow = true,
 }) {
@@ -32,7 +33,7 @@ export default function Header({
         <h1 className={styles.title}>{title}</h1>
       </div>
 
-      <button className={styles.iconButton} aria-label="검색">
+      <button className={styles.iconButton} aria-label="검색" onClick={rightButtonAction}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
