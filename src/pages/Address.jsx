@@ -1,16 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import useAddressManager, { getIconByLabel } from "../hooks/useAddressManager";
+import Header from "../components/common/Header";
 import styles from "./Address.module.css";
 
 export default function Address() {
   const navigate = useNavigate();
   const { addressList, selectedId, selectAddress, selectedAddress, keyword, setKeyword, handleSearch } = useAddressManager();
 
-  
-
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>주소관리</h1>
+        <Header
+          title={"주소 관리"}
+          leftIcon="close"
+          rightIcon={null}
+          leftButtonAction={() => {
+            navigate(-1);
+          }}
+        />
 
       <div className={styles.searchBox}>
         <img
@@ -31,9 +37,7 @@ export default function Address() {
       </div>
 
       <button
-        className={`${styles.locationBtn} ${
-          selectedId === 0 ? styles.selected : ""
-        }`}
+        className={`${styles.locationBtn}`}
         onClick={() => selectAddress(0)}
       >
         <img
@@ -67,7 +71,7 @@ export default function Address() {
                       <div>
                         <span className={styles.wow}>WOW</span>
                         <span className={styles.wowText}>
-                          무료배송 가능 지역
+                          무료배달 가능 지역
                         </span>
                       </div>
                     )}
