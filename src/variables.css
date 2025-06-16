@@ -4,7 +4,9 @@
     --theme-color: #00AFFE;
 
     --border-color-light: #EEE;
+    --border-color: #B2B2B2;
     --background-hover-color: #F4F4F4;
+    --unchecked-icon-color: #D9D9D9;
 
     /* Navigation Bar */
     --nav-active-color: #161032;

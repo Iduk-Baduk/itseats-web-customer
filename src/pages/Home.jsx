@@ -1,22 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import LineButton from "../components/common/LineButton";
+import LineButton from "../components/common/basic/LineButton";
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
     <div>
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <div>
         <h1>홈 화면</h1>
 
         <div style={{ marginTop: "20px" }}>

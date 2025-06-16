@@ -1,0 +1,13 @@
+.button {
+  padding: 14px 28px;
+  background-color: var(--theme-color);
+  border: none;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+  box-sizing: border-box;
+}
