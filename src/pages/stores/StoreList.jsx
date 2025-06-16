@@ -24,9 +24,9 @@ export default function StoreList() {
         />
         <Tabs />
         <div
-          style={{ margin: "20px" }}
+          style={{ margin: "120px" }}
         >
-          <h1>카테고리별 가게 목록</h1>
+          <h1 style={{ height: "1200px"}}>카테고리별 가게 목록</h1>
         </div>
       </div>
     </SlideInFromRight>

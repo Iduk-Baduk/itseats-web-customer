@@ -3,9 +3,30 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   white-space: nowrap;
-  margin-top: 60px;
+
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  margin: 0 auto;
+  z-index: 1000;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-color-light);
+  background-color: #fff;
+}
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .tabsWrapper {
+    max-width: 720px;
+  }
+}
+
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .tabsWrapper {
+    max-width: 720px;
+  }
 }
 
 .tabsWrapper::-webkit-scrollbar {
@@ -14,7 +35,7 @@
 
 .tabsContainer {
   display: inline-flex;
-  gap: 16px;
+  gap: 4px;
   padding: 0 0;
 }
 
