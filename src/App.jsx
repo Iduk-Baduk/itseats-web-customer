@@ -7,6 +7,7 @@ import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
 import StackTest from "./pages/StackTest";
 import { AnimatePresence } from "framer-motion";
+import Login from "./pages/Login";
 
 function Root() {
   const location = useLocation();
@@ -24,6 +25,7 @@ function Root() {
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/login" element={<Login />} />
           </Route>
         </Routes>
       </AnimatePresence>
