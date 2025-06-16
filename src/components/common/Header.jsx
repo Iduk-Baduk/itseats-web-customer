@@ -1,8 +1,15 @@
 import styles from "./Header.module.css";
 
-export default function Header({ leftButtonAction, title = "ItsEats" }) {
+export default function Header({
+  leftButtonAction,
+  title = "ItsEats",
+  shadow = true,
+}) {
   return (
-    <header className={styles.header}>
+    <header
+      className={styles.header}
+      style={{ boxShadow: shadow ? undefined : "none" }}
+    >
       <button
         className={styles.iconButton}
         aria-label="뒤로가기"
