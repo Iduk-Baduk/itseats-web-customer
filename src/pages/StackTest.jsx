@@ -9,6 +9,7 @@ export default function StackTest() {
     <SlideInFromRight>
       <div>
         <Header
+          shadow={false}
           leftButtonAction={() => {
             navigate(-1);
           }}

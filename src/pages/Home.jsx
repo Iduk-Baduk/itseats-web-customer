@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./Home.module.css";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
+import styles from "./Home.module.css";
+import StoreListItem from "../components/stores/StoreListItem";
 
 function HomeHeader() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ function HomeHeader() {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
   return (
@@ -55,6 +57,42 @@ export default function Home() {
           showIcon={true}
         />
         <MenuGrid />
+        <div className={styles.bannerContainer}>
+          <img src="/samples/banner.jpg" alt="배너 이미지" />
+        </div>
+        <div className={styles.section}>
+          <h2>골라먹는 맛집</h2>
+          <StoreListItem
+            store={{ name: "버거킹 구름점", review: 4.9, reviewCount: 1742 }}
+            onClick={() => {
+              navigate("/stores/1");
+            }}
+          />
+          <StoreListItem
+            store={{ name: "맘스터치 구름점", review: 4.8, reviewCount: 52 }}
+            onClick={() => {
+              navigate("/stores/1");
+            }}
+          />
+          <StoreListItem
+            store={{ name: "청년닭발 구름점", review: 3.1, reviewCount: 124 }}
+            onClick={() => {
+              navigate("/stores/2");
+            }}
+          />
+          <StoreListItem
+            store={{ name: "피자헛 구름점", review: 4.2, reviewCount: 172 }}
+            onClick={() => {
+              navigate("/stores/4");
+            }}
+          />
+          <StoreListItem
+            store={{ name: "청룡각 구름점", review: 4.9, reviewCount: 742 }}
+            onClick={() => {
+              navigate("/stores/5");
+            }}
+          />
+        </div>
       </div>
     </>
   );

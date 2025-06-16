@@ -10,6 +10,7 @@
   padding: 12px 0 0;
 }
 .expandedGrid {
+  margin-top: 0;
   padding-top: 0;
   padding-bottom: 12px;
 }
