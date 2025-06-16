@@ -6,6 +6,7 @@ import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
 import Address from "./pages/Address";
+import StoreList from "./pages/stores/StoreList";
 import StackTest from "./pages/StackTest";
 import { AnimatePresence } from "framer-motion";
 
@@ -25,6 +26,7 @@ function Root() {
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
+            <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stack-test" element={<StackTest />} />
           </Route>
         </Routes>

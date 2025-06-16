@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
 import SearchInput from "../components/common/SearchInput";
+import MenuGrid from "../components/common/MenuGrid";
 
 function HomeHeader() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ export default function Home() {
           onChange={(e) => setKeyword(e.target.value)}
           showIcon={true}
         />
+        <MenuGrid />
       </div>
     </>
   );
