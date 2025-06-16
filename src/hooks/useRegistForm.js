@@ -8,7 +8,7 @@ export default function useRegistForm() {
     nickname: '',
     email: '',
     phone: '',
-    usertype: 'CUSTOMER'
+    usertype: 'CUSTOMER' // 기본값을 CUSTOMER로 지정
   });
   const [error, setError] = useState('');
 
@@ -19,7 +19,9 @@ export default function useRegistForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.username ||!form.password || !form.nickname || !form.email || !form.phone || !form.usertype) {
+
+    console.log(form)
+    if (!form.username ||!form.password || !form.nickname || !form.email || !form.phone) {
       return setError('모든 항목을 입력해주세요.');
     }
 
