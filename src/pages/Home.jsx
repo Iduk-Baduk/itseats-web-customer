@@ -53,7 +53,6 @@ export default function Home() {
           onChange={(e) => setKeyword(e.target.value)}
           showIcon={true}
         />
-        <h1>홈 화면</h1>
       </div>
     </>
   );
