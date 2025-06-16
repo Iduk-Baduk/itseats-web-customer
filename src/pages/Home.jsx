@@ -60,7 +60,8 @@ export default function Home() {
         <div className={styles.bannerContainer}>
           <img src="/samples/banner.jpg" alt="배너 이미지" />
         </div>
-        <div className={styles.section}>
+      </div>
+      <div className={styles.section}>
           <h2>골라먹는 맛집</h2>
           <StoreListItem
             store={{ name: "버거킹 구름점", review: 4.9, reviewCount: 1742 }}
@@ -93,7 +94,6 @@ export default function Home() {
             }}
           />
         </div>
-      </div>
     </>
   );
 }
