@@ -6,7 +6,8 @@
 }
 
 .title {
-  margin-top: 20px;
+  margin-top: 26px;
+  height: 40px;
   font-size: 32px;
   font-weight: bold;
   text-align: center;
@@ -26,27 +27,45 @@
   margin-top: 0; /* ✅ 필요 없으면 제거 */
 }
 
+.gpsIcon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0; /* 아이콘 사이즈 줄어들지 않게 */
+  margin-top: 0; /* ✅ 필요 없으면 제거 */
+}
 
-.searchInput {
-  width: calc(100% - 2%);
-  height: 60px;
-  padding: 0 0.5px 20px 0.5pxl;
-  font-size: 20px;
-  margin-bottom: 10px;
-  border: #FFFFFF;
+.searchBox {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 16px 3% 20px 3%;
+  background-color: #fff;
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  width: 100%;
+  margin-left: 12px;
+  height: 40px;
 }
 
 .locationBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* 아이콘과 텍스트 간격 */
   height: 60px;
-  width: calc(100% - 6%); /* 좌우 margin 합친 만큼 줄임 */
+  width: calc(100% - 6%);
   margin: 0 3% 20px 3%;
   padding: 10px;
   background-color: #ffffff;
   border: 1px solid #ddd;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   border-radius: 6px;
-  margin-bottom: 20px;
   cursor: pointer;
 }
 
@@ -116,10 +135,13 @@
 }
 
 .companyAdd {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-size: 20px;
-  color: #203644;
-  padding: 10px 0;
+  padding: 14px;
+  cursor: pointer;
 }
+
+.companyAddText {
+  font-size: 20px;
+  font-weight: 500;
+  color: #203644;
+}
+
