@@ -1,0 +1,102 @@
+.container {
+  /* padding: 20px; */
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.locationBtn {
+  width: 100%;
+  padding: 10px;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.addressList {
+  display: flex;
+  flex-direction: column;
+  /* gap: 10px; */
+}
+
+.addressBox {
+  /* border: 1px solid #ddd; */
+  padding: 14px;
+  /* border-radius: 6px; */
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.selected {
+  background-color: #d6e9ff;
+  border-color: #77b9ff;
+}
+
+.addressHeader {
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.address {
+  font-size: 13px;
+  white-space: pre-line;
+}
+
+.wow {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background-color: #2B5C9F;
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 9px;
+}
+.wowText {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: -1;
+  color: #2B5C9F;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 9px;
+}
+
+
+.editBtn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.companyAdd {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #777;
+}
