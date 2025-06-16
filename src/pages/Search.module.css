@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+}
+
+.backBtn,
+.searchBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+}
