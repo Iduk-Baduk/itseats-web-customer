@@ -1,6 +1,8 @@
-import React from "react";
 import useRegistForm from "../hooks/useRegistForm";
 import TextInput from "./common/basic/TextInput";
+import Checkbox from "./common/basic/Checkbox";
+import Button from "./common/basic/Button";
+import styles from "./RegistForm.module.css";
 
 const RegistForm = ({ className = "" }) => {
   const { form, error, handleChange, handleSubmit } = useRegistForm();
@@ -43,7 +45,18 @@ const RegistForm = ({ className = "" }) => {
         onChange={handleChange}
       />
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <button type="submit">가입하기</button>
+
+      <Checkbox
+        name="terms"
+        label="이용약관에 동의합니다."
+        checked={form.terms}
+        onChange={handleChange}
+        className={styles.checkbox}
+      />
+
+      <Button type="submit" className={styles.button}>
+        가입하기
+      </Button>
     </form>
   );
 };

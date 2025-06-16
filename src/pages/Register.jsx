@@ -1,4 +1,3 @@
-import React from "react";
 import RegistForm from "../components/RegistForm"
 import styles from "./Register.module.css";
 
