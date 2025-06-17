@@ -13,10 +13,11 @@ import AddressEdit from "./pages/address/AddressEdit";
 import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
+import MenuDetail from "./pages/stores/MenuDetail";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
-import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
+import { AnimatePresence } from "framer-motion";
 
 function Root() {
   const location = useLocation();
@@ -41,6 +42,7 @@ function Root() {
             <Route path="/address/company-add" element={<CompanyAdd />} />
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
+            <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
