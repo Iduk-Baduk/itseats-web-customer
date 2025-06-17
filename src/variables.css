@@ -1,11 +1,14 @@
 :root {
     /* Global */
     --black-700: #161032;
+    --black-500: #727272;
     --theme-color: #00AFFE;
+    --wow-color: #2B5C9F;
 
     --border-color-light: #EEE;
     --border-color: #B2B2B2;
     --background-hover-color: #F4F4F4;
+    --background-selected-color: #CCEDFE;
     --unchecked-icon-color: #D9D9D9;
 
     /* Navigation Bar */

@@ -1,0 +1,35 @@
+.container {
+  margin: 80px 20px 40px;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 12px 0;
+  font-size: 14px;
+}
+.find > a {
+  color: var(--theme-color);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.find > span {
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  margin: 0 8px;
+  background-color: var(--border-color);
+}
+
+.container hr {
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--border-color-light);
+}
+.grayButton {
+    color: var(--black-700);
+    border-color: var(--border-color);
+    width: 100%;
+}

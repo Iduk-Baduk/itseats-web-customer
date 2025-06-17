@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./Home.module.css";
 import SearchInput from "../components/common/SearchInput";
+import MenuGrid from "../components/common/MenuGrid";
+import styles from "./Home.module.css";
+import StoreListItem from "../components/stores/StoreListItem";
 
 function HomeHeader() {
   const navigate = useNavigate();
@@ -41,7 +43,46 @@ function HomeHeader() {
   );
 }
 
+const dummyStores = [
+  {
+    storeId: 1,
+    name: "버거킹 구름점",
+    review: 4.9,
+    reviewCount: 1742,
+    minutesToDelivery: 30,
+  },
+  {
+    storeId: 2,
+    name: "맘스터치 구름점",
+    review: 4.8,
+    reviewCount: 52,
+    minutesToDelivery: 25,
+  },
+  {
+    storeId: 3,
+    name: "청년닭발 구름점",
+    review: 3.1,
+    reviewCount: 124,
+    minutesToDelivery: 40,
+  },
+  {
+    storeId: 4,
+    name: "피자헛 구름점",
+    review: 4.2,
+    reviewCount: 172,
+    minutesToDelivery: 35,
+  },
+  {
+    storeId: 5,
+    name: "청룡각 구름점",
+    review: 4.9,
+    reviewCount: 742,
+    minutesToDelivery: 30,
+  },
+]
+
 export default function Home() {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
   return (
@@ -53,6 +94,20 @@ export default function Home() {
           onChange={(e) => setKeyword(e.target.value)}
           showIcon={true}
         />
+        <MenuGrid />
+        <div className={styles.bannerContainer}>
+          <img src="/samples/banner.jpg" alt="배너 이미지" />
+        </div>
+      </div>
+      <div className={styles.section}>
+        <h2>골라먹는 맛집</h2>
+        {dummyStores.map((store) => (
+          <StoreListItem
+            key={store.storeId}
+            store={store}
+            onClick={() => navigate(`/stores/${store.storeId}`)}
+          />
+        ))}
       </div>
     </>
   );
