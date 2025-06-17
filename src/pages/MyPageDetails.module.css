@@ -1,6 +1,5 @@
 .container {
-  padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding-top: 60px;
 }
 
 /* 상단 리뷰/도움/즐겨찾기 */
@@ -8,7 +7,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3등분 */
   text-align: center;
-  margin: 24px 0;
+  margin: 24px 20px;
 }
 
 .stats strong {
@@ -20,21 +19,21 @@
 .stats p {
   margin-top: 4px;
   font-size: 14px;
-  color: #666;
+  color: var(--black-500);
 }
 
 .name {
+  margin: 24px 20px 8px;
   font-size: 25px;
   font-weight: 500;
   text-align: center;
-  margin-bottom: 8px;
 }
 
 /* 탭 영역 */
 .tabs {
   display: flex;
   justify-content: space-around;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color-light);
   margin-bottom: 16px;
 }
 
@@ -64,7 +63,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 한 줄에 3개 */
   gap: 16px; /* 카드 간 간격 */
-  padding: 16px 0;
+  padding: 16px 20px;
 }
 
 
@@ -74,28 +73,33 @@
 
 .card img {
   width: 100%;
-  height: 100px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 8px;
 }
 
 .card p {
   font-size: 14px;
-  margin: 4px 0 2px;
+  font-weight: 600;
+  text-align: left;
+  margin: 8px 0 4px 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .card span {
+  display: block;
+  margin-left: 4px;
   font-size: 12px;
-  color: gray;
+  text-align: left;
+  color: var(--black-500);
 }
 
 /* 비어있는 데이터 안내 */
 .empty {
   text-align: center;
-  color: #999;
+  color: var(--black-500);
   margin-top: 200px;
 }
 
