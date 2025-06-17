@@ -1,4 +1,4 @@
-import { getIconByLabel } from "../hooks/useAddressManager";
+import { getIconByLabel } from "../../hooks/useAddressManager";
 import styles from "./AddressEdit.module.css";
 
 export default function AddressForm({
@@ -13,8 +13,6 @@ export default function AddressForm({
 }) {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>주소 설정</h1>
-
       <div className={styles.mapContainer}>
         <div className={styles.mapPlaceholder}>지도 영역</div>
         <button className={styles.pinButton}>핀 조정하기</button>
@@ -28,8 +26,12 @@ export default function AddressForm({
             className={styles.labelIcon}
           />
           <div className={styles.addressTextGroup}>
-            <p className={styles.primaryAddress}>{address.address.split('\n')[0]}</p>
-            <p className={styles.secondaryAddress}>{address.address.split('\n')[1]}</p>
+            <p className={styles.primaryAddress}>
+              {address.address.split("\n")[0]}
+            </p>
+            <p className={styles.secondaryAddress}>
+              {address.address.split("\n")[1]}
+            </p>
             {address.wowZone && (
               <div className={styles.wowArea}>
                 <span className={styles.wow}>WOW</span>
@@ -58,7 +60,9 @@ export default function AddressForm({
         {["집", "회사", "기타"].map((label) => (
           <button
             key={label}
-            className={`${styles.labelButton} ${currentLabel === label ? styles.selected : ""}`}
+            className={`${styles.labelButton} ${
+              currentLabel === label ? styles.selected : ""
+            }`}
             onClick={() => onChangeLabel(label)}
           >
             <img

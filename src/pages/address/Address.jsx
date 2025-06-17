@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import useAddressManager, { getIconByLabel } from "../hooks/useAddressManager";
-import Header from "../components/common/Header";
+import useAddressManager, { getIconByLabel } from "../../hooks/useAddressManager";
+import Header from "../../components/common/Header";
 import styles from "./Address.module.css";
 
 export default function Address() {
@@ -105,7 +105,7 @@ export default function Address() {
                 </div>
                 <button 
                   className={styles.editBtn}
-                  onClick={() => navigate(`/address/edit/${addr.id}`, {replace:true})}>
+                  onClick={() => navigate(`/address/edit/${addr.id}`)}>
                   <img
                     src={getIconByLabel("수정")}
                     alt="edit-icon"

@@ -5,17 +5,17 @@ import Search from "./pages/Search";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
-import Address from "./pages/Address";
-import AddressSearch from "./pages/AddressSearch";
+import Address from "./pages/address/Address";
+import AddressSearch from "./pages/address/AddressSearch";
+import CompanyAdd from "./pages/address/CompanyAdd";
+import AddressEdit from "./pages/address/AddressEdit";
+import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
-import CompanyAdd from "./pages/CompanyAdd";
-import AddressEdit from "./pages/AddressEdit";
-import AddressNew from "./pages/AddressNew";
 
 function Root() {
   const location = useLocation();

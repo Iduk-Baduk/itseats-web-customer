@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Address.module.css";
-import useAddressManager, { getIconByLabel } from "../hooks/useAddressManager";
+import useAddressManager, { getIconByLabel } from "../../hooks/useAddressManager";
 
 export default function CompanyAdd() {
   const navigate = useNavigate();

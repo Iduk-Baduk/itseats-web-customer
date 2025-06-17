@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import AddressForm from "./AddressForm";
+import Header from "../../components/common/Header";
 import { useState } from "react";
 
 export default function AddressNew() {
@@ -20,15 +21,25 @@ export default function AddressNew() {
   const [guideMessage, setGuideMessage] = useState("");
 
   return (
-    <AddressForm
-      address={address}
-      currentLabel={currentLabel}
-      detailAddress={detailAddress}
-      guideMessage={guideMessage}
-      onChangeDetail={(e) => setDetailAddress(e.target.value)}
-      onChangeGuide={(e) => setGuideMessage(e.target.value)}
-      onChangeLabel={setCurrentLabel}
-      onSubmit={() => navigate("/address")}
-    />
+    <>
+      <Header
+        title={"주소 설정"}
+        leftIcon="back"
+        rightIcon={null}
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+      />
+      <AddressForm
+        address={address}
+        currentLabel={currentLabel}
+        detailAddress={detailAddress}
+        guideMessage={guideMessage}
+        onChangeDetail={(e) => setDetailAddress(e.target.value)}
+        onChangeGuide={(e) => setGuideMessage(e.target.value)}
+        onChangeLabel={setCurrentLabel}
+        onSubmit={() => navigate("/address", { replace: true })}
+      />
+    </>
   );
 }
