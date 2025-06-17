@@ -1,10 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import useAddressManager from "./useAddressManager";
+import useAddressManager, { getIconByLabel } from "./useAddressManager";
 
 export default function useAddressEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const {
     addressList,
     setAddressLabel,
