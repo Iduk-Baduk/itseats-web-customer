@@ -1,0 +1,44 @@
+.container {
+  padding: 20px;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.phone {
+  text-align: center;
+  color: gray;
+  margin-bottom: 16px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.detailButton {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #00aaff;
+  background: white;
+  color: #00aaff;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.menu {
+  border-top: 1px solid #eee;
+}
+
+.menu div {
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+  cursor: pointer;
+}

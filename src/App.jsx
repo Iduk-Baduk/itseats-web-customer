@@ -13,6 +13,8 @@ import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
+import MyPage from "./pages/MyPage";
+import MyPageDetails from "./pages/MyPageDetails";
 
 function Root() {
   const location = useLocation();
@@ -27,6 +29,8 @@ function Root() {
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
+            <Route path="/mypage" element={<MyPage />} />
+            <Route path="/mypage/details" element={<MyPageDetails />} />
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
