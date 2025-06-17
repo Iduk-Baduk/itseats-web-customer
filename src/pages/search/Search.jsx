@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import styles from "./Search.module.css";
-import SearchHeaderBar from "../components/common/SearchHeaderBar";
+import styles from "../search/Search.module.css";
+import SearchHeaderBar from "../../components/common/SearchHeaderBar";
 import { useNavigate } from "react-router-dom";
 
 const watchIcon = (
@@ -92,7 +92,6 @@ export default function Search() {
           <span className={styles.title}>최근 검색어</span>
           <button className={styles.subTextRight}>전체삭제</button>
         </div>
-        
           <ul className={styles.recentList}>
             <ul className={styles.recentList}>
               {recentKeywords && recentKeywords.map((item, index) => (
