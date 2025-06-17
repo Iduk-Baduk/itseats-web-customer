@@ -14,7 +14,7 @@ export default function HeaderStoreDetail({
       className={`${styles.header} ${
         isTransparent ? customStyles.headerTransparent : ""
       }`}
-      // style={{ boxShadow: "none" }}
+      style={{ boxShadow: "none" }}
     >
       <button
         className={styles.iconButton}
@@ -25,6 +25,7 @@ export default function HeaderStoreDetail({
       </button>
       <div className={customStyles.iconButtonContainer}>
         <button
+          style={{ display: "none" }}
           className={styles.iconButton}
           aria-label="검색"
           onClick={searchButtonAction}
