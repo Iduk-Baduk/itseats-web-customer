@@ -13,6 +13,7 @@ import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
+import CompanyAdd from "./pages/CompanyAdd";
 
 function Root() {
   const location = useLocation();
@@ -31,6 +32,7 @@ function Root() {
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
             <Route path="/address/search" element={<AddressSearch />} />
+            <Route path="/address/company-add" element={<CompanyAdd />} />
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
