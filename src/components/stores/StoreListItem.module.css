@@ -12,7 +12,7 @@
 .storeImage {
   flex: 1;
   width: 100px;
-  height: 164px;
+  height: 204px;
   object-fit: cover;
   object-position: center;
 }
@@ -23,8 +23,8 @@
   flex-shrink: 0;
 }
 .menuImage {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
   object-position: center;
 }
@@ -38,16 +38,29 @@
   }
 }
 
+.titleFlex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
 .storeListItem h3 {
+  flex: 1;
   color: var(--black-700);
   font-size: 18px;
   font-weight: 700;
   margin: 12px 0 8px;
 }
+.titleFlex>span {
+  font-size: 15px;
+  color: var(--black-500);
+}
+
 .storeListItem .storeInfo {
   font-size: 14px;
   color: var(--black-500);
 }
-.storeListItem .storeInfo span:not(:last-child)::after {
+.storeListItem .storeInfo>span:not(:last-child)::after {
   content: ' · ';
 }
