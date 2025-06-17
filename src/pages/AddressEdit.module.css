@@ -7,6 +7,7 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
+  text-align: center;
 }
 
 .mapContainer {
@@ -39,6 +40,17 @@
   font-size: 14px;
   border: 1px solid #ccc;
 }
+.iconWithContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.addressIcon {
+  width: 28px;
+  height: 28px;
+  margin-top: 2px;
+}
 
 .addressTextGroup {
   margin-bottom: 16px;
@@ -50,6 +62,7 @@
 }
 
 .secondaryAddress {
+  margin-top: 2px;
   font-size: 14px;
   color: #666;
 }
@@ -62,11 +75,12 @@
 .wow {
   background-color: #2B5C9F;
   color: white;
-  padding: 2px 6px;
+  padding: 1.5px 4px 0.5px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   margin-right: 4px;
+  margin-left: 4px;
 }
 
 .wowText {
@@ -75,11 +89,24 @@
 }
 
 .detailInput {
-  width: 100%;
+  width: 96%;
+  height: 40px;
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-left: none;
+  border-right: none;
+}
+
+.detailInput2 {
+  width: 96%;
+  height: 40px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-left: none;
+  border-right: none;
   margin-bottom: 20px;
 }
 

@@ -106,7 +106,7 @@ export default function Address() {
                 </div>
                 <button 
                   className={styles.editBtn}
-                  onClick={() => navigate(`/address/edit/${addr.id}`)}>
+                  onClick={() => navigate(`/address/edit/${addr.id}`, {replace:true})}>
                   <img
                     src={getIconByLabel("수정")}
                     alt="edit-icon"
