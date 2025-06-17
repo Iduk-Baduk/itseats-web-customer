@@ -28,7 +28,7 @@ const initialAddresses = [
   },
   {
     id: 2,
-    label: "네이버",
+    label: "회사",
     address: "경기도 성남시 분당구 정자일로 95 2004호",
     wowZone: true,
   },
@@ -49,6 +49,14 @@ export default function useAddressManager() {
 
   const selectAddress = (id) => setSelectedId(id);
 
+  const setAddressLabel = (id, newLabel) => {
+    setAddressList((prev) =>
+      prev.map((addr) =>
+        addr.id === id ? { ...addr, label: newLabel } : addr
+      )
+    );
+  };
+
   const handleSearch = () => { // 검색기능
     if (keyword.trim() === "") return;
     navigate(`/address/keyword=${encodeURIComponent(keyword)}`);
@@ -59,10 +67,16 @@ export default function useAddressManager() {
   return {
     addressList,
     selectedId,
-    selectedAddress,
+    selectedAddress: addressList.find((addr) => addr.id === selectedId),
     selectAddress,
+    setAddressLabel,
     keyword,
     setKeyword,
     handleSearch,
+    handleSearchKeyDown: (e) => {
+      if (e.key === "Enter") {
+        window.location.href = '/address/keyword/=${keyword}';
+      }
+    }
   };
 }
