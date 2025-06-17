@@ -1,0 +1,144 @@
+.container {
+  /* padding: 20px; */
+  padding-top: 60px;
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+.title {
+  margin-top: 26px;
+  height: 40px;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.iconWithContent {
+  display: flex;
+  align-items: center; /* ✅ 기존 flex-start → center */
+  gap: 20px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0; /* 아이콘 사이즈 줄어들지 않게 */
+  margin-top: 0; /* ✅ 필요 없으면 제거 */
+}
+
+.gpsIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0; /* 아이콘 사이즈 줄어들지 않게 */
+  margin-top: 0; /* ✅ 필요 없으면 제거 */
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fff;
+  border-bottom: 8px solid var(--border-color-light);
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  width: 100%;
+  margin-left: 12px;
+  height: 40px;
+}
+
+.locationBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* 아이콘과 텍스트 간격 */
+  width: calc(100% - 40px);
+  height: 60px;
+  margin: 16px 20px 16px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.addressList {
+  display: flex;
+  flex-direction: column;
+  /* gap: 10px; */
+}
+
+.addressBox {
+  padding: 14px 20px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.selected {
+  background-color: var(--background-selected-color);
+}
+
+.addressHeader {
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 16px;
+}
+
+.address {
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.wow {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #FFFFFF;
+  background-color: var(--wow-color);
+  display: inline-block;
+  padding: 4px 6px;
+  border-radius: 14px;
+}
+.wowText {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: -1;
+  color: var(--wow-color);
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 9px;
+}
+
+
+
+.editBtn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.companyAdd {
+  padding: 14px 20px;
+  cursor: pointer;
+}
+
+.companyAddText {
+  font-size: 16px;
+  font-weight: 500;
+  color: #203644;
+}
+
