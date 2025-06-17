@@ -5,18 +5,26 @@ import styles from "./Address.module.css";
 
 export default function Address() {
   const navigate = useNavigate();
-  const { addressList, selectedId, selectAddress, selectedAddress, keyword, setKeyword, handleSearch } = useAddressManager();
+  const {
+    addressList,
+    selectedId,
+    selectAddress,
+    selectedAddress,
+    keyword,
+    setKeyword,
+    handleSearch,
+  } = useAddressManager();
 
   return (
     <div className={styles.container}>
-        <Header
-          title={"주소 관리"}
-          leftIcon="close"
-          rightIcon={null}
-          leftButtonAction={() => {
-            navigate(-1);
-          }}
-        />
+      <Header
+        title={"주소 관리"}
+        leftIcon="close"
+        rightIcon={null}
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+      />
 
       <div className={styles.searchBox}>
         <img
@@ -88,7 +96,11 @@ export default function Address() {
             </div>
 
             {index === 0 && (
-              <div className={styles.companyAdd}>
+              <div
+                className={styles.companyAdd}
+                onClick={() => navigate("/address/company-add")}
+                style={{ cursor: "pointer" }} // 커서 손모양 추가
+              >
                 <div className={styles.iconWithContent}>
                   <img
                     src={getIconByLabel("회사")}
