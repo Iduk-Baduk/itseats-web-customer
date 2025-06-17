@@ -5,13 +5,7 @@ import 'swiper/css/pagination';
 
 import { Pagination } from 'swiper/modules';
 
-const images = [
-  '/samples/food1.jpg',
-  '/samples/food2.jpg',
-  '/samples/food3.jpg',
-];
-
-export default function PhotoSlider() {
+export default function PhotoSlider({ images = ["/samples/banner.jpg"] }) {
   const [currentIndex, setCurrentIndex] = useState(1);
 
   return (
