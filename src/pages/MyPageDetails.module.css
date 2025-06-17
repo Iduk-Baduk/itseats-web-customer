@@ -1,0 +1,118 @@
+.container {
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 상단 리뷰/도움/즐겨찾기 */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3등분 */
+  text-align: center;
+  margin: 24px 0;
+}
+
+.stats strong {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.stats p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #666;
+}
+
+.name {
+  font-size: 25px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* 탭 영역 */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 12px 0;
+  font-size: 16px;
+  color: #999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.active {
+  color: #1a1a2e;
+  font-weight: bold;
+  border-bottom: 2px solid #1a1a2e;
+}
+
+/* 콘텐츠 영역 */
+.content {
+  min-height: 200px;
+}
+
+/* 카드 리스트 (주문내역) */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 한 줄에 3개 */
+  gap: 16px; /* 카드 간 간격 */
+  padding: 16px 0;
+}
+
+
+.card {
+  text-align: center;
+}
+
+.card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card p {
+  font-size: 14px;
+  margin: 4px 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card span {
+  font-size: 12px;
+  color: gray;
+}
+
+/* 비어있는 데이터 안내 */
+.empty {
+  text-align: center;
+  color: #999;
+  margin-top: 200px;
+}
+
+.empty img {
+  width: 96px;
+  height: 96px;
+  opacity: 0.3;
+  margin-bottom: 12px;
+}
+
+/* 간단한 텍스트 목록 (리뷰/즐겨찾기) */
+.list {
+  padding: 0 8px;
+}
+
+.list li {
+  font-size: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
