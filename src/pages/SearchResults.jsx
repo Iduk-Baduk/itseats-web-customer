@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import FilterBar from "../components/common/basic/FilterBar";
+import SearchHeaderBar from "../components/common/SearchHeaderBar";
 import styles from "./SearchResults.module.css";
+import { useSearchParams } from "react-router-dom";
 
 // 임시 데이터
 const dummyData = [
@@ -36,9 +39,20 @@ const dummyData = [
   ];
 
 export default function SearchResult() {
+
+  const [searchParams] = useSearchParams();
+  const initialKeyword = searchParams.get("keyword") || "";
+  const [keyword, setKeyword] = useState(initialKeyword);
+  
+  useEffect(() => {
+    setKeyword(initialKeyword);
+  }, [initialKeyword]);
   
   return (
     <>
+      <SearchHeaderBar 
+        keyword={keyword}
+      />
       <FilterBar/>
 
       {/* 하단 데이터(데이터 추후 교체) */}

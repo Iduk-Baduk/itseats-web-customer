@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import SearchInput from "../components/common/SearchInput";
 import styles from "./Search.module.css";
 import SearchHeaderBar from "../components/common/SearchHeaderBar";
+import { useNavigate } from "react-router-dom";
 
 const watchIcon = (
   <svg 
@@ -16,8 +16,9 @@ const watchIcon = (
   </svg>
 );
 
-
 export default function Search() {
+  const navigate = useNavigate();
+
   // 최근 검색어
   const [recentKeywords, setRecentKeywords] = useState([
     {keyword: "삽겹살", date: "06.01"},
@@ -28,6 +29,7 @@ export default function Search() {
 
   // 최근 검색어 추가
   const handleAddKeyword = (text) => {
+    console.log(text);
     if (text === undefined || text === "") {
       return;
     }
@@ -44,6 +46,15 @@ export default function Search() {
     });
   };
 
+  const handleSearch = () => {
+    if (!keyword) {
+      return;
+    }
+    // 키워드 저장
+    handleAddKeyword(keyword);
+    navigate(`/search-result?keyword=${encodeURIComponent(keyword)}`);
+  }
+
   // 최근 검색어 삭제
   const handleRemoveKeyword = (keyword) => {
     const filtered = recentKeywords.filter((item) => item.keyword !== keyword);
@@ -56,7 +67,7 @@ export default function Search() {
       <SearchHeaderBar
         keyword={keyword}
         onChange={(e) => setKeyword(e.target.value)}
-        onSearch={() => handleAddKeyword(keyword)}
+        onSearch={() => handleSearch(keyword)}
         onBack={() => navigate(-1)}
       />
       
