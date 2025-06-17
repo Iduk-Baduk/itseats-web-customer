@@ -1,9 +1,16 @@
+.separator {
+  height: 8px;
+  background-color: var(--border-color-light);
+  margin: 12px 0;
+  border: none;
+}
+
 .keywordHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 12px;
-  margin-top: 24px;
+  padding: 0 20px;
+  margin: 24px 0 12px 0;
 }
 
 .keywordHeader > button {
@@ -19,12 +26,12 @@
 
 .subTextRight {
   font-size: 14px;
-  color: #8e8e93; /* 연한 회색 느낌 */
+  color: var(--black-500);
 }
 
 .recentList {
   list-style: none;
-  padding: 0 7px;
+  padding: 0 10px;
   margin: 0;
 }
 
@@ -32,7 +39,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 10px 0;
   border-bottom: none;
 }
 
@@ -40,6 +47,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .right {
@@ -50,18 +59,19 @@
 
 .clockIcon {
   font-size: 14px;
-  color: #ccc;
+  color: var(--border-color);
+  margin-bottom: -2px;
 }
 
 .date {
   font-size: 13px;
-  color: #8e8e93;
+  color: var(--black-500);
 }
 
 .deleteBtn {
   background: none;
   border: none;
-  color: #8e8e93;
+  color: var(--black-500);
   font-size: 16px;
   cursor: pointer;
 }

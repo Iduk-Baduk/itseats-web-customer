@@ -1,4 +1,3 @@
-import { s } from "motion/react-client";
 import styles from "./SearchHeaderBar.module.css";
 import SearchInput from "./SearchInput";
 
