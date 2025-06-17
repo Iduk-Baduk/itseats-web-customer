@@ -1,7 +1,8 @@
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import Home from "./pages/Home";
-import Search from "./pages/Search";
+import Search from "./pages/search/Search";
+import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
@@ -10,7 +11,6 @@ import AddressSearch from "./pages/AddressSearch";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import StackTest from "./pages/StackTest";
-import SearchResults from "./pages/SearchResults";
 import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
