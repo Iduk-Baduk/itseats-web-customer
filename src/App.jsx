@@ -30,7 +30,6 @@ function Root() {
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
-            <Route path="/mypage/details" element={<MyPageDetails />} />
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
@@ -38,6 +37,7 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
           </Route>

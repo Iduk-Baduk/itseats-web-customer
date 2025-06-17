@@ -1,8 +1,7 @@
-/* ✅ MyPage.module.css */
+/* MyPage.module.css */
 
 .container {
-  padding: 24px;
-  font-family: sans-serif;
+  padding: 44px 20px 40px 20px;
 }
 
 .name {
@@ -23,7 +22,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3등분 */
   text-align: center;
-  margin: 24px 0;
+  margin: 20px 0;
 }
 
 .stats div {
@@ -44,8 +43,8 @@
   margin-bottom: 16px;
 
   background-color: white;
-  color: #007aff; /* iOS 기본 파랑 */
-  border: 1px solid #007aff;
+  color: var(--theme-color);
+  border: 1px solid var(--theme-color);
 
   font-size: 15px;
   font-weight: 600;

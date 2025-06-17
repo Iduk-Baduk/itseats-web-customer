@@ -1,10 +1,14 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useMyPageDetails from "../hooks/useMyPageDetails";
+import SlideInFromRight from "../components/animation/SlideInFromRight";
+import Header from "../components/common/Header";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const { user } = location.state || {
     user: { reviewCount: 0, helpCount: 0, favoriteCount: 0, name: "이름없음" },
   };
@@ -66,36 +70,46 @@ export default function MyPageDetails() {
   };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.name}>{user.name}</h2> {/* ✅ 이름 추가 */}
-      <div className={styles.stats}>
-        <div>
-          <strong>{user.reviewCount}</strong>
-          <p>내가 남긴 리뷰</p>
+    <SlideInFromRight>
+      <Header
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+        shadow={false}
+        title=""
+        rightIcon=""
+      />
+      <div className={styles.container}>
+        <h2 className={styles.name}>{user.name}</h2>
+        <div className={styles.stats}>
+          <div>
+            <strong>{user.reviewCount}</strong>
+            <p>내가 남긴 리뷰</p>
+          </div>
+          <div>
+            <strong>{user.helpCount}</strong>
+            <p>도움이 됐어요</p>
+          </div>
+          <div>
+            <strong>{user.favoriteCount}</strong>
+            <p>즐겨찾기</p>
+          </div>
         </div>
-        <div>
-          <strong>{user.helpCount}</strong>
-          <p>도움이 됐어요</p>
+        <div className={styles.tabs}>
+          {Object.entries(tabContentMap).map(([key, tab]) => (
+            <button
+              key={key}
+              className={`${styles.tab} ${
+                activeTab === key ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab(key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <div>
-          <strong>{user.favoriteCount}</strong>
-          <p>즐겨찾기</p>
-        </div>
+        <div className={styles.content}>{renderContent()}</div>
       </div>
-      <div className={styles.tabs}>
-        {Object.entries(tabContentMap).map(([key, tab]) => (
-          <button
-            key={key}
-            className={`${styles.tab} ${
-              activeTab === key ? styles.active : ""
-            }`}
-            onClick={() => setActiveTab(key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      <div className={styles.content}>{renderContent()}</div>
-    </div>
+    </SlideInFromRight>
   );
 }

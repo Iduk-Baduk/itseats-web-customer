@@ -51,7 +51,7 @@ const navItems = [
     ),
   },
   {
-    to: "/my-eats",
+    to: "/mypage",
     label: "마이 잇츠",
     icon: (
       <svg className={styles.icon} viewBox="0 0 24 24" fill="none">
