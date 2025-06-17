@@ -9,10 +9,18 @@ export default function CompanyAdd() {
     addressList,
     selectedId,
     selectAddress,
+    setAddressLabel, // ✅ 추가
     keyword,
     setKeyword,
     handleSearchKeyDown,
   } = useAddressManager();
+
+  // ✅ 주소 클릭 시 label을 '회사'로 바꾸고 이동
+  const handleCompanySelect = (addrId) => {
+    setAddressLabel(addrId, "회사");
+    selectAddress(addrId);
+    navigate("/address");
+  };
 
   return (
     <div className={styles.container}>
@@ -43,7 +51,7 @@ export default function CompanyAdd() {
             className={`${styles.addressBox} ${
               selectedId === addr.id ? styles.selected : ""
             }`}
-            onClick={() => selectAddress(addr.id)}
+            onClick={() => handleCompanySelect(addr.id)} // ✅ 여기 연결
           >
             <div className={styles.addressHeader}>
               <div className={styles.iconWithContent}>

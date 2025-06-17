@@ -15,6 +15,18 @@ export default function Address() {
     handleSearch,
   } = useAddressManager();
 
+  // 👇 회사 주소 존재 여부
+  const hasCompanyAddress = addressList.some((addr) => addr.label === "회사");
+
+  // 👇 회사 주소를 2번째 위치로 정렬한 리스트
+  const sortedList = (() => {
+    if (!hasCompanyAddress) return addressList;
+
+    const company = addressList.find((addr) => addr.label === "회사");
+    const others = addressList.filter((addr) => addr.label !== "회사");
+    return [others[0], company, ...others.slice(1)];
+  })();
+
   return (
     <div className={styles.container}>
       <Header
@@ -26,6 +38,7 @@ export default function Address() {
         }}
       />
 
+      {/* 🔍 검색창 */}
       <div className={styles.searchBox}>
         <img
           src={getIconByLabel("검색")}
@@ -44,6 +57,7 @@ export default function Address() {
         />
       </div>
 
+      {/* 📍 현재 위치 버튼 */}
       <button
         className={`${styles.locationBtn}`}
         onClick={() => selectAddress(0)}
@@ -56,8 +70,9 @@ export default function Address() {
         현재 위치로 주소 찾기
       </button>
 
+      {/* 📦 주소 리스트 */}
       <div className={styles.addressList}>
-        {addressList.map((addr, index) => (
+        {sortedList.map((addr, index) => (
           <div key={addr.id}>
             <div
               className={`${styles.addressBox} ${
@@ -95,11 +110,12 @@ export default function Address() {
               </div>
             </div>
 
-            {index === 0 && (
+            {/* ✅ 회사가 없을 때만 "회사 추가" 노출 */}
+            {!hasCompanyAddress && index === 0 && (
               <div
                 className={styles.companyAdd}
                 onClick={() => navigate("/address/company-add")}
-                style={{ cursor: "pointer" }} // 커서 손모양 추가
+                style={{ cursor: "pointer" }}
               >
                 <div className={styles.iconWithContent}>
                   <img
