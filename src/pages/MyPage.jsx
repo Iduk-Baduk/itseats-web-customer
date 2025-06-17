@@ -8,13 +8,32 @@ export default function MyPage() {
   const user = {
     name: "송준경",
     phone: "010-1234-6888",
-    reviewCount: 0,
+    reviewCount: 3,
     helpCount: 0,
-    favoriteCount: 0,
+    favoriteCount: 12,
   };
 
-  // 가운데 번호 마스킹
-  const maskedPhone = user.phone.replace(/(\d{3})-(\d{2})\d{2}-(\d{4})/, "$1-****-$3");
+  const maskedPhone = user.phone.replace(
+    /(\d{3})-(\d{2})\d{2}-(\d{4})/,
+    "$1-****-$3"
+  );
+
+  const menuItems = [
+    { icon: "list", label: "주소 관리", path: "/address" },
+    { icon: "heart", label: "즐겨찾기", path: "/favorite" },
+    { icon: "tag", label: "할인쿠폰" },
+    { icon: "percent", label: "진행중인 이벤트" },
+    { icon: "people", label: "친구 초대" },
+    { icon: "gift", label: "이츠 롤렛" },
+    { icon: "scooter", label: "배달파트너 모집" },
+    { icon: "message", label: "자주 묻는 질문" },
+    { icon: "question", label: "고객 지원" },
+    { icon: "settings", label: "설정" },
+    { icon: "megaphone", label: "공지사항" },
+    { icon: "paper", label: "약관 및 정책" },
+    { icon: "sheild", label: "개인정보 처리방침" },
+    { icon: "sheild", label: "쿠팡페이 개인정보 처리방침" },
+  ];
 
   return (
     <div className={styles.container}>
@@ -36,28 +55,28 @@ export default function MyPage() {
         </div>
       </div>
 
-      <button className={styles.detailButton} onClick={() => navigate("/mypage/details")}>
+      <button
+        className={styles.detailButton}
+        onClick={() => navigate("/mypage/details")}
+      >
         자세히 보기
       </button>
 
-      {/* 중단 리스트 */}
       <div className={styles.menu}>
-        <div onClick={() => navigate("/address")}>주소 관리</div>
-        <div onClick={() => navigate("/favorite")}>즐겨찾기</div>
-        <div>할인쿠폰</div>
-        <div>진행중인 이벤트</div>
-        <div>친구 초대</div>
-        <div>이츠 롤렛</div>
-        <div>결제관리</div>
-        <div>와우 멤버십</div>
-        <div>배달파트너 모집</div>
-        <div>자주 묻는 질문</div>
-        <div>고객 지원</div>
-        <div>설정</div>
-        <div>공지사항</div>
-        <div>약관 및 정책</div>
-        <div>개인정보 처리방침</div>
-        <div>쿠팡페이 개인정보 처리방침</div>
+        {menuItems.map(({ icon, label, path }) => (
+          <div
+            key={label}
+            className={styles.menuItem}
+            onClick={() => path && navigate(path)}
+          >
+            <img
+              src={`/icons/mypage/${icon}.svg`}
+              alt={label}
+              className={styles.icon}
+            />
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
