@@ -35,12 +35,12 @@ const dummyData = [
     },
   ];
 
-export default function SearchResultList() {
+export default function SearchResult() {
   
   return (
     <>
       <FilterBar/>
-      
+
       {/* 하단 데이터(데이터 추후 교체) */}
       {dummyData && dummyData.map((item) => (
         <div key={item.id} className={styles.card}>
