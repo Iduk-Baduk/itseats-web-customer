@@ -1,7 +1,8 @@
+import FilterBar from "../components/common/basic/FilterBar";
 import styles from "./SearchResults.module.css";
 
-export default function SearchResultList() {
-  const dummyData = [
+// 임시 데이터
+const dummyData = [
     {
       id: 1,
       name: "맥도날드",
@@ -34,15 +35,20 @@ export default function SearchResultList() {
     },
   ];
 
+export default function SearchResultList() {
+  
   return (
     <>
+      <FilterBar/>
+      
+      {/* 하단 데이터(데이터 추후 교체) */}
       {dummyData && dummyData.map((item) => (
         <div key={item.id} className={styles.card}>
           <div className={styles.imageRow}>
-            <img src={item.images.main} alt="메인" className={styles.mainImage} />
+            <img src={item.images.main} alt="메인" className={styles.mainImage}/>
             <div className={styles.subImages}>
-              <img src={item.images.sub1} alt="서브1" className={styles.subImage} />
-              <img src={item.images.sub2} alt="서브2" className={styles.subImage} />
+              <img src={item.images.sub1} alt="서브1" className={styles.subImage}/>
+              <img src={item.images.sub2} alt="서브2" className={styles.subImage}/>
             </div>
           </div>
 
