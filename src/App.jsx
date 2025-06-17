@@ -5,6 +5,10 @@ import Search from "./pages/Search";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
+import Address from "./pages/Address";
+import AddressSearch from "./pages/AddressSearch";
+import StoreList from "./pages/stores/StoreList";
+import StoreDetail from "./pages/stores/StoreDetail";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import { AnimatePresence } from "framer-motion";
@@ -25,6 +29,10 @@ function Root() {
             <Route path="/my-eats" element={<MyEats />} />
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
+            <Route path="/address" element={<Address />} />
+            <Route path="/address/search" element={<AddressSearch />} />
+            <Route path="/stores/list" element={<StoreList />} />
+            <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />

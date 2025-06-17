@@ -1,0 +1,77 @@
+.container {
+  margin: 0 20px;
+  padding-top: 60px;;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  margin: 0 auto;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .header {
+    max-width: 720px;
+  }
+}
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .header {
+    max-width: 720px;
+  }
+}
+
+
+.addressButton {
+  padding: 8px 12px;
+  color: var(--black-700);
+  background-color: #fff;
+  border: none;
+  border-radius: 50px;
+  display: flex;
+  cursor: pointer;
+}
+.addressButton>span {
+  margin-left: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25px;
+}
+.addressButton>svg:last-child {
+  margin-left: 4px;
+  color: var(--theme-color);
+}
+
+.bannerContainer {
+  width: 100%;
+  margin: 24px 0 36px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bannerContainer>img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.section {
+  padding: 16px 0;
+}
+.section h2 {
+  margin-left: 4px;
+  margin-bottom: 24px;
+  padding: 0 20px;
+  color: var(--black-700);
+  font-size: 18px;
+  font-weight: 600;
+}
