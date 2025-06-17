@@ -1,5 +1,45 @@
 import styles from "./Header.module.css";
 
+export default function Header({
+  leftIcon = "back",
+  rightIcon = "search",
+  leftButtonAction,
+  rightButtonAction,
+  title = "ItsEats",
+  shadow = true,
+}) {
+  return (
+    <header
+      className={styles.header}
+      style={{ boxShadow: shadow ? undefined : "none" }}
+    >
+      {leftIcon && (
+        <button
+          className={styles.iconButton}
+          aria-label="뒤로가기"
+          onClick={leftButtonAction}
+        >
+          {getIconByLabel(leftIcon)}
+        </button>
+      )}
+
+      <div className={styles.titleContainer}>
+        <h1 className={styles.title}>{title}</h1>
+      </div>
+
+      {rightIcon && (
+        <button
+          className={styles.iconButton}
+          aria-label="검색"
+          onClick={rightButtonAction}
+        >
+          {getIconByLabel(rightIcon)}
+        </button>
+      )}
+    </header>
+  );
+}
+
 const getIconByLabel = (label) => {
   switch (label) {
     case "back":
@@ -48,43 +88,3 @@ const getIconByLabel = (label) => {
       return <></>;
   }
 };
-
-export default function Header({
-  leftIcon = "back",
-  rightIcon = "search",
-  leftButtonAction,
-  rightButtonAction,
-  title = "ItsEats",
-  shadow = true,
-}) {
-  return (
-    <header
-      className={styles.header}
-      style={{ boxShadow: shadow ? undefined : "none" }}
-    >
-      {leftIcon && (
-        <button
-          className={styles.iconButton}
-          aria-label="뒤로가기"
-          onClick={leftButtonAction}
-        >
-          {getIconByLabel(leftIcon)}
-        </button>
-      )}
-
-      <div className={styles.titleContainer}>
-        <h1 className={styles.title}>{title}</h1>
-      </div>
-
-      {rightIcon && (
-        <button
-          className={styles.iconButton}
-          aria-label="검색"
-          onClick={rightButtonAction}
-        >
-          {getIconByLabel(rightIcon)}
-        </button>
-      )}
-    </header>
-  );
-}
