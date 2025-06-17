@@ -104,7 +104,10 @@ export default function Search() {
                     <span className={styles.date}>{item.date}</span>
                     <button
                       className={styles.deleteBtn}
-                      onClick={() => handleRemoveKeyword(item.keyword)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveKeyword(item.keyword)
+                      }}
                     >✕
                     </button>
                   </div>
