@@ -1,0 +1,37 @@
+.container {
+  padding: 16px;
+  padding-top: 84px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.resultList {
+  list-style: none;
+  padding: 0;
+}
+
+.item {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.item:hover {
+  background: #f9f9f9;
+}
+
+.addressText {
+  font-size: 16px;
+}
+
+.wow {
+  font-size: 12px;
+  color: #ff5a5f;
+}

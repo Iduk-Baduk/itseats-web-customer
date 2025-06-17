@@ -5,8 +5,11 @@ import Search from "./pages/Search";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
 import MyEats from "./pages/MyEats";
-import Address from "./pages/Address";
-import AddressSearch from "./pages/AddressSearch";
+import Address from "./pages/address/Address";
+import AddressSearch from "./pages/address/AddressSearch";
+import CompanyAdd from "./pages/address/CompanyAdd";
+import AddressEdit from "./pages/address/AddressEdit";
+import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import StackTest from "./pages/StackTest";
@@ -30,7 +33,10 @@ function Root() {
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
+            <Route path="/address/new" element={<AddressNew />} />
+            <Route path="/address/edit/:id" element={<AddressEdit />} />
             <Route path="/address/search" element={<AddressSearch />} />
+            <Route path="/address/company-add" element={<CompanyAdd />} />
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
