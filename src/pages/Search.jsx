@@ -11,7 +11,7 @@ const watchIcon = (
     viewBox="0 0 24 24"
   >
     <path 
-      fill="currentColor" 
+      fill="currentColor"
       d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m.5-13H11v6l5.2 3.2l.8-1.3l-4.5-2.7z"/>
   </svg>
 );
@@ -25,11 +25,10 @@ export default function Search() {
     {keyword: "햄버거", date: "05.31"},
   ]);
 
-  const [keyword, setKeyword] = useState();
+  const [keyword, setKeyword] = useState("");
 
   // 최근 검색어 추가
   const handleAddKeyword = (text) => {
-    console.log(text);
     if (text === undefined || text === "") {
       return;
     }
@@ -46,13 +45,13 @@ export default function Search() {
     });
   };
 
-  const handleSearch = () => {
-    if (!keyword) {
+  const handleSearch = (text) => {
+    if (!text || text === "") {
       return;
     }
     // 키워드 저장
-    handleAddKeyword(keyword);
-    navigate(`/search-result?keyword=${encodeURIComponent(keyword)}`);
+    handleAddKeyword(text);
+    navigate(`/search-result?keyword=${encodeURIComponent(text)}`);
   }
 
   // 최근 검색어 삭제
@@ -60,10 +59,16 @@ export default function Search() {
     const filtered = recentKeywords.filter((item) => item.keyword !== keyword);
     setRecentKeywords(filtered);
   }
+
+  // 최근 검색어 눌렀을때
+  const handleClickRecentKeyword = (text) => {
+    setKeyword(text);
+    handleSearch(text);
+  };
   
   return (
-    // 상단 검색창
     <div>
+      {/* 상단 검색창 */}
       <SearchHeaderBar
         keyword={keyword}
         onChange={(e) => setKeyword(e.target.value)}
@@ -90,15 +95,15 @@ export default function Search() {
         
           <ul className={styles.recentList}>
             <ul className={styles.recentList}>
-              {recentKeywords.map((item, index) => (
-                <li key={index} className={styles.recentItem}>
+              {recentKeywords && recentKeywords.map((item, index) => (
+                <li key={index} className={styles.recentItem} onClick={() => handleClickRecentKeyword(item.keyword)}>
                   <div className={styles.left}>
                     <span className={styles.clockIcon}>{watchIcon}</span>
                     <span>{item.keyword}</span>
                   </div>
                   <div className={styles.right}>
                     <span className={styles.date}>{item.date}</span>
-                    <button 
+                    <button
                       className={styles.deleteBtn}
                       onClick={() => handleRemoveKeyword(item.keyword)}
                     >✕
