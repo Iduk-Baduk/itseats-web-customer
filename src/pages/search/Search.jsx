@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 const watchIcon = (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
-    width="24"
-    height="24"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
   >
     <path 
@@ -82,9 +82,10 @@ export default function Search() {
           <span className={styles.title}>인기 검색어</span>
           <span className={styles.subTextRight}>오후 4:10 업데이트</span>
         </div>
+        <div style={{ height: "160px" }}></div>
       </div>
 
-      <hr/>
+      <hr className={styles.separator}/>
 
       {/* 최근 검색어 */}
       <div>
