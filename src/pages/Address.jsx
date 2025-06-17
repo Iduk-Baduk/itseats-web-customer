@@ -9,14 +9,13 @@ export default function Address() {
     addressList,
     selectedId,
     selectAddress,
-    selectedAddress,
     keyword,
     setKeyword,
   } = useAddressManager();
 
   const handleSearch = () => {
   if (keyword.trim() === "") return;
-  navigate(`/address/keyword=${encodeURIComponent(keyword)}`);
+  navigate(`/address/search?keyword=${encodeURIComponent(keyword)}`);
 };
 
   // 👇 회사 주소 존재 여부

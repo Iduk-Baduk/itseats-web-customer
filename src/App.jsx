@@ -15,6 +15,7 @@ import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
 import CompanyAdd from "./pages/CompanyAdd";
 import AddressEdit from "./pages/AddressEdit";
+import AddressNew from "./pages/AddressNew";
 
 function Root() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function Root() {
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
             <Route path="/address" element={<Address />} />
+            <Route path="/address/new" element={<AddressNew />} />
             <Route path="/address/edit/:id" element={<AddressEdit />} />
             <Route path="/address/search" element={<AddressSearch />} />
             <Route path="/address/company-add" element={<CompanyAdd />} />
