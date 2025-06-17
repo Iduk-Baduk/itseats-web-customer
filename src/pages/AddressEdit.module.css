@@ -1,0 +1,127 @@
+.container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.mapPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.pinButton {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+}
+
+.addressTextGroup {
+  margin-bottom: 16px;
+}
+
+.primaryAddress {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.secondaryAddress {
+  font-size: 14px;
+  color: #666;
+}
+
+.wowArea {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.wow {
+  background-color: #2B5C9F;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.wowText {
+  color: #2B5C9F;
+  font-weight: bold;
+}
+
+.detailInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.labelButtonGroup {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.labelButton {
+  flex: 1;
+  padding: 10px;
+  margin: 0 4px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fff;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.labelButton.selected {
+  background-color: #e5f4ff;
+  border-color: #2196f3;
+}
+
+.labelIcon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 4px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 14px;
+  background-color: #00aaff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
