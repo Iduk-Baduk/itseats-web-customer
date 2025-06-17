@@ -5,9 +5,9 @@ import HeaderStoreDetail from "../../components/common/HeaderStoreDetail";
 import { useShare } from "../../hooks/useShare";
 import PhotoSlider from "../../components/stores/PhotoSlider";
 import DeliveryTypeTab from "../../components/stores/DeliveryTypeTab";
+import AutoScrollTabs from "../../components/stores/AutoScrollTabs";
 
 import styles from "./StoreDetail.module.css";
-
 
 const dummyStore = {
   images: [
@@ -65,6 +65,7 @@ export default function StoreDetail() {
   const { storeId } = useParams();
 
   const [isTransparent, setTransparent] = useState(true);
+  const [menuTabFixed, setMenuTabFixed] = useState(false);
 
   // 아래로 스크롤 되었을 때 헤더 배경을 흰색으로 변경
   useEffect(() => {
@@ -76,9 +77,20 @@ export default function StoreDetail() {
       // intro가 화면 밖으로 완전히 가려졌는지 확인
       setTransparent(rect.bottom > 0);
     };
+    const onScroll2 = () => {
+      const target = document.getElementById("delivery-type-tab");
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      setMenuTabFixed(rect.bottom <= 0);
+    };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll2, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onScroll2);
+    };
   }, []);
 
   return (
@@ -100,11 +112,13 @@ export default function StoreDetail() {
           favoriteButtonAction={() => {}}
         />
         <div id="intro" className={styles.intro}>
-          <PhotoSlider />
+          <PhotoSlider images={dummyStore.images.map((img) => img.image)} />
           <div className={styles.introContent}>
             <h1>{dummyStore.storeName}</h1>
             <div>
-              <span>⭐ {dummyStore.reviewRating}({dummyStore.reviewCount})</span>
+              <span>
+                ⭐ {dummyStore.reviewRating}({dummyStore.reviewCount})
+              </span>
             </div>
           </div>
         </div>
@@ -117,6 +131,7 @@ export default function StoreDetail() {
           deliveryFeeMax={dummyStore.deliveryFeeMax}
           address={dummyStore.storeAddress}
         />
+        <AutoScrollTabs fixed={menuTabFixed} />
         <div style={{ margin: "24px 20px" }}>
           <h1 style={{ height: "2000px" }}>
             가맹점 상세페이지 Store ID: {storeId}

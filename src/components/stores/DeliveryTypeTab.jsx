@@ -13,7 +13,7 @@ export default function DeliveryTypeTab({
   const [activeTab, setActiveTab] = useState("delivery");
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id="delivery-type-tab">
       <div className={styles.tabHeader}>
         <button
           className={`${styles.tabButton} ${
