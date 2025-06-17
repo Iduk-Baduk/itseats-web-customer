@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import SearchInput from "../components/common/SearchInput";
 import styles from "./Search.module.css";
+import SearchHeaderBar from "../components/common/SearchHeaderBar";
 
 const watchIcon = (
   <svg 
@@ -50,24 +51,15 @@ export default function Search() {
   }
   
   return (
-    /*
-    * TODO: 추후 공통 컴포넌트로 교체
-    * 상단 검색창
-    */
+    // 상단 검색창
     <div>
-      <div className={styles.container}>
-        <button className={styles.backBtn}>←</button>
-        <SearchInput 
-          className={styles.searchInput}
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
-        <button 
-          className={styles.searchBtn}
-          onClick={() => handleAddKeyword(keyword)}>🔍
-        </button>
-      </div>
-
+      <SearchHeaderBar
+        keyword={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+        onSearch={() => handleAddKeyword(keyword)}
+        onBack={() => navigate(-1)}
+      />
+      
       {/* 인기 검색어 및 날짜 */}
       <div>
         <div className={styles.keywordHeader}>
