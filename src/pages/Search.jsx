@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SearchInput from "../components/common/SearchInput";
 import styles from "./Search.module.css";
 
-const clickSvg = (
+const watchIcon = (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width="24"
@@ -50,7 +50,10 @@ export default function Search() {
   }
   
   return (
-    // 상단 검색 바
+    /*
+    * TODO: 추후 공통 컴포넌트로 교체
+    * 상단 검색창
+    */
     <div>
       <div className={styles.container}>
         <button className={styles.backBtn}>←</button>
@@ -87,7 +90,7 @@ export default function Search() {
               {recentKeywords.map((item, index) => (
                 <li key={index} className={styles.recentItem}>
                   <div className={styles.left}>
-                    <span className={styles.clockIcon}>{clickSvg}</span>
+                    <span className={styles.clockIcon}>{watchIcon}</span>
                     <span>{item.keyword}</span>
                   </div>
                   <div className={styles.right}>
