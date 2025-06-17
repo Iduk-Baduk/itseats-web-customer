@@ -1,0 +1,77 @@
+.separator {
+  height: 8px;
+  background-color: var(--border-color-light);
+  margin: 12px 0;
+  border: none;
+}
+
+.keywordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  margin: 24px 0 12px 0;
+}
+
+.keywordHeader > button {
+  color: #000000;
+  background: none;
+  border: none;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.subTextRight {
+  font-size: 14px;
+  color: var(--black-500);
+}
+
+.recentList {
+  list-style: none;
+  padding: 0 10px;
+  margin: 0;
+}
+
+.recentItem {  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: none;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clockIcon {
+  font-size: 14px;
+  color: var(--border-color);
+  margin-bottom: -2px;
+}
+
+.date {
+  font-size: 13px;
+  color: var(--black-500);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--black-500);
+  font-size: 16px;
+  cursor: pointer;
+}

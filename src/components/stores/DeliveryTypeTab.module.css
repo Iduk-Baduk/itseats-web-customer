@@ -1,0 +1,73 @@
+.container {
+  width: 100%;
+  margin-top: 72px;
+}
+
+.tabHeader {
+  display: flex;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.tabButton span {
+  font-weight: 500;
+}
+
+
+.active {
+  border-bottom: 2px solid var(--theme-color);
+  color: var(--theme-color);
+}
+
+.tabContent {
+  padding: 16px;
+}
+
+.deliveryInfo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 20px;
+}
+.infoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  background-color: #fff;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+}
+.infoButton:hover {
+  background-color: var(--background-hover-color);
+}
+
+.deliveryDetails {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.row {
+  display: contents; /* 자식들이 grid에 직접 배치되도록 */
+}
+.label {
+  width: 120px;
+}
