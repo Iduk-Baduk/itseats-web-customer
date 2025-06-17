@@ -1,23 +1,26 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderStoreDetail from "../../components/common/HeaderStoreDetail";
 import { useShare } from "../../hooks/useShare";
+import PhotoSlider from "../../components/stores/PhotoSlider";
+import DeliveryTypeTab from "../../components/stores/DeliveryTypeTab";
 
 import styles from "./StoreDetail.module.css";
-import { useEffect, useState } from "react";
+
 
 const dummyStore = {
   images: [
-    { image: "/samples/banner.jpg" },
-    { image: "/samples/banner.jpg" },
-    { image: "/samples/banner.jpg" },
+    { image: "/samples/food1.jpg" },
+    { image: "/samples/food2.jpg" },
+    { image: "/samples/food3.jpg" },
   ],
   isLiked: true,
   reviewRating: 4.9,
   reviewCount: 13812,
   storeName: "스타벅스 강남점",
   description: "커피 전문점입니다.",
-  storeAddress: "서울시 강남구 테헨란로",
+  storeAddress: "서울시 강남구 테헤란로",
   location: {
     lat: 37.4979,
     lng: 127.0276,
@@ -25,6 +28,11 @@ const dummyStore = {
   businessStatus: "OPEN",
   storePhone: "02-1234-5678",
   orderable: true,
+  defaultTime: 24,
+  takeoutTime: 12,
+  minimumOrderPrice: 8000,
+  deliveryFeeMin: 1000,
+  deliveryFeeMax: 3000,
   menus: [
     {
       menuId: 11,
@@ -92,9 +100,24 @@ export default function StoreDetail() {
           favoriteButtonAction={() => {}}
         />
         <div id="intro" className={styles.intro}>
-          <img src={dummyStore.images[0].image} alt="Store Banner" />
+          <PhotoSlider />
+          <div className={styles.introContent}>
+            <h1>{dummyStore.storeName}</h1>
+            <div>
+              <span>⭐ {dummyStore.reviewRating}({dummyStore.reviewCount})</span>
+            </div>
+          </div>
         </div>
-        <div style={{ margin: "80px 20px" }}>
+        <DeliveryTypeTab
+          storeId={storeId}
+          defaultTime={dummyStore.defaultTime}
+          takeoutTime={dummyStore.takeoutTime}
+          minimumOrderPrice={dummyStore.minimumOrderPrice}
+          deliveryFeeMin={dummyStore.deliveryFeeMin}
+          deliveryFeeMax={dummyStore.deliveryFeeMax}
+          address={dummyStore.storeAddress}
+        />
+        <div style={{ margin: "24px 20px" }}>
           <h1 style={{ height: "2000px" }}>
             가맹점 상세페이지 Store ID: {storeId}
           </h1>
