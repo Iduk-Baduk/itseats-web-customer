@@ -40,7 +40,8 @@ export default function Tabs() {
 
   const handleTabClick = (category) => {
     setActiveTab(category);
-    setSearchParams({ category }, { replace: true });
+    const params = Object.fromEntries(searchParams.entries());
+    setSearchParams({ ...params, category }, { replace: true });
 
     // 선택된 탭을 가운데로 스크롤
     const el = tabRefs.current[category];
