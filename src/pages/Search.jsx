@@ -68,7 +68,7 @@ export default function Search() {
         keyword={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         onSearch={() => handleSearch(keyword)}
-        onBack={() => navigate(-1)}
+        onBack={() => navigate("/")}
       />
       
       {/* 인기 검색어 및 날짜 */}
