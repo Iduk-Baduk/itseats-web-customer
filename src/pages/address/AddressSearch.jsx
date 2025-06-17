@@ -1,6 +1,7 @@
 // src/pages/AddressSearch.jsx
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Header from "../../components/common/Header";
 import styles from "./AddressSearch.module.css";
 
 export default function AddressSearch() {
@@ -37,12 +38,20 @@ export default function AddressSearch() {
       state: {
         address: selectedAddress,
       },
+      replace: true,
     });
   };
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>“{keyword}” 검색 결과</h2>
+      <Header
+        title={`"${keyword}" 주소 검색 결과`}
+        leftIcon="back"
+        rightIcon={null}
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+      />
       <ul className={styles.resultList}>
         {results.map((addr) => (
           <li
