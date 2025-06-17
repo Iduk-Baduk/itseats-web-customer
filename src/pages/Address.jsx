@@ -12,8 +12,12 @@ export default function Address() {
     selectedAddress,
     keyword,
     setKeyword,
-    handleSearch,
   } = useAddressManager();
+
+  const handleSearch = () => {
+  if (keyword.trim() === "") return;
+  navigate(`/address/keyword=${encodeURIComponent(keyword)}`);
+};
 
   // 👇 회사 주소 존재 여부
   const hasCompanyAddress = addressList.some((addr) => addr.label === "회사");
@@ -100,7 +104,9 @@ export default function Address() {
                     )}
                   </div>
                 </div>
-                <button className={styles.editBtn}>
+                <button 
+                  className={styles.editBtn}
+                  onClick={() => navigate(`/address/edit/${addr.id}`)}>
                   <img
                     src={getIconByLabel("수정")}
                     alt="edit-icon"
