@@ -43,6 +43,44 @@ function HomeHeader() {
   );
 }
 
+const dummyStores = [
+  {
+    storeId: 1,
+    name: "버거킹 구름점",
+    review: 4.9,
+    reviewCount: 1742,
+    minutesToDelivery: 30,
+  },
+  {
+    storeId: 2,
+    name: "맘스터치 구름점",
+    review: 4.8,
+    reviewCount: 52,
+    minutesToDelivery: 25,
+  },
+  {
+    storeId: 3,
+    name: "청년닭발 구름점",
+    review: 3.1,
+    reviewCount: 124,
+    minutesToDelivery: 40,
+  },
+  {
+    storeId: 4,
+    name: "피자헛 구름점",
+    review: 4.2,
+    reviewCount: 172,
+    minutesToDelivery: 35,
+  },
+  {
+    storeId: 5,
+    name: "청룡각 구름점",
+    review: 4.9,
+    reviewCount: 742,
+    minutesToDelivery: 30,
+  },
+]
+
 export default function Home() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
@@ -62,38 +100,15 @@ export default function Home() {
         </div>
       </div>
       <div className={styles.section}>
-          <h2>골라먹는 맛집</h2>
+        <h2>골라먹는 맛집</h2>
+        {dummyStores.map((store) => (
           <StoreListItem
-            store={{ name: "버거킹 구름점", review: 4.9, reviewCount: 1742 }}
-            onClick={() => {
-              navigate("/stores/1");
-            }}
+            key={store.storeId}
+            store={store}
+            onClick={() => navigate(`/stores/${store.storeId}`)}
           />
-          <StoreListItem
-            store={{ name: "맘스터치 구름점", review: 4.8, reviewCount: 52 }}
-            onClick={() => {
-              navigate("/stores/1");
-            }}
-          />
-          <StoreListItem
-            store={{ name: "청년닭발 구름점", review: 3.1, reviewCount: 124 }}
-            onClick={() => {
-              navigate("/stores/2");
-            }}
-          />
-          <StoreListItem
-            store={{ name: "피자헛 구름점", review: 4.2, reviewCount: 172 }}
-            onClick={() => {
-              navigate("/stores/4");
-            }}
-          />
-          <StoreListItem
-            store={{ name: "청룡각 구름점", review: 4.9, reviewCount: 742 }}
-            onClick={() => {
-              navigate("/stores/5");
-            }}
-          />
-        </div>
+        ))}
+      </div>
     </>
   );
 }

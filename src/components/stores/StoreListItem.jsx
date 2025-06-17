@@ -1,4 +1,4 @@
-import styles from './StoreListItem.module.css';
+import styles from "./StoreListItem.module.css";
 
 export default function StoreListItem({ store, onClick }) {
   return (
@@ -22,9 +22,14 @@ export default function StoreListItem({ store, onClick }) {
           />
         </div>
       </div>
-      <h3>{store.name}</h3>
+      <div className={styles.titleFlex}>
+        <h3>{store.name}</h3>
+        <span>{store.minutesToDelivery}분</span>
+      </div>
       <div className={styles.storeInfo}>
-        <span>⭐ {store.review}({store.reviewCount})</span>
+        <span>
+          ⭐ {store.review}({store.reviewCount})
+        </span>
         <span>0.0km</span>
         <span>최소주문 0,000원</span>
       </div>
