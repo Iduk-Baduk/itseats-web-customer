@@ -1,44 +1,82 @@
+/* ✅ MyPage.module.css */
+
 .container {
-  padding: 20px;
+  padding: 24px;
+  font-family: sans-serif;
 }
 
 .name {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 30px;
+  font-weight: 500;
   text-align: center;
 }
 
 .phone {
-  text-align: center;
+  font-size: 20px;
   color: gray;
-  margin-bottom: 16px;
+  margin-top: 5px;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3등분 */
   text-align: center;
+  margin: 24px 0;
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats strong {
+  font-size: 30px;
+  font-weight: 700;
 }
 
 .detailButton {
   width: 100%;
-  padding: 10px;
+  height: 44px;
   margin-bottom: 16px;
-  border: 1px solid #00aaff;
-  background: white;
-  color: #00aaff;
-  border-radius: 8px;
-  font-weight: bold;
+
+  background-color: white;
+  color: #007aff; /* iOS 기본 파랑 */
+  border: 1px solid #007aff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .menu {
-  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
 }
 
-.menu div {
-  padding: 14px 0;
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 8px;
+  height: 50px;
+  gap: 12px;
   border-bottom: 1px solid #eee;
-  font-size: 16px;
   cursor: pointer;
+}
+.menuItem:hover {
+  background-color: #f9f9f9;
+}
+.menuItem:active {
+  opacity: 0.7;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
