@@ -1,34 +1,27 @@
 import { useEffect, useRef, useState } from "react";
+import MenuItem from "./MenuItem";
 import styles from "./AutoScrollTabs.module.css";
 
-const categories = [
-  { id: "korean", label: "한식" },
-  { id: "snack", label: "분식" },
-  { id: "western", label: "양식" },
-  { id: "cafe", label: "카페" },
-  { id: "dessert", label: "디저트" },
-  { id: "etc", label: "기타" },
-  { id: "alcohol", label: "주류" },
-  { id: "delivery", label: "배달" },
-  { id: "takeout", label: "포장" },
-    { id: "chinese", label: "중식" },
-  { id: "japanese", label: "일식" },
-  { id: "pickup", label: "픽업" },
-  { id: "reservation", label: "예약" },
-  { id: "event", label: "이벤트" },
-  { id: "new", label: "신규" },
-  { id: "popular", label: "인기" },
-];
-
-export default function AutoScrollTabs({ fixed = false }) {
-  const [activeTab, setActiveTab] = useState(categories[0].id);
+export default function AutoScrollTabs({ storeId, menus, fixed = false }) {
+   const menuGroups = menus
+    .map((menu) => menu.menuGroupName)
+    .filter((group, index, self) => self.indexOf(group) === index);
+  
+  const [activeTab, setActiveTab] = useState(menuGroups[0]);
   const sectionRefs = useRef({});
   const tabRefs = useRef({});
 
   // 탭 클릭 → 해당 섹션 스크롤
   const handleTabClick = (id) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "auto", block: "start" });
-    tabRefs.current[id]?.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+    sectionRefs.current[id]?.scrollIntoView({
+      behavior: "auto",
+      block: "start",
+    });
+    tabRefs.current[id]?.scrollIntoView({
+      behavior: "auto",
+      inline: "center",
+      block: "nearest",
+    });
     setActiveTab(id);
   };
 
@@ -39,7 +32,11 @@ export default function AutoScrollTabs({ fixed = false }) {
         const visibleEntry = entries.find((entry) => entry.isIntersecting);
         if (visibleEntry) {
           setActiveTab(visibleEntry.target.dataset.id);
-          tabRefs.current[visibleEntry.target.dataset.id]?.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+          tabRefs.current[visibleEntry.target.dataset.id]?.scrollIntoView({
+            behavior: "auto",
+            inline: "center",
+            block: "nearest",
+          });
         }
       },
       {
@@ -48,8 +45,8 @@ export default function AutoScrollTabs({ fixed = false }) {
       }
     );
 
-    categories.forEach(({ id }) => {
-      const section = sectionRefs.current[id];
+    menuGroups.forEach((group) => {
+      const section = sectionRefs.current[group];
       if (section) observer.observe(section);
     });
 
@@ -58,15 +55,20 @@ export default function AutoScrollTabs({ fixed = false }) {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.tabBar} style={{ position: fixed ? "fixed" : "relative" }}>
-        {categories.map(({ id, label }) => (
+      <div
+        className={styles.tabBar}
+        style={{ position: fixed ? "fixed" : "relative" }}
+      >
+        {menuGroups.map((group) => (
           <button
-            key={id}
-            ref={(el) => (tabRefs.current[id] = el)}
-            className={`${styles.tab} ${activeTab === id ? styles.active : ""}`}
-            onClick={() => handleTabClick(id)}
+            key={group}
+            ref={(el) => (tabRefs.current[group] = el)}
+            className={`${styles.tab} ${
+              activeTab === group ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick(group)}
           >
-            {label}
+            {group}
           </button>
         ))}
       </div>
@@ -74,21 +76,19 @@ export default function AutoScrollTabs({ fixed = false }) {
       {fixed && <div className={styles.fixedSpacer} />}
 
       <div className={styles.content}>
-        {categories.map(({ id, label }) => (
+        {menuGroups.map((group) => (
           <section
-            key={id}
-            ref={(el) => (sectionRefs.current[id] = el)}
-            data-id={id}
+            key={group}
+            ref={(el) => (sectionRefs.current[group] = el)}
+            data-id={group}
             className={styles.section}
           >
-            <h2 className={styles.subHeader}>{label}</h2>
-            <ul className={styles.menuList}>
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <li key={idx} className={styles.menuItem}>
-                  {label} 메뉴 {idx + 1}
-                </li>
+            <h2 className={styles.subHeader}>{group}</h2>
+            {menus
+              .filter((menu) => menu.menuGroupName === group)
+              .map((menu) => (
+                <MenuItem key={menu.menuId} storeId={storeId} menu={menu} />
               ))}
-            </ul>
           </section>
         ))}
       </div>
