@@ -1,0 +1,117 @@
+/* OrderCard.module.css */
+
+.orderCard {
+  border: 0.6px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  background-color: #fff;
+  font-family: sans-serif;
+}
+
+.storeInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.storeInfo strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.storeInfo p {
+  margin: 10px 0;
+  color: #000000;
+  font-size: 14px;
+}
+
+.storeInfo .date {
+  color: var(--black-300);
+  font-size: small;
+}
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  gap: 8px;
+}
+
+.summary {
+  font-size: 14px;
+  color: #000;
+  margin: 0;
+
+  flex: 1; /* 남는 공간 다 차지하게 */
+  min-width: 0; /* 넘치는 경우 말줄임 허용 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.priceMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0; /* 줄어들지 않게 */
+}
+
+.image {
+  width: 64px;
+  height: 64px;
+  background-color: #ddd;
+  margin-left: 12px;
+}
+
+.badge {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  margin-bottom: -1px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.remaining {
+  font-size: 12px;
+  color: var(--black-300);
+  margin-top: 8px;
+}
+
+.reorderButton {
+  margin-top: 15px;
+  border: 1px solid var(--theme-color);
+}
+
+.reorderButton:hover {
+  background-color: var(--theme-hover-color);
+  cursor: pointer;
+}
+
+.reviewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  color: #000;
+  background-color: #fff;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.reviewButton:hover {
+  background-color: var(--background-hover-color);
+  cursor: pointer;
+}
+
+.defaultHover:hover {
+  background-color: var(--border-color-light);
+  border-color: var(--theme-color);
+  color: var(--theme-color);
+}

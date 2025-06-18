@@ -2,9 +2,11 @@
     /* Global */
     --black-700: #161032;
     --black-500: #727272;
+    --black-300: #B2B2B2;
     --theme-color: #00AFFE;
     --wow-color: #2B5C9F;
 
+    --theme-hover-color: #009EDD;
     --border-color-light: #EEE;
     --border-color: #B2B2B2;
     --background-hover-color: rgba(0, 0, 0, 0.043) /* #F4F4F4 */;
