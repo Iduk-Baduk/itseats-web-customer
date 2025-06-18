@@ -66,7 +66,7 @@ export default function MenuDetail() {
     });
   }
 
-  // 장바구니에 넣기
+  // 카트에 넣기
   function addToCart() {
     alert("구현 필요");
   }
@@ -214,7 +214,7 @@ export default function MenuDetail() {
                                     alert(
                                       `최대 ${group.maxSelect}개까지 선택할 수 있습니다.`
                                     );
-                                    return groupItem; // 변경 없음
+                                    return groupItem;
                                   }
 
                                   return {
@@ -254,7 +254,7 @@ export default function MenuDetail() {
             onClick={addToCart}
             disabled={isRequiredOptionsNotSelected()}
           >
-            <p>{totalPrice.toLocaleString()}원 장바구니에 담기</p>
+            <p>{totalPrice.toLocaleString()}원 카트에 담기</p>
           </BottomButton>
         )}
       </div>
