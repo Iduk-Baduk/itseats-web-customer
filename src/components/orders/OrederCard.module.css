@@ -1,0 +1,104 @@
+/* OrderCard.module.css */
+
+.orderCard {
+  border: 0.6px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  background-color: #fff;
+  font-family: sans-serif;
+}
+
+.storeInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.storeInfo strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.storeInfo p {
+  margin: 10px 0;
+  color: #000000;
+  font-size: 14px;
+}
+
+.storeInfo .date {
+  color: #b2b2b2;
+  font-size: small;
+}
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.summary {
+  font-size: 14px;
+  color: #000;
+  margin: 0;
+}
+
+.priceMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image {
+  width: 64px;
+  height: 64px;
+  background-color: #ddd;
+  margin-left: 12px;
+}
+
+.badge {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.remaining {
+  font-size: 12px;
+  color: #b2b2b2;
+  margin-top: 4px;
+}
+
+.reorderButton {
+  margin-top: 15px;
+}
+
+.reorderButton:hover {
+  background-color: hsl(195, 64%, 33%);
+  border-color: #0066cc;
+  cursor: pointer;
+}
+
+.reviewButton {
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b2b2b2;
+  color: #000;
+  background-color: #fff;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.reviewButton:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+  cursor: pointer;
+}

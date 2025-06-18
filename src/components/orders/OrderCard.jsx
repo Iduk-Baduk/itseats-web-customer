@@ -1,26 +1,35 @@
-import styles from './OrederCard.module.css';
+import Button from "../common/basic/Button";
+import LineButton from "../common/basic/LineButton";
+import styles from "./OrederCard.module.css";
 
-export default function OrderCard({ order }) {
+export default function OrderCard({ order, className }) {
   return (
-    <div className={styles.orderCard}>
-      <div className={styles.storeInfo}>
-        <div>
-          <strong>{order.storeName}</strong>
-          <p>{order.date}</p>
-          <p>배달 완료 ⭐⭐⭐⭐⭐</p>
-          <p>{order.menuSummary}</p>
+    <div className={className}>
+      <div className={styles.orderCard}>
+        <div className={styles.storeInfo}>
+          <div>
+            <strong>{order.storeName}</strong>
+            <p className={styles.date}>{order.date}</p>
+            <p>배달 완료 ⭐ ⭐ ⭐ ⭐ ⭐</p>
+          </div>
+          <img src={order.storeImage} className={styles.image} />
         </div>
-        <div className={styles.image}>{order.storeImage}</div>
+
+        <div className={styles.summaryRow}>
+          <p className={styles.summary}>{order.menuSummary}</p>
+          <div className={styles.priceMeta}>
+            <span>{order.price.toLocaleString()}원</span>
+            <span className={styles.badge}>영수증</span>
+          </div>
+        </div>
+
+        <div className={styles.actions}>
+          <Button className={styles.reorderButton}>재주문하기</Button>
+          <LineButton className={styles.reviewButton}>작성한 리뷰 보기</LineButton>
+        </div>
+
+        <p className={styles.remaining}>리뷰 작성 기간이 6일 남았습니다.</p>
       </div>
-      <div className={styles.meta}>
-        <span>{order.price}</span>
-        <span className={styles.badge}>영수증</span>
-      </div>
-      <div className={styles.actions}>
-        <button className={styles.reorder}>재주문하기</button>
-        <button className={styles.review}>작성한 리뷰 보기</button>
-      </div>
-      <p className={styles.remaining}>리뷰 작성 기간이 6일 남았습니다.</p>
     </div>
   );
 }
