@@ -17,6 +17,8 @@ import MenuDetail from "./pages/stores/MenuDetail";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import Login from "./pages/Login";
+import MyPage from "./pages/MyPage";
+import MyPageDetails from "./pages/MyPageDetails";
 import { AnimatePresence } from "framer-motion";
 
 function Root() {
@@ -32,6 +34,7 @@ function Root() {
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
+            <Route path="/mypage" element={<MyPage />} />
             <Route path="/search-result" element={<SearchResults />} />
           </Route>
           <Route path="/" element={<Layout navVisible={false} />}>
@@ -44,6 +47,7 @@ function Root() {
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
           </Route>

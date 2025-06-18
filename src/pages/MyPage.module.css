@@ -1,0 +1,88 @@
+/* MyPage.module.css */
+
+.container {
+  padding: 44px 20px 40px 20px;
+}
+
+.name {
+  font-size: 30px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.phone {
+  font-size: 20px;
+  color: gray;
+  margin-top: 5px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3등분 */
+  text-align: center;
+  margin: 20px 0;
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats strong {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.stats p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--black-500);
+}
+
+.detailButton {
+  width: 100%;
+  height: 44px;
+  margin-bottom: 16px;
+
+  background-color: white;
+  color: var(--theme-color);
+  border: 1px solid var(--theme-color);
+
+  font-size: 15px;
+  font-weight: 600;
+
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 8px;
+  height: 50px;
+  gap: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+.menuItem:hover {
+  background-color: #f9f9f9;
+}
+.menuItem:active {
+  opacity: 0.7;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
