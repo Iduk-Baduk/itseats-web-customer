@@ -9,6 +9,9 @@ import BottomButton from "../components/common/BottomButton";
 function HomeHeader() {
   const navigate = useNavigate();
 
+  // 임시 State
+  const [isCartHasItems, setIsCartHasItems] = useState(true);
+
   return (
     <header className={styles.header}>
       <button
@@ -110,6 +113,10 @@ export default function Home() {
           />
         ))}
       </div>
+      <BottomButton
+        bottom="60px"
+        onClick={() => navigate("/cart")}
+      />
     </>
   );
 }

@@ -4,7 +4,7 @@ export default function BottomButton({
   onClick,
   bottom,
   label,
-  disabled,
+  disabled = false,
   className,
   children,
   cartInfo = {
