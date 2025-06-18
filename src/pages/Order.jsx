@@ -1,6 +1,8 @@
 import React from "react";
 import OrderCard from "../components/orders/OrderCard";
 import OrderSearch from "../components/orders/OrderSearch";
+import OrderTab from "../components/orders/OrderTab";
+
 import styles from "./Order.module.css";
 
 const dummyOrders = [
@@ -57,6 +59,7 @@ const dummyOrders = [
 export default function Order() {
   return (
     <div>
+      <OrderTab />
       <OrderSearch className={styles.orderSearch} />
       {dummyOrders &&
         dummyOrders.map((order) => (
