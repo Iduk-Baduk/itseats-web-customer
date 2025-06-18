@@ -6,6 +6,7 @@ import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
 import styles from "./MenuDetail.module.css";
 import OptionInput from "../../components/stores/OptionInput";
+import BottomButton from "../../components/common/BottomButton";
 
 export default function MenuDetail() {
   const navigate = useNavigate();
@@ -50,12 +51,26 @@ export default function MenuDetail() {
     };
   }, []);
 
-  const handleQuantityChange = (delta) => {
+
+  // 개수 변경
+  function handleQuantityChange(delta) {
     setQuantity((prev) => {
       const newQuantity = prev + delta;
       return newQuantity < 1 ? 1 : newQuantity;
     });
   };
+
+  // 필수 옵션이 선택되지 않았는지 확인
+  function isRequiredOptionsNotSelected() {
+    return selectedOptions.some((group) => {
+      return group.minSelect > group.options.length;
+    });
+  }
+
+  // 장바구니에 넣기
+  function addToCart() {
+    alert("구현 필요");
+  }
 
   return (
     <SlideInFromRight>
@@ -85,7 +100,7 @@ export default function MenuDetail() {
         </div>
         <div className={styles.row}>
           <span className={styles.label}>가격</span>
-          <span className={styles.value}>{totalPrice}원</span>
+          <span className={styles.value}>{totalPrice.toLocaleString()}원</span>
         </div>
         <div className={styles.row}>
           <span className={styles.label}>수량</span>
@@ -230,6 +245,9 @@ export default function MenuDetail() {
             </div>
           );
         })}
+        <BottomButton onClick={addToCart} disabled={isRequiredOptionsNotSelected()}>
+          <p>{totalPrice.toLocaleString()}원 장바구니에 담기</p>
+        </BottomButton>
       </div>
     </SlideInFromRight>
   );

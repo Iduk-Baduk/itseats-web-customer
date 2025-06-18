@@ -1,0 +1,72 @@
+.bottomButton {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    margin: 0 auto;
+    padding: 0 20px;
+    background-color: var(--theme-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+
+    font-weight: 600;
+    font-size: 16px;
+}
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .bottomButton {
+    max-width: 720px;
+  }
+}
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .bottomButton {
+    max-width: 720px;
+  }
+}
+
+.bottomButton:disabled {
+    color: var(--disabled-color);
+    background-color: var(--background-disabled-color);
+    cursor: not-allowed;
+}
+
+.flexContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.flexContainer>div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 8px;
+}
+.itemCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-bottom: -1px;
+  font-size: 11px;
+  color: var(--theme-color);
+  background-color: #fff;
+  border-radius: 50%;
+}
+.originalPrice {
+  font-size: 14px;
+  font-weight: normal;
+  color: var(--border-color-light);
+  text-decoration: line-through;
+}

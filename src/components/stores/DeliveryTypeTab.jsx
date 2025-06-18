@@ -43,12 +43,12 @@ export default function DeliveryTypeTab({
             <div className={styles.deliveryDetails}>
               <div className={styles.row}>
                 <span className={styles.label}>최소주문금액</span>
-                <span>{minimumOrderPrice}원</span>
+                <span>{minimumOrderPrice.toLocaleString()}원</span>
               </div>
               <div className={styles.row}>
                 <span className={styles.label}>배달비</span>
                 <span>
-                  {deliveryFeeMin}원 ~ {deliveryFeeMax}원
+                  {deliveryFeeMin.toLocaleString()}원 ~ {deliveryFeeMax.toLocaleString()}원
                 </span>
               </div>
             </div>

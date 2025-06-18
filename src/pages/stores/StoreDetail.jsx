@@ -82,7 +82,11 @@ export default function StoreDetail() {
           deliveryFeeMax={dummyStore.deliveryFeeMax}
           address={dummyStore.storeAddress}
         />
-        <AutoScrollTabs storeId={dummyStore.storeId} menus={dummyStore.menus} fixed={menuTabFixed} />
+        <AutoScrollTabs
+          storeId={dummyStore.storeId}
+          menus={dummyStore.menus}
+          fixed={menuTabFixed}
+        />
       </div>
     </SlideInFromRight>
   );
@@ -117,7 +121,7 @@ const dummyStore = {
     {
       menuId: 11,
       menuName: "아메리카노",
-      menuPrice: "2000",
+      menuPrice: 2000,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
       image: "/samples/food1.jpg",
@@ -125,7 +129,7 @@ const dummyStore = {
     {
       menuId: 13,
       menuName: "초코라떼",
-      menuPrice: "2000",
+      menuPrice: 2000,
       menuStatus: "OUT_OF_STOCK",
       menuGroupName: "음료",
       image: "/samples/food2.jpg",
@@ -133,7 +137,7 @@ const dummyStore = {
     {
       menuId: 25,
       menuName: "커피번",
-      menuPrice: "3500",
+      menuPrice: 3500,
       menuStatus: "ONSALE",
       menuGroupName: "베이커리",
       image: "/samples/food3.jpg",
@@ -141,119 +145,119 @@ const dummyStore = {
     {
       menuId: 31,
       menuName: "치즈케이크",
-      menuPrice: "4000",
+      menuPrice: 4000,
       menuStatus: "ONSALE",
       menuGroupName: "디저트",
     },
     {
       menuId: 32,
       menuName: "허니브레드",
-      menuPrice: "4500",
+      menuPrice: 4500,
       menuStatus: "ONSALE",
       menuGroupName: "디저트",
     },
     {
       menuId: 33,
       menuName: "에그샐러드샌드위치",
-      menuPrice: "5000",
+      menuPrice: 5000,
       menuStatus: "ONSALE",
       menuGroupName: "샌드위치",
     },
     {
       menuId: 34,
       menuName: "베이컨샌드위치",
-      menuPrice: "5200",
+      menuPrice: 5200,
       menuStatus: "OUT_OF_STOCK",
       menuGroupName: "샌드위치",
     },
     {
       menuId: 35,
       menuName: "오렌지주스",
-      menuPrice: "3000",
+      menuPrice: 3000,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 36,
       menuName: "딸기스무디",
-      menuPrice: "3500",
+      menuPrice: 3500,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 37,
       menuName: "바닐라라떼",
-      menuPrice: "2500",
+      menuPrice: 2500,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 38,
       menuName: "크루아상",
-      menuPrice: "3000",
+      menuPrice: 3000,
       menuStatus: "ONSALE",
       menuGroupName: "베이커리",
     },
     {
       menuId: 39,
       menuName: "블루베리머핀",
-      menuPrice: "3200",
+      menuPrice: 3200,
       menuStatus: "OUT_OF_STOCK",
       menuGroupName: "베이커리",
     },
     {
       menuId: 40,
       menuName: "딸기케이크",
-      menuPrice: "4800",
+      menuPrice: 4800,
       menuStatus: "ONSALE",
       menuGroupName: "디저트",
     },
     {
       menuId: 41,
       menuName: "카푸치노",
-      menuPrice: "2300",
+      menuPrice: 2300,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 42,
       menuName: "레몬에이드",
-      menuPrice: "2800",
+      menuPrice: 2800,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 43,
       menuName: "치아바타",
-      menuPrice: "3900",
+      menuPrice: 3900,
       menuStatus: "ONSALE",
       menuGroupName: "베이커리",
     },
     {
       menuId: 44,
       menuName: "햄치즈샌드위치",
-      menuPrice: "5300",
+      menuPrice: 5300,
       menuStatus: "ONSALE",
       menuGroupName: "샌드위치",
     },
     {
       menuId: 45,
       menuName: "티라미수",
-      menuPrice: "4700",
+      menuPrice: 4700,
       menuStatus: "OUT_OF_STOCK",
       menuGroupName: "디저트",
     },
     {
       menuId: 46,
       menuName: "녹차라떼",
-      menuPrice: "2700",
+      menuPrice: 2700,
       menuStatus: "ONSALE",
       menuGroupName: "음료",
     },
     {
       menuId: 47,
       menuName: "플레인스콘",
-      menuPrice: "3100",
+      menuPrice: 3100,
       menuStatus: "ONSALE",
       menuGroupName: "베이커리",
     },
