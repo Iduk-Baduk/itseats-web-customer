@@ -81,7 +81,7 @@
 
 .reorderButton:hover {
   background-color: hsl(195, 64%, 33%);
-  border-color: #0066cc;
+  border-color: -var(--wow-color);
   cursor: pointer;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .reviewButton:hover {
-  background-color: #f0f0f0;
-  border-color: #999;
+  background-color: var(--border-color-light);
+  border-color: var(---background-hover-color);
   cursor: pointer;
 }

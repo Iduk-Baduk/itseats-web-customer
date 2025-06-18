@@ -33,7 +33,7 @@
 
 .icon:hover {
   color: #333;
-  background-color: #eaeaea;
+  background-color: var(--background-hover-color);
   border-radius: 50%;
   transition: background-color 0.2s ease;
 }
