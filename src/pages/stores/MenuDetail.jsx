@@ -51,14 +51,13 @@ export default function MenuDetail() {
     };
   }, []);
 
-
   // 개수 변경
   function handleQuantityChange(delta) {
     setQuantity((prev) => {
       const newQuantity = prev + delta;
       return newQuantity < 1 ? 1 : newQuantity;
     });
-  };
+  }
 
   // 필수 옵션이 선택되지 않았는지 확인
   function isRequiredOptionsNotSelected() {
@@ -245,9 +244,19 @@ export default function MenuDetail() {
             </div>
           );
         })}
-        <BottomButton onClick={addToCart} disabled={isRequiredOptionsNotSelected()}>
-          <p>{totalPrice.toLocaleString()}원 장바구니에 담기</p>
-        </BottomButton>
+        {dummyMenu.menuStatus === "OUT_OF_STOCK" && (
+          <BottomButton disabled={true}>
+            <p>이 메뉴는 현재 품절입니다.</p>
+          </BottomButton>
+        )}
+        {dummyMenu.menuStatus !== "OUT_OF_STOCK" && (
+          <BottomButton
+            onClick={addToCart}
+            disabled={isRequiredOptionsNotSelected()}
+          >
+            <p>{totalPrice.toLocaleString()}원 장바구니에 담기</p>
+          </BottomButton>
+        )}
       </div>
     </SlideInFromRight>
   );
