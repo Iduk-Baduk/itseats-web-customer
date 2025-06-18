@@ -1,6 +1,6 @@
 import Button from "../common/basic/Button";
 import LineButton from "../common/basic/LineButton";
-import styles from "./OrederCard.module.css";
+import styles from "./OrderCard.module.css";
 
 export default function OrderCard({ order, className }) {
   return (
