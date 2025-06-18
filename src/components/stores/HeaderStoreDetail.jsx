@@ -1,4 +1,4 @@
-import styles from "./Header.module.css";
+import styles from "../common/Header.module.css";
 import customStyles from "./HeaderStoreDetail.module.css";
 
 export default function HeaderStoreDetail({
