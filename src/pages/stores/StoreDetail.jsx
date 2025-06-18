@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
-import HeaderStoreDetail from "../../components/common/HeaderStoreDetail";
+import HeaderStoreDetail from "../../components/stores/HeaderStoreDetail";
 import { useShare } from "../../hooks/useShare";
 import PhotoSlider from "../../components/stores/PhotoSlider";
 import DeliveryTypeTab from "../../components/stores/DeliveryTypeTab";

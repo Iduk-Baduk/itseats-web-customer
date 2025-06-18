@@ -1,0 +1,18 @@
+.headerTransparent {
+  background-color: transparent;
+  transition: all 0.3s ease-in-out;
+}
+
+.iconButtonContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.headerTransparent button > svg {
+  color: #fff;
+  stroke: var(--border-color-light);
+  stroke-width: 1;
+  transition: all 0.3s ease-in-out;
+}
