@@ -34,18 +34,26 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 6px;
+  gap: 8px;
 }
 
 .summary {
   font-size: 14px;
   color: #000;
   margin: 0;
+
+  flex: 1; /* 남는 공간 다 차지하게 */
+  min-width: 0; /* 넘치는 경우 말줄임 허용 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .priceMeta {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0; /* 줄어들지 않게 */
 }
 
 .image {
