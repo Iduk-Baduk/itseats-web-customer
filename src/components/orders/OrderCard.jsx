@@ -28,7 +28,7 @@ export default function OrderCard({ order, className, onReorder, onWriteReview }
             재주문하기
           </Button>
           <LineButton
-            className={order.showReviewButton ? styles.reviewButton : styles.writeButton}
+            className={order.showReviewButton ? styles.reviewButton : styles.defaultHover}
             onClick={onWriteReview}
           >
             {order.showReviewButton ? "작성한 리뷰 보기" : "리뷰 쓰기"}

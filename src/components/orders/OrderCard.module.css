@@ -110,3 +110,9 @@
   border-color: var(---background-hover-color);
   cursor: pointer;
 }
+
+.defaultHover:hover {
+  background-color: var(--border-color-light);
+  border-color: var(--theme-color);
+  color: var(--theme-color);
+}
