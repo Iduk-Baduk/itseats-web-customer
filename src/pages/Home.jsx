@@ -4,6 +4,7 @@ import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import styles from "./Home.module.css";
 import StoreListItem from "../components/stores/StoreListItem";
+import BottomButton from "../components/common/BottomButton";
 
 function HomeHeader() {
   const navigate = useNavigate();

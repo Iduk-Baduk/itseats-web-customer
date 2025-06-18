@@ -13,7 +13,7 @@ export default function MenuItem({ storeId, menu }) {
           {menu.menuName}
         </h3>
         <p className={`${styles.menuPrice} ${isSoldOut ? styles.soldOut : ""}`}>
-          {menu.menuPrice}원
+          {menu.menuPrice.toLocaleString()}원
         </p>
       </div>
       {menu.image ? (
