@@ -83,7 +83,7 @@ const dummyStores = [
     reviewCount: 742,
     minutesToDelivery: 30,
   },
-]
+];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -116,6 +116,11 @@ export default function Home() {
       <BottomButton
         bottom="60px"
         onClick={() => navigate("/cart")}
+        cartInfo={{
+          orderPrice: 20000,
+          totalPrice: 18000,
+          itemCount: 1,
+        }}
       />
     </>
   );
