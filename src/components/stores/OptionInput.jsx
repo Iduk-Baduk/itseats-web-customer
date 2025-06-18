@@ -29,7 +29,7 @@ export default function OptionInput({
       <div className={styles.labelContainer}>
         {disabled && <span className={styles.disabledText}>(품절)</span>}
         {label && <span className={styles.label}>{label}</span>}
-        {price > 0 && <span className={styles.price}>(+{price}원)</span>}
+        {price > 0 && <span className={styles.price}>(+{price.toLocaleString()}원)</span>}
       </div>
     </label>
   );
