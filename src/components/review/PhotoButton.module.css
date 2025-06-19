@@ -1,0 +1,23 @@
+.icon {
+  height: 35px;
+  width: 35px;
+}
+
+.lineButton {
+  border: 3px dotted var(--theme-color);
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lineButton p {
+  color: var(--theme-color) !important;
+  font-weight: 700;
+  margin: 0;
+}
+
+.lineButton:hover {
+  background-color: var(--background-hover-color);
+}
