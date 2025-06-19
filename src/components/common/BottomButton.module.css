@@ -32,6 +32,9 @@
   }
 }
 
+.bottomButton:hover{
+  background-color: var(--theme-hover-color);
+}
 .bottomButton:disabled {
     color: var(--disabled-color);
     background-color: var(--background-disabled-color);
