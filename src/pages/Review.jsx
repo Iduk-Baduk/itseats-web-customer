@@ -1,3 +1,4 @@
+import PhotoButton from "../components/review/PhotoButton";
 import ReviewCard from "../components/review/ReviewCard";
 import ReviewTextarea from "../components/review/ReviewTextarea";
 
@@ -11,6 +12,7 @@ export default function Review() {
       <p>배달파트너에 대해 평가해주세요 (선택)</p>
       <hr className={styles.hr} />
       <ReviewTextarea className={styles.reviewTextarea} />
+      <PhotoButton />
     </div>
   );
 }
