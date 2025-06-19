@@ -1,38 +1,49 @@
 /* Favorite.module.css */
 .container {
-  padding: 16px;
+  padding: 72px 0 40px;
   background-color: #ffffff;
   min-height: 100vh;
   padding-bottom: 100px; /* 바텀 네비게이션을 위한 여유 */
 }
 
-.header {
-  height: 30px;
+/* 수정 버튼 헤더 고정 */
+.fixed {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  margin-bottom: 16px;
-  font-size: 20px;
-  font-weight: 500;
+  position: fixed;
+  top: 18px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 0 20px;
+  z-index: 1200;
+  box-sizing: border-box;
+  pointer-events: none;
 }
-.back {
-    border: none;
-    padding-left: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    background-color:#ffffff;
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .fixed {
+    max-width: 720px;
+  }
 }
-.back:hover {
-    cursor: pointer;
+
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .fixed {
+    max-width: 720px;
+  }
 }
 
 .editButton,
 .cancelButton {
   background: none;
   border: none;
-  color: #007aff;
-  font-weight: bold;
+  color: var(--theme-color);
+  font-weight: 600;
   font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
 }
 .editButton:hover,
 .cancelButton:hover {
@@ -47,7 +58,8 @@
 .empty p {
   margin-bottom: 16px;
   font-size: 16px;
-  color: #555;
+  line-height: 1.5;
+  color: var(--black-500);
 }
 
 .empty button {
@@ -70,9 +82,9 @@
 
 .total {
   font-size: 16px;
-  color: #000;
-  padding-left: 12px;
-  margin-bottom: 10px;
+  color: var(--black-700);
+  padding: 0 20px;
+  margin-bottom: 12px;
   font-weight: 500;
   display: flex;
   justify-content: space-between;
@@ -84,7 +96,7 @@
   padding: 4px 8px;
   border: none;
   background-color: white;
-  color: #333;
+  color: var(--black-500);
 }
 
 .sortSelect:hover {
@@ -100,17 +112,16 @@
 .item {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   background-color: #fff;
-  border-radius: 12px;
-  padding: 10px;
+  padding: 12px 20px;
   position: relative;
   transition: background-color 0.2s;
 }
 
 .notEditing:hover {
   cursor: pointer;
-  background-color: #f0f0f0;
+  background-color: var(--background-hover-color);
 }
 
 .item img {
@@ -127,18 +138,20 @@
 
 .name {
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 4px;
+  color: var(--black-700);
 }
 
 .subinfo {
+  margin-top: 8px;
   font-size: 13px;
-  color: #555;
+  color: var(--black-500);
 }
 
 .coupon {
   display: inline-block;
-  margin-top: 6px;
+  margin-top: 12px;
   font-size: 12px;
   background-color: #e3f1ff;
   color: #007aff;
@@ -149,40 +162,18 @@
 .checkCircle {
   width: 24px;
   height: 24px;
-  border: 2px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 50%;
+  color: var(--border-color-light);
   position: absolute;
-  right: 12px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
 }
 
 .checked {
-  background-color: #007aff;
-  border-color: #007aff;
-}
-
-.unfavoriteBar {
-  position: fixed;
-  bottom: 60px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: calc(100% - 72px); /* 좌우 16px 패딩 맞춤 */
-  height: 60px;
-  background-color: #00b4ff;
-  color: white;
-  padding: 12px;
-  font-weight: bold;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  align-items: center;
-  z-index: 200;
-  box-sizing: border-box;
-}
-.unfavoriteBar:hover{
-    cursor: pointer;
+  background-color: var(--theme-color);
+  border-color: var(--theme-color);
+  color: #fff;
 }

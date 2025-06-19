@@ -31,7 +31,6 @@ function Root() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
@@ -46,6 +45,7 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
+            <Route path="/favorites" element={<Favorite />} />
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
