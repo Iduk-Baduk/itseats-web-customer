@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./MyPage.module.css";
+import { path } from "motion/react-client";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function MyPage() {
     { icon: "scooter", label: "배달파트너 모집" },
     { icon: "message", label: "자주 묻는 질문" },
     { icon: "question", label: "고객 지원" },
-    { icon: "settings", label: "설정" },
+    { icon: "settings", label: "설정", path: "/settings" },
     { icon: "megaphone", label: "공지사항" },
     { icon: "paper", label: "약관 및 정책" },
     { icon: "sheild", label: "개인정보 처리방침" },

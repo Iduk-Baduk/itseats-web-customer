@@ -23,6 +23,7 @@ import { AnimatePresence } from "framer-motion";
 import Coupons from "./pages/Coupons";
 import Events from "./pages/Events";
 import EventsDetails from "./pages/EventsDetails";
+import Settings from "./pages/Settings";
 
 function Root() {
   const location = useLocation();
@@ -52,6 +53,7 @@ function Root() {
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/events/:eventId" element={<EventsDetails />} />
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
