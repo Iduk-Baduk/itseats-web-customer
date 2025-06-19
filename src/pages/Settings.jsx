@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Settings.module.css";
+import Header from "../components/common/Header";
 import useAppVersion from "../hooks/useAppVersion";
 
 export default function Settings() {
@@ -16,7 +17,13 @@ export default function Settings() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>설정</h2>
+      <Header
+        title="설정"
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+        rightIcon=""
+      />
 
       <div className={styles.row}>
         <span>주문 현황 알림</span>

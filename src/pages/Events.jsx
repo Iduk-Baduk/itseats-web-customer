@@ -1,5 +1,6 @@
  import { useNavigate } from "react-router-dom";
 import useEventList from "../hooks/useEventList";
+import Header from "../components/common/Header";
 import styles from "./Events.module.css";
 
 export default function Events() {
@@ -8,8 +9,13 @@ export default function Events() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>전체보기</h2>
-
+      <Header
+        title="진행 중인 이벤트"
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+        rightIcon=""
+      />
       <div className={styles.eventList}>
         {events.map((event) => (
           <div
