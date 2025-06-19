@@ -21,7 +21,7 @@ export default function MyPage() {
   const menuItems = [
     { icon: "list", label: "주소 관리", path: "/address" },
     { icon: "heart", label: "즐겨찾기", path: "/favorites" },
-    { icon: "tag", label: "할인쿠폰" },
+    { icon: "tag", label: "할인쿠폰", path: "/coupons" },
     { icon: "percent", label: "진행중인 이벤트" },
     { icon: "people", label: "친구 초대" },
     { icon: "gift", label: "이츠 롤렛" },

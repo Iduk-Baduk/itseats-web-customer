@@ -1,0 +1,54 @@
+.container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  margin-top: 80px;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.couponCard {
+  border: 2px dashed #ff5c5c;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #fff0f0;
+  text-align: center;
+}
+
+.amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: #d62828;
+}
+
+.desc {
+  font-size: 14px;
+  color: #444;
+  margin-top: 4px;
+}
+
+.linkBtn {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #ff5c5c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
