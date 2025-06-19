@@ -13,7 +13,7 @@
 }
 
 .lineButton p {
-  color: var(--theme-color) !important;
+  color: var(--theme-color);
   font-weight: 700;
   margin: 0;
 }
