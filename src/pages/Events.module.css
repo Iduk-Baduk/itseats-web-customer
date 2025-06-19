@@ -1,0 +1,36 @@
+.container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.title {
+  font-size: 20px;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 12px;
+  margin-bottom: 30px;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.banner {
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.banner:hover {
+  transform: scale(1.01);
+}
+
+.image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
