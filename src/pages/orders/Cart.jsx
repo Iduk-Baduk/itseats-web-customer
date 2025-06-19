@@ -3,10 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import TextInput from "../../components/common/basic/TextInput";
 import CheckBox from "../../components/common/basic/Checkbox";
+import RadioButton from "../../components/common/basic/RadioButton";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
 import DeliveryRadioButton from "../../components/orders/cart/DeliveryRadioButton";
 import QuantityControl from "../../components/orders/cart/QuantityControl";
 import RiderRequestBottomSheet from "../../components/orders/cart/RiderRequestBottomSheet";
+import BottomButton from "../../components/common/BottomButton";
 import styles from "./Cart.module.css";
 
 export default function Cart() {
@@ -15,6 +17,7 @@ export default function Cart() {
   const [isDelivery, setIsDelivery] = useState("delivery"); // "delivery" or "takeout"
   const [deliveryType, setDeliveryType] = useState("default"); // "default" or "onlyone"
   const [orderMenus, setOrderMenus] = useState(dummyOrder.orderMenus);
+  const [paymentMethod, setPaymentMethod] = useState("credit"); // "credit", "bank", "kakao", "meet"
   const [storeRequest, setStoreRequest] = useState("");
   const [chopsticks, setChopsticks] = useState(false);
   const [riderRequest, setRiderRequest] =
@@ -44,6 +47,7 @@ export default function Cart() {
     );
   };
 
+  // 개수 변경
   function handleQuantityChange(menuId, menuOption, change) {
     setOrderMenus(
       (prevMenus) =>
@@ -66,6 +70,10 @@ export default function Cart() {
           .filter(Boolean) // null 제거 (삭제된 항목)
     );
     updateMenuTotalPrice();
+  }
+
+  function handlePayment() {
+    alert("구현 필요");
   }
 
   return (
@@ -236,6 +244,52 @@ export default function Cart() {
       </section>
       <section style={{ borderBottomWidth: "24px" }}>
         <h2>결제수단</h2>
+        <div
+          className={styles.radioButtonContainer}
+          style={{ marginTop: "24px" }}
+        >
+          <RadioButton
+            checked={paymentMethod === "credit"}
+            onChange={() => setPaymentMethod("credit")}
+            label="신용/체크카드"
+            id="payment-method-credit-card"
+            className={styles.radioButton}
+          />
+        </div>
+        <div className={styles.radioButtonContainer}>
+          <RadioButton
+            checked={paymentMethod === "bank"}
+            onChange={() => setPaymentMethod("bank")}
+            label="계좌이체"
+            id="payment-method-bank-transfer"
+            className={styles.radioButton}
+          />
+        </div>
+        <div className={styles.radioButtonContainer}>
+          <RadioButton
+            checked={paymentMethod === "kakao"}
+            onChange={() => setPaymentMethod("kakao")}
+            label="카카오페이"
+            id="payment-method-kakao-pay"
+            className={styles.radioButton}
+          />
+        </div>
+        <div className={styles.radioButtonContainer}>
+          <RadioButton
+            checked={paymentMethod === "meet"}
+            onChange={() => setPaymentMethod("meet")}
+            label="만나서 결제"
+            id="payment-method-meet"
+            className={styles.radioButton}
+          />
+        </div>
+        <hr />
+        <div
+          className={styles.paymentManageButton}
+          onClick={() => navigate("/payment")}
+        >
+          결제 수단 관리
+        </div>
       </section>
       <section>
         <h2>요청사항</h2>
@@ -256,7 +310,7 @@ export default function Cart() {
         </div>
         {isDelivery === "delivery" && (
           <div>
-            <p className={styles.requestLabel}>배달파트너님께</p>
+            <p className={styles.requestLabel}>배달 파트너님께</p>
             <div className={styles.riderRequestSelect}>
               <input
                 className={styles.select}
@@ -283,7 +337,7 @@ export default function Cart() {
                   placeholder="배달 요청사항을 입력해주세요"
                   className={styles.requestInput}
                   value={riderRequestSelf}
-                  onChange={(e) => setRiderRequest(e.target.value)}
+                  onChange={(e) => setRiderRequestSelf(e.target.value)}
                   maxLength={50}
                 />
                 <p className={styles.deliveryInfo}>
@@ -294,6 +348,19 @@ export default function Cart() {
           </div>
         )}
       </section>
+      <section className={styles.legalInfo}>
+        <p>
+          잇츠잇츠는 통신판매중개자로서 통신판매의 당사자가 아니며, 판매자가
+          등록한 상품 정보, 상품의 품질 및 거래에 대해서 일체의 책임을 지지
+          않습니다. 회원은 주문 내용을 확인하였고, 결제에 동의합니다.
+        </p>
+      </section>
+      <BottomButton
+        onClick={handlePayment}
+        disabled={orderMenus.length === 0}
+      >
+        <p>{dummyResponse.totalCost.toLocaleString()}원 결제하기</p>
+      </BottomButton>
       <RiderRequestBottomSheet
         request={riderRequest}
         isOpen={isRiderRequestSheetOpen}
