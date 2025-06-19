@@ -1,0 +1,131 @@
+/* Favorite.module.css */
+.container {
+  padding: 16px;
+  background-color: #f8f9fb;
+  min-height: 100vh;
+  padding-bottom: 100px; /* 바텀 네비게이션을 위한 여유 */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.editButton,
+.cancelButton {
+  background: none;
+  border: none;
+  color: #007aff;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.empty {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.empty p {
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #555;
+}
+
+.empty button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+}
+
+.total {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  position: relative;
+}
+
+.item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.details {
+  flex: 1;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.subinfo {
+  font-size: 13px;
+  color: #555;
+}
+
+.coupon {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  background-color: #e3f1ff;
+  color: #007aff;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.checkCircle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.checked {
+  background-color: #007aff;
+  border-color: #007aff;
+}
+
+.unfavoriteBar {
+  position: fixed;
+  bottom: 70px;
+  left: 16px;
+  right: 16px;
+  background-color: #00b4ff;
+  color: white;
+  padding: 12px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: center;
+  z-index: 200;
+}
