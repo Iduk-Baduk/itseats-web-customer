@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import MyPage from "./pages/MyPage";
 import MyPageDetails from "./pages/MyPageDetails";
 import { AnimatePresence } from "framer-motion";
+import Coupons from "./pages/Coupons";
 
 function Root() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function Root() {
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/coupons" element={<Coupons />} />
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
