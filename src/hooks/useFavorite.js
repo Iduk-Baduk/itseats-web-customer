@@ -1,5 +1,5 @@
 // useFavorite.js
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const dummyFavorites = [
   {
@@ -34,6 +34,7 @@ function useFavorite() {
   const [favorites, setFavorites] = useState(dummyFavorites);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [sortOption, setSortOption] = useState("recent");
 
   const toggleEditMode = () => {
     setIsEditing((prev) => !prev);
@@ -52,9 +53,15 @@ function useFavorite() {
     setIsEditing(false);
   };
 
-  const sortedFavorites = [...favorites].sort(
-    (a, b) => new Date(b.addedAt) - new Date(a.addedAt)
-  );
+  const sortedFavorites = useMemo(() => {
+    const sorted = [...favorites];
+    if (sortOption === "recent") {
+      sorted.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+    } else if (sortOption === "rating") {
+      sorted.sort((a, b) => b.rating - a.rating);
+    }
+    return sorted;
+  }, [favorites, sortOption]);
 
   const navigateToHome = () => {
     window.location.href = "/"; // 홈으로 이동
@@ -68,6 +75,8 @@ function useFavorite() {
     toggleSelect,
     handleUnfavorite,
     sortedFavorites,
+    sortOption,
+    setSortOption,
     navigateToHome,
   };
 }
