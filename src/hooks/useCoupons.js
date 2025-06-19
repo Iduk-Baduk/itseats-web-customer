@@ -4,10 +4,23 @@ export default function useCoupons() {
   const [coupons, setCoupons] = useState([]);
 
   useEffect(() => {
-    // 더미 예시 – 실제 API 연동 시 fetch/axios로 대체
     setCoupons([
-      { id: 1, storeId: 1, salePrice: 3000 },
-      { id: 2, storeId: 2, salePrice: 5000 },
+      {
+        id: 1,
+        storeId: 1,
+        salePrice: 2000,
+        storeName: "스타벅스 강남점",
+        validDate: "2025/09/07",
+        deliveryType: "배달", // ✅ 추가
+      },
+      {
+        id: 2,
+        storeId: 1,
+        salePrice: 3000,
+        storeName: "스타벅스 강남점",
+        validDate: "2025/12/31",
+        deliveryType: "픽업", // ✅ 추가
+      },
     ]);
   }, []);
 

@@ -16,13 +16,23 @@ export default function Coupons() {
         <ul className={styles.couponList}>
           {coupons.map((coupon) => (
             <li key={coupon.id} className={styles.couponCard}>
-              <div className={styles.amount}>₩{coupon.salePrice.toLocaleString()}</div>
-              <div className={styles.desc}>할인 쿠폰</div>
+              <div className={styles.couponInfo}>
+                <p className={styles.amount}>
+                  {coupon.salePrice.toLocaleString()}원 할인
+                </p>
+                <span className={styles.tag}>{coupon.deliveryType}</span>
+                <p className={styles.desc}>
+                  {coupon.storeName} {coupon.deliveryType} 전용 할인쿠폰
+                </p>
+                <p className={styles.date}>{coupon.validDate}까지 사용 가능</p>
+              </div>
               <button
                 className={styles.linkBtn}
                 onClick={() => navigate(`/stores/${coupon.storeId}`)}
-              >
-                적용 가능 매장 보기
+              >→<br />
+                적용가능
+                <br />
+                매장보기 
               </button>
             </li>
           ))}
