@@ -4,18 +4,20 @@ import { useState } from "react";
 const dummyFavorites = [
   {
     id: 1,
-    name: "회기버거 라페스타점",
-    rating: 4.8,
-    reviewCount: 1353,
+    storeId:1,
+    name: "스타벅스 강남점",
+    rating: 4.9,
+    reviewCount: 13812,
     distance: 0.2,
     eta: 26,
     deliveryType: "무료배달",
     coupon: "무료배달+1,000원 할인",
-    imageUrl: "/images/burger1.png",
+    imageUrl: "../public/samples/food1.jpg",
     addedAt: new Date("2025-06-18T10:00:00Z"),
   },
   {
     id: 2,
+    storeId:2,
     name: "두찜 일산정발산점",
     rating: 4.6,
     reviewCount: 103,
@@ -23,7 +25,7 @@ const dummyFavorites = [
     eta: 34,
     deliveryType: "무료배달",
     coupon: "무료배달+2,000원 할인",
-    imageUrl: "/images/chicken.png",
+    imageUrl: "../public/samples/food2.jpg",
     addedAt: new Date("2025-06-18T11:00:00Z"),
   },
 ];
