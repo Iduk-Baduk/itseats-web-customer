@@ -4,6 +4,7 @@ import OrderSearch from "../components/orders/OrderSearch";
 import OrderTab from "../components/orders/OrderTab";
 
 import styles from "./Order.module.css";
+import { useNavigate } from "react-router-dom";
 
 const dummyOrders = [
   {
@@ -57,13 +58,24 @@ const dummyOrders = [
 ];
 
 export default function Order() {
+  const navigate = useNavigate();
+
+  const handleWriteReview = () => {
+    navigate("/review"); // Review 페이지로 이동
+  };
+
   return (
     <div>
       <OrderTab />
       <OrderSearch className={styles.orderSearch} />
       {dummyOrders &&
         dummyOrders.map((order) => (
-          <OrderCard key={order.id} order={order} className={styles.orderCard} />
+          <OrderCard
+            key={order.id}
+            order={order}
+            className={styles.orderCard}
+            onWriteReview={handleWriteReview} 
+          />
         ))}
     </div>
   );
