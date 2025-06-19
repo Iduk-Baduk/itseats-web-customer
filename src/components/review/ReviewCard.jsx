@@ -23,8 +23,18 @@ const GrayStarIcon = ({ className }) => {
   );
 };
 
-export default function ReviewCard({ object, image, className }) {
+export default function ReviewCard({ object, image, className, onSelect }) {
   const [selected, setSelected] = useState(0); // 별점 관리
+
+  const handleSelect = (index) => {
+    const value = index + 1;
+    setSelected(value);
+
+    // 선택된 별점 값을 부모 컴포넌트로 전달
+    if (onSelect) {
+      onSelect(value);
+    }
+  };
 
   return (
     <div className={className}>
@@ -39,7 +49,7 @@ export default function ReviewCard({ object, image, className }) {
               return (
                 <button
                   key={index}
-                  onClick={() => setSelected(index + 1)}
+                  onClick={() => handleSelect(index)}
                   className={styles.starButton}
                 >
                   <Star className={styles.star} />
