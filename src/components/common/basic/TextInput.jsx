@@ -5,6 +5,7 @@ export default function TextInput({
   value,
   onChange,
   placeholder,
+  maxLength,
   type = "text",
   className,
 }) {
@@ -16,6 +17,7 @@ export default function TextInput({
       onChange={onChange}
       placeholder={placeholder}
       className={`${styles.input} ${className}`}
+      maxLength={maxLength}
     />
   );
 }
