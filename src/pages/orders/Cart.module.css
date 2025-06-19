@@ -1,0 +1,234 @@
+.container {
+    padding: 60px 0 68px 0;
+}
+
+/* 배달/포장 버튼 헤더 고정 */
+.fixed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 6px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    z-index: 1200;
+    pointer-events: none;
+}
+.fixed>* {
+    pointer-events: auto;
+}
+
+/* 주소 */
+.addressContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 20px;
+    border-bottom: 8px solid var(--background-color);
+}
+.address {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+}
+.addressText {
+    color: var(--black-500);
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 8px;
+}
+.detailAddress {
+    margin-top: 8px;
+}
+
+.addressEdit>a {
+    display: block;
+    color: var(--theme-color);
+    font-size: 14px;
+    text-decoration: none;
+    padding: 8px 4px;
+}
+
+.container section {
+    padding: 24px 20px;
+    border-bottom: 8px solid var(--background-color);
+}
+.container section h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+.container section hr {
+    margin: 16px -20px 0;
+    height: 1px;
+    border: none;
+    background-color: var(--border-color-light);
+}
+
+/* 주문 메뉴 */
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.menuDetails {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.menuName {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: var(--black-700);
+}
+
+.optionGroup {
+  margin-bottom: 4px;
+}
+
+.optionGroupName {
+  font-size: 14px;
+  color: var(--black-500);
+  margin-bottom: 2px;
+}
+
+.option {
+  font-size: 14px;
+  color: var(--black-500);
+}
+
+.menuPrice {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black-700);
+  margin-top: 12px;
+}
+
+.quantity {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.emptyCart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--black-500);
+}
+
+
+/* 쿠폰 */
+.couponHeader {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+.couponHeader span {
+    flex: 1;
+}
+
+/* 결제금액 */
+.paymentDetails {
+  margin-top: 12px;
+}
+.paymentRow {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+.totalCost {
+  display: flex;
+  height: 40px;
+  margin-top: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 결제수단 */
+.radioButtonContainer {
+  width: 100%;
+  margin: 16px 0;
+}
+.radioButton {
+  width: 100%;
+}
+.paymentManageButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  margin: 0 -20px -24px;
+  color: var(--theme-color);
+  font-size: 14px;
+  cursor: pointer;
+}
+.paymentManageButton:hover {
+  background-color: var(--background-hover-color);
+}
+
+/* 요청사항 */
+.requestLabel {
+  font-size: 14px;
+  color: var(--black-500);
+  margin: 24px 0 8px;
+}
+.requestInput {
+  margin: 12px 0;
+}
+
+.select {
+  width: 100%;
+  padding: 16px 16px;
+  border: 1px solid var(--border-color);
+  color: var(--black-700);
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.riderRequestSelect {
+  position: relative;
+  margin-top: 20px;
+}
+.riderRequestSelect>svg {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--border-color);
+}
+
+.deliveryInfo {
+  font-size: 12px;
+  color: var(--black-500);
+  margin-left: 4px;
+  margin-top: 4px;
+}
+
+.legalInfo {
+  padding: 16px 20px !important;
+  word-wrap: break-word;
+  background-color: var(--background-color);
+}
+.legalInfo p {
+  color: var(--black-500);
+  font-size: 10px;
+  line-height: 1.5;
+}

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./MyPage.module.css";
+import { path } from "motion/react-client";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -21,14 +22,14 @@ export default function MyPage() {
   const menuItems = [
     { icon: "list", label: "주소 관리", path: "/address" },
     { icon: "heart", label: "즐겨찾기", path: "/favorites" },
-    { icon: "tag", label: "할인쿠폰" },
-    { icon: "percent", label: "진행중인 이벤트" },
+    { icon: "tag", label: "할인쿠폰", path: "/coupons" },
+    { icon: "percent", label: "진행중인 이벤트", path: "/events" },
     { icon: "people", label: "친구 초대" },
     { icon: "gift", label: "이츠 롤렛" },
     { icon: "scooter", label: "배달파트너 모집" },
     { icon: "message", label: "자주 묻는 질문" },
     { icon: "question", label: "고객 지원" },
-    { icon: "settings", label: "설정" },
+    { icon: "settings", label: "설정", path: "/settings" },
     { icon: "megaphone", label: "공지사항" },
     { icon: "paper", label: "약관 및 정책" },
     { icon: "sheild", label: "개인정보 처리방침" },

@@ -1,0 +1,28 @@
+.wrapper {
+  display: flex;
+  background-color: var(--toggle-button-background-color);
+  border-radius: 999px;
+  padding: 6px 8px;
+  width: fit-content;
+}
+
+.button {
+  padding: 8px 20px;
+  border: none;
+  background-color: transparent;
+  color: var(--toggle-button-color);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.active {
+  background-color: var(--toggle-button-color);
+  color: #fff;
+}
