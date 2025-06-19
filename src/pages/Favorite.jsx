@@ -6,16 +6,19 @@ import styles from "./Favorite.module.css";
 
 export default function Favorite() {
   const navigate = useNavigate();
-  const {
-    favorites,
-    isEditing,
-    selectedIds,
-    toggleEditMode,
-    toggleSelect,
-    handleUnfavorite,
-    sortedFavorites,
-    navigateToHome,
-  } = useFavorite();
+const {
+  favorites,
+  isEditing,
+  selectedIds,
+  toggleEditMode,
+  toggleSelect,
+  handleUnfavorite,
+  sortedFavorites,
+  sortOption,
+  setSortOption,
+  navigateToHome,
+} = useFavorite();
+
 
   return (
     <div className={styles.container}>
@@ -44,12 +47,25 @@ export default function Favorite() {
         </div>
       ) : (
         <>
-          <div className={styles.total}>{`총 ${favorites.length}개`}</div>
+          <div className={styles.total}>
+            <span>{`총 ${favorites.length}개`}</span>
+            <select
+              className={styles.sortSelect}
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+            >
+              <option value="recent">최근 추가 순</option>
+              <option value="rating">별점 순</option>
+            </select>
+          </div>
+
           <ul className={styles.list}>
             {sortedFavorites.map((store) => (
               <li
                 key={store.id}
-                className={`${styles.item} ${!isEditing ? styles.notEditing : ""}`}
+                className={`${styles.item} ${
+                  !isEditing ? styles.notEditing : ""
+                }`}
                 onClick={() => {
                   if (isEditing) {
                     toggleSelect(store.id);
@@ -62,7 +78,8 @@ export default function Favorite() {
                 <div className={styles.details}>
                   <p className={styles.name}>{store.name}</p>
                   <p className={styles.subinfo}>
-                    ⭐ {store.rating} ({store.reviewCount.toLocaleString()}) · {store.distance}km · {store.eta}분 · {store.deliveryType}
+                    ⭐ {store.rating} ({store.reviewCount.toLocaleString()}) ·{" "}
+                    {store.distance}km · {store.eta}분 · {store.deliveryType}
                   </p>
                   {store.coupon && (
                     <span className={styles.coupon}>{store.coupon}</span>
