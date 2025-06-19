@@ -3,6 +3,10 @@
   margin-right: 50px;
 }
 
+.reviewCard {
+  margin-bottom: 20px;
+}
+
 .text {
   font-size: 14px;
   color: var(--disabled-color);
@@ -28,4 +32,10 @@
 
 .reviewItem {
   margin-top: 15px;
+}
+
+.reviewSubmitButton {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
