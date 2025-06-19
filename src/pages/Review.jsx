@@ -8,6 +8,16 @@ import { useState } from "react";
 
 import styles from "./Review.module.css";
 
+const reviewDummyData = {
+  foodImage: "https://example.com/image.jpg",
+  deliveryImage: "https://example.com/image.jpg",
+  reviewItem: {
+    imageUrl: "https://example.com/image.jpg",
+    name: "[오] 필라델피아 치즈 스테이크 (L)",
+    option: "코카콜라 제로 1.25L",
+  },
+};
+
 export default function Review({ className }) {
   const [foodRating, setFoodRating] = useState(0);
 
@@ -18,10 +28,10 @@ export default function Review({ className }) {
         <div className={styles.reviewCard}>
           <ReviewCard
             object="음식"
-            image={"https://example.com/image.jpg"}
+            image={reviewDummyData.foodImage}
             onSelect={(value) => setFoodRating(value)}
           />
-          <ReviewCard object="배달" image={"https://example.com/image.jpg"} />
+          <ReviewCard object="배달" image={reviewDummyData.deliveryImage} />
         </div>
         <p className={styles.text}>배달파트너에 대해 평가해주세요 (선택)</p>
         <hr className={styles.hr} />
@@ -29,9 +39,9 @@ export default function Review({ className }) {
         {/* TODO: S3 스토리지 생기면 구현 */}
         <PhotoButton onClick={() => alert("추후 구현")} />
         <ReviewItem
-          imageUrl={"https://example.com/image.jpg"}
-          name="[오] 필라델피아 치즈 스테이크 (L)"
-          option="코카콜라 제로 1.25L"
+          imageUrl={reviewDummyData.reviewItem.imageUrl}
+          name={reviewDummyData.reviewItem.name}
+          option={reviewDummyData.reviewItem.option}
           onLike={() => {}}
           onDislike={() => {}}
           className={styles.reviewItem}
