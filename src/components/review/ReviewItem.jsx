@@ -23,9 +23,15 @@ const ThumbsUpIcon = ({ className }) => {
   );
 };
 
-export default function ReviewItem({ className, imageUrl, name, option, onLike, onDislike }) {
-  const [selected, setSelected] = useState(null);
-
+export default function ReviewItem({
+  className,
+  imageUrl,
+  name,
+  option,
+  selected,
+  onLike,
+  onDislike,
+}) {
   return (
     <div className={className}>
       <div className={styles.container}>
@@ -39,13 +45,13 @@ export default function ReviewItem({ className, imageUrl, name, option, onLike, 
         <div className={styles.actions}>
           <button
             className={`${styles.circleButton} ${selected === "dislike" ? styles.selected : ""}`}
-            onClick={() => setSelected("dislike")}
+            onClick={onDislike}
           >
             <ThumbsDownIcon className={styles.icon} />
           </button>
           <button
             className={`${styles.circleButton} ${selected === "like" ? styles.selected : ""}`}
-            onClick={() => setSelected("like")}
+            onClick={onLike}
           >
             <ThumbsUpIcon className={styles.icon} />
           </button>

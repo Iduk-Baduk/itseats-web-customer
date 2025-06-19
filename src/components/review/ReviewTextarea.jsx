@@ -1,6 +1,6 @@
 import styles from "./ReviewTextarea.module.css";
 
-export default function ReviewTextarea({ value, onClick, className }) {
+export default function ReviewTextarea({ value, onChange, className }) {
   return (
     <div className={className}>
       <div className={styles.container}>
@@ -9,6 +9,8 @@ export default function ReviewTextarea({ value, onClick, className }) {
           className={styles.textarea}
           placeholder="주문하신 메뉴의 맛과 양에 대해 자세히 써주시면 더 유용한 리뷰가 돼요."
           rows={5}
+          value={value}
+          onChange={onChange}
         />
       </div>
     </div>
