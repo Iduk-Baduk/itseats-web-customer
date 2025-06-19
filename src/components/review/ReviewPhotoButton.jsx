@@ -1,6 +1,6 @@
 import LineButton from "../common/basic/LineButton";
 
-import styles from "./PhotoButton.module.css";
+import styles from "./ReviewPhotoButton.module.css";
 
 const CameraIcon = ({ className }) => {
   return (
