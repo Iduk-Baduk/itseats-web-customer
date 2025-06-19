@@ -1,0 +1,152 @@
+.container {
+  padding: 24px;
+  font-family: sans-serif;
+  background-color: #fff;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.row,
+.rowColumn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.row {
+  height: 30px; /* ✅ 로그아웃 row 높이 조정 */
+  cursor: pointer; /* ✅ 클릭 커서 추가 */
+}
+
+.rowColumn {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.rowColumn span {
+  margin-bottom: 4px;
+}
+
+.rowColumnInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.toggle {
+  appearance: none;
+  width: 42px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+}
+
+.toggle:checked {
+  background-color: #007aff;
+}
+
+.toggle:before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle:checked:before {
+  transform: translateX(18px);
+}
+
+.subLink {
+  font-size: 13px;
+  color: #007aff;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.linkBtn {
+  font-size: 14px;
+  color: #007aff;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.footer {
+  margin-top: 32px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #888;
+  display: flex;
+  padding-right: 16px;
+}
+
+.footerleft {
+  text-align: left;
+}
+
+.withdraw {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #888;
+  text-decoration: underline;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.confirmBox {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-width: 240px;
+}
+
+.confirmButtons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 16px;
+}
+
+.confirmButtons button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.confirmButtons button:first-child {
+  background-color: #f0f0f0;
+}
+
+.confirmButtons button:last-child {
+  background-color: #007aff;
+  color: white;
+}
