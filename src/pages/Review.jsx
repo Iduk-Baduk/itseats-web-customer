@@ -2,16 +2,18 @@ import PhotoButton from "../components/review/ReviewPhotoButton";
 import ReviewCard from "../components/review/ReviewCard";
 import ReviewTextarea from "../components/review/ReviewTextarea";
 import ReviewItem from "../components/review/ReviewItem";
+import ReviewSubmitButton from "../components/review/ReviewSubmitButton";
+import ReviewHeader from "../components/review/ReviewHeader";
+import { useState } from "react";
 
 import styles from "./Review.module.css";
-import ReviewSubmitButton from "../components/review/ReviewSubmitButton";
-import { useState } from "react";
 
 export default function Review({ className }) {
   const [foodRating, setFoodRating] = useState(0);
 
   return (
     <div className={className}>
+      <ReviewHeader />
       <div className={styles.reviewContainer}>
         <div className={styles.reviewCard}>
           <ReviewCard
