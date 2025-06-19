@@ -1,9 +1,11 @@
 // Favorite.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useFavorite from "../hooks/useFavorite";
 import styles from "./Favorite.module.css";
 
 export default function Favorite() {
+  const navigate = useNavigate();
   const {
     favorites,
     isEditing,
@@ -47,15 +49,20 @@ export default function Favorite() {
             {sortedFavorites.map((store) => (
               <li
                 key={store.id}
-                className={styles.item}
-                onClick={() => isEditing && toggleSelect(store.id)}
+                className={`${styles.item} ${!isEditing ? styles.notEditing : ""}`}
+                onClick={() => {
+                  if (isEditing) {
+                    toggleSelect(store.id);
+                  } else {
+                    navigate(`/stores/${store.id}`);
+                  }
+                }}
               >
                 <img src={store.imageUrl} alt={store.name} />
                 <div className={styles.details}>
                   <p className={styles.name}>{store.name}</p>
                   <p className={styles.subinfo}>
-                    ⭐ {store.rating} ({store.reviewCount.toLocaleString()}) ·{" "}
-                    {store.distance}km · {store.eta}분 · {store.deliveryType}
+                    ⭐ {store.rating} ({store.reviewCount.toLocaleString()}) · {store.distance}km · {store.eta}분 · {store.deliveryType}
                   </p>
                   {store.coupon && (
                     <span className={styles.coupon}>{store.coupon}</span>
