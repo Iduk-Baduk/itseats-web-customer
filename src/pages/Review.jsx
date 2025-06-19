@@ -22,7 +22,7 @@ const reviewDummyData = {
 export default function Review({ className }) {
   const [foodRating, setFoodRating] = useState(0);
   const [likeStatus, setLikeStatus] = useState(null);
-  const [reviewText, setReviewText] = useState(null);
+  const [reviewText, setReviewText] = useState("");
   const navigate = useNavigate();
 
   const handleLike = () => setLikeStatus("like");
