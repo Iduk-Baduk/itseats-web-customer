@@ -1,0 +1,80 @@
+.container {
+  width: 100%;
+  padding: 36px 0;
+  box-sizing: border-box;
+}
+
+.lineContainer {
+  position: relative;
+  height: 2px;
+  background-color: var(--unchecked-icon-color);
+  margin: 0 18px;
+}
+
+.fullLine {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: var(--unchecked-icon-color);
+  top: 0;
+  left: 0;
+}
+
+.progressLine {
+  position: absolute;
+  height: 2px;
+  background-color: var(--black-700);
+  top: 0;
+  left: 0;
+  transition: width 0.3s ease;
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -12px; /* overlap circles on line */
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--unchecked-icon-color);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.completed {
+  background-color: var(--black-700);
+}
+
+.current {
+  background-color: rgba(var(--theme-color-rgb), 0.5);
+}
+
+.innerCircle {
+  width: 12px;
+  height: 12px;
+  background-color: var(--theme-color);
+  border-radius: 50%;
+}
+
+.check {
+  width: 16px;
+  height: 16px;
+}
+
+.label {
+  margin-top: 6px;
+  font-size: 12px;
+  text-align: center;
+}
