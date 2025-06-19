@@ -12,7 +12,7 @@ const dummyFavorites = [
     eta: 26,
     deliveryType: "무료배달",
     coupon: "무료배달+1,000원 할인",
-    imageUrl: "../public/samples/food1.jpg",
+    imageUrl: "/samples/food1.jpg",
     addedAt: new Date("2025-06-18T10:00:00Z"),
   },
   {
@@ -25,7 +25,7 @@ const dummyFavorites = [
     eta: 34,
     deliveryType: "무료배달",
     coupon: "무료배달+2,000원 할인",
-    imageUrl: "../public/samples/food2.jpg",
+    imageUrl: "/samples/food2.jpg",
     addedAt: new Date("2025-06-18T11:00:00Z"),
   },
 ];

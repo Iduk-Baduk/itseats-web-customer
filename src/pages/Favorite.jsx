@@ -23,7 +23,7 @@ const {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button onClick={() => window.history.back()}>&larr;</button>
+        <button className={styles.back} onClick={() => window.history.back()}>&larr;</button>
         <h2>즐겨찾기</h2>
         {!isEditing ? (
           <button className={styles.editButton} onClick={toggleEditMode}>
@@ -99,9 +99,8 @@ const {
       )}
 
       {isEditing && selectedIds.length > 0 && (
-        <div className={styles.unfavoriteBar}>
+        <div className={styles.unfavoriteBar} onClick={handleUnfavorite}>
           <span>{selectedIds.length}</span> 즐겨찾기 해제
-          <button onClick={handleUnfavorite}>확인</button>
         </div>
       )}
     </div>
