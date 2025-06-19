@@ -43,6 +43,8 @@ const {
             <br />
             좋아하는 맛집에 하트를 눌러주세요.
           </p>
+          <img className={styles.favoritePic} src="/samples/favoriteDefault.png" alt="favoritePic" />
+          <p></p>
           <button onClick={navigateToHome}>쿠팡이츠 맛집 구경가기</button>
         </div>
       ) : (
