@@ -9,9 +9,6 @@ import BottomButton from "../components/common/BottomButton";
 function HomeHeader() {
   const navigate = useNavigate();
 
-  // 임시 State
-  const [isCartHasItems, setIsCartHasItems] = useState(true);
-
   return (
     <header className={styles.header}>
       <button
@@ -89,6 +86,9 @@ export default function Home() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
+  // 임시 State
+  const [isCartHasItems, setIsCartHasItems] = useState(true);
+
   return (
     <>
       <HomeHeader />
@@ -113,7 +113,7 @@ export default function Home() {
           />
         ))}
       </div>
-      <BottomButton
+      {isCartHasItems && <BottomButton
         bottom="60px"
         onClick={() => navigate("/cart")}
         cartInfo={{
@@ -121,7 +121,7 @@ export default function Home() {
           totalPrice: 18000,
           itemCount: 1,
         }}
-      />
+      />}
     </>
   );
 }
