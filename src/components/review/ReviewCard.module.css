@@ -33,6 +33,10 @@
   margin: 0 2px;
 }
 
+.star:hover {
+  filter: brightness(0.8);
+}
+
 .image {
   width: 100px;
   height: 100px;
