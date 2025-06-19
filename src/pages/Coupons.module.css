@@ -6,7 +6,8 @@
 .title {
   font-size: 22px;
   font-weight: bold;
-  margin-bottom: 16px;
+  padding-top: 20px;
+  margin-bottom: 30px;
   text-align: center;
 }
 
@@ -23,32 +24,60 @@
 }
 
 .couponCard {
-  border: 2px dashed #ff5c5c;
+  display: flex;
+  background: #ffffff;
   border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 왼쪽 쿠폰 정보 */
+.couponInfo {
+  flex: 1;
   padding: 16px;
-  background-color: #fff0f0;
-  text-align: center;
+  background-color: #f8faff;
 }
 
 .amount {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
-  color: #d62828;
+  color: #007aff;
+  margin-bottom: 8px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  background-color: #eee;
+  color: #555;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
 }
 
 .desc {
   font-size: 14px;
-  color: #444;
-  margin-top: 4px;
+  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
 }
 
+.date {
+  font-size: 13px;
+  color: #777;
+}
+
+/* 오른쪽 버튼 */
 .linkBtn {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background-color: #ff5c5c;
-  color: #fff;
+  width: 100px;
+  background-color: #f0f4fa;
   border: none;
-  border-radius: 6px;
+  border-left: 1px dashed #ccc;
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+  padding: 12px 8px;
   cursor: pointer;
-  font-size: 14px;
+  white-space: pre-line;
 }
