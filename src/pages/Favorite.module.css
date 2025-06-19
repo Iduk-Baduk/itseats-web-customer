@@ -53,6 +53,12 @@
   background-color: #fff;
   font-size: 15px;
 }
+
+.empty button:hover {
+    cursor: pointer;
+    background-color: rgb(234, 234, 234);
+}
+
 .favoritePic {
     width: 314px;
     height: 256px;
