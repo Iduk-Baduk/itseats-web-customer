@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.label {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.textarea {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  font-size: 16px;
+  resize: none;
+  color: #333;
+}
+
+.textarea::placeholder {
+  color: #aaa;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  .label {
+    font-size: 16px;
+  }
+
+  .textarea {
+    font-size: 14px;
+  }
+
+  .textarea::placeholder {
+    font-size: 14px;
+  }
+}

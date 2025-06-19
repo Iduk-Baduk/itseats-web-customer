@@ -2,3 +2,26 @@
   margin-left: 50px;
   margin-right: 50px;
 }
+
+.reviewContainer p {
+  font-size: 14px;
+  color: var(--disabled-color);
+}
+
+.reviewTextarea {
+  margin-top: 40px;
+  margin-right: 50px;
+}
+
+.hr {
+  border: none;
+  height: 10px;
+  background-color: var(--background-hover-color);
+  margin: 20px 0;
+
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+}
