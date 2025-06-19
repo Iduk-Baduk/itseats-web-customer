@@ -1,0 +1,63 @@
+.reviewContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* 이미지가 위에 정렬되도록 */
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.label {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0 0 8px 0;
+}
+
+.starGroup {
+  display: flex;
+}
+
+.starButton {
+  all: unset;
+  cursor: pointer;
+}
+
+.star {
+  width: 24px;
+  height: 24px;
+  margin: 0 2px;
+}
+
+.image {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  min-height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: var(--background-hover-color);
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .label {
+    font-size: 14px;
+  }
+
+  .star {
+    width: 18px;
+    height: 18px;
+  }
+
+  .image {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    min-height: 80px;
+  }
+}
