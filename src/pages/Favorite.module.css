@@ -34,6 +34,10 @@
   font-weight: bold;
   font-size: 16px;
 }
+.editButton:hover,
+.cancelButton:hover {
+    cursor: pointer;
+}
 
 .empty {
   text-align: center;
@@ -74,9 +78,6 @@
   justify-content: space-between;
   align-items: center;
 }
-.total:hover {
-    cursor: pointer;
-}
 
 .sortSelect {
   font-size: 14px;
@@ -84,6 +85,10 @@
   border: none;
   background-color: white;
   color: #333;
+}
+
+.sortSelect:hover {
+    cursor: pointer;
 }
 
 .list {
