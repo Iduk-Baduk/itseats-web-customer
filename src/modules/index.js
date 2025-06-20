@@ -1,8 +1,12 @@
-import { combineReducers } from "redux";
-import counter from "./counterModule";
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import { Provider } from "react-redux";
+import store from "./Store";
 
-const rootReducer = combineReducers({
-  counter, // state.counter로 접근 가능
-});
-
-export default rootReducer;
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
