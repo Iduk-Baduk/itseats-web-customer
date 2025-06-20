@@ -1,11 +1,8 @@
 // src/Root.jsx
-import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { set } from "./modules/counterModule";
 import { AnimatePresence } from "framer-motion";
 import { Routes, Route, useLocation } from "react-router-dom";
 
-// 아래는 기존 라우트 import들 그대로 복붙하세요
 import Layout from "./layouts/Layout";
 import Home from "./pages/Home";
 import Search from "./pages/search/Search";
@@ -40,7 +37,6 @@ import Counter from "./components/Counter";
 export default function Root() {
   const location = useLocation();
   const dispatch = useDispatch();
-
 
   return (
     <AnimatePresence mode="wait">
