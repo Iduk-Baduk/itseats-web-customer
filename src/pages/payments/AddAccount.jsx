@@ -1,7 +1,6 @@
 // src/pages/Payments/AddCard.jsx
 import React, { useState } from "react";
 import styles from "./AddAccount.module.css";
-import { image } from "motion/react-client";
 
 const banks = [
   { id: "kb", name: "국민은행", logo: "/icons/logos/kbbank.jpg" },
