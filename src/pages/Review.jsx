@@ -4,6 +4,7 @@ import ReviewTextarea from "../components/review/ReviewTextarea";
 import ReviewItem from "../components/review/ReviewItem";
 import ReviewSubmitButton from "../components/review/ReviewSubmitButton";
 import Header from "../components/common/Header";
+import BottomButton from "../components/common/BottomButton";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -81,11 +82,12 @@ export default function Review({ className }) {
         />
       </div>
 
-      <ReviewSubmitButton
-        className={styles.reviewSubmitButton}
+      <BottomButton
         disabled={foodRating === 0} // 버튼 비활성화 조건
         onClick={handleSubmit}
-      />
+      >
+        <p>등록하기</p>
+      </BottomButton>
     </div>
   );
 }

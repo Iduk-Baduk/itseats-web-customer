@@ -1,10 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
 import OrderTab from "../../components/orders/OrderTab";
-import { useNavigate } from "react-router-dom";
 import styles from "./Order.module.css";
-import { useNavigate } from "react-router-dom";
 
 const dummyOrders = [
   {
