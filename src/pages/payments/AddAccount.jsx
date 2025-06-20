@@ -1,5 +1,7 @@
 // src/pages/Payments/AddCard.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/common/Header";
 import styles from "./AddAccount.module.css";
 
 const banks = [
@@ -12,6 +14,8 @@ const banks = [
 ];
 
 export default function AddAccount() {
+  const navigate = useNavigate();
+
   const user = { name: "송준경" }; // 예시 사용자 이름
 
   const [selectedBank, setSelectedBank] = useState(null);
@@ -48,7 +52,13 @@ export default function AddAccount() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>계좌 등록</h2>
+      <Header
+        title="계좌 등록"
+        leftButtonAction={() => {
+          navigate(-1);
+        }}
+        rightIcon=""
+      />
       <p className={styles.subtitle}>본인 명의의 계좌만 등록 가능합니다.</p>
 
       {!selectedBank ? (
@@ -67,16 +77,26 @@ export default function AddAccount() {
       ) : (
         <>
           <div className={styles.selectedBank}>
-            <img src={selectedBank.logo} alt={selectedBank.name} className={styles.logo} />
+            <img
+              src={selectedBank.logo}
+              alt={selectedBank.name}
+              className={styles.logo}
+            />
             <span className={styles.bankName}>{selectedBank.name}</span>
           </div>
 
-          <div className={`${styles.inputBox} ${!accountNumberValid && accountNumber ? styles.invalid : ""}`}>
+          <div
+            className={`${styles.inputBox} ${
+              !accountNumberValid && accountNumber ? styles.invalid : ""
+            }`}
+          >
             <span className={styles.inputLabel}>계좌번호</span>
             <input
               type="text"
               value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, ""))}
+              onChange={(e) =>
+                setAccountNumber(e.target.value.replace(/[^0-9]/g, ""))
+              }
               className={styles.input}
             />
             {!accountNumberValid && accountNumber && (
@@ -110,9 +130,14 @@ export default function AddAccount() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalBox}>
             <p className={styles.modalText}>
-              {popup === "success" ? "등록이 완료되었습니다." : "등록에 실패했습니다."}
+              {popup === "success"
+                ? "등록이 완료되었습니다."
+                : "등록에 실패했습니다."}
             </p>
-            <button className={styles.modalButton} onClick={() => setPopup(null)}>
+            <button
+              className={styles.modalButton}
+              onClick={() => setPopup(null)}
+            >
               확인
             </button>
           </div>
@@ -121,4 +146,3 @@ export default function AddAccount() {
     </div>
   );
 }
-

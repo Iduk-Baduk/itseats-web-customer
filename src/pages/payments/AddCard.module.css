@@ -1,7 +1,7 @@
 /* src/pages/Payments/AddCard.module.css */
 
 .container {
-  padding: 20px;
+  padding: 84px 20px 40px;
   background-color: #f9f9f9;
   min-height: 100vh;
 }
@@ -167,7 +167,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1999;
 }
 
 .modalBox {

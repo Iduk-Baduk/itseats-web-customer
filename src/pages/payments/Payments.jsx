@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../../components/common/Header";
 import usePaymentMethods from "../../hooks/usePaymentMethods";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./Payments.module.css";
@@ -29,7 +30,13 @@ export default function Payments() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>결제 관리</h2>
+        <Header
+          title="결제 관리"
+          leftButtonAction={() => {
+            navigate(-1);
+          }}
+          rightIcon=""
+        />
 
       <section>
         <p className={styles.label}>쿠페이 머니</p>
