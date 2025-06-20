@@ -26,6 +26,7 @@ import Events from "./pages/Events";
 import EventsDetails from "./pages/EventsDetails";
 import Settings from "./pages/Settings";
 import Payments from "./pages/Payments";
+import AddPaymentMethod from "./pages/AddPaymentMethod";
 
 function Root() {
   const location = useLocation();
@@ -56,6 +57,7 @@ function Root() {
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/add-payments" element={<AddPaymentMethod />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/events/:eventId" element={<EventsDetails />} />

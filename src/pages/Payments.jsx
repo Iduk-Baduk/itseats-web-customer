@@ -92,7 +92,7 @@ export default function Payments() {
 
       <div className={styles.addButtonWrapper}>
         <button
-          onClick={() => navigate("/add-payment")}
+          onClick={() => navigate("/add-payments")}
           className={styles.addButton}
         >
           + 결제수단 추가
