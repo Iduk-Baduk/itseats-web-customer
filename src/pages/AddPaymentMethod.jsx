@@ -10,7 +10,7 @@ export default function AddPaymentMethod() {
     <div className={styles.container}>
       <h2 className={styles.title}>결제수단 선택</h2>
 
-      <div className={styles.option} onClick={() => navigate("/add-account")}>
+      <div className={styles.option} onClick={() => navigate("/payments/add-account")}>
         <img
           src="/icons/logos/account.svg"
           alt="은행계좌"
@@ -20,7 +20,7 @@ export default function AddPaymentMethod() {
         <p className={styles.arr}>&gt;</p>
       </div>
 
-      <div className={styles.option} onClick={() => navigate("/add-card")}>
+      <div className={styles.option} onClick={() => navigate("/payments/add-card")}>
         <img
           src="/icons/logos/credit.svg"
           alt="카드등록"
