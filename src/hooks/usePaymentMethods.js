@@ -1,43 +1,56 @@
-import { useState } from "react";
+import { image } from "motion/react-client";
+import { useState, useEffect } from "react";
 
-const dummyData = {
-  money: [
-    { id: "m1", label: "쿠페이 머니 (보유 0원)" },
-  ],
-  cards: [
-    { id: "c1", label: "신한카드 ****553*" },
-  ],
-  accounts: [
-    { id: "a1", label: "카카오뱅크 ****0227" },
-    { id: "a2", label: "국민은행 ****5164" },
-  ],
-};
+// 더미 카드사, 은행 로고
+const dummyCards = [
+  {
+    id: 1,
+    name: "신한카드",
+    last4: "553*",
+    image: "/icons/logos/shinhan.png",
+  },
+];
+
+const dummyAccounts = [
+  {
+    id: 1,
+    bankName: "카카오뱅크",
+    last4: "0227",
+    image: "/icons/logos/kakao.png",
+  },
+  {
+    id: 2,
+    bankName: "국민은행",
+    last4: "5164",
+    image: "/icons/logos/kbbank.jpg",
+  },
+];
 
 export default function usePaymentMethods() {
-  const [paymentMethods, setPaymentMethods] = useState(dummyData);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [coupayMoney, setCoupayMoney] = useState(0);
 
-  const handleDelete = (item, confirm = false) => {
-    if (!confirm) {
-      setSelectedItem(item);
-      setShowDeleteModal(true);
-      return;
-    }
+  useEffect(() => {
+    // 초기 더미 데이터 로드
+    setCards(dummyCards);
+    setAccounts(dummyAccounts);
+    setCoupayMoney(0);
+  }, []);
 
-    const type = item.id[0] === "m" ? "money" : item.id[0] === "c" ? "cards" : "accounts";
-    setPaymentMethods((prev) => ({
-      ...prev,
-      [type]: prev[type].filter((v) => v.id !== item.id),
-    }));
-    setShowDeleteModal(false);
+  const deleteCard = (id) => {
+    setCards((prev) => prev.filter((card) => card.id !== id));
+  };
+
+  const deleteAccount = (id) => {
+    setAccounts((prev) => prev.filter((account) => account.id !== id));
   };
 
   return {
-    paymentMethods,
-    handleDelete,
-    showDeleteModal,
-    selectedItem,
-    setShowDeleteModal,
+    cards,
+    accounts,
+    coupayMoney,
+    deleteCard,
+    deleteAccount,
   };
 }
