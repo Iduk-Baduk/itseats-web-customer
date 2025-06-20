@@ -4,7 +4,8 @@ import Home from "./pages/Home";
 import Search from "./pages/search/Search";
 import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
-import Order from "./pages/Order";
+import Order from "./pages/orders/Order";
+import OrderStatus from "./pages/orders/OrderStatus";
 import MyEats from "./pages/MyEats";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
@@ -14,6 +15,7 @@ import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import MenuDetail from "./pages/stores/MenuDetail";
+import Cart from "./pages/orders/Cart";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import Login from "./pages/Login";
@@ -21,6 +23,10 @@ import MyPage from "./pages/MyPage";
 import MyPageDetails from "./pages/MyPageDetails";
 import { AnimatePresence } from "framer-motion";
 import Review from "./pages/Review";
+import Coupons from "./pages/Coupons";
+import Events from "./pages/Events";
+import EventsDetails from "./pages/EventsDetails";
+import Settings from "./pages/Settings";
 
 function Root() {
   const location = useLocation();
@@ -32,7 +38,6 @@ function Root() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
@@ -47,7 +52,14 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
+            <Route path="/orders/:orderId/status" element={<OrderStatus />} />
+            <Route path="/favorites" element={<Favorite />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/stack-test" element={<StackTest />} />
+            <Route path="/coupons" element={<Coupons />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/events/:eventId" element={<EventsDetails />} />
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
