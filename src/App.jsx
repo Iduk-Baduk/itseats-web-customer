@@ -59,7 +59,7 @@ function Root() {
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/add-payments" element={<AddPaymentMethod />} />
-            <Route path="/payments/" element={<AddCard />} />
+            <Route path="/payments/add-card" element={<AddCard />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/events/:eventId" element={<EventsDetails />} />
