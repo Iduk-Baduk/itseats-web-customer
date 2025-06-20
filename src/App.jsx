@@ -6,6 +6,7 @@ import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/orders/Order";
 import OrderStatus from "./pages/orders/OrderStatus";
+import Review from "./pages/orders/Review";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
 import CompanyAdd from "./pages/address/CompanyAdd";
