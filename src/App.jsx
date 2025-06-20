@@ -22,6 +22,7 @@ import Login from "./pages/Login";
 import MyPage from "./pages/MyPage";
 import MyPageDetails from "./pages/MyPageDetails";
 import { AnimatePresence } from "framer-motion";
+import Review from "./pages/Review";
 import Coupons from "./pages/Coupons";
 import Events from "./pages/Events";
 import EventsDetails from "./pages/EventsDetails";
@@ -62,6 +63,7 @@ function Root() {
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/review" element={<Review />} />
           </Route>
         </Routes>
       </AnimatePresence>
