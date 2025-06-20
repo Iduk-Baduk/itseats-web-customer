@@ -14,8 +14,15 @@
     --background-selected-color: #CCEDFE;
     --unchecked-icon-color: #D9D9D9;
 
+    --background-color: #F5F6F8;
+
+    --toggle-button-color: #212B35;
+    --toggle-button-background-color: #F5F6F8;
+
     --disabled-color: #8C8C8C;
     --background-disabled-color: #D9D9D9;
+
+    --minus-red: #FF4D4F;
 
     /* Navigation Bar */
     --nav-active-color: #161032;

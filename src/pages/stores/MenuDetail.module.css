@@ -90,7 +90,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--border-color-light);
+  background-color: var(--background-color);
   height: 60px;
   padding: 0 20px;
   box-sizing: border-box;
