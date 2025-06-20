@@ -286,7 +286,7 @@ export default function Cart() {
         <hr />
         <div
           className={styles.paymentManageButton}
-          onClick={() => navigate("/payment")}
+          onClick={() => navigate("/payments")}
         >
           결제 수단 관리
         </div>

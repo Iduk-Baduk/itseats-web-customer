@@ -25,10 +25,10 @@ import Coupons from "./pages/Coupons";
 import Events from "./pages/Events";
 import EventsDetails from "./pages/EventsDetails";
 import Settings from "./pages/Settings";
-import Payments from "./pages/Payments";
-import AddPaymentMethod from "./pages/AddPaymentMethod";
-import AddCard from "./pages/AddCard";
-import AddAccount from "./pages/AddAccount"
+import Payments from "./pages/payments/Payments";
+import AddPaymentMethod from "./pages/payments/AddPaymentMethod";
+import AddCard from "./pages/payments/AddCard";
+import AddAccount from "./pages/payments/AddAccount"
 
 function Root() {
   const location = useLocation();

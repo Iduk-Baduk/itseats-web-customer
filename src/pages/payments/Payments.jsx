@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import usePaymentMethods from "../hooks/usePaymentMethods";
-import ConfirmModal from "../components/common/ConfirmModal";
+import usePaymentMethods from "../../hooks/usePaymentMethods";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./Payments.module.css";
 
 export default function Payments() {
