@@ -1,8 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import useMyPageDetails from "../hooks/useMyPageDetails";
-import SlideInFromRight from "../components/animation/SlideInFromRight";
-import Header from "../components/common/Header";
+import useMyPageDetails from "../../hooks/useMyPageDetails";
+import SlideInFromRight from "../../components/animation/SlideInFromRight";
+import Header from "../../components/common/Header";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
