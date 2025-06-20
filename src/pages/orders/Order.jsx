@@ -1,8 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
 import OrderTab from "../../components/orders/OrderTab";
-import { useNavigate } from "react-router-dom";
 import styles from "./Order.module.css";
 
 const dummyOrders = [
@@ -77,6 +77,11 @@ const dummyDoingOrders = [
 
 export default function Order() {
   const navigate = useNavigate();
+
+  const handleWriteReview = () => {
+    navigate("/review"); // Review 페이지로 이동
+  };
+
   const [selectedTab, setSelectedTab] = React.useState("past"); // "past" or "preparing"
 
   return (
@@ -89,6 +94,7 @@ export default function Order() {
             key={order.id}
             order={order}
             className={styles.orderCard}
+            onWriteReview={handleWriteReview}
           />
         ))}
       {selectedTab === "preparing" &&
