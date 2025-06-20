@@ -4,7 +4,8 @@ import Home from "./pages/Home";
 import Search from "./pages/search/Search";
 import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
-import Order from "./pages/Order";
+import Order from "./pages/orders/Order";
+import OrderStatus from "./pages/orders/OrderStatus";
 import MyEats from "./pages/MyEats";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
@@ -50,6 +51,7 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
+            <Route path="/orders/:orderId/status" element={<OrderStatus />} />
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/stack-test" element={<StackTest />} />
