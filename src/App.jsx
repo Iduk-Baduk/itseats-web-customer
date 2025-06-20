@@ -5,7 +5,6 @@ import Search from "./pages/search/Search";
 import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/Order";
-import MyEats from "./pages/MyEats";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
 import CompanyAdd from "./pages/address/CompanyAdd";
@@ -15,20 +14,19 @@ import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import MenuDetail from "./pages/stores/MenuDetail";
 import Cart from "./pages/orders/Cart";
-import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import Login from "./pages/Login";
-import MyPage from "./pages/MyPage";
-import MyPageDetails from "./pages/MyPageDetails";
-import { AnimatePresence } from "framer-motion";
-import Coupons from "./pages/Coupons";
-import Events from "./pages/Events";
-import EventsDetails from "./pages/EventsDetails";
-import Settings from "./pages/Settings";
+import MyPage from "./pages/mypage/MyPage";
+import MyPageDetails from "./pages/mypage/MyPageDetails";
+import Coupons from "./pages/coupons/Coupons";
+import Events from "./pages/events/Events";
+import EventsDetails from "./pages/events/EventsDetails";
+import Settings from "./pages/mypage/Settings";
 import Payments from "./pages/payments/Payments";
 import AddPaymentMethod from "./pages/payments/AddPaymentMethod";
 import AddCard from "./pages/payments/AddCard";
 import AddAccount from "./pages/payments/AddAccount"
+import { AnimatePresence } from "framer-motion";
 
 function Root() {
   const location = useLocation();
@@ -42,7 +40,6 @@ function Root() {
             <Route path="/search" element={<Search />} />
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
-            <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/search-result" element={<SearchResults />} />
           </Route>
@@ -56,7 +53,6 @@ function Root() {
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/stack-test" element={<StackTest />} />
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/add-payments" element={<AddPaymentMethod />} />

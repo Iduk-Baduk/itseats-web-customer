@@ -1,6 +1,6 @@
  import { useNavigate } from "react-router-dom";
-import useEventList from "../hooks/useEventList";
-import Header from "../components/common/Header";
+import useEventList from "../../hooks/useEventList";
+import Header from "../../components/common/Header";
 import styles from "./Events.module.css";
 
 export default function Events() {
