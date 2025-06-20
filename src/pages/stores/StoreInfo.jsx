@@ -32,12 +32,12 @@ export default function StoreInfo() {
               {
                 lat: dummyStore.location.lat,
                 lng: dummyStore.location.lng,
-                label: dummyStore.storeName,
+                type: "store",
               },
               {
                 lat: dummyUser.location.lat,
                 lng: dummyUser.location.lng,
-                label: "내 위치",
+                type: "user",
               },
             ]}
             height="100%"
