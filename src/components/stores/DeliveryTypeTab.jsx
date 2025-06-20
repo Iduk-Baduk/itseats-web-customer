@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./DeliveryTypeTab.module.css";
 
 export default function DeliveryTypeTab({
@@ -10,6 +11,7 @@ export default function DeliveryTypeTab({
   deliveryFeeMax = 0,
   address = "",
 }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("delivery");
 
   return (
@@ -38,7 +40,7 @@ export default function DeliveryTypeTab({
           <div>
             <div className={styles.deliveryInfo}>
               <p>도착까지 약 {defaultTime}분</p>
-              <InfoButton />
+              <InfoButton onClick={() => navigate(`/stores/${storeId}/info`)} />
             </div>
             <div className={styles.deliveryDetails}>
               <div className={styles.row}>
@@ -58,7 +60,7 @@ export default function DeliveryTypeTab({
           <div>
             <div className={styles.deliveryInfo}>
               <p>포장까지 약 {takeoutTime}분</p>
-              <InfoButton />
+              <InfoButton onClick={() => navigate(`/stores/${storeId}/info`)} />
             </div>
             <div className={styles.deliveryDetails}>
               <div className={styles.row}>
@@ -73,9 +75,9 @@ export default function DeliveryTypeTab({
   );
 }
 
-function InfoButton() {
+function InfoButton({ onClick }) {
   return (
-    <button className={styles.infoButton}>
+    <button className={styles.infoButton} onClick={onClick}>
       매장·원산지정보
       <svg
         xmlns="http://www.w3.org/2000/svg"

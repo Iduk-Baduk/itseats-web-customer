@@ -14,6 +14,7 @@ import AddressEdit from "./pages/address/AddressEdit";
 import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
+import StoreInfo from "./pages/stores/StoreInfo";
 import MenuDetail from "./pages/stores/MenuDetail";
 import Cart from "./pages/orders/Cart";
 import StackTest from "./pages/StackTest";
@@ -21,12 +22,12 @@ import Register from "./pages/register";
 import Login from "./pages/Login";
 import MyPage from "./pages/MyPage";
 import MyPageDetails from "./pages/MyPageDetails";
-import { AnimatePresence } from "framer-motion";
 import Review from "./pages/Review";
 import Coupons from "./pages/Coupons";
 import Events from "./pages/Events";
 import EventsDetails from "./pages/EventsDetails";
 import Settings from "./pages/Settings";
+import { AnimatePresence } from "framer-motion";
 
 function Root() {
   const location = useLocation();
@@ -52,6 +53,7 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
+            <Route path="/stores/:storeId/info" element={<StoreInfo />} />
             <Route path="/orders/:orderId/status" element={<OrderStatus />} />
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/cart" element={<Cart />} />
