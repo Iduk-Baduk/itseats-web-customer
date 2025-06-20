@@ -3,11 +3,12 @@ import ReviewCard from "../components/review/ReviewCard";
 import ReviewTextarea from "../components/review/ReviewTextarea";
 import ReviewItem from "../components/review/ReviewItem";
 import ReviewSubmitButton from "../components/review/ReviewSubmitButton";
-import ReviewHeader from "../components/review/ReviewHeader";
+import Header from "../components/common/Header";
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import styles from "./Review.module.css";
-import { useNavigate } from "react-router-dom";
 
 const reviewDummyData = {
   foodImage: "https://example.com/image.jpg",
@@ -39,7 +40,12 @@ export default function Review({ className }) {
 
   return (
     <div className={className}>
-      <ReviewHeader onClose={() => navigate(-1)} />
+      <Header
+        title="평가 및 리뷰 작성"
+        rightIcon="none"
+        leftIcon="close"
+        leftButtonAction={() => navigate(-1)}
+      />
       <div className={styles.reviewContainer}>
         <div className={styles.reviewCard}>
           <ReviewCard
