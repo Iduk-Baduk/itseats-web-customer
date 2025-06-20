@@ -1,4 +1,7 @@
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { set } from "./modules/counterModule";
 import Layout from "./layouts/Layout";
 import Home from "./pages/Home";
 import Search from "./pages/search/Search";
@@ -29,6 +32,7 @@ import AddPaymentMethod from "./pages/payments/AddPaymentMethod";
 import AddCard from "./pages/payments/AddCard";
 import AddAccount from "./pages/payments/AddAccount"
 import { AnimatePresence } from "framer-motion";
+import Counter from "./components/Counter";
 
 function Root() {
   const location = useLocation();
@@ -68,6 +72,7 @@ function Root() {
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/review" element={<Review />} />
+            <Route path="/counter-test" element={<Counter />} />
           </Route>
         </Routes>
       </AnimatePresence>

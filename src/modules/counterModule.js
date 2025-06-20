@@ -6,22 +6,25 @@ const initialState = {
 };
 
 // 액션 타입 정의
-const INCREASE = "counter/INCREASE";
-const DECREASE = "counter/DECREASE";
+const INCREASE = "COUNTER/INCREASE";
+const DECREASE = "COUNTER/DECREASE";
 
 // 액션 생성 함수
-export const { counter: { increase, decrease } } = createActions({
+const SET = "COUNTER/SET";
+
+export const { counter: { increase, decrease, set } } = createActions({
   COUNTER: {
-    INCREASE: () => {},
-    DECREASE: () => {},
+    INCREASE: () => 1,
+    DECREASE: () => 1,
+    SET: (value) => value,
   },
 });
 
-// 리듀서 정의
 const counterReducer = handleActions(
   {
     [INCREASE]: (state) => ({ count: state.count + 1 }),
     [DECREASE]: (state) => ({ count: state.count - 1 }),
+    [SET]: (state, action) => ({ count: action.payload }),
   },
   initialState
 );

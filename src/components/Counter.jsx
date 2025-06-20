@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { increase, decrease } from "../modules/counterModule";
+import { increase, decrease, set } from "../modules/counterModule";
 
 const Counter = () => {
   const count = useSelector((state) => state.counter.count);
@@ -15,17 +15,19 @@ const Counter = () => {
   useEffect(() => {
     const saved = localStorage.getItem("count");
     if (saved) {
-      const parsed = parseInt(saved, 10);
-      for (let i = 0; i < parsed; i++) dispatch(increase());
+      dispatch(set(parseInt(saved, 10)));
     }
   }, [dispatch]);
-
+  
   return (
     <div style={{ textAlign: "center", marginTop: "40px" }}>
       <h2>🔢 Counter</h2>
       <h1>{count}</h1>
-      <button onClick={() => dispatch(increase())}>+ 증가</button>
-      <button onClick={() => dispatch(decrease())} style={{ marginLeft: "10px" }}>
+      <button onClick={() => {console.log("clicked +"); dispatch(increase());}}>+ 증가</button>
+      <button
+        onClick={() => dispatch(decrease())}
+        style={{ marginLeft: "10px" }}
+      >
         - 감소
       </button>
     </div>
