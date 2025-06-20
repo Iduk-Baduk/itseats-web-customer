@@ -6,7 +6,7 @@ import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
 import Order from "./pages/orders/Order";
 import OrderStatus from "./pages/orders/OrderStatus";
-import MyEats from "./pages/MyEats";
+import Review from "./pages/orders/Review";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
 import CompanyAdd from "./pages/address/CompanyAdd";
@@ -16,17 +16,19 @@ import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import MenuDetail from "./pages/stores/MenuDetail";
 import Cart from "./pages/orders/Cart";
-import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import Login from "./pages/Login";
-import MyPage from "./pages/MyPage";
-import MyPageDetails from "./pages/MyPageDetails";
+import MyPage from "./pages/mypage/MyPage";
+import MyPageDetails from "./pages/mypage/MyPageDetails";
+import Coupons from "./pages/coupons/Coupons";
+import Events from "./pages/events/Events";
+import EventsDetails from "./pages/events/EventsDetails";
+import Settings from "./pages/mypage/Settings";
+import Payments from "./pages/payments/Payments";
+import AddPaymentMethod from "./pages/payments/AddPaymentMethod";
+import AddCard from "./pages/payments/AddCard";
+import AddAccount from "./pages/payments/AddAccount"
 import { AnimatePresence } from "framer-motion";
-import Review from "./pages/Review";
-import Coupons from "./pages/Coupons";
-import Events from "./pages/Events";
-import EventsDetails from "./pages/EventsDetails";
-import Settings from "./pages/Settings";
 
 function Root() {
   const location = useLocation();
@@ -39,7 +41,6 @@ function Root() {
             <Route index element={<Home />} />
             <Route path="/search" element={<Search />} />
             <Route path="/orders" element={<Order />} />
-            <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/search-result" element={<SearchResults />} />
           </Route>
@@ -55,8 +56,11 @@ function Root() {
             <Route path="/orders/:orderId/status" element={<OrderStatus />} />
             <Route path="/favorites" element={<Favorite />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/stack-test" element={<StackTest />} />
             <Route path="/coupons" element={<Coupons />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/add-payments" element={<AddPaymentMethod />} />
+            <Route path="/payments/add-card" element={<AddCard />} />
+            <Route path="/payments/add-account" element={<AddAccount />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/events/:eventId" element={<EventsDetails />} />

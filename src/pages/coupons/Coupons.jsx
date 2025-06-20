@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./Coupons.module.css";
-import Header from "../components/common/Header";
-import useCoupons from "../hooks/useCoupons";
+import Header from "../../components/common/Header";
+import useCoupons from "../../hooks/useCoupons";
 
 export default function Coupons() {
   const navigate = useNavigate();
