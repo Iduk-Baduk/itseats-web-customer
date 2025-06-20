@@ -15,6 +15,7 @@ import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import MenuDetail from "./pages/stores/MenuDetail";
+import Cart from "./pages/orders/Cart";
 import StackTest from "./pages/StackTest";
 import Register from "./pages/register";
 import Login from "./pages/Login";
@@ -36,7 +37,6 @@ function Root() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/my-eats" element={<MyEats />} />
             <Route path="/mypage" element={<MyPage />} />
@@ -52,6 +52,8 @@ function Root() {
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
             <Route path="/orders/:orderId/status" element={<OrderStatus />} />
+            <Route path="/favorites" element={<Favorite />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/stack-test" element={<StackTest />} />
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/events" element={<Events />} />

@@ -1,0 +1,179 @@
+/* Favorite.module.css */
+.container {
+  padding: 72px 0 40px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding-bottom: 100px; /* 바텀 네비게이션을 위한 여유 */
+}
+
+/* 수정 버튼 헤더 고정 */
+.fixed {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: fixed;
+  top: 18px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 0 20px;
+  z-index: 1200;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .fixed {
+    max-width: 720px;
+  }
+}
+
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .fixed {
+    max-width: 720px;
+  }
+}
+
+.editButton,
+.cancelButton {
+  background: none;
+  border: none;
+  color: var(--theme-color);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.editButton:hover,
+.cancelButton:hover {
+    cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.empty p {
+  margin-bottom: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--black-500);
+}
+
+.empty button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+}
+
+.empty button:hover {
+    cursor: pointer;
+    background-color: rgb(234, 234, 234);
+}
+
+.favoritePic {
+    width: 314px;
+    height: 256px;
+}
+
+.total {
+  font-size: 16px;
+  color: var(--black-700);
+  padding: 0 20px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sortSelect {
+  font-size: 14px;
+  padding: 4px 8px;
+  border: none;
+  background-color: white;
+  color: var(--black-500);
+}
+
+.sortSelect:hover {
+    cursor: pointer;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  background-color: #fff;
+  padding: 12px 20px;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.notEditing:hover {
+  cursor: pointer;
+  background-color: var(--background-hover-color);
+}
+
+.item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.details {
+  flex: 1;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--black-700);
+}
+
+.subinfo {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--black-500);
+}
+
+.coupon {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+  background-color: #e3f1ff;
+  color: #007aff;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.checkCircle {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--border-color-light);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.checked {
+  background-color: var(--theme-color);
+  border-color: var(--theme-color);
+  color: #fff;
+}
