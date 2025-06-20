@@ -28,6 +28,7 @@ import Settings from "./pages/Settings";
 import Payments from "./pages/Payments";
 import AddPaymentMethod from "./pages/AddPaymentMethod";
 import AddCard from "./pages/AddCard";
+import AddAccount from "./pages/AddAccount"
 
 function Root() {
   const location = useLocation();
@@ -60,6 +61,7 @@ function Root() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/add-payments" element={<AddPaymentMethod />} />
             <Route path="/payments/add-card" element={<AddCard />} />
+            <Route path="/payments/add-account" element={<AddAccount />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/events/:eventId" element={<EventsDetails />} />
