@@ -1,4 +1,3 @@
-import Header from "../../components/common/Header";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useShare } from "../../hooks/useShare";
