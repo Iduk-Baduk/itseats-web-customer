@@ -5,6 +5,7 @@ import Header from "../../components/common/Header";
 import { useShare } from "../../hooks/useShare";
 
 import styles from "./StoreInfo.module.css";
+import CommonMap from "../../components/common/CommonMap";
 
 export default function StoreInfo() {
   const navigate = useNavigate();
@@ -23,7 +24,26 @@ export default function StoreInfo() {
           }}
           rightIcon=""
         />
-        <div className={styles.map}></div>
+        <div className={styles.map}>
+          <CommonMap
+            lat={dummyStore.location.lat}
+            lng={dummyStore.location.lng}
+            markers={[
+              {
+                lat: dummyStore.location.lat,
+                lng: dummyStore.location.lng,
+                label: dummyStore.storeName,
+              },
+              {
+                lat: dummyUser.location.lat,
+                lng: dummyUser.location.lng,
+                label: "내 위치",
+              },
+            ]}
+            height="100%"
+            level={6}
+          />
+        </div>
         <div className={styles.storeInfoContainer}>
           <div className={styles.flexContainer}>
             <div>
@@ -72,4 +92,11 @@ const dummyStore = {
   businessStatus: "OPEN", // OPEN, CLOSED
   storePhone: "02-1234-5678",
   orderable: true,
+};
+
+const dummyUser = {
+  location: {
+    lat: 37.501887,
+    lng: 127.039252,
+  },
 };
