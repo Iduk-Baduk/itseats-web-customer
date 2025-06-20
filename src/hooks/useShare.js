@@ -12,6 +12,15 @@ export function useShare() {
     }
   }, [url]);
 
+    const copyToClipboardText = useCallback(async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return { success: true, message: "링크가 복사되었습니다!" };
+    } catch (err) {
+      return { success: false, message: "복사에 실패했습니다." };
+    }
+  }, []);
+
   const shareViaWebAPI = useCallback(async () => {
     if (!navigator.share) {
       return {
@@ -35,5 +44,6 @@ export function useShare() {
   return {
     copyToClipboard,
     shareViaWebAPI,
+    copyToClipboardText
   };
 }
