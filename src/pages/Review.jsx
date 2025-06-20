@@ -22,6 +22,7 @@ const reviewDummyData = {
 
 export default function Review({ className }) {
   const [foodRating, setFoodRating] = useState(0);
+  const [deliveryRating, setDeliveryRating] = useState(0);
   const [likeStatus, setLikeStatus] = useState(null);
   const [reviewText, setReviewText] = useState("");
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ export default function Review({ className }) {
   const handleSubmit = () => {
     alert(
       `별점: ${foodRating}\n` +
+        `배달 별점: ${deliveryRating}\n` +
         `음식 사진: ${reviewDummyData.foodImage}\n` +
         `좋아요 여부: ${likeStatus}\n` +
         `리뷰 내용: ${reviewText}`
@@ -53,7 +55,11 @@ export default function Review({ className }) {
             image={reviewDummyData.foodImage}
             onSelect={(value) => setFoodRating(value)}
           />
-          <ReviewCard object="배달" image={reviewDummyData.deliveryImage} />
+          <ReviewCard
+            object="배달"
+            image={reviewDummyData.deliveryImage}
+            onSelect={(value) => setDeliveryRating(value)}
+          />
         </div>
         <p className={styles.text}>배달파트너에 대해 평가해주세요 (선택)</p>
         <hr className={styles.hr} />
