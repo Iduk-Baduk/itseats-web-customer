@@ -1,6 +1,9 @@
-import { createStore } from "redux";
-import rootReducer from "./modules"; // modules/index.js
+import { configureStore } from "@reduxjs/toolkit";
+import rootReducer from "./modules";
 
-const store = createStore(rootReducer);
+const store = configureStore({
+  reducer: rootReducer,
+  devTools: true, // ✅ Redux DevTools 자동 지원
+});
 
 export default store;
