@@ -12,5 +12,5 @@
   box-sizing: border-box;
 }
 .button:hover {
-  background-color: var(--border-color-light);
+  background-color: var(--background-hover-color);
 }

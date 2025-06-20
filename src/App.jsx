@@ -4,7 +4,8 @@ import Home from "./pages/Home";
 import Search from "./pages/search/Search";
 import SearchResults from "./pages/search/SearchResults";
 import Favorite from "./pages/Favorite";
-import Order from "./pages/Order";
+import Order from "./pages/orders/Order";
+import OrderStatus from "./pages/orders/OrderStatus";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
 import CompanyAdd from "./pages/address/CompanyAdd";
@@ -38,7 +39,6 @@ function Root() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/favorites" element={<Favorite />} />
             <Route path="/orders" element={<Order />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/search-result" element={<SearchResults />} />
@@ -52,6 +52,8 @@ function Root() {
             <Route path="/stores/list" element={<StoreList />} />
             <Route path="/stores/:storeId" element={<StoreDetail />} />
             <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
+            <Route path="/orders/:orderId/status" element={<OrderStatus />} />
+            <Route path="/favorites" element={<Favorite />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/coupons" element={<Coupons />} />
             <Route path="/payments" element={<Payments />} />
@@ -64,6 +66,7 @@ function Root() {
             <Route path="/mypage/details" element={<MyPageDetails />} />
             <Route path="/regist" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/review" element={<Review />} />
           </Route>
         </Routes>
       </AnimatePresence>
