@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Settings.module.css";
-import Header from "../components/common/Header";
-import useAppVersion from "../hooks/useAppVersion";
+import Header from "../../components/common/Header";
+import useAppVersion from "../../hooks/useAppVersion";
 
 export default function Settings() {
   const navigate = useNavigate();

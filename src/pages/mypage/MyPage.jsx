@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./MyPage.module.css";
-import { path } from "motion/react-client";
 
 export default function MyPage() {
   const navigate = useNavigate();
