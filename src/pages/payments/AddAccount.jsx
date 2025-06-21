@@ -1,6 +1,9 @@
 // src/pages/Payments/AddCard.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addAccount } from "../../store/paymentSlice";
+
 import Header from "../../components/common/Header";
 import styles from "./AddAccount.module.css";
 
@@ -15,8 +18,9 @@ const banks = [
 
 export default function AddAccount() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const user = { name: "송준경" }; // 예시 사용자 이름
+  const user = { name: "송준경" }; // 실제 프로젝트에서는 useSelector로 가져오세요
 
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
@@ -43,6 +47,8 @@ export default function AddAccount() {
 
       if (!response.ok) throw new Error("등록 실패");
 
+      const result = await response.json(); // { id, bankName, last4, image }
+      dispatch(addAccount(result)); // ✅ Redux 상태에 추가
       setPopup("success");
     } catch (error) {
       console.error("계좌 등록 실패:", error);
@@ -54,9 +60,7 @@ export default function AddAccount() {
     <div className={styles.container}>
       <Header
         title="계좌 등록"
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        leftButtonAction={() => navigate(-1)}
         rightIcon=""
       />
       <p className={styles.subtitle}>본인 명의의 계좌만 등록 가능합니다.</p>
