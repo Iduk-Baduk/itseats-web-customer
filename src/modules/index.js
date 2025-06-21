@@ -1,8 +1,11 @@
+// src/modules/index.js
 import { combineReducers } from "redux";
-import counter from "./counterModule"; // ← 만든 리듀서들 import
+import counter from "./counterModule";
+import paymentReducer from "../store/paymentSlice"; // ✅ 추가
 
 const rootReducer = combineReducers({
-  counter // state.counter로 접근 가능
+  counter,
+  payment: paymentReducer, // ✅ 여기에 추가!
 });
 
 export default rootReducer;

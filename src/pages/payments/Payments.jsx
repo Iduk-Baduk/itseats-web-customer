@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+// src/pages/Payments/Payments.jsx
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  removeCard,
+  removeAccount,
+  fetchPaymentMethods,
+} from "../../store/paymentSlice";
+
 import Header from "../../components/common/Header";
-import usePaymentMethods from "../../hooks/usePaymentMethods";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./Payments.module.css";
 
 export default function Payments() {
   const navigate = useNavigate();
-  const { cards, accounts, coupayMoney, deleteCard, deleteAccount } =
-    usePaymentMethods();
+  const dispatch = useDispatch();
+
+  const { cards, accounts, coupayMoney, isLoading, error } = useSelector(
+    (state) => state.payment
+  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  // 🎯 결제수단 목록 최초 로딩
+  useEffect(() => {
+    dispatch(fetchPaymentMethods());
+  }, [dispatch]);
 
   const handleDeleteClick = (type, id) => {
     setDeleteTarget({ type, id });
@@ -20,9 +35,9 @@ export default function Payments() {
 
   const handleConfirmDelete = () => {
     if (deleteTarget.type === "card") {
-      deleteCard(deleteTarget.id);
+      dispatch(removeCard(deleteTarget.id));
     } else if (deleteTarget.type === "account") {
-      deleteAccount(deleteTarget.id);
+      dispatch(removeAccount(deleteTarget.id));
     }
     setModalOpen(false);
     setDeleteTarget(null);
@@ -30,13 +45,15 @@ export default function Payments() {
 
   return (
     <div className={styles.container}>
-        <Header
-          title="결제 관리"
-          leftButtonAction={() => {
-            navigate(-1);
-          }}
-          rightIcon=""
-        />
+      <Header
+        title="결제 관리"
+        leftButtonAction={() => navigate(-1)}
+        rightIcon=""
+      />
+
+      {/* 로딩 또는 에러 처리 */}
+      {isLoading && <p>로딩 중...</p>}
+      {error && <p className={styles.errorText}>오류: {error}</p>}
 
       <section>
         <p className={styles.label}>쿠페이 머니</p>
@@ -48,7 +65,9 @@ export default function Payments() {
           />
           <span>
             쿠페이 머니 (보유 {coupayMoney}원)
-            <p className={styles.coupayDesc}>연결된 계좌는 계좌이체 목록에서 확인 가능합니다.</p>{" "}
+            <p className={styles.coupayDesc}>
+              연결된 계좌는 계좌이체 목록에서 확인 가능합니다.
+            </p>
           </span>
         </div>
       </section>

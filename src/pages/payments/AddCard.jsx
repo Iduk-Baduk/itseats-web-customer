@@ -1,11 +1,15 @@
 // src/pages/Payments/AddCard.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addCard } from "../../store/paymentSlice";
+
 import Header from "../../components/common/Header";
 import styles from "./AddCard.module.css";
 
 export default function AddCard() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [cardNumber, setCardNumber] = useState(["", "", "", ""]);
   const [expiry, setExpiry] = useState({ mm: "", yy: "" });
@@ -19,22 +23,14 @@ export default function AddCard() {
   const maxYY = currentYY + 8;
 
   const isCardValid = cardNumber.every((num) => num.length === 4);
-
   const mmNum = Number(expiry.mm);
   const yyNum = Number(expiry.yy);
-  const isValidMM =
-    expiry.mm !== "" && expiry.mm.length === 2 && mmNum >= 1 && mmNum <= 12;
-  const isValidYY =
-    expiry.yy !== "" &&
-    expiry.yy.length === 2 &&
-    yyNum >= currentYY &&
-    yyNum <= maxYY;
-
+  const isValidMM = expiry.mm.length === 2 && mmNum >= 1 && mmNum <= 12;
+  const isValidYY = expiry.yy.length === 2 && yyNum >= currentYY && yyNum <= maxYY;
   const isExpiryValid = isValidMM && isValidYY;
   const isCvcValid = cvc.length === 3;
   const isPwValid = password.length === 2;
-  const isAllValid =
-    isCardValid && isExpiryValid && isCvcValid && isPwValid && agree;
+  const isAllValid = isCardValid && isExpiryValid && isCvcValid && isPwValid && agree;
 
   const handleCardInput = (index, value) => {
     const newNums = [...cardNumber];
@@ -54,16 +50,15 @@ export default function AddCard() {
     try {
       const response = await fetch("/api/cards", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error("등록 실패");
 
-      const result = await response.json();
-      console.log("등록 결과:", result);
+      const result = await response.json(); // { id, name, last4, image }
+
+      dispatch(addCard(result)); // ✅ Redux에 등록된 카드 push
       setPopup("success");
     } catch (error) {
       console.error("카드 등록 실패:", error);
@@ -75,9 +70,7 @@ export default function AddCard() {
     <div className={styles.container}>
       <Header
         title="결제수단 등록"
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        leftButtonAction={() => navigate(-1)}
         rightIcon=""
       />
 
@@ -102,60 +95,37 @@ export default function AddCard() {
         </div>
       </div>
 
-      <p className={styles.notice}>
-        송준경님의 신용/체크카드만 이용 가능합니다.
-      </p>
+      <p className={styles.notice}>송준경님의 신용/체크카드만 이용 가능합니다.</p>
 
+      {/* 유효기간 */}
       {isCardValid && (
         <>
-          {/* 유효기간 */}
           <div className={styles.flexRow}>
-            <div
-              className={`${styles.inputBox} ${
-                expiry.mm.length === 2 && !isValidMM ? styles.invalid : ""
-              }`}
-            >
+            <div className={`${styles.inputBox} ${!isValidMM && expiry.mm.length === 2 ? styles.invalid : ""}`}>
               <span className={styles.inputLabel}>유효기간 (MM)</span>
               <input
                 type="text"
                 maxLength={2}
                 value={expiry.mm}
-                onChange={(e) =>
-                  setExpiry({
-                    ...expiry,
-                    mm: e.target.value.replace(/\D/g, ""),
-                  })
-                }
+                onChange={(e) => setExpiry({ ...expiry, mm: e.target.value.replace(/\D/g, "") })}
                 className={styles.input}
               />
               {expiry.mm.length === 2 && !isValidMM && (
-                <span className={styles.errorMessage}>
-                  유효한 월을 입력하세요
-                </span>
+                <span className={styles.errorMessage}>유효한 월을 입력하세요</span>
               )}
             </div>
-            <div
-              className={`${styles.inputBox} ${
-                expiry.yy.length === 2 && !isValidYY ? styles.invalid : ""
-              }`}
-            >
+
+            <div className={`${styles.inputBox} ${!isValidYY && expiry.yy.length === 2 ? styles.invalid : ""}`}>
               <span className={styles.inputLabel}>유효기간 (YY)</span>
               <input
                 type="text"
                 maxLength={2}
                 value={expiry.yy}
-                onChange={(e) =>
-                  setExpiry({
-                    ...expiry,
-                    yy: e.target.value.replace(/\D/g, ""),
-                  })
-                }
+                onChange={(e) => setExpiry({ ...expiry, yy: e.target.value.replace(/\D/g, "") })}
                 className={styles.input}
               />
               {expiry.yy.length === 2 && !isValidYY && (
-                <span className={styles.errorMessage}>
-                  유효한 연도를 입력하세요
-                </span>
+                <span className={styles.errorMessage}>유효한 연도를 입력하세요</span>
               )}
             </div>
           </div>
@@ -215,10 +185,7 @@ export default function AddCard() {
                 ? "등록이 완료되었습니다."
                 : "등록에 실패했습니다."}
             </p>
-            <button
-              className={styles.modalButton}
-              onClick={() => setPopup(null)}
-            >
+            <button className={styles.modalButton} onClick={() => setPopup(null)}>
               확인
             </button>
           </div>
