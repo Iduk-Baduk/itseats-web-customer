@@ -1,11 +1,18 @@
 {
-  "cards": [],
+  "cards": [
+    {
+      "id": 1,
+      "name": "신한카드",
+      "last4": "553*",
+      "image": "/icons/logos/shinhan.png"
+    }
+  ],
   "accounts": [
     {
-      "id": "6892",
-      "bankId": "kakao",
-      "accountNumber": "123123123123",
-      "ownerName": "송준경"
+      "id": 1,
+      "bankName": "카카오뱅크",
+      "last4": "0227",
+      "image": "/icons/logos/kakao.png"
     }
   ],
   "coupayMoney": 10000
