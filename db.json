@@ -1,0 +1,12 @@
+{
+  "cards": [],
+  "accounts": [
+    {
+      "id": "6892",
+      "bankId": "kakao",
+      "accountNumber": "123123123123",
+      "ownerName": "송준경"
+    }
+  ],
+  "coupayMoney": 10000
+}
