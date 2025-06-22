@@ -1,12 +1,25 @@
 // src/store/paymentSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// 서버에서 결제수단 가져오기
+// 🎯 수정된 Thunk: cards/accounts 개별 fetch
 export const fetchPaymentMethods = createAsyncThunk(
   "payment/fetchPaymentMethods",
   async () => {
-    const response = await fetch("/api/payment-methods");
-    return await response.json(); // { cards: [...], accounts: [...], coupayMoney: 0 }
+    const [cardsRes, accountsRes] = await Promise.all([
+      fetch("/api/cards"),
+      fetch("/api/accounts"),
+    ]);
+
+    const [cards, accounts] = await Promise.all([
+      cardsRes.json(),
+      accountsRes.json(),
+    ]);
+
+    return {
+      cards,
+      accounts,
+      coupayMoney: 10000, // 더미 데이터
+    };
   }
 );
 
@@ -29,10 +42,10 @@ const paymentSlice = createSlice({
       );
     },
     addCard: (state, action) => {
-      state.cards.push(action.payload); // { id, name, last4, image }
+      state.cards.push(action.payload);
     },
     addAccount: (state, action) => {
-      state.accounts.push(action.payload); // { id, bankName, last4, image }
+      state.accounts.push(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -42,10 +55,10 @@ const paymentSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchPaymentMethods.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.cards = action.payload.cards;
         state.accounts = action.payload.accounts;
         state.coupayMoney = action.payload.coupayMoney;
-        state.isLoading = false;
       })
       .addCase(fetchPaymentMethods.rejected, (state, action) => {
         state.isLoading = false;
@@ -54,11 +67,7 @@ const paymentSlice = createSlice({
   },
 });
 
-export const {
-  removeCard,
-  removeAccount,
-  addCard,
-  addAccount,
-} = paymentSlice.actions;
+export const { removeCard, removeAccount, addCard, addAccount } =
+  paymentSlice.actions;
 
 export default paymentSlice.reducer;

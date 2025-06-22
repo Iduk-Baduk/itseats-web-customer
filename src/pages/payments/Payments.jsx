@@ -16,9 +16,10 @@ export default function Payments() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { cards, accounts, coupayMoney, isLoading, error } = useSelector(
-    (state) => state.payment
-  );
+  const payment = useSelector((state) => state.payment);
+  console.log("🧪 Redux 상태 payment:", payment); // 이 위치에서 찍기
+
+  const { cards, accounts, coupayMoney, isLoading, error } = payment;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -33,14 +34,29 @@ export default function Payments() {
     setModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteTarget.type === "card") {
-      dispatch(removeCard(deleteTarget.id));
-    } else if (deleteTarget.type === "account") {
-      dispatch(removeAccount(deleteTarget.id));
+  // ✅ 수정된 handleConfirmDelete 함수
+  const handleConfirmDelete = async () => {
+    try {
+      const { type, id } = deleteTarget;
+
+      const endpoint =
+        type === "card" ? `/api/cards/${id}` : `/api/accounts/${id}`;
+
+      const res = await fetch(endpoint, { method: "DELETE" });
+
+      if (!res.ok) throw new Error("삭제 실패");
+
+      if (type === "card") {
+        dispatch(removeCard(id));
+      } else {
+        dispatch(removeAccount(id));
+      }
+    } catch (err) {
+      console.error("삭제 실패:", err);
+    } finally {
+      setModalOpen(false);
+      setDeleteTarget(null);
     }
-    setModalOpen(false);
-    setDeleteTarget(null);
   };
 
   return (
