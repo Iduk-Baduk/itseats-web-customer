@@ -257,16 +257,15 @@ export default function MenuDetail() {
           </BottomButton>
         ) : (
           <BottomButton
-            onClick={() => {
-              if (isRequiredOptionsNotSelected()) {
-                alert("필수 옵션을 선택해주세요.");
-                return;
-              }
-              addToCart();
+            onClick={addToCart}
+            disabled={isRequiredOptionsNotSelected()}
+            cartInfo={{
+              itemCount: quantity,
+              orderPrice: dummyMenu.menuPrice * quantity,
+              totalPrice: totalPrice,
             }}
-            cartInfo={{ itemCount: 0, orderPrice: 0, totalPrice: totalPrice }}
           >
-            <p>{totalPrice.toLocaleString()}원 카트에 담기</p>
+            <span>{totalPrice.toLocaleString()}원 담기</span>
           </BottomButton>
         )}
       </div>

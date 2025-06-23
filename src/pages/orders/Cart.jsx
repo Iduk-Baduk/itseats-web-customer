@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu } from "../../store/cartSlice";
-import useCartTotal from "../../hooks/useCartTotal"
+import calculateCartTotal from "../../utils/calculateCartTotal";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -40,7 +40,7 @@ export default function Cart() {
       0
     ),
     totalPrice: orderMenus.reduce(
-      (sum, m) => sum + useCartTotal(m),
+      (sum, m) => sum + calculateCartTotal(m),
       0
     ),
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
@@ -86,7 +86,7 @@ export default function Cart() {
                   </React.Fragment>
                 ))}
                 <p className={styles.menuPrice}>
-                  {useCartTotal(menu).toLocaleString()}원
+                  {calculateCartTotal(menu).toLocaleString()}원
                 </p>
               </div>
             </div>
