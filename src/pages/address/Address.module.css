@@ -40,7 +40,7 @@
   align-items: center;
   border-bottom: 1px solid #e0e0e0;
   padding: 8px 0;
-  margin: 16px 0;
+  margin: 16px 20px; /* 좌우 여백 20px 추가 */
 }
 
 .searchInput {
@@ -55,10 +55,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* 아이콘과 텍스트 간격 */
+  gap: 8px;
   width: calc(100% - 40px);
   height: 60px;
-  margin: 16px 20px 16px;
+  margin: 16px 20px; /* 기존 스타일 유지 */
   background-color: #ffffff;
   border: 1px solid #ddd;
   font-size: 16px;
@@ -66,7 +66,6 @@
   border-radius: 8px;
   box-sizing: border-box;
   cursor: pointer;
-  margin-bottom: 10px;
 }
 
 .gpsIcon {
@@ -149,7 +148,7 @@
 .addButtonsContainer {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin: 0 20px 20px; /* 상단 여백 제거, 좌우 및 하단 여백 추가 */
 }
 
 .addAddressBtn {
@@ -164,6 +163,7 @@
   background-color: #fff;
   font-size: 15px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .addAddressBtn img {

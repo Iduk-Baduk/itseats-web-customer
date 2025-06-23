@@ -66,6 +66,7 @@ export default function Address() {
         <img
           src={getIconByLabel("GPS")}
           alt="gps-icon"
+          className={styles.icon}
         />
         현재 위치로 주소 찾기
       </button>
