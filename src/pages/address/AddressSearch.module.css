@@ -1,5 +1,5 @@
 .container {
-  padding: 16px;
+  padding: 0 16px;
   padding-top: 84px;
 }
 
@@ -9,9 +9,46 @@
   margin-bottom: 12px;
 }
 
+.searchBox {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 0;
+  margin: 16px 0;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  opacity: 0.5;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  font-size: 16px;
+  outline: none;
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.searchButton img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+}
+
 .resultList {
   list-style: none;
   padding: 0;
+  margin: 0 -16px; /* container padding 상쇄 */
 }
 
 .item {
@@ -34,4 +71,36 @@
 .wow {
   font-size: 12px;
   color: #ff5a5f;
+}
+
+.resultItem {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.resultItem:hover {
+  background-color: #f9f9f9;
+}
+
+.addressName {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.roadAddressContainer {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.roadAddressLabel {
+  background-color: #eee;
+  color: #555;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 8px;
 }

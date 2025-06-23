@@ -1,71 +1,109 @@
 // src/pages/AddressSearch.jsx
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import styles from "./AddressSearch.module.css";
+import { getIconByLabel } from "../../utils/addressUtils";
 
 export default function AddressSearch() {
-  const [searchParams] = useSearchParams();
-  const keyword = searchParams.get("keyword");
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const keyword = searchParams.get("keyword");
+  const addType = searchParams.get("add"); // 'home' or 'company'
 
+  const [inputValue, setInputValue] = useState(keyword || "");
   const [results, setResults] = useState([]);
 
-  // ✅ 검색어로 주소 리스트를 불러오는 가짜 fetch 함수 (실제론 API로 대체)
   useEffect(() => {
-    if (keyword) {
-      const dummyResults = [
-        {
-          id: Date.now(),
-          address: `경기도 성남시 분당구 ${keyword}로 123`,
-          label: "기타",
-          wowZone: true,
-        },
-        {
-          id: Date.now() + 1,
-          address: `서울시 강남구 ${keyword}로 456`,
-          label: "기타",
-          wowZone: false,
-        },
-      ];
-      setResults(dummyResults);
+    if (!keyword || !window.kakao || !window.kakao.maps.services) {
+      setResults([]);
+      return;
     }
+
+    const ps = new window.kakao.maps.services.Places();
+    ps.keywordSearch(keyword, (data, status) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        setResults(data);
+      } else {
+        setResults([]);
+      }
+    });
   }, [keyword]);
 
-  const handleSelect = (selectedAddress) => {
-    // 👉 주소 데이터를 넘기면서 /address/new 로 이동
+  const handleSearch = () => {
+    if (inputValue.trim() === "") return;
+    setSearchParams({ keyword: inputValue, add: addType || "" });
+  };
+
+  const handleSelectAddress = (result) => {
+    let label = "기타";
+    if (addType === "home") label = "집";
+    if (addType === "company") label = "회사";
+
     navigate("/address/new", {
-      state: {
-        address: selectedAddress,
-      },
       replace: true,
+      state: {
+        selectedAddress: {
+          address: result.address_name,
+          roadAddress: result.road_address_name,
+          lat: parseFloat(result.y),
+          lng: parseFloat(result.x),
+        },
+        label,
+      },
     });
   };
 
   return (
-    <div className={styles.container}>
+    <>
       <Header
-        title={`"${keyword}" 주소 검색 결과`}
+        title={"주소 검색"}
         leftIcon="back"
-        rightIcon={null}
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        leftButtonAction={() => navigate(-1)}
       />
-      <ul className={styles.resultList}>
-        {results.map((addr) => (
-          <li
-            key={addr.id}
-            className={styles.item}
-            onClick={() => handleSelect(addr)}
-          >
-            <div className={styles.addressText}>{addr.address}</div>
-            {addr.wowZone && (
-              <span className={styles.wow}>WOW 배달 가능 지역</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <div className={styles.container}>
+        <div className={styles.searchBox}>
+          <img
+            src={getIconByLabel("검색")}
+            alt="search-icon"
+            className={styles.icon}
+          />
+          <input
+            type="text"
+            placeholder="도로명, 건물명 또는 지번으로 검색"
+            className={styles.searchInput}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
+          />
+        </div>
+
+        <ul className={styles.resultList}>
+          {results.length > 0 ? (
+            results.map((result) => (
+              <li
+                key={result.id}
+                className={styles.resultItem}
+                onClick={() => handleSelectAddress(result)}
+              >
+                <div className={styles.addressName}>{result.address_name}</div>
+                {result.road_address_name && (
+                  <div className={styles.roadAddressContainer}>
+                    <span className={styles.roadAddressLabel}>도로명</span>
+                    <span className={styles.roadAddressName}>
+                      {result.road_address_name}
+                    </span>
+                  </div>
+                )}
+              </li>
+            ))
+          ) : (
+            keyword && <div className={styles.noResults}>검색 결과가 없습니다.</div>
+          )}
+        </ul>
+      </div>
+    </>
   );
 }

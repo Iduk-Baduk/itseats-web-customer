@@ -1,4 +1,5 @@
-import { getIconByLabel } from "../../hooks/useAddressManager";
+import { getIconByLabel } from "../../utils/addressUtils";
+import CommonMap from "../../components/common/CommonMap";
 import styles from "./AddressEdit.module.css";
 
 export default function AddressForm({
@@ -14,24 +15,20 @@ export default function AddressForm({
   return (
     <div className={styles.container}>
       <div className={styles.mapContainer}>
-        <div className={styles.mapPlaceholder}>지도 영역</div>
+        <CommonMap lat={address.lat || 37.5665} lng={address.lng || 126.978} />
         <button className={styles.pinButton}>핀 조정하기</button>
       </div>
 
       {address && (
         <div className={styles.iconWithContent}>
           <img
-            src={getIconByLabel(address.label)}
+            src={"/icons/location/mapmarkerIcon.svg"}
             alt="address-icon"
             className={styles.labelIcon}
           />
           <div className={styles.addressTextGroup}>
-            <p className={styles.primaryAddress}>
-              {address.address.split("\n")[0]}
-            </p>
-            <p className={styles.secondaryAddress}>
-              {address.address.split("\n")[1]}
-            </p>
+            <p className={styles.primaryAddress}>{address.address}</p>
+            <p className={styles.secondaryAddress}>{address.roadAddress}</p>
             {address.wowZone && (
               <div className={styles.wowArea}>
                 <span className={styles.wow}>WOW</span>
@@ -53,7 +50,7 @@ export default function AddressForm({
         className={styles.detailInput}
         value={guideMessage}
         onChange={onChangeGuide}
-        placeholder="길 안내 (예: 1층 올리브영)"
+        placeholder="길 안내 (예: 1층에 올리브영이 있는 오피스텔)"
       />
 
       <div className={styles.labelButtonGroup}>

@@ -13,7 +13,6 @@ import OrderStatus from "./pages/orders/OrderStatus";
 import Review from "./pages/orders/Review";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
-import CompanyAdd from "./pages/address/CompanyAdd";
 import AddressEdit from "./pages/address/AddressEdit";
 import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
@@ -54,7 +53,6 @@ export default function Root() {
           <Route path="/address/new" element={<AddressNew />} />
           <Route path="/address/edit/:id" element={<AddressEdit />} />
           <Route path="/address/search" element={<AddressSearch />} />
-          <Route path="/address/company-add" element={<CompanyAdd />} />
           <Route path="/stores/list" element={<StoreList />} />
           <Route path="/stores/:storeId" element={<StoreDetail />} />
           <Route path="/stores/:storeId/info" element={<StoreInfo />} />
