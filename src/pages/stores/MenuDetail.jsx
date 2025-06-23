@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addMenu } from "../../store/cartSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
@@ -9,65 +11,68 @@ import BottomButton from "../../components/common/BottomButton";
 
 export default function MenuDetail() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { copyToClipboard, shareViaWebAPI } = useShare();
-
   const { menuId } = useParams();
-  const [isTransparent, setTransparent] = useState(true);
 
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [isTransparent, setTransparent] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [totalPrice, setTotalPrice] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState(
     dummyMenu.optionGroups.map((group) => ({ ...group, options: [] }))
   );
+  useEffect(() => {
+    console.log("selectedOptions:", selectedOptions);
+    console.log(
+      "isRequiredOptionsNotSelected():",
+      isRequiredOptionsNotSelected()
+    );
+  }, [selectedOptions]);
 
   useEffect(() => {
     const basePrice = parseInt(dummyMenu.menuPrice);
-    const optionsPrice = selectedOptions.reduce((total, group) => {
-      return (
+    const optionsPrice = selectedOptions.reduce(
+      (total, group) =>
         total +
-        group.options.reduce((sum, option) => {
-          return sum + option.optionPrice;
-        }, 0)
-      );
-    }, 0);
+        group.options.reduce((sum, option) => sum + option.optionPrice, 0),
+      0
+    );
     setTotalPrice((basePrice + optionsPrice) * quantity);
   }, [quantity, selectedOptions]);
 
-  // 아래로 스크롤 되었을 때 헤더 배경을 흰색으로 변경
   useEffect(() => {
     const onScroll = () => {
       const target = document.getElementById("intro");
       if (!target) return;
-
       const rect = target.getBoundingClientRect();
-      // intro가 화면 밖으로 완전히 가려졌는지 확인
       setTransparent(rect.bottom > 0);
     };
-
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // 개수 변경
   function handleQuantityChange(delta) {
-    setQuantity((prev) => {
-      const newQuantity = prev + delta;
-      return newQuantity < 1 ? 1 : newQuantity;
-    });
+    setQuantity((prev) => Math.max(1, prev + delta));
   }
 
-  // 필수 옵션이 선택되지 않았는지 확인
   function isRequiredOptionsNotSelected() {
-    return selectedOptions.some((group) => {
-      return group.minSelect > group.options.length;
-    });
+    return selectedOptions.some(
+      (group) => group.minSelect > group.options.length
+    );
   }
 
-  // 카트에 넣기
   function addToCart() {
-    alert("구현 필요");
+    const menu = {
+      menuId: dummyMenu.menuId,
+      menuName: dummyMenu.menuName,
+      menuPrice: dummyMenu.menuPrice,
+      menuOption: selectedOptions,
+      menuTotalPrice: totalPrice,
+      quantity,
+    };
+    dispatch(addMenu(menu));
+    alert("장바구니에 담겼습니다!");
+    navigate("/cart");
   }
 
   return (
@@ -76,9 +81,7 @@ export default function MenuDetail() {
         <HeaderMenuDetail
           isTransparent={isTransparent}
           title={dummyMenu.menuName}
-          backButtonAction={() => {
-            navigate(-1);
-          }}
+          backButtonAction={() => navigate(-1)}
           shareButtonAction={async () => {
             const result = await shareViaWebAPI();
             if (!result.success) {
@@ -87,19 +90,24 @@ export default function MenuDetail() {
             }
           }}
         />
+
         <div id="intro" className={styles.intro}>
           <img src={dummyMenu.image} alt={dummyMenu.menuName} />
         </div>
+
         <div className={styles.introContent}>
           <h1>{dummyMenu.menuName}</h1>
         </div>
+
         <div className={styles.description}>
           <p>{dummyMenu.menuDescription}</p>
         </div>
+
         <div className={styles.row}>
           <span className={styles.label}>가격</span>
           <span className={styles.value}>{totalPrice.toLocaleString()}원</span>
         </div>
+
         <div className={styles.row}>
           <span className={styles.label}>수량</span>
           <div className={styles.quantityControl}>
@@ -134,6 +142,7 @@ export default function MenuDetail() {
             </button>
           </div>
         </div>
+
         {dummyMenu.optionGroups.map((group, index) => {
           const inputType =
             group.minSelect === 1 && group.maxSelect === 1
@@ -161,11 +170,11 @@ export default function MenuDetail() {
                         .join(", ")}
                 </span>
               </div>
+
               <div className={styles.options}>
                 {group.options.map((option, idx) => {
                   const isHidden = option.optionStatus === "HIDDEN";
                   const isOutOfStock = option.optionStatus === "OUT_OF_STOCK";
-
                   if (isHidden) return null;
 
                   return (
@@ -176,15 +185,18 @@ export default function MenuDetail() {
                           (opt) => opt.optionName === option.optionName
                         )}
                         onChange={() => {
-                          setSelectedOptions((prev) => {
-                            return prev.map((groupItem, i) => {
-                              if (i !== index) return groupItem;
+                          setSelectedOptions((prev) =>
+                            prev.map((g, i) => {
+                              if (i !== index) return g;
 
-                              const newOptions = [...groupItem.options];
+                              const newOptions = [...g.options];
+                              const alreadySelected = newOptions.some(
+                                (opt) => opt.optionName === option.optionName
+                              );
 
                               if (inputType === "radio") {
                                 return {
-                                  ...groupItem,
+                                  ...g,
                                   options: [
                                     {
                                       optionName: option.optionName,
@@ -192,44 +204,40 @@ export default function MenuDetail() {
                                     },
                                   ],
                                 };
-                              } else {
-                                const alreadySelected = newOptions.some(
-                                  (opt) => opt.optionName === option.optionName
-                                );
-
-                                if (alreadySelected) {
-                                  return {
-                                    ...groupItem,
-                                    options: newOptions.filter(
-                                      (opt) =>
-                                        opt.optionName !== option.optionName
-                                    ),
-                                  };
-                                } else {
-                                  if (
-                                    group.maxSelect > 0 &&
-                                    newOptions.length >= group.maxSelect
-                                  ) {
-                                    alert(
-                                      `최대 ${group.maxSelect}개까지 선택할 수 있습니다.`
-                                    );
-                                    return groupItem;
-                                  }
-
-                                  return {
-                                    ...groupItem,
-                                    options: [
-                                      ...newOptions,
-                                      {
-                                        optionName: option.optionName,
-                                        optionPrice: option.optionPrice,
-                                      },
-                                    ],
-                                  };
-                                }
                               }
-                            });
-                          });
+
+                              if (alreadySelected) {
+                                return {
+                                  ...g,
+                                  options: newOptions.filter(
+                                    (opt) =>
+                                      opt.optionName !== option.optionName
+                                  ),
+                                };
+                              } else {
+                                if (
+                                  group.maxSelect > 0 &&
+                                  newOptions.length >= group.maxSelect
+                                ) {
+                                  alert(
+                                    `최대 ${group.maxSelect}개까지 선택할 수 있습니다.`
+                                  );
+                                  return g;
+                                }
+
+                                return {
+                                  ...g,
+                                  options: [
+                                    ...newOptions,
+                                    {
+                                      optionName: option.optionName,
+                                      optionPrice: option.optionPrice,
+                                    },
+                                  ],
+                                };
+                              }
+                            })
+                          );
                         }}
                         label={option.optionName}
                         price={option.optionPrice}
@@ -243,15 +251,21 @@ export default function MenuDetail() {
             </div>
           );
         })}
-        {dummyMenu.menuStatus === "OUT_OF_STOCK" && (
+
+        {dummyMenu.menuStatus === "OUT_OF_STOCK" ? (
           <BottomButton disabled={true}>
             <p>이 메뉴는 현재 품절입니다.</p>
           </BottomButton>
-        )}
-        {dummyMenu.menuStatus !== "OUT_OF_STOCK" && (
+        ) : (
           <BottomButton
-            onClick={addToCart}
-            disabled={isRequiredOptionsNotSelected()}
+            onClick={() => {
+              if (isRequiredOptionsNotSelected()) {
+                alert("필수 옵션을 선택해주세요.");
+                return;
+              }
+              addToCart();
+            }}
+            cartInfo={{ itemCount: 0, orderPrice: 0, totalPrice: totalPrice }}
           >
             <p>{totalPrice.toLocaleString()}원 카트에 담기</p>
           </BottomButton>
@@ -261,6 +275,7 @@ export default function MenuDetail() {
   );
 }
 
+// 💡 테스트용 메뉴 데이터
 const dummyMenu = {
   menuId: 11,
   menuName: "아메리카노",
@@ -272,83 +287,21 @@ const dummyMenu = {
   optionGroups: [
     {
       optionGroupName: "사이즈",
-      isRequired: true,
       minSelect: 1,
       maxSelect: 1,
-      priority: 1,
       options: [
-        {
-          optionName: "숏(Short)",
-          optionPrice: 0,
-          optionStatus: "ONSALE",
-          optionPriority: 1,
-        },
-        {
-          optionName: "톨(Tall)",
-          optionPrice: 500,
-          optionStatus: "ONSALE",
-          optionPriority: 2,
-        },
-        {
-          optionName: "그랑데(Grande)",
-          optionPrice: 1000,
-          optionStatus: "ONSALE",
-          optionPriority: 3,
-        },
-        {
-          optionName: "벤티(Venti)",
-          optionPrice: 2000,
-          optionStatus: "OUT_OF_STOCK",
-          optionPriority: 4,
-        },
+        { optionName: "숏", optionPrice: 0, optionStatus: "ONSALE" },
+        { optionName: "톨", optionPrice: 500, optionStatus: "ONSALE" },
+        { optionName: "벤티", optionPrice: 1000, optionStatus: "OUT_OF_STOCK" },
       ],
     },
     {
       optionGroupName: "샷 추가",
-      isRequired: false,
       minSelect: 0,
       maxSelect: 1,
-      priority: 2,
       options: [
-        {
-          optionName: "1번 샷 추가",
-          optionPrice: 500,
-          optionStatus: "ONSALE",
-          optionPriority: 1,
-        },
-        {
-          optionName: "2번 샷 추가",
-          optionPrice: 1000,
-          optionStatus: "ONSALE",
-          optionPriority: 2,
-        },
-      ],
-    },
-    {
-      optionGroupName: "사이드 메뉴",
-      isRequired: false,
-      minSelect: 0,
-      maxSelect: 3,
-      priority: 2,
-      options: [
-        {
-          optionName: "커비번",
-          optionPrice: 3500,
-          optionStatus: "ONSALE",
-          optionPriority: 1,
-        },
-        {
-          optionName: "도넛",
-          optionPrice: 1000,
-          optionStatus: "ONSALE",
-          optionPriority: 2,
-        },
-        {
-          optionName: "샌드위치",
-          optionPrice: 5000,
-          optionStatus: "OUT_OF_STOCK",
-          optionPriority: 3,
-        },
+        { optionName: "1샷", optionPrice: 500, optionStatus: "ONSALE" },
+        { optionName: "2샷", optionPrice: 1000, optionStatus: "ONSALE" },
       ],
     },
   ],
