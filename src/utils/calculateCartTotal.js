@@ -1,5 +1,5 @@
-// hooks/useCartTotal.js
-export default function useCartTotal(menu) {
+// utils/calculateCartTotal.js
+export default function calculateCartTotal(menu) {
   const basePrice = Number(menu.menuPrice) || 0;
   const quantity = Number(menu.quantity) || 0;
 
