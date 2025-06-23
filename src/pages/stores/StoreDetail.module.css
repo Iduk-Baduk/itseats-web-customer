@@ -33,3 +33,14 @@
 .introContent span {
   font-size: 14px;
 }
+
+.storeInfoButton {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 40px;
+  cursor: pointer;
+}
+.storeInfoButton:hover {
+  background-color: var(--background-hover-color);
+}
