@@ -67,7 +67,6 @@ export default function MenuDetail() {
       menuName: dummyMenu.menuName,
       menuPrice: dummyMenu.menuPrice,
       menuOption: selectedOptions,
-      menuTotalPrice: totalPrice,
       quantity,
     };
     dispatch(addMenu(menu));
