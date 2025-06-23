@@ -46,7 +46,7 @@ export default function BottomButton({
                 <span>카트 보기</span>
               </div>
               <div>
-                {cartInfo.orderPrice !== cartInfo.totalPrice && (
+                {cartInfo.totalPrice < cartInfo.orderPrice && (
                   <span className={styles.originalPrice}>
                     {cartInfo.orderPrice.toLocaleString()}원
                   </span>
