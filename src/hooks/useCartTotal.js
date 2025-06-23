@@ -1,11 +1,19 @@
 // hooks/useCartTotal.js
 export default function useCartTotal(menu) {
-  const optionPrice = menu.menuOption?.reduce((sum, group) => {
-    return (
-      sum +
-      group.options.reduce((optSum, opt) => optSum + opt.optionPrice, 0)
-    );
+  const basePrice = Number(menu.menuPrice) || 0;
+  const quantity = Number(menu.quantity) || 0;
+
+  const optionPrice = (menu.menuOption || []).reduce((sum, group) => {
+    const groupOptions = group.options || [];
+
+    const groupSum = groupOptions.reduce((optSum, opt) => {
+      const price = Number(opt.optionPrice);
+      return optSum + (isNaN(price) ? 0 : price);
+    }, 0);
+
+    return sum + groupSum;
   }, 0);
 
-  return (menu.menuPrice + optionPrice) * menu.quantity;
+  const total = (basePrice + optionPrice) * quantity;
+  return isNaN(total) ? 0 : total;
 }
