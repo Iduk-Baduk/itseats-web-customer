@@ -1,10 +1,10 @@
-import PhotoButton from "../components/review/ReviewPhotoButton";
-import ReviewCard from "../components/review/ReviewCard";
-import ReviewTextarea from "../components/review/ReviewTextarea";
-import ReviewItem from "../components/review/ReviewItem";
-import ReviewSubmitButton from "../components/review/ReviewSubmitButton";
-import Header from "../components/common/Header";
-import BottomButton from "../components/common/BottomButton";
+import PhotoButton from "../../components/review/ReviewPhotoButton";
+import ReviewCard from "../../components/review/ReviewCard";
+import ReviewTextarea from "../../components/review/ReviewTextarea";
+import ReviewItem from "../../components/review/ReviewItem";
+import ReviewSubmitButton from "../../components/review/ReviewSubmitButton";
+import Header from "../../components/common/Header";
+import BottomButton from "../../components/common/BottomButton";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
