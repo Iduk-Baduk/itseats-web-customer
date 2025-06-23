@@ -14,7 +14,18 @@ const cartSlice = createSlice({
       state.orderMenus = action.payload;
     },
     addMenu(state, action) {
-      state.orderMenus.push(action.payload);
+      const newItem = action.payload;
+      const existingMenuIndex = state.orderMenus.findIndex(
+        (menu) =>
+          menu.menuId === newItem.menuId &&
+          isEqual(menu.menuOption, newItem.menuOption)
+      );
+
+      if (existingMenuIndex !== -1) {
+        state.orderMenus[existingMenuIndex].quantity += newItem.quantity;
+      } else {
+        state.orderMenus.push(newItem);
+      }
     },
     updateQuantity: (state, action) => {
       const { menuId, menuOption, delta } = action.payload;
