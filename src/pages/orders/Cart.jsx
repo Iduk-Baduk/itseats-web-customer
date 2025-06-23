@@ -105,6 +105,9 @@ export default function Cart() {
                 onQuantityChange={(delta) =>
                   handleQuantityChange(menu.menuId, menu.menuOption, delta)
                 }
+                onDelete={() => {
+                  handleDelete(menu.menuId, menu.menuOption);
+                }}
               />
             </div>
           </div>

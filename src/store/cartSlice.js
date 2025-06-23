@@ -17,25 +17,25 @@ const cartSlice = createSlice({
       state.orderMenus.push(action.payload);
     },
     updateQuantity: (state, action) => {
-  const { menuId, menuOption, delta } = action.payload;
+      const { menuId, menuOption, delta } = action.payload;
 
-  const index = state.orderMenus.findIndex(
-    (menu) =>
-      menu.menuId === menuId &&
-      isEqual(menu.menuOption, menuOption) // deep equal
-  );
+      const index = state.orderMenus.findIndex(
+        (menu) => menu.menuId === menuId && isEqual(menu.menuOption, menuOption) // deep equal
+      );
 
-  if (index !== -1) {
-    const target = state.orderMenus[index];
-    const newQuantity = target.quantity + delta;
-    if (newQuantity >= 1) {
-      target.quantity = newQuantity;
-    }
-  }
-},
+      if (index !== -1) {
+        const target = state.orderMenus[index];
+        const newQuantity = target.quantity + delta;
+        if (newQuantity >= 1) {
+          target.quantity = newQuantity;
+        }
+      }
+    },
     removeMenu(state, action) {
       state.orderMenus = state.orderMenus.filter(
-        (menu, idx) => idx !== action.payload
+        (menu, idx) =>
+          menu.menuId !== action.payload.menuId ||
+          !isEqual(menu.menuOption, action.payload.menuOption)
       );
     },
     clearCart(state) {
