@@ -18,6 +18,7 @@ import AddressEdit from "./pages/address/AddressEdit";
 import AddressNew from "./pages/address/AddressNew";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
+import StoreInfo from "./pages/stores/StoreInfo";
 import MenuDetail from "./pages/stores/MenuDetail";
 import Cart from "./pages/orders/Cart";
 import Register from "./pages/register";
@@ -56,6 +57,7 @@ export default function Root() {
           <Route path="/address/company-add" element={<CompanyAdd />} />
           <Route path="/stores/list" element={<StoreList />} />
           <Route path="/stores/:storeId" element={<StoreDetail />} />
+          <Route path="/stores/:storeId/info" element={<StoreInfo />} />
           <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
           <Route path="/orders/:orderId/status" element={<OrderStatus />} />
           <Route path="/favorites" element={<Favorite />} />
