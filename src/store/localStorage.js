@@ -4,17 +4,16 @@ export const loadCart = () => {
     const serialized = localStorage.getItem("cart");
     return serialized ? JSON.parse(serialized) : [];
   } catch (err) {
-    console.error("❌ Failed to load cart from localStorage:", err);
+    console.error("Failed to load cart", err);
     return [];
   }
 };
 
 export const saveCart = (cart) => {
   try {
-    const serialized = JSON.stringify(cart);
-    localStorage.setItem("cart", serialized);
+    localStorage.setItem("cart", JSON.stringify(cart));
   } catch (err) {
-    console.error("❌ Failed to save cart to localStorage:", err);
+    console.error("Failed to save cart", err);
   }
 };
 
