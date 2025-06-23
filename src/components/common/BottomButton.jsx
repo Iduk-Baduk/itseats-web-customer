@@ -1,3 +1,5 @@
+// src/components/common/BottomButton.jsx
+import { useLocation } from "react-router-dom";
 import styles from "./BottomButton.module.css";
 
 export default function BottomButton({
@@ -7,11 +9,16 @@ export default function BottomButton({
   disabled = false,
   className,
   children,
-  cartInfo, // 💡 필수로 전달받음
+  cartInfo,
 }) {
-  
-if (!children && !cartInfo) return null;
- // cartInfo 없으면 렌더링 생략
+  const location = useLocation();
+
+  if (!children && !cartInfo) return null;
+
+  // ✅ 현재 경로가 /cart이고, 장바구니에 아이템이 있을 때만 "결제하기" 텍스트로 대체
+  const isCartPage = location.pathname === "/cart";
+  const showPaymentText =
+    isCartPage && cartInfo?.itemCount > 0;
 
   return (
     <button
@@ -21,23 +28,32 @@ if (!children && !cartInfo) return null;
       disabled={disabled}
       style={{ bottom: bottom || "0" }}
     >
-      {!children && (
+      {children}
+
+      {!children && cartInfo && (
         <div className={styles.flexContainer}>
-          <div>
-            <span className={styles.itemCount}>{cartInfo.itemCount}</span>
-            <span>카트 보기</span>
-          </div>
-          <div>
-            {cartInfo.orderPrice !== cartInfo.totalPrice && (
-              <span className={styles.originalPrice}>
-                {cartInfo.orderPrice.toLocaleString()}원
-              </span>
-            )}
-            <span>{cartInfo.totalPrice.toLocaleString()}원</span>
-          </div>
+          {showPaymentText ? (
+            <span className={styles.paymentText}>
+              {cartInfo.totalPrice.toLocaleString()}원 결제하기
+            </span>
+          ) : (
+            <>
+              <div>
+                <span className={styles.itemCount}>{cartInfo.itemCount}</span>
+                <span>카트 보기</span>
+              </div>
+              <div>
+                {cartInfo.orderPrice !== cartInfo.totalPrice && (
+                  <span className={styles.originalPrice}>
+                    {cartInfo.orderPrice.toLocaleString()}원
+                  </span>
+                )}
+                <span>{cartInfo.totalPrice.toLocaleString()}원</span>
+              </div>
+            </>
+          )}
         </div>
       )}
-      {children}
     </button>
   );
 }

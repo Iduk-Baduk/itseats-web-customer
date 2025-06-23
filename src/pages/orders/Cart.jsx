@@ -1,14 +1,12 @@
-// ✅ Cart.jsx - Redux 기반으로 리팩토링된 버전 (카트 추가 + BottomButton 연동)
+// src/pages/Cart/Cart.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeMenu, addMenu } from "../../store/cartSlice";
+import { updateQuantity, removeMenu } from "../../store/cartSlice";
+import useCartTotal from "../../hooks/useCartTotal"
+
 import Header from "../../components/common/Header";
-import TextInput from "../../components/common/basic/TextInput";
-import CheckBox from "../../components/common/basic/Checkbox";
-import RadioButton from "../../components/common/basic/RadioButton";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
-import DeliveryRadioButton from "../../components/orders/cart/DeliveryRadioButton";
 import QuantityControl from "../../components/orders/cart/QuantityControl";
 import RiderRequestBottomSheet from "../../components/orders/cart/RiderRequestBottomSheet";
 import BottomButton from "../../components/common/BottomButton";
@@ -20,13 +18,7 @@ export default function Cart() {
   const orderMenus = useSelector((state) => state.cart.orderMenus);
 
   const [isDelivery, setIsDelivery] = useState("delivery");
-  const [deliveryType, setDeliveryType] = useState("default");
-  const [paymentMethod, setPaymentMethod] = useState("credit");
-  const [storeRequest, setStoreRequest] = useState("");
-  const [chopsticks, setChopsticks] = useState(false);
-  const [riderRequest, setRiderRequest] =
-    useState("직접 받을게요 (부재 시 문 앞)");
-  const [riderRequestSelf, setRiderRequestSelf] = useState("");
+  const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
 
   const handleQuantityChange = (menuId, menuOption, delta) => {
@@ -38,15 +30,19 @@ export default function Cart() {
   };
 
   const handlePayment = () => {
-    alert("구현 필요");
+    alert("결제 페이지로 이동 예정!");
   };
 
+  // ✅ 실시간 계산 (구조 B 방식)
   const cartInfo = {
     orderPrice: orderMenus.reduce(
       (sum, m) => sum + m.menuPrice * m.quantity,
       0
     ),
-    totalPrice: orderMenus.reduce((sum, m) => sum + m.menuTotalPrice, 0),
+    totalPrice: orderMenus.reduce(
+      (sum, m) => sum + useCartTotal(m),
+      0
+    ),
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
   };
 
@@ -56,10 +52,9 @@ export default function Cart() {
         title=""
         leftIcon="close"
         rightIcon={null}
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        leftButtonAction={() => navigate(-1)}
       />
+
       <span className={styles.fixed}>
         <DeliveryToggle onChange={(value) => setIsDelivery(value)} />
       </span>
@@ -67,9 +62,6 @@ export default function Cart() {
       <section>
         <h2>스타벅스 구름톤점</h2>
         <hr />
-        {/* <button onClick={handleAddDummyMenu} className={styles.addButton}>
-          메뉴 추가 테스트
-        </button> */}
         {orderMenus.map((menu, index) => (
           <div key={index} className={styles.menuItem}>
             <div className={styles.menuDetails}>
@@ -86,8 +78,7 @@ export default function Cart() {
                           <span key={optionIndex} className={styles.option}>
                             {option.optionName} (+
                             {option.optionPrice.toLocaleString()}원)
-                            {optionIndex < optionGroup.options.length - 1 &&
-                              ", "}
+                            {optionIndex < optionGroup.options.length - 1 && ", "}
                           </span>
                         ))}
                       </span>
@@ -95,7 +86,7 @@ export default function Cart() {
                   </React.Fragment>
                 ))}
                 <p className={styles.menuPrice}>
-                  {menu.menuTotalPrice.toLocaleString()}원
+                  {useCartTotal(menu).toLocaleString()}원
                 </p>
               </div>
             </div>
@@ -105,13 +96,12 @@ export default function Cart() {
                 onQuantityChange={(delta) =>
                   handleQuantityChange(menu.menuId, menu.menuOption, delta)
                 }
-                onDelete={() => {
-                  handleDelete(menu.menuId, menu.menuOption);
-                }}
+                onDelete={() => handleDelete(menu.menuId, menu.menuOption)}
               />
             </div>
           </div>
         ))}
+
         {orderMenus.length === 0 && (
           <p className={styles.emptyCart}>카트가 비었습니다.</p>
         )}
@@ -127,22 +117,8 @@ export default function Cart() {
         request={riderRequest}
         isOpen={isRiderRequestSheetOpen}
         onClose={() => setRiderRequestSheetOpen(false)}
-        onSelect={(request) => {
-          setRiderRequest(request);
-        }}
+        onSelect={(request) => setRiderRequest(request)}
       />
     </div>
   );
 }
-
-const dummyResponse = {
-  defaultTimeMin: 34,
-  defaultTimeMax: 49,
-  onlyOneTimeMin: 32,
-  onlyOneTimeMax: 42,
-  orderPrice: 15000,
-  deliveryFee: 3000,
-  onlyOneFee: 3300,
-  discountValue: 1000,
-  totalCost: 17000,
-};
