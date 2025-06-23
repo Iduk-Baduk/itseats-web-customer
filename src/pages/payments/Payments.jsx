@@ -11,18 +11,23 @@ import {
 import Header from "../../components/common/Header";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./Payments.module.css";
+import Toast from "../../components/common/Toast";
 
 export default function Payments() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const payment = useSelector((state) => state.payment);
-  console.log("🧪 Redux 상태 payment:", payment); // 이 위치에서 찍기
 
   const { cards, accounts, coupayMoney, isLoading, error } = payment;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [toastMsg, setToastMsg] = useState("");
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+  };
 
   // 🎯 결제수단 목록 최초 로딩
   useEffect(() => {
@@ -38,7 +43,6 @@ export default function Payments() {
   const handleConfirmDelete = async () => {
     try {
       const { type, id } = deleteTarget;
-
       const endpoint =
         type === "card" ? `/api/cards/${id}` : `/api/accounts/${id}`;
 
@@ -53,6 +57,7 @@ export default function Payments() {
       }
     } catch (err) {
       console.error("삭제 실패:", err);
+      showToast("삭제에 실패했어요. 다시 시도해 주세요.");
     } finally {
       setModalOpen(false);
       setDeleteTarget(null);
@@ -148,6 +153,7 @@ export default function Payments() {
           onConfirm={handleConfirmDelete}
         />
       )}
+      {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg("")} />}
     </div>
   );
 }
