@@ -1,0 +1,162 @@
+/* AddCard.module.css */
+.container {
+  padding: 84px 20px 40px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.bankBox {
+  background-color:rgb(242, 242, 242);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bankBox:hover {
+  box-shadow: 0 0 0 2px #007aff;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  border-radius: 100%;
+}
+
+.bankName {
+  font-size: 18px;
+  color: #333;
+}
+
+.selectedBank {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.inputBox {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.inputBox.invalid {
+  border-color: #ff3b30;
+}
+
+.inputLabel {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.input[disabled] {
+  color: #999;
+  background-color: transparent;
+  cursor: not-allowed;
+}
+
+.warningText {
+  color: #ff3b30;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+.active {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.disabled {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  background-color: #d0d4d9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1999;
+}
+
+.modalBox {
+  background-color: white;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modalText {
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.modalButton {
+  padding: 10px 20px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
