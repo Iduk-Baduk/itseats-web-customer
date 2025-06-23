@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux"; // ✅ 추가
+import useCartTotal from "../hooks/useCartTotal";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import styles from "./Home.module.css";
@@ -50,7 +51,7 @@ export default function Home() {
 
   const cartInfo = {
     orderPrice: orderMenus.reduce((sum, m) => sum + m.menuPrice * m.quantity, 0),
-    totalPrice: orderMenus.reduce((sum, m) => sum + m.menuTotalPrice, 0),
+    totalPrice: orderMenus.reduce((sum, m) => sum + useCartTotal(m), 0),
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
   };
 
