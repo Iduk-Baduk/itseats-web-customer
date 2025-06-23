@@ -9,7 +9,9 @@ export default function BottomButton({
   children,
   cartInfo, // 💡 필수로 전달받음
 }) {
-  if (!cartInfo) return null; // cartInfo 없으면 렌더링 생략
+  
+if (!children && !cartInfo) return null;
+ // cartInfo 없으면 렌더링 생략
 
   return (
     <button
