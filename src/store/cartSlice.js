@@ -1,5 +1,6 @@
 // src/store/cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import isEqual from "lodash.isequal";
 
 const initialState = {
   orderMenus: [], // [{ menuId, menuName, ... }]
@@ -15,25 +16,23 @@ const cartSlice = createSlice({
     addMenu(state, action) {
       state.orderMenus.push(action.payload);
     },
-    updateQuantity(state, action) {
-      const { menuId, menuOption, delta } = action.payload;
-      const target = state.orderMenus.find(
-        (menu) =>
-          menu.menuId === menuId &&
-          JSON.stringify(menu.menuOption) === JSON.stringify(menuOption)
-      );
-      if (target) {
-        target.quantity = Math.max(1, target.quantity + delta);
-        const basePrice = target.menuPrice;
-        const optionsPrice = target.menuOption.reduce((sum, group) => {
-          return (
-            sum +
-            group.options.reduce((optSum, opt) => optSum + opt.optionPrice, 0)
-          );
-        }, 0);
-        target.menuTotalPrice = (basePrice + optionsPrice) * target.quantity;
-      }
-    },
+    updateQuantity: (state, action) => {
+  const { menuId, menuOption, delta } = action.payload;
+
+  const index = state.orderMenus.findIndex(
+    (menu) =>
+      menu.menuId === menuId &&
+      isEqual(menu.menuOption, menuOption) // deep equal
+  );
+
+  if (index !== -1) {
+    const target = state.orderMenus[index];
+    const newQuantity = target.quantity + delta;
+    if (newQuantity >= 1) {
+      target.quantity = newQuantity;
+    }
+  }
+},
     removeMenu(state, action) {
       state.orderMenus = state.orderMenus.filter(
         (menu, idx) => idx !== action.payload
