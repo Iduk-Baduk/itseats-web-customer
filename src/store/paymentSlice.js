@@ -10,6 +10,10 @@ export const fetchPaymentMethods = createAsyncThunk(
       fetch("/api/accounts"),
     ]);
 
+    if (!cardsRes.ok || !accountsRes.ok) {
+      throw new Error("API 요청 실패");
+    }
+
     const [cards, accounts] = await Promise.all([
       cardsRes.json(),
       accountsRes.json(),
