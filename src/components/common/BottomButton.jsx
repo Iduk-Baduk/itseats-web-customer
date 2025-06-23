@@ -7,19 +7,17 @@ export default function BottomButton({
   disabled = false,
   className,
   children,
-  cartInfo = {
-    orderPrice: 20000,
-    totalPrice: 18000,
-    itemCount: 11,
-  },
+  cartInfo, // 💡 필수로 전달받음
 }) {
+  if (!cartInfo) return null; // cartInfo 없으면 렌더링 생략
+
   return (
     <button
       className={`${styles.bottomButton} ${className || ""}`}
       onClick={onClick}
       aria-label={label}
       disabled={disabled}
-      style={{ bottom: bottom ? bottom : "0" }}
+      style={{ bottom: bottom || "0" }}
     >
       {!children && (
         <div className={styles.flexContainer}>
@@ -28,7 +26,11 @@ export default function BottomButton({
             <span>카트 보기</span>
           </div>
           <div>
-            <span className={styles.originalPrice}>{cartInfo.orderPrice.toLocaleString()}원</span>
+            {cartInfo.orderPrice !== cartInfo.totalPrice && (
+              <span className={styles.originalPrice}>
+                {cartInfo.orderPrice.toLocaleString()}원
+              </span>
+            )}
             <span>{cartInfo.totalPrice.toLocaleString()}원</span>
           </div>
         </div>
