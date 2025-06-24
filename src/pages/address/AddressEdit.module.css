@@ -20,6 +20,11 @@
   margin-bottom: 16px;
 }
 
+.map {
+  width: 100%;
+  height: 100%;
+}
+
 .mapPlaceholder {
   width: 100%;
   height: 100%;
@@ -39,7 +44,14 @@
   border-radius: 16px;
   font-size: 14px;
   border: 1px solid var(--border-color);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.pinButton:hover {
+  background-color: #f8f9fa;
+}
+
 .iconWithContent {
   display: flex;
   align-items: center;

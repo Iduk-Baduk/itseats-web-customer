@@ -15,11 +15,20 @@ export default function AddressEdit() {
   const [detailAddress, setDetailAddress] = useState("");
   const [guideMessage, setGuideMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState(null);
+  const [customLabel, setCustomLabel] = useState("");
 
   useEffect(() => {
     if (addressToEdit) {
       setCurrentLabel(addressToEdit.label);
       setGuideMessage(addressToEdit.guide || "");
+      setCurrentAddress(addressToEdit);
+      
+      // 기타 라벨이 아닌 경우 별칭 설정
+      if (addressToEdit.label !== "집" && addressToEdit.label !== "회사") {
+        setCustomLabel(addressToEdit.label);
+        setCurrentLabel("기타");
+      }
       
       // 상세주소 분리 로직 개선
       if (addressToEdit.address.includes(addressToEdit.roadAddress)) {
@@ -27,20 +36,28 @@ export default function AddressEdit() {
       } else {
          setDetailAddress(""); // 혹은 다른 기본값
       }
-
     }
   }, [addressToEdit]);
+
+  const handleAddressChange = (newAddress) => {
+    setCurrentAddress(newAddress);
+  };
 
   if (!addressToEdit) {
     return <div>주소를 찾을 수 없습니다.</div>;
   }
 
   const handleSubmit = () => {
+    const finalLabel = currentLabel === "기타" && customLabel ? customLabel : currentLabel;
+    
     const updatedAddress = {
       ...addressToEdit,
-      label: currentLabel,
-      address: `${addressToEdit.roadAddress} ${detailAddress}`.trim(),
+      label: finalLabel,
+      address: `${currentAddress.roadAddress} ${detailAddress}`.trim(),
+      roadAddress: currentAddress.roadAddress,
       guide: guideMessage,
+      lat: currentAddress.lat,
+      lng: currentAddress.lng,
     };
     updateAddress(updatedAddress);
     navigate("/address", { replace: true });
@@ -61,7 +78,7 @@ export default function AddressEdit() {
         rightButtonAction={() => setIsModalOpen(true)}
       />
       <AddressForm
-        address={addressToEdit}
+        address={currentAddress || addressToEdit}
         currentLabel={currentLabel}
         detailAddress={detailAddress}
         guideMessage={guideMessage}
@@ -69,6 +86,9 @@ export default function AddressEdit() {
         onChangeGuide={(e) => setGuideMessage(e.target.value)}
         onChangeLabel={setCurrentLabel}
         onSubmit={handleSubmit}
+        onAddressChange={handleAddressChange}
+        customLabel={customLabel}
+        onChangeCustomLabel={(e) => setCustomLabel(e.target.value)}
       />
       {isModalOpen && (
         <ConfirmModal
