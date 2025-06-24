@@ -65,8 +65,7 @@ export default function Address() {
       <button
         className={`${styles.locationBtn}`}
         onClick={() => {
-          /* 현재 위치로 주소 찾는 기능 구현 필요 */
-          navigate("/address/new?current=true", { replace: true });
+          navigate("/address/current-location", { replace: true });
         }}
       >
         <img

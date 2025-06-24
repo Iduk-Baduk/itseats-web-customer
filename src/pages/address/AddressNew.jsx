@@ -19,16 +19,24 @@ export default function AddressNew() {
   const [currentLabel, setCurrentLabel] = useState(state?.label || "기타");
   const [detailAddress, setDetailAddress] = useState("");
   const [guideMessage, setGuideMessage] = useState("");
+  const [currentAddress, setCurrentAddress] = useState(initialAddress);
+  const [customLabel, setCustomLabel] = useState("");
+
+  const handleAddressChange = (newAddress) => {
+    setCurrentAddress(newAddress);
+  };
 
   const handleSubmit = () => {
-    const fullAddress = [initialAddress.address, detailAddress].filter(Boolean).join(' ');
+    const fullAddress = [currentAddress.address, detailAddress].filter(Boolean).join(' ');
+    const finalLabel = currentLabel === "기타" && customLabel ? customLabel : currentLabel;
+    
     addAddress({
-      label: currentLabel,
+      label: finalLabel,
       address: fullAddress,
-      roadAddress: initialAddress.roadAddress,
+      roadAddress: currentAddress.roadAddress,
       guide: guideMessage,
-      lat: initialAddress.lat,
-      lng: initialAddress.lng,
+      lat: currentAddress.lat,
+      lng: currentAddress.lng,
       wowZone: true, // wowZone 로직은 추후 추가
     });
     navigate("/address", { replace: true });
@@ -45,7 +53,7 @@ export default function AddressNew() {
         }}
       />
       <AddressForm
-        address={initialAddress}
+        address={currentAddress}
         currentLabel={currentLabel}
         detailAddress={detailAddress}
         guideMessage={guideMessage}
@@ -53,6 +61,9 @@ export default function AddressNew() {
         onChangeGuide={(e) => setGuideMessage(e.target.value)}
         onChangeLabel={setCurrentLabel}
         onSubmit={handleSubmit}
+        onAddressChange={handleAddressChange}
+        customLabel={customLabel}
+        onChangeCustomLabel={(e) => setCustomLabel(e.target.value)}
       />
     </>
   );

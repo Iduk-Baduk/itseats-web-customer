@@ -1,5 +1,5 @@
+import { useState, useEffect, useRef } from "react";
 import { getIconByLabel } from "../../utils/addressUtils";
-import CommonMap from "../../components/common/CommonMap";
 import styles from "./AddressEdit.module.css";
 
 export default function AddressForm({
@@ -11,15 +11,118 @@ export default function AddressForm({
   onChangeGuide,
   onChangeLabel,
   onSubmit,
+  onAddressChange,
+  customLabel,
+  onChangeCustomLabel,
 }) {
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  
+  const [currentAddress, setCurrentAddress] = useState(address);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
+
+  // 카카오맵 초기화
+  const initializeMap = () => {
+    if (!window.kakao?.maps || isMapInitialized) return;
+
+    const mapContainer = mapRef.current;
+    const mapOption = {
+      center: new window.kakao.maps.LatLng(address.lat || 37.5665, address.lng || 126.978),
+      level: 3,
+    };
+
+    const map = new window.kakao.maps.Map(mapContainer, mapOption);
+    mapInstanceRef.current = map;
+
+    // 마커 생성 (중앙에 고정)
+    const marker = new window.kakao.maps.Marker({
+      position: new window.kakao.maps.LatLng(address.lat || 37.5665, address.lng || 126.978),
+    });
+    marker.setMap(map);
+    markerRef.current = marker;
+
+    // 지도 이동 이벤트 (마커도 중앙에 따라 이동)
+    window.kakao.maps.event.addListener(map, "dragend", () => {
+      const center = map.getCenter();
+      const newPosition = {
+        lat: center.getLat(),
+        lng: center.getLng(),
+      };
+      
+      // 마커를 중앙으로 이동
+      marker.setPosition(center);
+      getAddressFromCoords(newPosition);
+    });
+
+    // 지도 줌 이벤트 (마커도 중앙에 따라 이동)
+    window.kakao.maps.event.addListener(map, "zoom_changed", () => {
+      const center = map.getCenter();
+      const newPosition = {
+        lat: center.getLat(),
+        lng: center.getLng(),
+      };
+      
+      // 마커를 중앙으로 이동
+      marker.setPosition(center);
+      getAddressFromCoords(newPosition);
+    });
+
+    setIsMapInitialized(true);
+  };
+
+  // 좌표로 주소 정보 가져오기
+  const getAddressFromCoords = (position) => {
+    if (!window.kakao?.maps?.services?.Geocoder) {
+      return;
+    }
+
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    const coord = new window.kakao.maps.LatLng(position.lat, position.lng);
+
+    geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        const address = result[0].address.address_name;
+        const roadAddress = result[0].road_address?.address_name || "";
+        
+        const newAddress = {
+          ...currentAddress,
+          address,
+          roadAddress,
+          lat: position.lat,
+          lng: position.lng,
+        };
+        
+        setCurrentAddress(newAddress);
+        if (onAddressChange) {
+          onAddressChange(newAddress);
+        }
+      }
+    });
+  };
+
+  // 핀 조정 버튼 클릭 시 지도 중앙으로 이동
+  const handlePinAdjust = () => {
+    if (mapInstanceRef.current && markerRef.current) {
+      const markerPosition = markerRef.current.getPosition();
+      mapInstanceRef.current.panTo(markerPosition);
+    }
+  };
+
+  useEffect(() => {
+    initializeMap();
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.mapContainer}>
-        <CommonMap lat={address.lat || 37.5665} lng={address.lng || 126.978} />
-        <button className={styles.pinButton}>핀 조정하기</button>
+        <div ref={mapRef} className={styles.map}></div>
+        <button className={styles.pinButton} onClick={handlePinAdjust}>
+          핀 조정하기
+        </button>
       </div>
 
-      {address && (
+      {currentAddress && (
         <div className={styles.iconWithContent}>
           <img
             src={"/icons/location/mapmarkerIcon.svg"}
@@ -27,9 +130,9 @@ export default function AddressForm({
             className={styles.labelIcon}
           />
           <div className={styles.addressTextGroup}>
-            <p className={styles.primaryAddress}>{address.address}</p>
-            <p className={styles.secondaryAddress}>{address.roadAddress}</p>
-            {address.wowZone && (
+            <p className={styles.primaryAddress}>{currentAddress.address}</p>
+            <p className={styles.secondaryAddress}>{currentAddress.roadAddress}</p>
+            {currentAddress.wowZone && (
               <div className={styles.wowArea}>
                 <span className={styles.wow}>WOW</span>
                 <span className={styles.wowText}>무료배달 가능 지역</span>
@@ -71,6 +174,16 @@ export default function AddressForm({
           </button>
         ))}
       </div>
+
+      {/* 기타 라벨 선택 시 별칭 설정 입력창 */}
+      {currentLabel === "기타" && (
+        <input
+          className={styles.detailInput}
+          value={customLabel || ""}
+          onChange={onChangeCustomLabel}
+          placeholder="별칭 설정 (예: 학교, 친구집)"
+        />
+      )}
 
       <button className={styles.submitButton} onClick={onSubmit}>
         완료
