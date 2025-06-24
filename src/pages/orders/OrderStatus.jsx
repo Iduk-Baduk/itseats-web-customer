@@ -1,18 +1,45 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
 import LineButton from "../../components/common/basic/LineButton";
+import { ORDER_STATUS_CONFIG } from "../../constants/orderStatus";
+import { calculateETA, getOrderStep, isValidOrderStatus } from "../../utils/orderUtils";
 import styles from "./OrderStatus.module.css";
 
 export default function OrderStatus() {
   const navigate = useNavigate();
 
-  const [orderStatusString, setOrderStatusString] = useState(
-    getOrderStatusString(dummyOrderStatus.orderStatus)
-  );
+  // 주문 상태 정보 계산 (useMemo로 성능 최적화)
+  const orderStatusInfo = useMemo(() => {
+    const status = dummyOrderStatus.orderStatus;
+    
+    if (!isValidOrderStatus(status)) {
+      console.warn(`Unknown order status: ${status}`);
+      return {
+        step: -1,
+        person: "잇츠잇츠",
+        message: "주문 상태를 확인 중입니다",
+        image: null,
+        showMap: false,
+        showETA: false
+      };
+    }
+    
+    return ORDER_STATUS_CONFIG[status];
+  }, []);
+
+  // 도착 예정시간 계산
+  const etaInfo = useMemo(() => {
+    return calculateETA(dummyOrderStatus.deliveryEta);
+  }, []);
+
+  // 진행률 단계 계산
+  const progressStep = useMemo(() => {
+    return getOrderStep(dummyOrderStatus.orderStatus);
+  }, []);
 
   return (
     <SlideInFromRight>
@@ -26,48 +53,58 @@ export default function OrderStatus() {
           }}
         />
         <div className={styles.container}>
-          <div className={styles.map}>
-            <CommonMap
-              lat={dummyOrderStatus.storeLocation.lat}
-              lng={dummyOrderStatus.storeLocation.lng}
-              markers={[
-                {
-                  lat: dummyOrderStatus.storeLocation.lat,
-                  lng: dummyOrderStatus.storeLocation.lng,
-                  type: "store",
-                },
-                {
-                  lat: dummyOrderStatus.destinationLocation.lat,
-                  lng: dummyOrderStatus.destinationLocation.lng,
-                  type: "user",
-                },
-              ]}
-              height="100%"
-              level={6}
-            />
-          </div>
-          <div className={styles.statusContainer}>
-            <div className={styles.statusIndicator}>
-              <span className={styles.statusText}>도착 예정시간</span>
-              <p className={styles.estimatedTime}>
-                8분<span>(오후 07:03)</span>
-              </p>
+          {/* 지도 표시 - 상태에 따라 조건부 렌더링 */}
+          {orderStatusInfo.showMap && (
+            <div className={styles.map}>
+              <CommonMap
+                lat={dummyOrderStatus.storeLocation.lat}
+                lng={dummyOrderStatus.storeLocation.lng}
+                markers={[
+                  {
+                    lat: dummyOrderStatus.storeLocation.lat,
+                    lng: dummyOrderStatus.storeLocation.lng,
+                    type: "store",
+                  },
+                  {
+                    lat: dummyOrderStatus.destinationLocation.lat,
+                    lng: dummyOrderStatus.destinationLocation.lng,
+                    type: "user",
+                  },
+                ]}
+                height="100%"
+                level={6}
+              />
             </div>
-            <OrderProgress currentStep={orderStatusString.step} />
+          )}
+          
+          <div className={styles.statusContainer}>
+            {/* 도착 예정시간 표시 - 상태에 따라 조건부 렌더링 */}
+            {orderStatusInfo.showETA && etaInfo && (
+              <div className={styles.statusIndicator}>
+                <span className={styles.statusText}>도착 예정시간</span>
+                <p className={styles.estimatedTime}>
+                  {etaInfo.minutes}분<span>({etaInfo.timeString})</span>
+                </p>
+              </div>
+            )}
+            
+            <OrderProgress orderStatus={dummyOrderStatus.orderStatus} />
 
+            {/* 주문 상태 정보 표시 */}
             <div className={styles.statusPerson}>
-              {orderStatusString.image && (
+              {orderStatusInfo.image && (
                 <img
-                  src={orderStatusString.image}
-                  alt={orderStatusString.person}
+                  src={orderStatusInfo.image}
+                  alt={orderStatusInfo.person}
                 />
               )}
               <div>
-                <span>{orderStatusString.person}</span>
-                <p>{orderStatusString.message}</p>
+                <span>{orderStatusInfo.person}</span>
+                <p>{orderStatusInfo.message}</p>
               </div>
             </div>
 
+            {/* 주문 상세 정보 */}
             <div className={styles.orderDetails}>
               <div className={styles.orderInfo}>
                 <p className={styles.storeName}>{dummyOrderStatus.storeName}</p>
@@ -89,9 +126,12 @@ export default function OrderStatus() {
               </div>
             </div>
 
-            <LineButton className={styles.helpButton}>
-              <p>도움이 필요하신가요?</p>
-            </LineButton>
+            {/* 도움말 버튼 - 진행 중인 주문에만 표시 */}
+            {orderStatusInfo.showMap && (
+              <LineButton className={styles.helpButton}>
+                <p>도움이 필요하신가요?</p>
+              </LineButton>
+            )}
           </div>
         </div>
       </div>
@@ -99,72 +139,7 @@ export default function OrderStatus() {
   );
 }
 
-function getOrderStatusString(status) {
-  switch (status) {
-    case "WAITING":
-      return {
-        step: 0,
-        person: "사장님",
-        message: "주문을 접수하고 있어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "COOKING":
-      return {
-        step: 1,
-        person: "사장님",
-        message: "음식을 맛있게 조리하고 있어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "COOKED":
-      return {
-        step: 2,
-        person: "사장님",
-        message: "음식 조리를 완료했어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "RIDER_READY":
-      return {
-        step: 2,
-        person: "배달파트너",
-        message: "음식을 가지러 가고 있어요",
-        image: "/icons/order/rider.jpg",
-      };
-    case "DELIVERING":
-      return {
-        step: 2,
-        person: "배달파트너",
-        message: "배달 중이에요",
-        image: "/icons/order/rider.jpg",
-      };
-    case "DELIVERED": {
-      return {
-        step: 3,
-        person: "배달파트너",
-        message: "목적지로 배달을 완료했어요",
-        image: "/icons/order/rider.jpg",
-      };
-    }
-    case "COMPLETED":
-      return {
-        step: 4,
-        person: "잇츠잇츠",
-        message: "주문이 완료되었어요",
-      };
-    case "CANCELED":
-      return {
-        step: -1,
-        person: "잇츠잇츠",
-        message: "주문이 취소되었어요",
-      };
-    default:
-      return {
-        step: -1,
-        person: "알 수 없음",
-        message: "주문 상태를 알 수 없어요",
-      };
-  }
-}
-
+// 더미 데이터 (기존과 동일하게 유지)
 const dummyOrderStatus = {
   deliveryEta: "2025-06-11T08:11:00",
   orderStatus: "COOKED",
