@@ -18,10 +18,6 @@ export default function AddressEdit() {
 
   useEffect(() => {
     if (addressToEdit) {
-      const addressParts = addressToEdit.address.split(" ");
-      const mainAddress = addressParts.slice(0, -1).join(" ");
-      const detail = addressParts[addressParts.length - 1];
-
       setCurrentLabel(addressToEdit.label);
       setGuideMessage(addressToEdit.guide || "");
       

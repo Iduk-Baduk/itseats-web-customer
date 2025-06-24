@@ -15,19 +15,25 @@ export default function AddressSearch() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    if (!keyword || !window.kakao || !window.kakao.maps.services) {
+    if (!keyword || !window.kakao?.maps?.services?.Places) {
       setResults([]);
       return;
     }
 
-    const ps = new window.kakao.maps.services.Places();
-    ps.keywordSearch(keyword, (data, status) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        setResults(data);
-      } else {
-        setResults([]);
-      }
-    });
+    try {
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(keyword, (data, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          setResults(data);
+        } else {
+          console.warn('Kakao search failed:', status);
+          setResults([]);
+        }
+      });
+    } catch (error) {
+      console.error('Kakao API error:', error);
+      setResults([]);
+    }
   }, [keyword]);
 
   const handleSearch = () => {

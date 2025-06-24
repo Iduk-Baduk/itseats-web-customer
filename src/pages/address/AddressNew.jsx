@@ -21,7 +21,7 @@ export default function AddressNew() {
   const [guideMessage, setGuideMessage] = useState("");
 
   const handleSubmit = () => {
-    const fullAddress = `${initialAddress.address} ${detailAddress}`;
+    const fullAddress = [initialAddress.address, detailAddress].filter(Boolean).join(' ');
     addAddress({
       label: currentLabel,
       address: fullAddress,
