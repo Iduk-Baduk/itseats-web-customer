@@ -2,6 +2,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createMenuOptionHash } from "../utils/hashUtils";
 
+// localStorage 저장 함수 추가
+const saveToLocalStorage = (state) => {
+  try {
+    const serializedState = JSON.stringify(state.orderMenus);
+    localStorage.setItem("itseats-cart", serializedState);
+  } catch (e) {
+    console.warn("Could not save cart state to localStorage", e);
+  }
+};
+
 const initialState = {
   orderMenus: [], // [{ menuId, menuName, ... }]
 };
@@ -12,6 +22,7 @@ const cartSlice = createSlice({
   reducers: {
     initializeCart(state, action) {
       state.orderMenus = action.payload;
+      saveToLocalStorage(state);
     },
     addMenu(state, action) {
       const newItem = action.payload;
@@ -27,6 +38,7 @@ const cartSlice = createSlice({
       } else {
         state.orderMenus.push(newItem);
       }
+      saveToLocalStorage(state);
     },
     updateQuantity: (state, action) => {
       const { menuId, menuOptionHash, delta } = action.payload;
@@ -40,9 +52,13 @@ const cartSlice = createSlice({
       if (index !== -1) {
         const target = state.orderMenus[index];
         const newQuantity = target.quantity + delta;
-        if (newQuantity >= 1) {
+        if (newQuantity <= 0) {
+          // 수량이 0 이하가 되면 아이템 제거
+          state.orderMenus.splice(index, 1);
+        } else {
           target.quantity = newQuantity;
         }
+        saveToLocalStorage(state);
       }
     },
     removeMenu(state, action) {
@@ -52,9 +68,11 @@ const cartSlice = createSlice({
           menu.menuId !== menuId ||
           createMenuOptionHash(menu.menuOption) !== menuOptionHash
       );
+      saveToLocalStorage(state);
     },
     clearCart(state) {
       state.orderMenus = [];
+      saveToLocalStorage(state);
     },
   },
 });
