@@ -34,6 +34,12 @@ export const calculateETA = (deliveryEta) => {
  * @returns {number} 진행률 단계 (0-4, -1은 취소)
  */
 export const getOrderStep = (orderStatus) => {
+  // null이나 undefined 체크
+  if (!orderStatus) {
+    console.warn('Order status is null or undefined');
+    return 0;
+  }
+  
   const stepMapping = {
     'WAITING': 0,
     'COOKING': 1,
@@ -45,7 +51,13 @@ export const getOrderStep = (orderStatus) => {
     'CANCELED': -1
   };
   
-  return stepMapping[orderStatus] || 0;
+  const step = stepMapping[orderStatus];
+  if (step === undefined) {
+    console.warn(`Unknown order status: ${orderStatus}`);
+    return 0;
+  }
+  
+  return step;
 };
 
 /**
@@ -54,6 +66,8 @@ export const getOrderStep = (orderStatus) => {
  * @returns {boolean} 유효한 상태인지 여부
  */
 export const isValidOrderStatus = (orderStatus) => {
+  if (!orderStatus) return false;
+  
   const validStatuses = [
     'CANCELED', 'WAITING', 'COOKING', 'COOKED', 
     'RIDER_READY', 'DELIVERING', 'DELIVERED', 'COMPLETED'
