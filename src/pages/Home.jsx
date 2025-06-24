@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux"; // ✅ 추가
+import { useSelector } from "react-redux";
+import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
@@ -10,6 +11,7 @@ import BottomButton from "../components/common/BottomButton";
 
 function HomeHeader() {
   const navigate = useNavigate();
+  const { selectedAddress } = useAddressRedux();
 
   return (
     <header className={styles.header}>
@@ -24,7 +26,7 @@ function HomeHeader() {
             d="M12 21.325q-.35 0-.7-.125t-.625-.375Q9.05 19.325 7.8 17.9t-2.087-2.762t-1.275-2.575T4 10.2q0-3.75 2.413-5.975T12 2t5.588 2.225T20 10.2q0 1.125-.437 2.363t-1.275 2.575T16.2 17.9t-2.875 2.925q-.275.25-.625.375t-.7.125M12 12q.825 0 1.413-.587T14 10t-.587-1.412T12 8t-1.412.588T10 10t.588 1.413T12 12"
           />
         </svg>
-        <span>집</span>
+        <span>{selectedAddress ? selectedAddress.label : "주소 선택"}</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path
             fill="currentColor"
@@ -47,7 +49,7 @@ const dummyStores = [
 export default function Home() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
-  const orderMenus = useSelector((state) => state.cart.orderMenus); // ✅ 장바구니 상태
+  const orderMenus = useSelector((state) => state.cart.orderMenus);
 
   const cartInfo = {
     orderPrice: orderMenus.reduce((sum, m) => sum + m.menuPrice * m.quantity, 0),
@@ -81,7 +83,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* ✅ 카트에 항목이 있을 때만 버튼 표시 */}
       {orderMenus.length > 0 && (
         <BottomButton
           bottom="60px"

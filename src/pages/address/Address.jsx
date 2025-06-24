@@ -1,34 +1,35 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAddressManager, { getIconByLabel } from "../../hooks/useAddressManager";
+import useAddressRedux from "../../hooks/useAddressRedux";
+import { getIconByLabel } from "../../utils/addressUtils";
 import Header from "../../components/common/Header";
 import styles from "./Address.module.css";
 
 export default function Address() {
   const navigate = useNavigate();
-  const {
-    addressList,
-    selectedId,
-    selectAddress,
-    keyword,
-    setKeyword,
-  } = useAddressManager();
+  const { addresses, selectedAddressId, selectAddress } = useAddressRedux();
+  const [keyword, setKeyword] = useState("");
 
   const handleSearch = () => {
-  if (keyword.trim() === "") return;
-  navigate(`/address/search?keyword=${encodeURIComponent(keyword)}`);
-};
+    if (keyword.trim() === "") return;
+    navigate(`/address/search?keyword=${encodeURIComponent(keyword)}`, { replace: true });
+  };
 
-  // 👇 회사 주소 존재 여부
-  const hasCompanyAddress = addressList.some((addr) => addr.label === "회사");
+  const handleAddressSelect = (addressId) => {
+    selectAddress(addressId);
+    // 주소 선택 후 홈 화면으로 이동
+    navigate("/", { replace: true });
+  };
 
-  // 👇 회사 주소를 2번째 위치로 정렬한 리스트
-  const sortedList = (() => {
-    if (!hasCompanyAddress) return addressList;
+  const hasHomeAddress = addresses.some((addr) => addr.label === "집");
+  const hasCompanyAddress = addresses.some((addr) => addr.label === "회사");
 
-    const company = addressList.find((addr) => addr.label === "회사");
-    const others = addressList.filter((addr) => addr.label !== "회사");
-    return [others[0], company, ...others.slice(1)];
-  })();
+  const sortedAddresses = [...addresses].sort((a, b) => {
+    const order = { 집: 1, 회사: 2 };
+    const aOrder = order[a.label] || 3;
+    const bOrder = order[b.label] || 3;
+    return aOrder - bOrder;
+  });
 
   return (
     <div className={styles.container}>
@@ -63,25 +64,48 @@ export default function Address() {
       {/* 📍 현재 위치 버튼 */}
       <button
         className={`${styles.locationBtn}`}
-        onClick={() => selectAddress(0)}
+        onClick={() => {
+          navigate("/address/current-location", { replace: true });
+        }}
       >
         <img
           src={getIconByLabel("GPS")}
           alt="gps-icon"
-          className={styles.gpsIcon}
+          className={styles.icon}
         />
         현재 위치로 주소 찾기
       </button>
 
+      {/* 🏠 집/회사 추가 버튼 */}
+      <div className={styles.addButtonsContainer}>
+        {!hasHomeAddress && (
+          <button
+            className={styles.addAddressBtn}
+            onClick={() => navigate("/address/search?add=home", { replace: true })}
+          >
+            <img src={getIconByLabel("집")} alt="home-icon" />집 추가
+          </button>
+        )}
+        {!hasCompanyAddress && (
+          <button
+            className={styles.addAddressBtn}
+            onClick={() => navigate("/address/search?add=company", { replace: true })}
+          >
+            <img src={getIconByLabel("회사")} alt="company-icon" />
+            회사 추가
+          </button>
+        )}
+      </div>
+
       {/* 📦 주소 리스트 */}
       <div className={styles.addressList}>
-        {sortedList.map((addr, index) => (
+        {sortedAddresses.map((addr, index) => (
           <div key={addr.id}>
             <div
               className={`${styles.addressBox} ${
-                selectedId === addr.id ? styles.selected : ""
+                selectedAddressId === addr.id ? styles.selected : ""
               }`}
-              onClick={() => selectAddress(addr.id)}
+              onClick={() => handleAddressSelect(addr.id)}
             >
               <div className={styles.addressHeader}>
                 <div className={styles.iconWithContent}>
@@ -103,9 +127,13 @@ export default function Address() {
                     )}
                   </div>
                 </div>
-                <button 
+                <button
                   className={styles.editBtn}
-                  onClick={() => navigate(`/address/edit/${addr.id}`)}>
+                  onClick={(e) => {
+                    e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
+                    navigate(`/address/edit/${addr.id}`, { replace: true });
+                  }}
+                >
                   <img
                     src={getIconByLabel("수정")}
                     alt="edit-icon"
@@ -114,24 +142,6 @@ export default function Address() {
                 </button>
               </div>
             </div>
-
-            {/* ✅ 회사가 없을 때만 "회사 추가" 노출 */}
-            {!hasCompanyAddress && index === 0 && (
-              <div
-                className={styles.companyAdd}
-                onClick={() => navigate("/address/company-add")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.iconWithContent}>
-                  <img
-                    src={getIconByLabel("회사")}
-                    alt="company-icon"
-                    className={styles.icon}
-                  />
-                  <span className={styles.companyAddText}>회사 추가</span>
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>
