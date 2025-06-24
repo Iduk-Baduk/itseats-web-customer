@@ -12,7 +12,13 @@ export default function Address() {
 
   const handleSearch = () => {
     if (keyword.trim() === "") return;
-    navigate(`/address/search?keyword=${encodeURIComponent(keyword)}`);
+    navigate(`/address/search?keyword=${encodeURIComponent(keyword)}`, { replace: true });
+  };
+
+  const handleAddressSelect = (addressId) => {
+    selectAddress(addressId);
+    // 주소 선택 후 홈 화면으로 이동
+    navigate("/", { replace: true });
   };
 
   const hasHomeAddress = addresses.some((addr) => addr.label === "집");
@@ -60,7 +66,7 @@ export default function Address() {
         className={`${styles.locationBtn}`}
         onClick={() => {
           /* 현재 위치로 주소 찾는 기능 구현 필요 */
-          navigate("/address/new?current=true");
+          navigate("/address/new?current=true", { replace: true });
         }}
       >
         <img
@@ -76,7 +82,7 @@ export default function Address() {
         {!hasHomeAddress && (
           <button
             className={styles.addAddressBtn}
-            onClick={() => navigate("/address/search?add=home")}
+            onClick={() => navigate("/address/search?add=home", { replace: true })}
           >
             <img src={getIconByLabel("집")} alt="home-icon" />집 추가
           </button>
@@ -84,7 +90,7 @@ export default function Address() {
         {!hasCompanyAddress && (
           <button
             className={styles.addAddressBtn}
-            onClick={() => navigate("/address/search?add=company")}
+            onClick={() => navigate("/address/search?add=company", { replace: true })}
           >
             <img src={getIconByLabel("회사")} alt="company-icon" />
             회사 추가
@@ -100,7 +106,7 @@ export default function Address() {
               className={`${styles.addressBox} ${
                 selectedAddressId === addr.id ? styles.selected : ""
               }`}
-              onClick={() => selectAddress(addr.id)}
+              onClick={() => handleAddressSelect(addr.id)}
             >
               <div className={styles.addressHeader}>
                 <div className={styles.iconWithContent}>
@@ -126,7 +132,7 @@ export default function Address() {
                   className={styles.editBtn}
                   onClick={(e) => {
                     e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
-                    navigate(`/address/edit/${addr.id}`);
+                    navigate(`/address/edit/${addr.id}`, { replace: true });
                   }}
                 >
                   <img
