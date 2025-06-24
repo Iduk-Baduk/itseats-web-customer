@@ -2,26 +2,26 @@
  * 장바구니 아이템의 총 가격을 계산합니다.
  * 메뉴 가격 + 옵션 가격들을 모두 포함합니다.
  * 
- * @param {Object} menuItem - 장바구니에 담긴 메뉴 아이템
+ * @param {Object} menu - 장바구니에 담긴 메뉴 아이템
  * @returns {number} 총 가격
  */
-export default function calculateCartTotal(menuItem) {
-  if (!menuItem) return 0;
+export default function calculateCartTotal(menu) {
+  const basePrice = Number(menu.menuPrice) || 0;
+  const quantity = Number(menu.quantity) || 0;
 
-  // 기본 메뉴 가격
-  let total = menuItem.menuPrice || 0;
+  const optionPrice = (menu.menuOption || []).reduce((sum, group) => {
+    const groupOptions = group.options || [];
 
-  // 옵션 가격들 추가
-  if (menuItem.selectedOptions && Array.isArray(menuItem.selectedOptions)) {
-    total += menuItem.selectedOptions.reduce((sum, option) => {
-      return sum + (option.price || 0);
+    const groupSum = groupOptions.reduce((optSum, opt) => {
+      const price = Number(opt.optionPrice);
+      return optSum + (isNaN(price) ? 0 : price);
     }, 0);
-  }
 
-  // 수량 곱하기
-  total *= (menuItem.quantity || 1);
+    return sum + groupSum;
+  }, 0);
 
-  return total;
+  const total = (basePrice + optionPrice) * quantity;
+  return isNaN(total) ? 0 : total;
 }
 
 /**
