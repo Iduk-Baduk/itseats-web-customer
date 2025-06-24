@@ -34,4 +34,9 @@ const store = configureStore({
   devTools: true,
 });
 
+// 개발 환경에서 store를 window 객체에 노출 (테스트용)
+if (process.env.NODE_ENV === 'development') {
+  window.__REDUX_STORE__ = store;
+}
+
 export default store;
