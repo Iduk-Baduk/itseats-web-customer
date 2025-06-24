@@ -1,9 +1,10 @@
 // src/pages/Cart/Cart.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu } from "../../store/cartSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
+import { createMenuOptionHash } from "../../utils/hashUtils";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -22,19 +23,21 @@ export default function Cart() {
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
 
   const handleQuantityChange = (menuId, menuOption, delta) => {
-    dispatch(updateQuantity({ menuId, menuOption, delta }));
+    const menuOptionHash = createMenuOptionHash(menuOption);
+    dispatch(updateQuantity({ menuId, menuOptionHash, delta }));
   };
 
   const handleDelete = (menuId, menuOption) => {
-    dispatch(removeMenu({ menuId, menuOption }));
+    const menuOptionHash = createMenuOptionHash(menuOption);
+    dispatch(removeMenu({ menuId, menuOptionHash }));
   };
 
   const handlePayment = () => {
     alert("결제 페이지로 이동 예정!");
   };
 
-  // ✅ 실시간 계산 (구조 B 방식)
-  const cartInfo = {
+  // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
+  const cartInfo = useMemo(() => ({
     orderPrice: orderMenus.reduce(
       (sum, m) => sum + m.menuPrice * m.quantity,
       0
@@ -44,7 +47,7 @@ export default function Cart() {
       0
     ),
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-  };
+  }), [orderMenus]);
 
   return (
     <div className={styles.container}>
