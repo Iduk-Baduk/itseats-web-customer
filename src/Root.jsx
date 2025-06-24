@@ -34,6 +34,7 @@ import AddPaymentMethod from "./pages/payments/AddPaymentMethod";
 import AddCard from "./pages/payments/AddCard";
 import AddAccount from "./pages/payments/AddAccount";
 import Counter from "./components/Counter";
+import TestOrder from "./pages/TestOrder";
 
 export default function Root() {
   const location = useLocation();
@@ -73,6 +74,7 @@ export default function Root() {
           <Route path="/login" element={<Login />} />
           <Route path="/review" element={<Review />} />
           <Route path="/counter-test" element={<Counter />} />
+          <Route path="/test-order" element={<TestOrder />} />
         </Route>
       </Routes>
     </AnimatePresence>
