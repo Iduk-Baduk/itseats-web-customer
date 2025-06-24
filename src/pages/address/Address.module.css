@@ -24,8 +24,8 @@
 .icon {
   width: 24px;
   height: 24px;
-  flex-shrink: 0; /* 아이콘 사이즈 줄어들지 않게 */
-  margin-top: 0; /* ✅ 필요 없으면 제거 */
+  margin-right: 8px;
+  opacity: 0.5;
 }
 
 .gpsIcon {
@@ -38,28 +38,27 @@
 .searchBox {
   display: flex;
   align-items: center;
-  padding: 16px 20px;
-  background-color: #fff;
-  border-bottom: 8px solid var(--background-color);
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 0;
+  margin: 16px 20px; /* 좌우 여백 20px 추가 */
 }
 
-.searchBox input {
+.searchInput {
+  flex: 1;
   border: none;
-  outline: none;
+  background-color: transparent;
   font-size: 16px;
-  width: 100%;
-  margin-left: 12px;
-  height: 40px;
+  outline: none;
 }
 
 .locationBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* 아이콘과 텍스트 간격 */
+  gap: 8px;
   width: calc(100% - 40px);
   height: 60px;
-  margin: 16px 20px 16px;
+  margin: 16px 20px; /* 기존 스타일 유지 */
   background-color: #ffffff;
   border: 1px solid #ddd;
   font-size: 16px;
@@ -67,6 +66,12 @@
   border-radius: 8px;
   box-sizing: border-box;
   cursor: pointer;
+}
+
+.gpsIcon {
+  margin-right: 8px;
+  width: 20px;
+  height: 20px;
 }
 
 .addressList {
@@ -122,8 +127,6 @@
   border-radius: 9px;
 }
 
-
-
 .editBtn {
   background: none;
   border: none;
@@ -140,5 +143,31 @@
   font-size: 16px;
   font-weight: 500;
   color: #203644;
+}
+
+.addButtonsContainer {
+  display: flex;
+  gap: 10px;
+  margin: 0 20px 20px; /* 상단 여백 제거, 좌우 및 하단 여백 추가 */
+}
+
+.addAddressBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.addAddressBtn img {
+  width: 20px;
+  height: 20px;
 }
 

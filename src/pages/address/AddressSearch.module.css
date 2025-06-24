@@ -1,5 +1,5 @@
 .container {
-  padding: 16px;
+  padding: 0 16px;
   padding-top: 84px;
 }
 
@@ -9,29 +9,136 @@
   margin-bottom: 12px;
 }
 
-.resultList {
-  list-style: none;
-  padding: 0;
+.searchContainer {
+  margin-bottom: 16px;
 }
 
-.item {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid #ddd;
+.searchBox {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  padding: 12px;
+  background-color: white;
+  gap: 8px;
 }
 
-.item:hover {
-  background: #f9f9f9;
+.searchIcon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 
-.addressText {
+.searchInput {
+  flex: 1;
+  border: none;
+  background-color: transparent;
   font-size: 16px;
+  outline: none;
 }
 
-.wow {
+.searchButton {
+  background-color: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.searchButton:hover {
+  background-color: #0056b3;
+}
+
+.loadingMessage {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.errorMessage {
+  padding: 12px;
+  margin: 16px 0;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 14px;
+  text-align: center;
+}
+
+.resultsContainer {
+  margin-top: 16px;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.resultItem:hover {
+  background-color: #f9f9f9;
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.resultContent {
+  flex: 1;
+}
+
+.placeName {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--black-700);
+}
+
+.address {
+  font-size: 14px;
+  margin: 0 0 2px 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+.roadAddress {
   font-size: 12px;
-  color: #ff5a5f;
+  margin: 0;
+  color: #999;
+  line-height: 1.4;
+}
+
+.locationIcon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.noResults {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.noResults p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.noResults p:first-child {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
 }

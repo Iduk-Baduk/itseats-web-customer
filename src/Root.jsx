@@ -13,9 +13,9 @@ import OrderStatus from "./pages/orders/OrderStatus";
 import Review from "./pages/orders/Review";
 import Address from "./pages/address/Address";
 import AddressSearch from "./pages/address/AddressSearch";
-import CompanyAdd from "./pages/address/CompanyAdd";
 import AddressEdit from "./pages/address/AddressEdit";
 import AddressNew from "./pages/address/AddressNew";
+import AddressCurrentLocation from "./pages/address/AddressCurrentLocation";
 import StoreList from "./pages/stores/StoreList";
 import StoreDetail from "./pages/stores/StoreDetail";
 import StoreInfo from "./pages/stores/StoreInfo";
@@ -48,13 +48,11 @@ export default function Root() {
           <Route path="/orders" element={<Order />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/search-result" element={<SearchResults />} />
-        </Route>
-        <Route path="/" element={<Layout navVisible={false} />}>
           <Route path="/address" element={<Address />} />
           <Route path="/address/new" element={<AddressNew />} />
           <Route path="/address/edit/:id" element={<AddressEdit />} />
           <Route path="/address/search" element={<AddressSearch />} />
-          <Route path="/address/company-add" element={<CompanyAdd />} />
+          <Route path="/address/current-location" element={<AddressCurrentLocation />} />
           <Route path="/stores/list" element={<StoreList />} />
           <Route path="/stores/:storeId" element={<StoreDetail />} />
           <Route path="/stores/:storeId/info" element={<StoreInfo />} />
