@@ -70,6 +70,20 @@ export default function TestOrder() {
     }, 30000);
   };
 
+  // 시뮬레이션 간격 변경 핸들러
+  const handleIntervalChange = (e) => {
+    const value = Number(e.target.value);
+    if (value < 1000) {
+      alert("간격은 최소 1000ms 이상이어야 합니다.");
+      return;
+    }
+    if (value > 10000) {
+      alert("간격은 최대 10000ms 이하여야 합니다.");
+      return;
+    }
+    setSimulationInterval(value);
+  };
+
   return (
     <div className={styles.container}>
       <Header
@@ -145,7 +159,7 @@ export default function TestOrder() {
               <input
                 type="number"
                 value={simulationInterval}
-                onChange={(e) => setSimulationInterval(Number(e.target.value))}
+                onChange={handleIntervalChange}
                 min="1000"
                 max="10000"
                 className={styles.input}
