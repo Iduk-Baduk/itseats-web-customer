@@ -155,22 +155,22 @@ export const {
 } = orderSlice.actions;
 
 // Selectors
-export const selectAllOrders = (state) => state.order.orders;
-export const selectCurrentOrder = (state) => state.order.currentOrder;
+export const selectAllOrders = (state) => state.order?.orders || [];
+export const selectCurrentOrder = (state) => state.order?.currentOrder || null;
 export const selectOrderById = (state, orderId) => 
-  state.order.orders.find(order => order.id === orderId);
+  state.order?.orders?.find(order => order.id === orderId) || null;
 export const selectOrdersByStatus = (state, status) => 
-  state.order.orders.filter(order => order.status === status);
+  state.order?.orders?.filter(order => order.status === status) || [];
 export const selectActiveOrders = (state) => 
-  state.order.orders.filter(order => 
+  state.order?.orders?.filter(order => 
     [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, 
      ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.status)
-  );
+  ) || [];
 export const selectCompletedOrders = (state) => 
-  state.order.orders.filter(order => 
+  state.order?.orders?.filter(order => 
     [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status)
-  );
-export const selectIsLoading = (state) => state.order.isLoading;
-export const selectError = (state) => state.order.error;
+  ) || [];
+export const selectIsLoading = (state) => state.order?.isLoading || false;
+export const selectError = (state) => state.order?.error || null;
 
 export default orderSlice.reducer; 
