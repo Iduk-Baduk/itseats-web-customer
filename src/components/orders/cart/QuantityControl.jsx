@@ -1,12 +1,13 @@
 import styles from "./QuantityControl.module.css";
 
-export default function QuantityControl({ quantity, onQuantityChange }) {
+export default function QuantityControl({ quantity, onQuantityChange, onDelete }) {
   return (
     <div className={styles.quantityControl}>
       <button
         className={styles.quantityButton}
         onClick={() => {
-          if (quantity <= 1 && !confirm("카트에서 메뉴를 삭제하시겠습니까?")) {
+          if (quantity <= 1 && confirm("카트에서 메뉴를 삭제하시겠습니까?")) {
+            onDelete();
             return;
           }
           onQuantityChange(-1);

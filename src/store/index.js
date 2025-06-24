@@ -1,10 +1,12 @@
 // src/store/index.js
 import { configureStore } from "@reduxjs/toolkit";
 import paymentReducer from "./paymentSlice";
+import cartReducer from "./cartSlice";
 
 const store = configureStore({
   reducer: {
-    payment: paymentReducer,
+    cart: cartReducer,
+    payment: paymentReducer
   },
 });
 
