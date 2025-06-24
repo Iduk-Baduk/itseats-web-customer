@@ -2,17 +2,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import rootReducer from "./modules";
 import { loadCart } from "./store/localStorage";
-
-// localStorage에서 주문 데이터 로드
-const loadOrdersFromLocalStorage = () => {
-  try {
-    const serialized = localStorage.getItem("itseats-orders");
-    return serialized ? JSON.parse(serialized) : [];
-  } catch (e) {
-    console.warn("Could not load orders from localStorage", e);
-    return [];
-  }
-};
+import { loadOrdersFromLocalStorage } from "./store/orderSlice";
 
 // ✅ localStorage에서 count 불러오기
 const savedCount = localStorage.getItem("count");
