@@ -47,8 +47,6 @@ export default function Root() {
           <Route path="/orders" element={<Order />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/search-result" element={<SearchResults />} />
-        </Route>
-        <Route path="/" element={<Layout navVisible={false} />}>
           <Route path="/address" element={<Address />} />
           <Route path="/address/new" element={<AddressNew />} />
           <Route path="/address/edit/:id" element={<AddressEdit />} />

@@ -10,10 +10,17 @@ const loadFromLocalStorage = () => {
       };
     }
     const storedState = JSON.parse(serializedState);
-    // 데이터베이스가 비어있을 경우를 대비하여 기본 구조를 보장합니다.
+    const addresses = storedState.addresses || [];
+    let selectedAddressId = storedState.selectedAddressId;
+    
+    // 주소가 있지만 선택된 주소가 없거나, 선택된 주소가 존재하지 않는 경우
+    if (addresses.length > 0 && (!selectedAddressId || !addresses.find(addr => addr.id === selectedAddressId))) {
+      selectedAddressId = addresses[0].id;
+    }
+    
     return {
-      addresses: storedState.addresses || [],
-      selectedAddressId: storedState.selectedAddressId || null,
+      addresses,
+      selectedAddressId,
     };
   } catch (e) {
     console.warn("Could not load address state from localStorage", e);
@@ -42,6 +49,12 @@ const addressSlice = createSlice({
     addAddress: (state, action) => {
       const newAddress = { ...action.payload, id: new Date().toISOString() };
       state.addresses.push(newAddress);
+      
+      // 첫 번째 주소이거나 선택된 주소가 없는 경우 자동 선택
+      if (state.addresses.length === 1 || !state.selectedAddressId) {
+        state.selectedAddressId = newAddress.id;
+      }
+      
       saveToLocalStorage(state);
     },
     updateAddress: (state, action) => {
