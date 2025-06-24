@@ -23,6 +23,12 @@ export const useOrderTestData = () => {
       deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30분 후
       menuSummary: "페퍼로니 피자 + 콜라",
       storeImage: "/samples/food1.jpg",
+      // OrderCard 호환성을 위한 추가 필드들
+      price: 15900, // orderPrice와 동일한 값
+      date: new Date().toLocaleString('ko-KR'),
+      isCompleted: false,
+      showReviewButton: false,
+      rating: 5,
     };
 
     dispatch(addOrder(testOrder));
@@ -101,6 +107,12 @@ if (typeof window !== 'undefined') {
           deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           menuSummary: "페퍼로니 피자 + 콜라",
           storeImage: "/samples/food1.jpg",
+          // OrderCard 호환성을 위한 추가 필드들
+          price: 15900, // orderPrice와 동일한 값
+          date: new Date().toLocaleString('ko-KR'),
+          isCompleted: false,
+          showReviewButton: false,
+          rating: 5,
         };
 
         store.dispatch({
