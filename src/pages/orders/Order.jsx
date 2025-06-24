@@ -20,6 +20,19 @@ export default function Order() {
 
   const [selectedTab, setSelectedTab] = React.useState("past"); // "past" or "preparing"
 
+  // Redux 주문 데이터를 OrderCard 형식으로 변환
+  const transformOrderForCard = (order) => {
+    return {
+      ...order,
+      // OrderCard 호환성을 위한 필드 매핑
+      price: order.orderPrice || order.price || 0,
+      date: order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : order.date,
+      isCompleted: ['DELIVERED', 'COMPLETED'].includes(order.status),
+      showReviewButton: ['DELIVERED', 'COMPLETED'].includes(order.status),
+      rating: order.rating || 5,
+    };
+  };
+
   // 더미 데이터 (Redux에 데이터가 없을 때 사용)
   const dummyCompletedOrders = [
     {
@@ -66,9 +79,13 @@ export default function Order() {
     },
   ];
 
-  // Redux 데이터가 있으면 사용, 없으면 더미 데이터 사용
-  const displayCompletedOrders = completedOrders.length > 0 ? completedOrders : dummyCompletedOrders;
-  const displayActiveOrders = activeOrders.length > 0 ? activeOrders : dummyActiveOrders;
+  // Redux 데이터가 있으면 변환하여 사용, 없으면 더미 데이터 사용
+  const displayCompletedOrders = completedOrders.length > 0 
+    ? completedOrders.map(transformOrderForCard) 
+    : dummyCompletedOrders;
+  const displayActiveOrders = activeOrders.length > 0 
+    ? activeOrders.map(transformOrderForCard) 
+    : dummyActiveOrders;
 
   return (
     <div>
