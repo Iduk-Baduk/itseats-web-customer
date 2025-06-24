@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { createMenuOptionHash } from "../utils/hashUtils";
 
 const loadFromLocalStorage = () => {
   try {
@@ -32,61 +33,61 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action) => {
+    initializeCart(state, action) {
+      state.orderMenus = action.payload;
+    },
+    addMenu(state, action) {
       const newItem = action.payload;
-      const existingItemIndex = state.orderMenus.findIndex(
-        (item) => item.menuId === newItem.menuId && 
-        JSON.stringify(item.selectedOptions) === JSON.stringify(newItem.selectedOptions)
+      const newItemHash = createMenuOptionHash(newItem.menuOption);
+      const existingMenuIndex = state.orderMenus.findIndex(
+        (menu) =>
+          menu.menuId === newItem.menuId &&
+          createMenuOptionHash(menu.menuOption) === newItemHash
       );
 
-      if (existingItemIndex >= 0) {
-        // 기존 아이템이 있으면 수량 증가
-        state.orderMenus[existingItemIndex].quantity += newItem.quantity;
+      if (existingMenuIndex !== -1) {
+        state.orderMenus[existingMenuIndex].quantity += newItem.quantity;
       } else {
-        // 새 아이템 추가
         state.orderMenus.push(newItem);
       }
-      
-      saveToLocalStorage(state);
-    },
-    updateCartItem: (state, action) => {
-      const { index, updates } = action.payload;
-      if (index >= 0 && index < state.orderMenus.length) {
-        state.orderMenus[index] = { ...state.orderMenus[index], ...updates };
-        saveToLocalStorage(state);
-      }
-    },
-    removeFromCart: (state, action) => {
-      const index = action.payload;
-      if (index >= 0 && index < state.orderMenus.length) {
-        state.orderMenus.splice(index, 1);
-        saveToLocalStorage(state);
-      }
-    },
-    clearCart: (state) => {
-      state.orderMenus = [];
-      saveToLocalStorage(state);
     },
     updateQuantity: (state, action) => {
-      const { index, quantity } = action.payload;
-      if (index >= 0 && index < state.orderMenus.length) {
-        if (quantity <= 0) {
-          state.orderMenus.splice(index, 1);
-        } else {
-          state.orderMenus[index].quantity = quantity;
+      const { menuId, menuOptionHash, delta } = action.payload;
+
+      const index = state.orderMenus.findIndex(
+        (menu) => 
+          menu.menuId === menuId && 
+          createMenuOptionHash(menu.menuOption) === menuOptionHash
+      );
+
+      if (index !== -1) {
+        const target = state.orderMenus[index];
+        const newQuantity = target.quantity + delta;
+        if (newQuantity >= 1) {
+          target.quantity = newQuantity;
         }
-        saveToLocalStorage(state);
       }
+    },
+    removeMenu(state, action) {
+      const { menuId, menuOptionHash } = action.payload;
+      state.orderMenus = state.orderMenus.filter(
+        (menu) =>
+          menu.menuId !== menuId ||
+          createMenuOptionHash(menu.menuOption) !== menuOptionHash
+      );
+    },
+    clearCart(state) {
+      state.orderMenus = [];
     },
   },
 });
 
-export const { 
-  addToCart, 
-  updateCartItem, 
-  removeFromCart, 
-  clearCart, 
-  updateQuantity 
+export const {
+  initializeCart,
+  addMenu,
+  updateQuantity,
+  removeMenu,
+  clearCart,
 } = cartSlice.actions;
 
 export default cartSlice.reducer; 
