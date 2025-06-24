@@ -9,19 +9,25 @@
   margin-bottom: 12px;
 }
 
+.searchContainer {
+  margin-bottom: 16px;
+}
+
 .searchBox {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px 0;
-  margin: 16px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: white;
+  gap: 8px;
 }
 
-.icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
+.searchIcon {
+  width: 20px;
+  height: 20px;
   opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .searchInput {
@@ -33,74 +39,106 @@
 }
 
 .searchButton {
-  background: none;
+  background-color: var(--theme-color);
+  color: white;
   border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 8px;
+  transition: background-color 0.2s ease;
 }
 
-.searchButton img {
-  width: 20px;
-  height: 20px;
-  opacity: 0.6;
+.searchButton:hover {
+  background-color: #0056b3;
 }
 
-.resultList {
-  list-style: none;
-  padding: 0;
-  margin: 0 -16px; /* container padding 상쇄 */
+.loadingMessage {
+  text-align: center;
+  padding: 20px;
+  color: #666;
 }
 
-.item {
+.errorMessage {
   padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid #ddd;
+  margin: 16px 0;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
   border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  color: #856404;
+  font-size: 14px;
+  text-align: center;
 }
 
-.item:hover {
-  background: #f9f9f9;
-}
-
-.addressText {
-  font-size: 16px;
-}
-
-.wow {
-  font-size: 12px;
-  color: #ff5a5f;
+.resultsContainer {
+  margin-top: 16px;
 }
 
 .resultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .resultItem:hover {
   background-color: #f9f9f9;
 }
 
-.addressName {
-  font-size: 16px;
-  margin-bottom: 8px;
+.resultItem:last-child {
+  border-bottom: none;
 }
 
-.roadAddressContainer {
-  display: flex;
-  align-items: center;
+.resultContent {
+  flex: 1;
+}
+
+.placeName {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--black-700);
+}
+
+.address {
   font-size: 14px;
+  margin: 0 0 2px 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+.roadAddress {
+  font-size: 12px;
+  margin: 0;
+  color: #999;
+  line-height: 1.4;
+}
+
+.locationIcon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.noResults {
+  text-align: center;
+  padding: 40px 20px;
   color: #666;
 }
 
-.roadAddressLabel {
-  background-color: #eee;
-  color: #555;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-right: 8px;
+.noResults p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.noResults p:first-child {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
 }

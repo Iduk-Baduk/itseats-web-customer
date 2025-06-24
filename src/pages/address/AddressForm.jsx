@@ -16,15 +16,16 @@ export default function AddressForm({
   onChangeCustomLabel,
 }) {
   const mapRef = useRef(null);
-  const markerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   
   const [currentAddress, setCurrentAddress] = useState(address);
   const [isMapInitialized, setIsMapInitialized] = useState(false);
+  const [error, setError] = useState(null);
 
   // 좌표로 주소 정보 가져오기
   const getAddressFromCoords = (position) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
+      setError("카카오맵 서비스를 불러올 수 없습니다.");
       return;
     }
 
@@ -45,9 +46,21 @@ export default function AddressForm({
         };
         
         setCurrentAddress(newAddress);
+        setError(null);
         if (onAddressChange) {
           onAddressChange(newAddress);
         }
+      } else {
+        console.error('주소 검색에 실패했습니다:', status);
+        setError("주소 정보를 가져올 수 없습니다. 다시 시도해주세요.");
+        // 사용자에게 오류 메시지 표시
+        setCurrentAddress({
+          ...currentAddress,
+          address: "주소 정보를 가져올 수 없습니다.",
+          roadAddress: "",
+          lat: position.lat,
+          lng: position.lng,
+        });
       }
     });
   };
@@ -66,37 +79,65 @@ export default function AddressForm({
     mapInstanceRef.current = map;
 
     // 지도 이동 이벤트 (마커는 화면 중앙에 고정)
-    window.kakao.maps.event.addListener(map, "dragend", () => {
+    const dragEndListener = () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
         lng: center.getLng(),
       };
       getAddressFromCoords(newPosition);
-    });
+    };
 
     // 지도 줌 이벤트 (마커는 화면 중앙에 고정)
-    window.kakao.maps.event.addListener(map, "zoom_changed", () => {
+    const zoomChangedListener = () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
         lng: center.getLng(),
       };
       getAddressFromCoords(newPosition);
-    });
+    };
+
+    window.kakao.maps.event.addListener(map, "dragend", dragEndListener);
+    window.kakao.maps.event.addListener(map, "zoom_changed", zoomChangedListener);
+
+    // 리스너 정리를 위한 참조 저장
+    mapInstanceRef.current.dragEndListener = dragEndListener;
+    mapInstanceRef.current.zoomChangedListener = zoomChangedListener;
 
     setIsMapInitialized(true);
   };
 
   useEffect(() => {
     initializeMap();
-  }, []);
+    
+    return () => {
+      if (mapInstanceRef.current) {
+        // 이벤트 리스너 정리
+        if (mapInstanceRef.current.dragEndListener) {
+          window.kakao?.maps?.event?.removeListener(
+            mapInstanceRef.current, 
+            "dragend", 
+            mapInstanceRef.current.dragEndListener
+          );
+        }
+        if (mapInstanceRef.current.zoomChangedListener) {
+          window.kakao?.maps?.event?.removeListener(
+            mapInstanceRef.current, 
+            "zoom_changed", 
+            mapInstanceRef.current.zoomChangedListener
+          );
+        }
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [address.lat, address.lng, isMapInitialized]);
 
   // 핀 조정 버튼 클릭 시 지도 중앙으로 이동
   const handlePinAdjust = () => {
-    if (mapInstanceRef.current && markerRef.current) {
-      const markerPosition = markerRef.current.getPosition();
-      mapInstanceRef.current.panTo(markerPosition);
+    if (mapInstanceRef.current) {
+      const center = mapInstanceRef.current.getCenter();
+      mapInstanceRef.current.panTo(center);
     }
   };
 
@@ -108,6 +149,12 @@ export default function AddressForm({
           핀 조정하기
         </button>
       </div>
+      
+      {error && (
+        <div className={styles.errorMessage}>
+          <p>{error}</p>
+        </div>
+      )}
       
       {currentAddress && (
         <div className={styles.iconWithContent}>
@@ -162,18 +209,17 @@ export default function AddressForm({
         ))}
       </div>
 
-      {/* 기타 라벨 선택 시 별칭 설정 입력창 */}
       {currentLabel === "기타" && (
         <input
           className={styles.detailInput}
-          value={customLabel || ""}
+          value={customLabel}
           onChange={onChangeCustomLabel}
-          placeholder="별칭 설정 (예: 학교, 친구집)"
+          placeholder="기타 라벨 입력"
         />
       )}
 
       <button className={styles.submitButton} onClick={onSubmit}>
-        완료
+        저장
       </button>
     </div>
   );
