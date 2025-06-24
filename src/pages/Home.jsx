@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import { getIconByLabel } from "../utils/addressUtils";
+import calculateCartTotal from "../utils/calculateCartTotal";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import styles from "./Home.module.css";
@@ -88,9 +90,13 @@ const dummyStores = [
 export default function Home() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
+  const orderMenus = useSelector((state) => state.cart.orderMenus);
 
-  // 임시 State
-  const [isCartHasItems, setIsCartHasItems] = useState(true);
+  const cartInfo = {
+    orderPrice: orderMenus.reduce((sum, m) => sum + m.menuPrice * m.quantity, 0),
+    totalPrice: orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0),
+    itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
+  };
 
   return (
     <>
@@ -116,15 +122,13 @@ export default function Home() {
           />
         ))}
       </div>
-      {isCartHasItems && <BottomButton
-        bottom="60px"
-        onClick={() => navigate("/cart")}
-        cartInfo={{
-          orderPrice: 20000,
-          totalPrice: 18000,
-          itemCount: 1,
-        }}
-      />}
+      {orderMenus.length > 0 && (
+        <BottomButton
+          bottom="60px"
+          onClick={() => navigate("/cart")}
+          cartInfo={cartInfo}
+        />
+      )}
     </>
   );
 }
