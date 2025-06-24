@@ -1,5 +1,6 @@
 import Button from "../common/basic/Button";
 import LineButton from "../common/basic/LineButton";
+import { ORDER_STATUS } from "../../constants/orderStatus";
 import styles from "./OrderCard.module.css";
 
 export default function OrderCard({
@@ -11,16 +12,16 @@ export default function OrderCard({
 }) {
   // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑
   const orderData = {
-    storeName: order.storeName || order.storeName,
+    storeName: order.storeName || "알 수 없는 매장",
     date: order.date || order.createdAt || new Date().toLocaleString('ko-KR'),
-    status: order.status || order.status,
-    price: order.price || order.orderPrice || 0,
-    menuSummary: order.menuSummary || order.menuSummary,
-    storeImage: order.storeImage || order.storeImage,
+    status: order.status || "주문 확인 중",
+    price: Number(order.price || order.orderPrice || 0),
+    menuSummary: order.menuSummary || "메뉴 정보 없음",
+    storeImage: order.storeImage || "/images/default-store.jpg",
     isCompleted: order.isCompleted !== undefined ? order.isCompleted : 
-      ['DELIVERED', 'COMPLETED'].includes(order.status),
+      [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
     showReviewButton: order.showReviewButton !== undefined ? order.showReviewButton : 
-      ['DELIVERED', 'COMPLETED'].includes(order.status),
+      [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
     remainingDays: order.remainingDays,
   };
 
@@ -39,7 +40,7 @@ export default function OrderCard({
         <div className={styles.summaryRow}>
           <p className={styles.summary}>{orderData.menuSummary}</p>
           <div className={styles.priceMeta}>
-            <span>{orderData.price.toLocaleString()}원</span>
+            <span>{(orderData.price || 0).toLocaleString()}원</span>
             <span className={styles.badge}>영수증</span>
           </div>
         </div>

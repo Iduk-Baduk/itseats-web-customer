@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useOrderTestData } from "../hooks/useOrderTestData";
 import { selectAllOrders, selectActiveOrders, selectCompletedOrders } from "../store/orderSlice";
+import { ORDER_STATUS } from "../constants/orderStatus";
 import Header from "../components/common/Header";
 import styles from "./TestOrder.module.css";
 
@@ -20,6 +21,22 @@ export default function TestOrder() {
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [simulationInterval, setSimulationInterval] = useState(3000);
   const [isSimulating, setIsSimulating] = useState(false);
+  
+  // 메모리 누수 방지를 위한 ref
+  const timeoutRef = useRef(null);
+  const stopSimulationRef = useRef(null);
+
+  // 컴포넌트 언마운트 시 cleanup
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (stopSimulationRef.current) {
+        stopSimulationRef.current();
+      }
+    };
+  }, []);
 
   // 테스트 주문 추가
   const handleAddTestOrder = () => {
@@ -43,11 +60,13 @@ export default function TestOrder() {
 
     setIsSimulating(true);
     const stopSimulation = simulateOrderProgress(selectedOrderId, simulationInterval);
+    stopSimulationRef.current = stopSimulation;
     
     // 30초 후 자동 중단
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       stopSimulation();
       setIsSimulating(false);
+      stopSimulationRef.current = null;
     }, 30000);
   };
 
@@ -92,25 +111,25 @@ export default function TestOrder() {
           
           {selectedOrderId && (
             <div className={styles.statusButtons}>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'WAITING')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.WAITING)}>
                 주문 접수
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'COOKING')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.COOKING)}>
                 조리 중
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'COOKED')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.COOKED)}>
                 조리 완료
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'RIDER_READY')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.RIDER_READY)}>
                 라이더 배차
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'DELIVERING')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.DELIVERING)}>
                 배달 중
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'DELIVERED')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.DELIVERED)}>
                 배달 완료
               </button>
-              <button onClick={() => handleStatusChange(selectedOrderId, 'COMPLETED')}>
+              <button onClick={() => handleStatusChange(selectedOrderId, ORDER_STATUS.COMPLETED)}>
                 주문 완료
               </button>
             </div>

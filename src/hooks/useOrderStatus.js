@@ -10,8 +10,22 @@ import {
   updateOrderStatus,
   clearCurrentOrder,
 } from "../store/orderSlice";
-import { ORDER_STATUS_CONFIG } from "../constants/orderStatus";
+import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
 import { calculateETA, getOrderStep, isValidOrderStatus } from "../utils/orderUtils";
+
+// 상태 배열 상수
+const ACTIVE_ORDER_STATUSES = [
+  ORDER_STATUS.WAITING, 
+  ORDER_STATUS.COOKING, 
+  ORDER_STATUS.COOKED, 
+  ORDER_STATUS.RIDER_READY, 
+  ORDER_STATUS.DELIVERING
+];
+
+const COMPLETED_ORDER_STATUSES = [
+  ORDER_STATUS.DELIVERED, 
+  ORDER_STATUS.COMPLETED
+];
 
 /**
  * 주문 상태 관리를 위한 커스텀 훅
@@ -115,11 +129,16 @@ export const useOrderStatus = (orderId = null) => {
   // 주문 상태 업데이트 함수
   const updateStatus = (status, message = null) => {
     if (actualOrderId) {
-      dispatch(updateOrderStatus({
-        orderId: actualOrderId,
-        status,
-        message
-      }));
+      try {
+        dispatch(updateOrderStatus({
+          orderId: actualOrderId,
+          status,
+          message
+        }));
+      } catch (error) {
+        console.error('주문 상태 업데이트 실패:', error);
+        throw error; // 호출자가 에러를 처리할 수 있도록 재던짐
+      }
     }
   };
 
@@ -136,14 +155,10 @@ export const useOrderStatus = (orderId = null) => {
     updateStatus,
     
     // 유틸리티
-    isActiveOrder: orderData.orderStatus && [
-      'WAITING', 'COOKING', 'COOKED', 'RIDER_READY', 'DELIVERING'
-    ].includes(orderData.orderStatus),
+    isActiveOrder: orderData.orderStatus && ACTIVE_ORDER_STATUSES.includes(orderData.orderStatus),
     
-    isCompletedOrder: orderData.orderStatus && [
-      'DELIVERED', 'COMPLETED'
-    ].includes(orderData.orderStatus),
+    isCompletedOrder: orderData.orderStatus && COMPLETED_ORDER_STATUSES.includes(orderData.orderStatus),
     
-    isCanceledOrder: orderData.orderStatus === 'CANCELED',
+    isCanceledOrder: orderData.orderStatus === ORDER_STATUS.CANCELED,
   };
 }; 
