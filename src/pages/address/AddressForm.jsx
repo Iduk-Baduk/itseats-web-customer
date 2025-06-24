@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getIconByLabel } from "../../utils/addressUtils";
 import styles from "./AddressEdit.module.css";
 
@@ -21,55 +21,6 @@ export default function AddressForm({
   
   const [currentAddress, setCurrentAddress] = useState(address);
   const [isMapInitialized, setIsMapInitialized] = useState(false);
-
-  // 카카오맵 초기화
-  const initializeMap = () => {
-    if (!window.kakao?.maps || isMapInitialized) return;
-
-    const mapContainer = mapRef.current;
-    const mapOption = {
-      center: new window.kakao.maps.LatLng(address.lat || 37.5665, address.lng || 126.978),
-      level: 3,
-    };
-
-    const map = new window.kakao.maps.Map(mapContainer, mapOption);
-    mapInstanceRef.current = map;
-
-    // 마커 생성 (중앙에 고정)
-    const marker = new window.kakao.maps.Marker({
-      position: new window.kakao.maps.LatLng(address.lat || 37.5665, address.lng || 126.978),
-    });
-    marker.setMap(map);
-    markerRef.current = marker;
-
-    // 지도 이동 이벤트 (마커도 중앙에 따라 이동)
-    window.kakao.maps.event.addListener(map, "dragend", () => {
-      const center = map.getCenter();
-      const newPosition = {
-        lat: center.getLat(),
-        lng: center.getLng(),
-      };
-      
-      // 마커를 중앙으로 이동
-      marker.setPosition(center);
-      getAddressFromCoords(newPosition);
-    });
-
-    // 지도 줌 이벤트 (마커도 중앙에 따라 이동)
-    window.kakao.maps.event.addListener(map, "zoom_changed", () => {
-      const center = map.getCenter();
-      const newPosition = {
-        lat: center.getLat(),
-        lng: center.getLng(),
-      };
-      
-      // 마커를 중앙으로 이동
-      marker.setPosition(center);
-      getAddressFromCoords(newPosition);
-    });
-
-    setIsMapInitialized(true);
-  };
 
   // 좌표로 주소 정보 가져오기
   const getAddressFromCoords = (position) => {
@@ -101,6 +52,46 @@ export default function AddressForm({
     });
   };
 
+  // 카카오맵 초기화
+  const initializeMap = () => {
+    if (!window.kakao?.maps || isMapInitialized) return;
+
+    const mapContainer = mapRef.current;
+    const mapOption = {
+      center: new window.kakao.maps.LatLng(address.lat || 37.5665, address.lng || 126.978),
+      level: 3,
+    };
+
+    const map = new window.kakao.maps.Map(mapContainer, mapOption);
+    mapInstanceRef.current = map;
+
+    // 지도 이동 이벤트 (마커는 화면 중앙에 고정)
+    window.kakao.maps.event.addListener(map, "dragend", () => {
+      const center = map.getCenter();
+      const newPosition = {
+        lat: center.getLat(),
+        lng: center.getLng(),
+      };
+      getAddressFromCoords(newPosition);
+    });
+
+    // 지도 줌 이벤트 (마커는 화면 중앙에 고정)
+    window.kakao.maps.event.addListener(map, "zoom_changed", () => {
+      const center = map.getCenter();
+      const newPosition = {
+        lat: center.getLat(),
+        lng: center.getLng(),
+      };
+      getAddressFromCoords(newPosition);
+    });
+
+    setIsMapInitialized(true);
+  };
+
+  useEffect(() => {
+    initializeMap();
+  }, []);
+
   // 핀 조정 버튼 클릭 시 지도 중앙으로 이동
   const handlePinAdjust = () => {
     if (mapInstanceRef.current && markerRef.current) {
@@ -108,10 +99,6 @@ export default function AddressForm({
       mapInstanceRef.current.panTo(markerPosition);
     }
   };
-
-  useEffect(() => {
-    initializeMap();
-  }, []);
 
   return (
     <div className={styles.container}>
@@ -121,7 +108,7 @@ export default function AddressForm({
           핀 조정하기
         </button>
       </div>
-
+      
       {currentAddress && (
         <div className={styles.iconWithContent}>
           <img
@@ -158,7 +145,7 @@ export default function AddressForm({
 
       <div className={styles.labelButtonGroup}>
         {["집", "회사", "기타"].map((label) => (
-          <button
+          <button 
             key={label}
             className={`${styles.labelButton} ${
               currentLabel === label ? styles.selected : ""
