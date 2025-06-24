@@ -1,6 +1,27 @@
 import { useDispatch } from "react-redux";
 import { addOrder, updateOrderStatus } from "../store/orderSlice";
-import { ORDER_STATUS } from "../constants/orderStatus";
+import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
+
+// 상수로 분리된 테스트 데이터
+const TEST_ORDER_DATA = {
+  storeName: "도미노피자 구름톤점",
+  orderNumber: "14NKFA",
+  orderPrice: 15900,
+  orderMenuCount: 1,
+  deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
+  destinationLocation: { lat: 37.501887, lng: 127.039252 },
+  storeLocation: { lat: 37.4979, lng: 127.0276 },
+  riderRequest: "문 앞에 놔주세요 (초인종 O)",
+  deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+  menuSummary: "페퍼로니 피자 + 콜라",
+  storeImage: "/samples/food1.jpg",
+  // OrderCard 호환성을 위한 추가 필드들
+  price: 15900,
+  date: new Date().toLocaleString('ko-KR'),
+  isCompleted: false,
+  showReviewButton: false,
+  rating: 5,
+};
 
 /**
  * 테스트용 주문 데이터를 Redux에 추가하는 훅
@@ -11,25 +32,7 @@ export const useOrderTestData = () => {
 
   // 테스트용 주문 데이터 추가
   const addTestOrder = () => {
-    const testOrder = {
-      storeName: "도미노피자 구름톤점",
-      orderNumber: "14NKFA",
-      orderPrice: 15900,
-      orderMenuCount: 1,
-      deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
-      destinationLocation: { lat: 37.501887, lng: 127.039252 },
-      storeLocation: { lat: 37.4979, lng: 127.0276 },
-      riderRequest: "문 앞에 놔주세요 (초인종 O)",
-      deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30분 후
-      menuSummary: "페퍼로니 피자 + 콜라",
-      storeImage: "/samples/food1.jpg",
-      // OrderCard 호환성을 위한 추가 필드들
-      price: 15900, // orderPrice와 동일한 값
-      date: new Date().toLocaleString('ko-KR'),
-      isCompleted: false,
-      showReviewButton: false,
-      rating: 5,
-    };
+    const testOrder = { ...TEST_ORDER_DATA };
 
     dispatch(addOrder(testOrder));
     return testOrder;
@@ -37,20 +40,12 @@ export const useOrderTestData = () => {
 
   // 주문 상태 시뮬레이션
   const simulateOrderStatus = (orderId, status) => {
-    const statusMessages = {
-      [ORDER_STATUS.WAITING]: "주문이 접수되었습니다.",
-      [ORDER_STATUS.COOKING]: "음식을 조리하고 있습니다.",
-      [ORDER_STATUS.COOKED]: "조리가 완료되었습니다.",
-      [ORDER_STATUS.RIDER_READY]: "라이더가 매장으로 이동 중입니다.",
-      [ORDER_STATUS.DELIVERING]: "배달 중입니다.",
-      [ORDER_STATUS.DELIVERED]: "배달이 완료되었습니다.",
-      [ORDER_STATUS.COMPLETED]: "주문이 완료되었습니다.",
-    };
+    const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
 
     dispatch(updateOrderStatus({
       orderId,
       status,
-      message: statusMessages[status] || "상태가 업데이트되었습니다."
+      message
     }));
   };
 
@@ -95,30 +90,9 @@ if (typeof window !== 'undefined') {
     addTestOrder: () => {
       const store = window.__REDUX_STORE__;
       if (store) {
-        const testOrder = {
-          storeName: "도미노피자 구름톤점",
-          orderNumber: "14NKFA",
-          orderPrice: 15900,
-          orderMenuCount: 1,
-          deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
-          destinationLocation: { lat: 37.501887, lng: 127.039252 },
-          storeLocation: { lat: 37.4979, lng: 127.0276 },
-          riderRequest: "문 앞에 놔주세요 (초인종 O)",
-          deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-          menuSummary: "페퍼로니 피자 + 콜라",
-          storeImage: "/samples/food1.jpg",
-          // OrderCard 호환성을 위한 추가 필드들
-          price: 15900, // orderPrice와 동일한 값
-          date: new Date().toLocaleString('ko-KR'),
-          isCompleted: false,
-          showReviewButton: false,
-          rating: 5,
-        };
+        const testOrder = { ...TEST_ORDER_DATA };
 
-        store.dispatch({
-          type: 'order/addOrder',
-          payload: testOrder
-        });
+        store.dispatch(addOrder(testOrder));
         
         console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
         return testOrder;
@@ -131,24 +105,13 @@ if (typeof window !== 'undefined') {
     updateStatus: (orderId, status) => {
       const store = window.__REDUX_STORE__;
       if (store) {
-        const statusMessages = {
-          [ORDER_STATUS.WAITING]: "주문이 접수되었습니다.",
-          [ORDER_STATUS.COOKING]: "음식을 조리하고 있습니다.",
-          [ORDER_STATUS.COOKED]: "조리가 완료되었습니다.",
-          [ORDER_STATUS.RIDER_READY]: "라이더가 매장으로 이동 중입니다.",
-          [ORDER_STATUS.DELIVERING]: "배달 중입니다.",
-          [ORDER_STATUS.DELIVERED]: "배달이 완료되었습니다.",
-          [ORDER_STATUS.COMPLETED]: "주문이 완료되었습니다.",
-        };
+        const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
 
-        store.dispatch({
-          type: 'order/updateOrderStatus',
-          payload: {
-            orderId,
-            status,
-            message: statusMessages[status] || "상태가 업데이트되었습니다."
-          }
-        });
+        store.dispatch(updateOrderStatus({
+          orderId,
+          status,
+          message
+        }));
         
         console.log(`✅ 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
       } else {

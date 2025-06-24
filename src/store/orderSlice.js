@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ORDER_STATUS } from "../constants/orderStatus";
+import { isValidOrderStatus } from "../utils/orderUtils";
 
 // localStorage 저장 함수
 const saveOrdersToLocalStorage = (orders) => {
@@ -11,7 +12,7 @@ const saveOrdersToLocalStorage = (orders) => {
 };
 
 // localStorage에서 주문 데이터 로드
-const loadOrdersFromLocalStorage = () => {
+export const loadOrdersFromLocalStorage = () => {
   try {
     const serialized = localStorage.getItem("itseats-orders");
     return serialized ? JSON.parse(serialized) : [];
@@ -19,6 +20,11 @@ const loadOrdersFromLocalStorage = () => {
     console.warn("Could not load orders from localStorage", e);
     return [];
   }
+};
+
+// 고유 ID 생성 함수
+const generateOrderId = () => {
+  return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
 const initialState = {
@@ -42,7 +48,7 @@ const orderSlice = createSlice({
     addOrder(state, action) {
       const newOrder = {
         ...action.payload,
-        id: Date.now().toString(), // 임시 ID 생성
+        id: generateOrderId(),
         createdAt: new Date().toISOString(),
         status: ORDER_STATUS.WAITING,
         statusHistory: [
@@ -63,6 +69,12 @@ const orderSlice = createSlice({
     updateOrderStatus(state, action) {
       const { orderId, status, message } = action.payload;
       
+      // 상태 유효성 검증
+      if (!isValidOrderStatus(status)) {
+        console.error(`Invalid order status: ${status}`);
+        return;
+      }
+      
       const orderIndex = state.orders.findIndex(order => order.id === orderId);
       if (orderIndex !== -1) {
         const order = state.orders[orderIndex];
@@ -79,6 +91,8 @@ const orderSlice = createSlice({
         }
 
         saveOrdersToLocalStorage(state.orders);
+      } else {
+        console.error(`Order not found: ${orderId}`);
       }
     },
 

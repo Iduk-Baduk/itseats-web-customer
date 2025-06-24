@@ -8,6 +8,21 @@ import LineButton from "../../components/common/basic/LineButton";
 import { useOrderStatus } from "../../hooks/useOrderStatus";
 import styles from "./OrderStatus.module.css";
 
+// 공통 레이아웃 컴포넌트
+const StatusLayout = ({ message, navigate }) => (
+  <div className={styles.container}>
+    <Header
+      title=""
+      leftIcon="close"
+      rightIcon={null}
+      leftButtonAction={() => navigate(-1)}
+    />
+    <div className={styles.statusContainer}>
+      <p>{message}</p>
+    </div>
+  </div>
+);
+
 export default function OrderStatus() {
   const navigate = useNavigate();
   
@@ -25,7 +40,17 @@ export default function OrderStatus() {
 
   // 안전한 데이터 접근을 위한 기본값 설정 - useMemo로 최적화
   const safeOrderData = useMemo(() => {
-    if (!orderData) return null;
+    if (!orderData) return {
+      storeName: "매장명 없음",
+      orderNumber: "주문번호 없음",
+      orderPrice: 0,
+      orderMenuCount: 0,
+      deliveryAddress: "주소 정보 없음",
+      riderRequest: "요청사항 없음",
+      storeLocation: { lat: 37.4979, lng: 127.0276 },
+      destinationLocation: { lat: 37.501887, lng: 127.039252 },
+      orderStatus: "UNKNOWN"
+    };
     
     return {
       storeName: orderData.storeName || "매장명 없음",
@@ -42,53 +67,17 @@ export default function OrderStatus() {
 
   // 로딩 상태 처리
   if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <Header
-          title=""
-          leftIcon="close"
-          rightIcon={null}
-          leftButtonAction={() => navigate(-1)}
-        />
-        <div className={styles.statusContainer}>
-          <p>주문 정보를 불러오는 중...</p>
-        </div>
-      </div>
-    );
+    return <StatusLayout message="주문 정보를 불러오는 중..." navigate={navigate} />;
   }
 
   // 에러 상태 처리
   if (error) {
-    return (
-      <div className={styles.container}>
-        <Header
-          title=""
-          leftIcon="close"
-          rightIcon={null}
-          leftButtonAction={() => navigate(-1)}
-        />
-        <div className={styles.statusContainer}>
-          <p>주문 정보를 불러오는데 실패했습니다: {error}</p>
-        </div>
-      </div>
-    );
+    return <StatusLayout message={`주문 정보를 불러오는데 실패했습니다: ${error}`} navigate={navigate} />;
   }
 
   // 필수 데이터 검증
-  if (!orderData || !orderStatusInfo || !safeOrderData) {
-    return (
-      <div className={styles.container}>
-        <Header
-          title=""
-          leftIcon="close"
-          rightIcon={null}
-          leftButtonAction={() => navigate(-1)}
-        />
-        <div className={styles.statusContainer}>
-          <p>주문 정보를 찾을 수 없습니다.</p>
-        </div>
-      </div>
-    );
+  if (!orderData || !orderStatusInfo) {
+    return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
   }
 
   return (
