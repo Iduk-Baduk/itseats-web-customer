@@ -10,7 +10,6 @@ export default function AddressCurrentLocation() {
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const markerRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -84,7 +83,7 @@ export default function AddressCurrentLocation() {
     mapInstanceRef.current = map;
 
     // 지도 이동 이벤트 (마커는 화면 중앙에 고정)
-    window.kakao.maps.event.addListener(map, "dragend", () => {
+    const dragEndListener = () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
@@ -92,10 +91,10 @@ export default function AddressCurrentLocation() {
       };
       setSelectedPosition(newPosition);
       getAddressFromCoords(newPosition);
-    });
+    };
 
     // 지도 줌 이벤트 (마커는 화면 중앙에 고정)
-    window.kakao.maps.event.addListener(map, "zoom_changed", () => {
+    const zoomChangedListener = () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
@@ -103,7 +102,14 @@ export default function AddressCurrentLocation() {
       };
       setSelectedPosition(newPosition);
       getAddressFromCoords(newPosition);
-    });
+    };
+
+    window.kakao.maps.event.addListener(map, "dragend", dragEndListener);
+    window.kakao.maps.event.addListener(map, "zoom_changed", zoomChangedListener);
+
+    // 리스너 정리를 위한 참조 저장
+    mapInstanceRef.current.dragEndListener = dragEndListener;
+    mapInstanceRef.current.zoomChangedListener = zoomChangedListener;
 
     // 초기 주소 정보 가져오기
     getAddressFromCoords(position);
@@ -112,6 +118,10 @@ export default function AddressCurrentLocation() {
   // 좌표로 주소 가져오기
   const getAddressFromCoords = (position) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
+      setAddressInfo({
+        address: "카카오맵 서비스를 불러올 수 없습니다.",
+        roadAddress: "",
+      });
       return;
     }
 
@@ -128,6 +138,7 @@ export default function AddressCurrentLocation() {
           roadAddress,
         });
       } else {
+        console.error('주소 검색에 실패했습니다:', status);
         setAddressInfo({
           address: "주소 정보를 가져올 수 없습니다.",
           roadAddress: "",
@@ -175,6 +186,27 @@ export default function AddressCurrentLocation() {
 
   useEffect(() => {
     getCurrentLocation();
+    
+    return () => {
+      if (mapInstanceRef.current) {
+        // 이벤트 리스너 정리
+        if (mapInstanceRef.current.dragEndListener) {
+          window.kakao?.maps?.event?.removeListener(
+            mapInstanceRef.current, 
+            "dragend", 
+            mapInstanceRef.current.dragEndListener
+          );
+        }
+        if (mapInstanceRef.current.zoomChangedListener) {
+          window.kakao?.maps?.event?.removeListener(
+            mapInstanceRef.current, 
+            "zoom_changed", 
+            mapInstanceRef.current.zoomChangedListener
+          );
+        }
+        mapInstanceRef.current = null;
+      }
+    };
   }, []);
 
   return (
