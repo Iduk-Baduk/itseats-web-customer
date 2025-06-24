@@ -1,33 +1,10 @@
+// src/store/cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import { createMenuOptionHash } from "../utils/hashUtils";
 
-const loadFromLocalStorage = () => {
-  try {
-    const serializedState = localStorage.getItem("itseats-cart");
-    if (serializedState === null) {
-      return {
-        orderMenus: [],
-      };
-    }
-    return JSON.parse(serializedState);
-  } catch (e) {
-    console.warn("Could not load cart state from localStorage", e);
-    return {
-      orderMenus: [],
-    };
-  }
+const initialState = {
+  orderMenus: [], // [{ menuId, menuName, ... }]
 };
-
-const saveToLocalStorage = (state) => {
-  try {
-    const serializedState = JSON.stringify(state);
-    localStorage.setItem("itseats-cart", serializedState);
-  } catch (e) {
-    console.warn("Could not save cart state to localStorage", e);
-  }
-};
-
-const initialState = loadFromLocalStorage();
 
 const cartSlice = createSlice({
   name: "cart",
@@ -90,4 +67,4 @@ export const {
   clearCart,
 } = cartSlice.actions;
 
-export default cartSlice.reducer; 
+export default cartSlice.reducer;

@@ -48,6 +48,9 @@
     justify-content: space-between;
     width: 100%;
 }
+.centered {
+  justify-content: center; /* 결제버튼용 가운데 정렬 */
+}
 .flexContainer>div {
   display: flex;
   align-items: center;
