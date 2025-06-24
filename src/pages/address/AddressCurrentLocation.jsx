@@ -1,29 +1,27 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import useAddressRedux from "../../hooks/useAddressRedux";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/common/Header";
 import styles from "./AddressCurrentLocation.module.css";
 
 export default function AddressCurrentLocation() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { addAddress } = useAddressRedux();
-  const addType = searchParams.get("add"); // 'home' or 'company'
-  
+  const location = useLocation();
+  const addType = location.state?.addType || "home";
+
   const mapRef = useRef(null);
-  const markerRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  
+  const markerRef = useRef(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [currentPosition, setCurrentPosition] = useState(null);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [addressInfo, setAddressInfo] = useState({
-    address: "현재 위치를 확인 중입니다...",
+    address: "",
     roadAddress: "",
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // GPS 권한 요청 및 현재 위치 가져오기
+  // 현재 위치 가져오기
   const getCurrentLocation = () => {
     setIsLoading(true);
     setError(null);
@@ -36,17 +34,17 @@ export default function AddressCurrentLocation() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const { latitude, longitude } = position.coords;
-        const pos = { lat: latitude, lng: longitude };
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
         setCurrentPosition(pos);
         setSelectedPosition(pos);
-        setIsLoading(false);
         initializeMap(pos);
+        setIsLoading(false);
       },
       (error) => {
-        console.error("GPS 오류:", error);
         let errorMessage = "위치 정보를 가져올 수 없습니다.";
-        
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "위치 정보 접근 권한이 거부되었습니다.";
@@ -58,20 +56,13 @@ export default function AddressCurrentLocation() {
             errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
             break;
         }
-        
         setError(errorMessage);
         setIsLoading(false);
-        
-        // 기본 위치로 설정 (서울 시청)
-        const defaultPos = { lat: 37.5665, lng: 126.978 };
-        setCurrentPosition(defaultPos);
-        setSelectedPosition(defaultPos);
-        initializeMap(defaultPos);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000, // 5분
+        maximumAge: 300000,
       }
     );
   };
@@ -92,37 +83,24 @@ export default function AddressCurrentLocation() {
     const map = new window.kakao.maps.Map(mapContainer, mapOption);
     mapInstanceRef.current = map;
 
-    // 마커 생성 (중앙에 고정)
-    const marker = new window.kakao.maps.Marker({
-      position: new window.kakao.maps.LatLng(position.lat, position.lng),
-    });
-    marker.setMap(map);
-    markerRef.current = marker;
-
-    // 지도 이동 이벤트 (마커도 중앙에 따라 이동)
+    // 지도 이동 이벤트 (마커는 화면 중앙에 고정)
     window.kakao.maps.event.addListener(map, "dragend", () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
         lng: center.getLng(),
       };
-      
-      // 마커를 중앙으로 이동
-      marker.setPosition(center);
       setSelectedPosition(newPosition);
       getAddressFromCoords(newPosition);
     });
 
-    // 지도 줌 이벤트 (마커도 중앙에 따라 이동)
+    // 지도 줌 이벤트 (마커는 화면 중앙에 고정)
     window.kakao.maps.event.addListener(map, "zoom_changed", () => {
       const center = map.getCenter();
       const newPosition = {
         lat: center.getLat(),
         lng: center.getLng(),
       };
-      
-      // 마커를 중앙으로 이동
-      marker.setPosition(center);
       setSelectedPosition(newPosition);
       getAddressFromCoords(newPosition);
     });
@@ -131,13 +109,9 @@ export default function AddressCurrentLocation() {
     getAddressFromCoords(position);
   };
 
-  // 좌표로 주소 정보 가져오기
+  // 좌표로 주소 가져오기
   const getAddressFromCoords = (position) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
-      setAddressInfo({
-        address: "주소 정보를 가져올 수 없습니다.",
-        roadAddress: "",
-      });
       return;
     }
 
@@ -170,10 +144,6 @@ export default function AddressCurrentLocation() {
         currentPosition.lng
       );
       mapInstanceRef.current.panTo(moveLatLon);
-      
-      if (markerRef.current) {
-        markerRef.current.setPosition(moveLatLon);
-      }
       
       setSelectedPosition(currentPosition);
       getAddressFromCoords(currentPosition);
@@ -233,9 +203,17 @@ export default function AddressCurrentLocation() {
           </div>
         )}
 
-        <div className={styles.mapContainer}>
-          <div ref={mapRef} className={styles.map}></div>
-          
+        <div className={styles.content}>
+          <div className={styles.mapWrapper}>
+            <div 
+              ref={mapRef} 
+              className={styles.mapContainer}
+              style={{ width: "100%", height: "400px" }}
+            >
+              <div className={styles.fixedMarker}></div>
+            </div>
+          </div>
+
           <button 
             className={styles.currentLocationButton}
             onClick={moveToCurrentLocation}
