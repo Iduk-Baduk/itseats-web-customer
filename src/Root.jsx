@@ -35,6 +35,7 @@ import AddCard from "./pages/payments/AddCard";
 import AddAccount from "./pages/payments/AddAccount";
 import Counter from "./components/Counter";
 import TestOrder from "./pages/TestOrder";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 export default function Root() {
   const location = useLocation();
@@ -58,7 +59,14 @@ export default function Root() {
           <Route path="/stores/:storeId" element={<StoreDetail />} />
           <Route path="/stores/:storeId/info" element={<StoreInfo />} />
           <Route path="/stores/:storeId/menus/:menuId" element={<MenuDetail />} />
-          <Route path="/orders/:orderId/status" element={<OrderStatus />} />
+          <Route 
+            path="/orders/:orderId/status" 
+            element={
+              <ErrorBoundary>
+                <OrderStatus />
+              </ErrorBoundary>
+            } 
+          />
           <Route path="/favorites" element={<Favorite />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/coupons" element={<Coupons />} />

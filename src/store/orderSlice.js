@@ -86,6 +86,12 @@ const orderSlice = createSlice({
     setCurrentOrder(state, action) {
       const orderId = action.payload;
       const order = state.orders.find(order => order.id === orderId);
+      
+      // 이미 같은 주문이 설정되어 있으면 업데이트하지 않음
+      if (state.currentOrder && state.currentOrder.id === orderId) {
+        return;
+      }
+      
       state.currentOrder = order || null;
     },
 

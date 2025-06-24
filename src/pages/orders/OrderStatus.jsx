@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -21,6 +22,23 @@ export default function OrderStatus() {
     updateStatus,
     isActiveOrder
   } = useOrderStatus();
+
+  // 안전한 데이터 접근을 위한 기본값 설정 - useMemo로 최적화
+  const safeOrderData = useMemo(() => {
+    if (!orderData) return null;
+    
+    return {
+      storeName: orderData.storeName || "매장명 없음",
+      orderNumber: orderData.orderNumber || "주문번호 없음",
+      orderPrice: orderData.orderPrice || 0,
+      orderMenuCount: orderData.orderMenuCount || 0,
+      deliveryAddress: orderData.deliveryAddress || "주소 정보 없음",
+      riderRequest: orderData.riderRequest || "요청사항 없음",
+      storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
+      destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
+      orderStatus: orderData.orderStatus || "UNKNOWN"
+    };
+  }, [orderData]);
 
   // 로딩 상태 처리
   if (isLoading) {
@@ -56,6 +74,23 @@ export default function OrderStatus() {
     );
   }
 
+  // 필수 데이터 검증
+  if (!orderData || !orderStatusInfo || !safeOrderData) {
+    return (
+      <div className={styles.container}>
+        <Header
+          title=""
+          leftIcon="close"
+          rightIcon={null}
+          leftButtonAction={() => navigate(-1)}
+        />
+        <div className={styles.statusContainer}>
+          <p>주문 정보를 찾을 수 없습니다.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <SlideInFromRight>
       <div>
@@ -69,20 +104,20 @@ export default function OrderStatus() {
         />
         <div className={styles.container}>
           {/* 지도 표시 - 상태에 따라 조건부 렌더링 */}
-          {orderStatusInfo.showMap && (
+          {orderStatusInfo.showMap && safeOrderData.storeLocation && safeOrderData.destinationLocation && (
             <div className={styles.map}>
               <CommonMap
-                lat={orderData.storeLocation.lat}
-                lng={orderData.storeLocation.lng}
+                lat={safeOrderData.storeLocation.lat}
+                lng={safeOrderData.storeLocation.lng}
                 markers={[
                   {
-                    lat: orderData.storeLocation.lat,
-                    lng: orderData.storeLocation.lng,
+                    lat: safeOrderData.storeLocation.lat,
+                    lng: safeOrderData.storeLocation.lng,
                     type: "store",
                   },
                   {
-                    lat: orderData.destinationLocation.lat,
-                    lng: orderData.destinationLocation.lng,
+                    lat: safeOrderData.destinationLocation.lat,
+                    lng: safeOrderData.destinationLocation.lng,
                     type: "user",
                   },
                 ]}
@@ -103,7 +138,7 @@ export default function OrderStatus() {
               </div>
             )}
             
-            <OrderProgress orderStatus={orderData.orderStatus} />
+            <OrderProgress orderStatus={safeOrderData.orderStatus} />
 
             {/* 주문 상태 정보 표시 */}
             <div className={styles.statusPerson}>
@@ -122,21 +157,21 @@ export default function OrderStatus() {
             {/* 주문 상세 정보 */}
             <div className={styles.orderDetails}>
               <div className={styles.orderInfo}>
-                <p className={styles.storeName}>{orderData.storeName}</p>
+                <p className={styles.storeName}>{safeOrderData.storeName}</p>
                 <p>
-                  <span>주문번호 {orderData.orderNumber}</span>
+                  <span>주문번호 {safeOrderData.orderNumber}</span>
                   <span>
-                    {orderData.orderPrice.toLocaleString()}원 (메뉴{" "}
-                    {orderData.orderMenuCount}개)
+                    {safeOrderData.orderPrice.toLocaleString()}원 (메뉴{" "}
+                    {safeOrderData.orderMenuCount}개)
                   </span>
                 </p>
               </div>
               <div className={styles.deliveryInfo}>
                 <p className={styles.storeName}>배달 주소</p>
-                <span>{orderData.deliveryAddress}</span>
+                <span>{safeOrderData.deliveryAddress}</span>
                 <div className={styles.riderRequest}>
                   <span>배달 요청사항</span>
-                  <span>{orderData.riderRequest}</span>
+                  <span>{safeOrderData.riderRequest}</span>
                 </div>
               </div>
             </div>
