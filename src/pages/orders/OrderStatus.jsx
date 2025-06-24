@@ -119,7 +119,7 @@ function getOrderStatusString(status) {
       return {
         step: 2,
         person: "사장님",
-        message: "음식을 조리를 완료했어요",
+        message: "음식 조리를 완료했어요",
         image: "/icons/order/owner.jpg",
       };
     case "RIDER_READY":
