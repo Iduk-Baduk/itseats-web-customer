@@ -1,18 +1,84 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
 import LineButton from "../../components/common/basic/LineButton";
+import { useOrderStatus } from "../../hooks/useOrderStatus";
 import styles from "./OrderStatus.module.css";
+
+// 공통 레이아웃 컴포넌트
+const StatusLayout = ({ message, navigate }) => (
+  <div className={styles.container}>
+    <Header
+      title=""
+      leftIcon="close"
+      rightIcon={null}
+      leftButtonAction={() => navigate(-1)}
+    />
+    <div className={styles.statusContainer}>
+      <p>{message}</p>
+    </div>
+  </div>
+);
 
 export default function OrderStatus() {
   const navigate = useNavigate();
+  
+  // Redux 훅 사용
+  const {
+    orderData,
+    orderStatusInfo,
+    etaInfo,
+    progressStep,
+    isLoading,
+    error,
+    updateStatus,
+    isActiveOrder
+  } = useOrderStatus();
 
-  const [orderStatusString, setOrderStatusString] = useState(
-    getOrderStatusString(dummyOrderStatus.orderStatus)
-  );
+  // 안전한 데이터 접근을 위한 기본값 설정 - useMemo로 최적화
+  const safeOrderData = useMemo(() => {
+    if (!orderData) return {
+      storeName: "매장명 없음",
+      orderNumber: "주문번호 없음",
+      orderPrice: 0,
+      orderMenuCount: 0,
+      deliveryAddress: "주소 정보 없음",
+      riderRequest: "요청사항 없음",
+      storeLocation: { lat: 37.4979, lng: 127.0276 },
+      destinationLocation: { lat: 37.501887, lng: 127.039252 },
+      orderStatus: "UNKNOWN"
+    };
+    
+    return {
+      storeName: orderData.storeName || "매장명 없음",
+      orderNumber: orderData.orderNumber || "주문번호 없음",
+      orderPrice: orderData.orderPrice || 0,
+      orderMenuCount: orderData.orderMenuCount || 0,
+      deliveryAddress: orderData.deliveryAddress || "주소 정보 없음",
+      riderRequest: orderData.riderRequest || "요청사항 없음",
+      storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
+      destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
+      orderStatus: orderData.orderStatus || "UNKNOWN"
+    };
+  }, [orderData]);
+
+  // 로딩 상태 처리
+  if (isLoading) {
+    return <StatusLayout message="주문 정보를 불러오는 중..." navigate={navigate} />;
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return <StatusLayout message={`주문 정보를 불러오는데 실패했습니다: ${error}`} navigate={navigate} />;
+  }
+
+  // 필수 데이터 검증
+  if (!orderData || !orderStatusInfo) {
+    return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
+  }
 
   return (
     <SlideInFromRight>
@@ -26,154 +92,88 @@ export default function OrderStatus() {
           }}
         />
         <div className={styles.container}>
-          <div className={styles.map}>
-            <CommonMap
-              lat={dummyOrderStatus.storeLocation.lat}
-              lng={dummyOrderStatus.storeLocation.lng}
-              markers={[
-                {
-                  lat: dummyOrderStatus.storeLocation.lat,
-                  lng: dummyOrderStatus.storeLocation.lng,
-                  type: "store",
-                },
-                {
-                  lat: dummyOrderStatus.destinationLocation.lat,
-                  lng: dummyOrderStatus.destinationLocation.lng,
-                  type: "user",
-                },
-              ]}
-              height="100%"
-              level={6}
-            />
-          </div>
-          <div className={styles.statusContainer}>
-            <div className={styles.statusIndicator}>
-              <span className={styles.statusText}>도착 예정시간</span>
-              <p className={styles.estimatedTime}>
-                8분<span>(오후 07:03)</span>
-              </p>
+          {/* 지도 표시 - 상태에 따라 조건부 렌더링 */}
+          {orderStatusInfo.showMap && safeOrderData.storeLocation && safeOrderData.destinationLocation && (
+            <div className={styles.map}>
+              <CommonMap
+                lat={safeOrderData.storeLocation.lat}
+                lng={safeOrderData.storeLocation.lng}
+                markers={[
+                  {
+                    lat: safeOrderData.storeLocation.lat,
+                    lng: safeOrderData.storeLocation.lng,
+                    type: "store",
+                  },
+                  {
+                    lat: safeOrderData.destinationLocation.lat,
+                    lng: safeOrderData.destinationLocation.lng,
+                    type: "user",
+                  },
+                ]}
+                height="100%"
+                level={6}
+              />
             </div>
-            <OrderProgress currentStep={orderStatusString.step} />
+          )}
+          
+          <div className={styles.statusContainer}>
+            {/* 도착 예정시간 표시 - 상태에 따라 조건부 렌더링 */}
+            {orderStatusInfo.showETA && etaInfo && (
+              <div className={styles.statusIndicator}>
+                <span className={styles.statusText}>도착 예정시간</span>
+                <p className={styles.estimatedTime}>
+                  {etaInfo.minutes}분<span>({etaInfo.timeString})</span>
+                </p>
+              </div>
+            )}
+            
+            <OrderProgress orderStatus={safeOrderData.orderStatus} />
 
+            {/* 주문 상태 정보 표시 */}
             <div className={styles.statusPerson}>
-              {orderStatusString.image && (
+              {orderStatusInfo.image && (
                 <img
-                  src={orderStatusString.image}
-                  alt={orderStatusString.person}
+                  src={orderStatusInfo.image}
+                  alt={orderStatusInfo.person}
                 />
               )}
               <div>
-                <span>{orderStatusString.person}</span>
-                <p>{orderStatusString.message}</p>
+                <span>{orderStatusInfo.person}</span>
+                <p>{orderStatusInfo.message}</p>
               </div>
             </div>
 
+            {/* 주문 상세 정보 */}
             <div className={styles.orderDetails}>
               <div className={styles.orderInfo}>
-                <p className={styles.storeName}>{dummyOrderStatus.storeName}</p>
+                <p className={styles.storeName}>{safeOrderData.storeName}</p>
                 <p>
-                  <span>주문번호 {dummyOrderStatus.orderNumber}</span>
+                  <span>주문번호 {safeOrderData.orderNumber}</span>
                   <span>
-                    {dummyOrderStatus.orderPrice.toLocaleString()}원 (메뉴{" "}
-                    {dummyOrderStatus.orderMenuCount}개)
+                    {safeOrderData.orderPrice.toLocaleString()}원 (메뉴{" "}
+                    {safeOrderData.orderMenuCount}개)
                   </span>
                 </p>
               </div>
               <div className={styles.deliveryInfo}>
                 <p className={styles.storeName}>배달 주소</p>
-                <span>{dummyOrderStatus.deliveryAddress}</span>
+                <span>{safeOrderData.deliveryAddress}</span>
                 <div className={styles.riderRequest}>
                   <span>배달 요청사항</span>
-                  <span>{dummyOrderStatus.riderRequest}</span>
+                  <span>{safeOrderData.riderRequest}</span>
                 </div>
               </div>
             </div>
 
-            <LineButton className={styles.helpButton}>
-              <p>도움이 필요하신가요?</p>
-            </LineButton>
+            {/* 도움말 버튼 - 진행 중인 주문에만 표시 */}
+            {isActiveOrder && (
+              <LineButton className={styles.helpButton}>
+                <p>도움이 필요하신가요?</p>
+              </LineButton>
+            )}
           </div>
         </div>
       </div>
     </SlideInFromRight>
   );
 }
-
-function getOrderStatusString(status) {
-  switch (status) {
-    case "WAITING":
-      return {
-        step: 0,
-        person: "사장님",
-        message: "주문을 접수하고 있어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "COOKING":
-      return {
-        step: 1,
-        person: "사장님",
-        message: "음식을 맛있게 조리하고 있어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "COOKED":
-      return {
-        step: 2,
-        person: "사장님",
-        message: "음식 조리를 완료했어요",
-        image: "/icons/order/owner.jpg",
-      };
-    case "RIDER_READY":
-      return {
-        step: 2,
-        person: "배달파트너",
-        message: "음식을 가지러 가고 있어요",
-        image: "/icons/order/rider.jpg",
-      };
-    case "DELIVERING":
-      return {
-        step: 2,
-        person: "배달파트너",
-        message: "배달 중이에요",
-        image: "/icons/order/rider.jpg",
-      };
-    case "DELIVERED": {
-      return {
-        step: 3,
-        person: "배달파트너",
-        message: "목적지로 배달을 완료했어요",
-        image: "/icons/order/rider.jpg",
-      };
-    }
-    case "COMPLETED":
-      return {
-        step: 4,
-        person: "잇츠잇츠",
-        message: "주문이 완료되었어요",
-      };
-    case "CANCELED":
-      return {
-        step: -1,
-        person: "잇츠잇츠",
-        message: "주문이 취소되었어요",
-      };
-    default:
-      return {
-        step: -1,
-        person: "알 수 없음",
-        message: "주문 상태를 알 수 없어요",
-      };
-  }
-}
-
-const dummyOrderStatus = {
-  deliveryEta: "2025-06-11T08:11:00",
-  orderStatus: "COOKED",
-  storeName: "도미노피자 구름톤점",
-  orderNumber: "14NKFA",
-  orderPrice: 15900,
-  orderMenuCount: 1,
-  deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
-  destinationLocation: { lat: 37.501887, lng: 127.039252 },
-  storeLocation: { lat: 37.4979, lng: 127.0276 },
-  riderRequest: "문 앞에 놔주세요 (초인종 O)",
-};

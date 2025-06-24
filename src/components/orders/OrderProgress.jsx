@@ -1,21 +1,30 @@
+import { getOrderStep } from "../../utils/orderUtils";
 import styles from "./OrderProgress.module.css";
 
 const steps = ["주문수락", "조리중", "배달중", "배달완료"];
 
-export default function OrderProgress({ currentStep = 1 }) {
+export default function OrderProgress({ currentStep = 1, orderStatus = null }) {
+  // orderStatus가 제공되면 자동으로 단계 계산, 없으면 currentStep 사용
+  const actualStep = orderStatus ? getOrderStep(orderStatus) : currentStep;
+  
+  // 안전한 단계 값 보장 (0-4 범위)
+  const safeStep = Math.max(0, Math.min(4, actualStep || 0));
+  
   return (
     <div className={styles.container}>
       <div className={styles.lineContainer}>
         <div className={styles.fullLine} />
         <div
           className={styles.progressLine}
-          style={{ width: `${Math.min((currentStep / (steps.length - 1)) * 100, 100)}%` }}
+          style={{ 
+            width: `${Math.min((safeStep / (steps.length - 1)) * 100, 100)}%` 
+          }}
         />
       </div>
       <div className={styles.steps}>
         {steps.map((label, index) => {
-          const isCompleted = index < currentStep;
-          const isCurrent = index === currentStep;
+          const isCompleted = index < safeStep;
+          const isCurrent = index === safeStep;
 
           return (
             <div key={index} className={styles.step}>
