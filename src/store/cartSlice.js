@@ -1,6 +1,6 @@
 // src/store/cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import isEqual from "lodash.isequal";
+import { createMenuOptionHash } from "../utils/hashUtils";
 
 const initialState = {
   orderMenus: [], // [{ menuId, menuName, ... }]
@@ -15,10 +15,11 @@ const cartSlice = createSlice({
     },
     addMenu(state, action) {
       const newItem = action.payload;
+      const newItemHash = createMenuOptionHash(newItem.menuOption);
       const existingMenuIndex = state.orderMenus.findIndex(
         (menu) =>
           menu.menuId === newItem.menuId &&
-          isEqual(menu.menuOption, newItem.menuOption)
+          createMenuOptionHash(menu.menuOption) === newItemHash
       );
 
       if (existingMenuIndex !== -1) {
@@ -28,10 +29,12 @@ const cartSlice = createSlice({
       }
     },
     updateQuantity: (state, action) => {
-      const { menuId, menuOption, delta } = action.payload;
+      const { menuId, menuOptionHash, delta } = action.payload;
 
       const index = state.orderMenus.findIndex(
-        (menu) => menu.menuId === menuId && isEqual(menu.menuOption, menuOption) // deep equal
+        (menu) => 
+          menu.menuId === menuId && 
+          createMenuOptionHash(menu.menuOption) === menuOptionHash
       );
 
       if (index !== -1) {
@@ -43,10 +46,11 @@ const cartSlice = createSlice({
       }
     },
     removeMenu(state, action) {
+      const { menuId, menuOptionHash } = action.payload;
       state.orderMenus = state.orderMenus.filter(
-        (menu, idx) =>
-          menu.menuId !== action.payload.menuId ||
-          !isEqual(menu.menuOption, action.payload.menuOption)
+        (menu) =>
+          menu.menuId !== menuId ||
+          createMenuOptionHash(menu.menuOption) !== menuOptionHash
       );
     },
     clearCart(state) {
