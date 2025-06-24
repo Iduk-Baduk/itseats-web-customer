@@ -22,6 +22,10 @@ export default function AddressNew() {
   const [currentAddress, setCurrentAddress] = useState(initialAddress);
   const [customLabel, setCustomLabel] = useState("");
 
+  useEffect(() => {
+    setCurrentAddress(initialAddress);
+  }, [initialAddress]);
+
   const handleAddressChange = (newAddress) => {
     setCurrentAddress(newAddress);
   };

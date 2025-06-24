@@ -22,6 +22,11 @@ export default function AddressForm({
   const [isMapInitialized, setIsMapInitialized] = useState(false);
   const [error, setError] = useState(null);
 
+  // address prop 변경 시 currentAddress 동기화
+  useEffect(() => {
+    setCurrentAddress(address);
+  }, [address]);
+
   // 좌표로 주소 정보 가져오기
   const getAddressFromCoords = (position) => {
     if (!window.kakao?.maps?.services?.Geocoder) {

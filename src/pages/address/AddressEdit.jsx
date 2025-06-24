@@ -15,7 +15,7 @@ export default function AddressEdit() {
   const [detailAddress, setDetailAddress] = useState("");
   const [guideMessage, setGuideMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState(null);
+  const [currentAddress, setCurrentAddress] = useState(addressToEdit || null);
   const [customLabel, setCustomLabel] = useState("");
 
   useEffect(() => {
@@ -36,6 +36,13 @@ export default function AddressEdit() {
       } else {
          setDetailAddress(""); // 혹은 다른 기본값
       }
+    }
+  }, [addressToEdit]);
+
+  // addressToEdit 변경 시 currentAddress 동기화 (추가 안전장치)
+  useEffect(() => {
+    if (addressToEdit) {
+      setCurrentAddress(addressToEdit);
     }
   }, [addressToEdit]);
 
