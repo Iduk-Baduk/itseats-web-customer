@@ -14,11 +14,21 @@ export default function Coupons() {
   const fromCart = location.state && location.state.from === 'cart';
 
   const handleUseCoupon = (couponId) => {
-    // 장바구니 총액 계산
-    const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
-    
-    dispatch(applyCoupon({ couponId, cartTotal }));
-    navigate('/cart');
+    try {
+      // 장바구니 총액 계산
+      const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+      
+      if (cartTotal <= 0) {
+        alert('장바구니가 비어있습니다.');
+        return;
+      }
+
+      dispatch(applyCoupon({ couponId, cartTotal }));
+      navigate('/cart');
+    } catch (error) {
+      console.error('쿠폰 적용 중 오류가 발생했습니다:', error);
+      alert('쿠폰 적용에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (

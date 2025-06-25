@@ -21,6 +21,15 @@ import CartPaymentSummarySection from '../../components/orders/cart/CartPaymentS
 import CartPaymentMethodSection from '../../components/orders/cart/CartPaymentMethodSection';
 import CartRequestSection from '../../components/orders/cart/CartRequestSection';
 
+// 더미 데이터 상수 (나중에 실제 데이터로 교체 예정)
+const DUMMY_DATA = {
+  storeName: "도미노피자 구름톤점", // TODO: 실제 매장 정보로 교체
+  deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호", // TODO: 선택된 주소로 교체
+  destinationLocation: { lat: 37.501887, lng: 127.039252 }, // TODO: 실제 좌표로 교체
+  storeLocation: { lat: 37.4979, lng: 127.0276 }, // TODO: 실제 매장 좌표로 교체
+  storeImage: "/samples/food1.jpg" // TODO: 실제 매장 이미지로 교체
+};
+
 export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -55,15 +64,15 @@ export default function Cart() {
   const handlePayment = () => {
     // 주문 데이터 생성
     const orderData = {
-      storeName: "도미노피자 구름톤점", // 실제로는 선택된 매장 정보로 설정
+      storeName: DUMMY_DATA.storeName,
       orderPrice: cartInfo.totalPrice,
       orderMenuCount: cartInfo.itemCount,
-      deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호", // 실제로는 선택된 주소로 설정
-      destinationLocation: { lat: 37.501887, lng: 127.039252 },
-      storeLocation: { lat: 37.4979, lng: 127.0276 },
+      deliveryAddress: DUMMY_DATA.deliveryAddress,
+      destinationLocation: DUMMY_DATA.destinationLocation,
+      storeLocation: DUMMY_DATA.storeLocation,
       deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-      storeImage: "/samples/food1.jpg",
+      storeImage: DUMMY_DATA.storeImage,
       // 요청사항 데이터 포함
       storeRequest: requestInfo.storeRequest,
       deliveryRequest: requestInfo.deliveryRequest,
