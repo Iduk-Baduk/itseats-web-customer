@@ -4,6 +4,7 @@ import paymentReducer from "./paymentSlice";
 import cartReducer from "./cartSlice";
 import addressReducer from "./addressSlice";
 import orderReducer from "./orderSlice";
+import couponReducer from "./couponSlice";
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     payment: paymentReducer,
     address: addressReducer,
     order: orderReducer,
+    coupon: couponReducer,
   },
 });
 

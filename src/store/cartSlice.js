@@ -5,7 +5,10 @@ import { createMenuOptionHash } from "../utils/hashUtils";
 // localStorage 저장 함수 추가
 const saveToLocalStorage = (state) => {
   try {
-    const serializedState = JSON.stringify(state.orderMenus);
+    const serializedState = JSON.stringify({
+      orderMenus: state.orderMenus,
+      requestInfo: state.requestInfo
+    });
     localStorage.setItem("itseats-cart", serializedState);
   } catch (e) {
     console.warn("Could not save cart state to localStorage", e);
@@ -14,6 +17,11 @@ const saveToLocalStorage = (state) => {
 
 const initialState = {
   orderMenus: [], // [{ menuId, menuName, ... }]
+  requestInfo: {
+    storeRequest: '',
+    deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
+    disposableChecked: false,
+  },
 };
 
 const cartSlice = createSlice({
@@ -21,7 +29,9 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     initializeCart(state, action) {
-      state.orderMenus = action.payload;
+      const cartData = action.payload || {};
+      state.orderMenus = cartData.orderMenus || [];
+      state.requestInfo = cartData.requestInfo || initialState.requestInfo;
       saveToLocalStorage(state);
     },
     addMenu(state, action) {
@@ -72,6 +82,11 @@ const cartSlice = createSlice({
     },
     clearCart(state) {
       state.orderMenus = [];
+      state.requestInfo = initialState.requestInfo;
+      saveToLocalStorage(state);
+    },
+    updateRequestInfo(state, action) {
+      state.requestInfo = { ...state.requestInfo, ...action.payload };
       saveToLocalStorage(state);
     },
   },
@@ -83,6 +98,10 @@ export const {
   updateQuantity,
   removeMenu,
   clearCart,
+  updateRequestInfo,
 } = cartSlice.actions;
+
+// Selectors
+export const selectRequestInfo = (state) => state.cart.requestInfo;
 
 export default cartSlice.reducer;
