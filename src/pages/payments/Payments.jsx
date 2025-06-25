@@ -199,10 +199,19 @@ export default function Payments() {
       )}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg("")} />}
 
-      {/* 결제수단 추가 바텀시트 */}
-      {addSheetOpen && (
-        <div style={{position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1000, background: 'rgba(0,0,0,0.2)'}} onClick={() => setAddSheetOpen(false)}>
-          <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, background: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, minHeight: 220, boxShadow: '0 -2px 16px rgba(0,0,0,0.08)'}} onClick={e => e.stopPropagation()}>
+   {/* 결제수단 추가 바텀시트 */}
+   {addSheetOpen && (
+        <div 
+          className={styles.modalBackdrop}
+          onClick={() => setAddSheetOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-payment-title"
+        >
+          <div 
+            className={styles.modalContent}
+            onClick={e => e.stopPropagation()}
+          >
             <AddPaymentMethod />
           </div>
         </div>
