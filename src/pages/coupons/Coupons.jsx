@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { applyCoupon } from "../../store/couponSlice";
+import calculateCartTotal from "../../utils/calculateCartTotal";
 import styles from "./Coupons.module.css";
 import Header from "../../components/common/Header";
 
@@ -9,10 +10,14 @@ export default function Coupons() {
   const location = useLocation();
   const dispatch = useDispatch();
   const coupons = useSelector(state => state.coupon.coupons);
+  const orderMenus = useSelector(state => state.cart.orderMenus);
   const fromCart = location.state && location.state.from === 'cart';
 
   const handleUseCoupon = (couponId) => {
-    dispatch(applyCoupon(couponId));
+    // 장바구니 총액 계산
+    const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+    
+    dispatch(applyCoupon({ couponId, cartTotal }));
     navigate('/cart');
   };
 

@@ -49,7 +49,14 @@ const couponSlice = createSlice({
   initialState,
   reducers: {
     applyCoupon(state, action) {
-      const { couponId, cartTotal = 0 } = action.payload;
+      const { couponId, cartTotal } = action.payload;
+      
+      // cartTotal이 제공되지 않았을 때 경고
+      if (cartTotal === undefined) {
+        console.warn('applyCoupon: cartTotal이 제공되지 않았습니다');
+        return;
+      }
+      
       const coupon = state.coupons.find(c => c.id === couponId);
       if (coupon && isValidCoupon(coupon, cartTotal)) {
         state.selectedCouponId = couponId;
@@ -76,15 +83,24 @@ const couponSlice = createSlice({
   },
 });
 
-// 정규화된 쿠폰 데이터 selector
+// 정규화된 쿠폰 데이터 selector - fallback 필드 일관성 확보
 export const selectNormalizedCoupons = (state) =>
   state.coupon.coupons.map(coupon => ({
     ...coupon,
-    discount: coupon.discount || coupon.salePrice,
-    type: coupon.type || coupon.deliveryType,
-    name: coupon.name || coupon.storeName,
-    description: coupon.description || coupon.validDate
+    discount: coupon.discount || coupon.salePrice || 0,
+    type: coupon.type || coupon.deliveryType || 'general',
+    name: coupon.name || coupon.storeName || '이름 없는 쿠폰',
+    description: coupon.description || (coupon.validDate ? 
+      `${coupon.validDate.toLocaleDateString()}까지` : '설명 없음'),
+    validDate: coupon.validDate || null,
+    minOrderAmount: coupon.minOrderAmount || 0,
+    isUsed: coupon.isUsed || false,
+    isExpired: coupon.isExpired || false,
   }));
+
+// 유효한 쿠폰만 선택하는 selector 추가
+export const selectValidCoupons = (state, cartTotal = 0) =>
+  selectNormalizedCoupons(state).filter(coupon => isValidCoupon(coupon, cartTotal));
 
 export const { applyCoupon, clearCoupon } = couponSlice.actions;
 export default couponSlice.reducer;
