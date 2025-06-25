@@ -73,7 +73,7 @@ export default function Cart() {
   return (
     <div className={styles.container}>
       {orderMenus.length === 0 ? (
-        <div className={styles.emptyCart} style={{padding: '80px 0', textAlign: 'center', fontSize: '16px', color: '#888'}}>
+        <div className={styles.emptyCart}>
           카트가 비어있습니다.
         </div>
       ) : (

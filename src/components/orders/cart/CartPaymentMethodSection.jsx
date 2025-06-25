@@ -73,22 +73,22 @@ export default function CartPaymentMethodSection() {
   const renderDropdownList = () => {
     if (selectedPaymentType === 'card') {
       return (
-        <div style={{background: '#fff', border: '1.5px solid #e0e0e0', borderRadius: 14, marginTop: 6, boxShadow: '0 6px 24px rgba(0,0,0,0.10)', zIndex: 100, position: 'absolute', right: 0, left: 0, minWidth: 260, padding: '4px 0'}}>
+        <div className={styles.dropdownList}>
           {cards.map(card => (
             <div
               key={card.id}
-              style={{padding: '16px 24px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: 16, color: '#222', background: selectedCardId === card.id ? '#f5f7fa' : '#fff', fontWeight: selectedCardId === card.id ? 700 : 500}}
+              className={`${styles.dropdownItem} ${selectedCardId === card.id ? styles.selected : ''}`}
               onClick={() => {
                 dispatch(setSelectedPaymentMethod({ type: 'card', cardId: card.id }));
                 setDropdownOpen(false);
               }}
             >
-              <span style={{flex: 1}}>{card.name} ****{card.last4}</span>
-              {selectedCardId === card.id && <span style={{color: '#2196f3', fontWeight: 700, fontSize: 20, marginLeft: 8}}>✔</span>}
+              <span className={styles.itemLabel}>{card.name} ****{card.last4}</span>
+              {selectedCardId === card.id && <span className={styles.checkmark}>✔</span>}
             </div>
           ))}
           <div
-            style={{padding: '16px 24px', color: '#2196f3', fontWeight: 600, cursor: 'pointer', borderTop: '1px solid #f0f0f0', fontSize: 16}}
+            className={styles.addNewItem}
             onClick={() => { setDropdownOpen(false); navigate('/payments/add-card'); }}
           >
             + 신용/체크카드 추가
@@ -98,22 +98,22 @@ export default function CartPaymentMethodSection() {
     }
     if (selectedPaymentType === 'account') {
       return (
-        <div style={{background: '#fff', border: '1.5px solid #e0e0e0', borderRadius: 14, marginTop: 6, boxShadow: '0 6px 24px rgba(0,0,0,0.10)', zIndex: 100, position: 'absolute', right: 0, left: 0, minWidth: 260, padding: '4px 0'}}>
+        <div className={styles.dropdownList}>
           {accounts.map(account => (
             <div
               key={account.id}
-              style={{padding: '16px 24px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: 16, color: '#222', background: selectedAccountId === account.id ? '#f5f7fa' : '#fff', fontWeight: selectedAccountId === account.id ? 700 : 500}}
+              className={`${styles.dropdownItem} ${selectedAccountId === account.id ? styles.selected : ''}`}
               onClick={() => {
                 dispatch(setSelectedPaymentMethod({ type: 'account', accountId: account.id }));
                 setDropdownOpen(false);
               }}
             >
-              <span style={{flex: 1}}>{account.bankName} ****{account.last4}</span>
-              {selectedAccountId === account.id && <span style={{color: '#2196f3', fontWeight: 700, fontSize: 20, marginLeft: 8}}>✔</span>}
+              <span className={styles.itemLabel}>{account.bankName} ****{account.last4}</span>
+              {selectedAccountId === account.id && <span className={styles.checkmark}>✔</span>}
             </div>
           ))}
           <div
-            style={{padding: '16px 24px', color: '#2196f3', fontWeight: 600, cursor: 'pointer', borderTop: '1px solid #f0f0f0', fontSize: 16}}
+            className={styles.addNewItem}
             onClick={() => { setDropdownOpen(false); navigate('/payments/add-account'); }}
           >
             + 은행계좌 추가
@@ -126,11 +126,11 @@ export default function CartPaymentMethodSection() {
 
   return (
     <section className={styles.section}>
-      <div style={{display: 'flex', flexDirection: 'column', gap: 14, position: 'relative'}}>
+      <div className={styles.paymentContainer}>
         {/* 결제수단 종류별 라디오 */}
-        <div style={{display: 'flex', alignItems: 'center', gap: 28}}>
+        <div className={styles.paymentOptions}>
           {paymentOptions.map(opt => (
-            <label key={opt.type} style={{display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 16, color: opt.disabled ? '#bbb' : '#222', cursor: opt.disabled ? 'not-allowed' : 'pointer'}}>
+            <label key={opt.type} className={`${styles.paymentOption} ${opt.disabled ? styles.disabled : ''}`}>
               <input
                 type="radio"
                 name="paymentType"
@@ -146,86 +146,53 @@ export default function CartPaymentMethodSection() {
                     } else {
                       dispatch(setSelectedPaymentMethod({ type: opt.type }));
                     }
-                    setDropdownOpen(false); // 라디오 변경 시 드롭다운 닫기
+                    setDropdownOpen(false);
                   }
                 }}
-                style={{accentColor: '#2196f3', width: 20, height: 20}}
+                className={styles.radioInput}
               />
               {opt.label}
             </label>
           ))}
         </div>
+        
         {/* 대표 결제수단 + 드롭다운 버튼 */}
         {(selectedPaymentType === 'card' && cards.length > 0) && (
-          <div style={{position: 'relative', width: 300, maxWidth: '100%'}} ref={dropdownRef}>
+          <div className={styles.dropdownContainer} ref={dropdownRef}>
             <button
-              style={{
-                width: '100%',
-                background: '#f5f5f5',
-                border: '1.5px solid #e0e0e0',
-                borderRadius: 12,
-                padding: '18px 20px',
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#222',
-                textAlign: 'left',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 10,
-                boxShadow: dropdownOpen ? '0 4px 16px rgba(0,0,0,0.07)' : 'none',
-                transition: 'box-shadow 0.2s',
-                minHeight: 56,
-              }}
+              className={`${styles.dropdownButton} ${dropdownOpen ? styles.open : ''}`}
               onClick={() => setDropdownOpen(v => !v)}
               type="button"
               aria-expanded={dropdownOpen}
               aria-haspopup="listbox"
             >
-              <span style={{flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{selectedLabel}</span>
-              <span style={{marginLeft: 10, fontSize: 22, color: '#888', display: 'flex', alignItems: 'center'}}>{dropdownOpen ? '▲' : '▼'}</span>
+              <span className={styles.buttonLabel}>{selectedLabel}</span>
+              <span className={styles.dropdownArrow}>{dropdownOpen ? '▲' : '▼'}</span>
             </button>
             {dropdownOpen && renderDropdownList()}
           </div>
         )}
+        
         {(selectedPaymentType === 'account' && accounts.length > 0) && (
-          <div style={{position: 'relative', width: 300, maxWidth: '100%'}} ref={dropdownRef}>
+          <div className={styles.dropdownContainer} ref={dropdownRef}>
             <button
-              style={{
-                width: '100%',
-                background: '#f5f5f5',
-                border: '1.5px solid #e0e0e0',
-                borderRadius: 12,
-                padding: '18px 20px',
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#222',
-                textAlign: 'left',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 10,
-                boxShadow: dropdownOpen ? '0 4px 16px rgba(0,0,0,0.07)' : 'none',
-                transition: 'box-shadow 0.2s',
-                minHeight: 56,
-              }}
+              className={`${styles.dropdownButton} ${dropdownOpen ? styles.open : ''}`}
               onClick={() => setDropdownOpen(v => !v)}
               type="button"
               aria-expanded={dropdownOpen}
               aria-haspopup="listbox"
             >
-              <span style={{flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{selectedLabel}</span>
-              <span style={{marginLeft: 10, fontSize: 22, color: '#888', display: 'flex', alignItems: 'center'}}>{dropdownOpen ? '▲' : '▼'}</span>
+              <span className={styles.buttonLabel}>{selectedLabel}</span>
+              <span className={styles.dropdownArrow}>{dropdownOpen ? '▲' : '▼'}</span>
             </button>
             {dropdownOpen && renderDropdownList()}
           </div>
         )}
+        
         {(selectedPaymentType === 'coupay') && (
-          <div style={{padding: '18px 2px 0 2px', color: '#222', fontSize: 16, fontWeight: 600, minHeight: 56}}>{selectedLabel}</div>
+          <div className={styles.coupayInfo}>{selectedLabel}</div>
         )}
       </div>
     </section>
   );
-} 
+}
