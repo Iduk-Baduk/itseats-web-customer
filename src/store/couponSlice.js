@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // 쿠폰 유효성 검사 함수
-const isValidCoupon = (coupon) => {
+const isValidCoupon = (coupon, cartTotal = 0) => {
   // 유효기간 검사
   if (coupon.validDate && new Date() > coupon.validDate) {
     return false;
@@ -9,8 +9,9 @@ const isValidCoupon = (coupon) => {
   
   // 최소 주문 금액 검사 (있는 경우)
   if (coupon.minOrderAmount && coupon.minOrderAmount > 0) {
-    // 실제 주문 금액은 cartSlice에서 가져와야 함
-    // 여기서는 기본 검사만 수행
+    if (cartTotal < coupon.minOrderAmount) {
+      return false;
+    }
   }
   
   // 사용 가능 여부 검사
@@ -48,9 +49,10 @@ const couponSlice = createSlice({
   initialState,
   reducers: {
     applyCoupon(state, action) {
-      const coupon = state.coupons.find(c => c.id === action.payload);
-      if (coupon && isValidCoupon(coupon)) {
-        state.selectedCouponId = action.payload;
+      const { couponId, cartTotal = 0 } = action.payload;
+      const coupon = state.coupons.find(c => c.id === couponId);
+      if (coupon && isValidCoupon(coupon, cartTotal)) {
+        state.selectedCouponId = couponId;
       }
     },
     clearCoupon(state) {

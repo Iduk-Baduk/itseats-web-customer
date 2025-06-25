@@ -21,40 +21,31 @@ const DELIVERY_OPTIONS = [
 export default function CartDeliveryOptionSection({ selected, onChange }) {
   return (
     <section className={styles.section}>
-      <div style={{ fontWeight: 600, marginBottom: 12 }}>배달 옵션</div>
+      <div className={styles.paymentSectionTitle}>배달 옵션</div>
       <div className={styles.radioButtonContainer}>
         {DELIVERY_OPTIONS.map((opt) => (
           <label
             key={opt.label}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 12,
-              border: selected.label === opt.label ? '2px solid var(--theme-color)' : '1px solid #eee',
-              borderRadius: 12,
-              padding: 12,
-              background: selected.label === opt.label ? '#f7faff' : '#fff',
-              cursor: 'pointer',
-            }}
+            className={`${styles.deliveryOption} ${selected.label === opt.label ? styles.selected : ''}`}
           >
             <input
               type="radio"
               name="deliveryOption"
               checked={selected.label === opt.label}
               onChange={() => onChange(opt)}
-              style={{ marginRight: 12 }}
+              className={styles.deliveryOptionInput}
             />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 500 }}>{opt.label}</div>
-              <div style={{ fontSize: 13, color: '#888' }}>{opt.description}</div>
+            <div className={styles.deliveryOptionContent}>
+              <div className={styles.deliveryOptionLabel}>{opt.label}</div>
+              <div className={styles.deliveryOptionDescription}>{opt.description}</div>
             </div>
-            <div style={{ minWidth: 48, textAlign: 'right', color: opt.price === 0 ? '#e53935' : '#222', fontWeight: 600 }}>
+            <div className={`${styles.deliveryOptionPrice} ${opt.price === 0 ? styles.free : ''}`}>
               {opt.price === 0 ? '무료' : `+${opt.price.toLocaleString()}원`}
             </div>
           </label>
         ))}
       </div>
-      <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+      <div className={styles.deliveryOptionInfo}>
         무료배달은 가까운 주문과 함께 배달될 수 있어요
       </div>
     </section>

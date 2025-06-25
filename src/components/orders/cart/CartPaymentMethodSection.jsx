@@ -69,6 +69,22 @@ export default function CartPaymentMethodSection() {
     selectedLabel = account ? `${account.bankName} ****${account.last4}` : '계좌 선택';
   }
 
+  // 공통 드롭다운 버튼 렌더링 함수
+  const renderDropdownButton = (label) => (
+    <button
+      className={`${styles.dropdownButton} ${dropdownOpen ? styles.open : ''}`}
+      onClick={() => setDropdownOpen(v => !v)}
+      type="button"
+      aria-expanded={dropdownOpen}
+      aria-haspopup="listbox"
+    >
+      <span className={styles.buttonLabel}>{label}</span>
+      <span className={styles.dropdownArrow}>
+        {dropdownOpen ? '▲' : '▼'}
+      </span>
+    </button>
+  );
+
   // 드롭다운 리스트 렌더링
   const renderDropdownList = () => {
     if (selectedPaymentType === 'card') {
@@ -159,32 +175,14 @@ export default function CartPaymentMethodSection() {
         {/* 대표 결제수단 + 드롭다운 버튼 */}
         {(selectedPaymentType === 'card' && cards.length > 0) && (
           <div className={styles.dropdownContainer} ref={dropdownRef}>
-            <button
-              className={`${styles.dropdownButton} ${dropdownOpen ? styles.open : ''}`}
-              onClick={() => setDropdownOpen(v => !v)}
-              type="button"
-              aria-expanded={dropdownOpen}
-              aria-haspopup="listbox"
-            >
-              <span className={styles.buttonLabel}>{selectedLabel}</span>
-              <span className={styles.dropdownArrow}>{dropdownOpen ? '▲' : '▼'}</span>
-            </button>
+            {renderDropdownButton(selectedLabel)}
             {dropdownOpen && renderDropdownList()}
           </div>
         )}
         
         {(selectedPaymentType === 'account' && accounts.length > 0) && (
           <div className={styles.dropdownContainer} ref={dropdownRef}>
-            <button
-              className={`${styles.dropdownButton} ${dropdownOpen ? styles.open : ''}`}
-              onClick={() => setDropdownOpen(v => !v)}
-              type="button"
-              aria-expanded={dropdownOpen}
-              aria-haspopup="listbox"
-            >
-              <span className={styles.buttonLabel}>{selectedLabel}</span>
-              <span className={styles.dropdownArrow}>{dropdownOpen ? '▲' : '▼'}</span>
-            </button>
+            {renderDropdownButton(selectedLabel)}
             {dropdownOpen && renderDropdownList()}
           </div>
         )}

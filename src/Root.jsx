@@ -71,7 +71,7 @@ export default function Root() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/coupons" element={<Coupons />} />
           <Route path="/payments" element={<Payments />} />
-          <Route path="/add-payments" element={<AddPaymentMethod />} />
+          <Route path="/payments/add" element={<AddPaymentMethod />} />
           <Route path="/payments/add-card" element={<AddCard />} />
           <Route path="/payments/add-account" element={<AddAccount />} />
           <Route path="/events" element={<Events />} />

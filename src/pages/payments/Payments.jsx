@@ -13,7 +13,6 @@ import Header from "../../components/common/Header";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./Payments.module.css";
 import Toast from "../../components/common/Toast";
-import AddPaymentMethod from "./AddPaymentMethod";
 
 export default function Payments() {
   const navigate = useNavigate();
@@ -35,7 +34,6 @@ export default function Payments() {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toastMsg, setToastMsg] = useState("");
-  const [addSheetOpen, setAddSheetOpen] = useState(false);
 
   const showToast = (msg) => {
     setToastMsg(msg);
@@ -183,7 +181,7 @@ export default function Payments() {
 
       <div className={styles.addButtonWrapper}>
         <button
-          onClick={() => setAddSheetOpen(true)}
+          onClick={() => navigate('/payments/add')}
           className={styles.addButton}
         >
           + 결제수단 추가
@@ -199,23 +197,7 @@ export default function Payments() {
       )}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg("")} />}
 
-   {/* 결제수단 추가 바텀시트 */}
-   {addSheetOpen && (
-        <div 
-          className={styles.modalBackdrop}
-          onClick={() => setAddSheetOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="add-payment-title"
-        >
-          <div 
-            className={styles.modalContent}
-            onClick={e => e.stopPropagation()}
-          >
-            <AddPaymentMethod />
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

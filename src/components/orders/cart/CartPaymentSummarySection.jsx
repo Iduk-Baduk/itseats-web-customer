@@ -5,7 +5,7 @@ export default function CartPaymentSummarySection({ cartInfo }) {
   if (!cartInfo) return null;
   return (
     <section className={styles.section}>
-      <div style={{ fontWeight: 600, marginBottom: 12 }}>결제금액</div>
+      <div className={styles.paymentSectionTitle}>결제금액</div>
       <div className={styles.paymentDetails}>
         <div className={styles.paymentRow}>
           <span>주문금액</span>
@@ -16,9 +16,9 @@ export default function CartPaymentSummarySection({ cartInfo }) {
           <span>{cartInfo.deliveryFee === 0 ? '무료' : `+${cartInfo.deliveryFee.toLocaleString()}원`}</span>
         </div>
         {cartInfo.couponDiscount > 0 && (
-          <div className={styles.paymentRow}>
+          <div className={`${styles.paymentRow} ${styles.discountRow}`}>
             <span>쿠폰 할인</span>
-            <span style={{ color: '#e53935' }}>- {cartInfo.couponDiscount.toLocaleString()}원</span>
+            <span>- {cartInfo.couponDiscount.toLocaleString()}원</span>
           </div>
         )}
         <div className={styles.totalCost}>
