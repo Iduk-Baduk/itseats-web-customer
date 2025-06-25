@@ -12,6 +12,13 @@ import QuantityControl from "../../components/orders/cart/QuantityControl";
 import RiderRequestBottomSheet from "../../components/orders/cart/RiderRequestBottomSheet";
 import BottomButton from "../../components/common/BottomButton";
 import styles from "./Cart.module.css";
+import CartAddressSection from '../../components/orders/cart/CartAddressSection';
+import CartDeliveryOptionSection from '../../components/orders/cart/CartDeliveryOptionSection';
+import CartMenuListSection from '../../components/orders/cart/CartMenuListSection';
+import CartCouponSection from '../../components/orders/cart/CartCouponSection';
+import CartPaymentSummarySection from '../../components/orders/cart/CartPaymentSummarySection';
+import CartPaymentMethodSection from '../../components/orders/cart/CartPaymentMethodSection';
+import CartRequestSection from '../../components/orders/cart/CartRequestSection';
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -122,6 +129,14 @@ export default function Cart() {
         onClose={() => setRiderRequestSheetOpen(false)}
         onSelect={(request) => setRiderRequest(request)}
       />
+
+      <CartAddressSection />
+      <CartDeliveryOptionSection />
+      <CartMenuListSection />
+      <CartCouponSection />
+      <CartPaymentSummarySection />
+      <CartPaymentMethodSection />
+      <CartRequestSection />
     </div>
   );
 }
