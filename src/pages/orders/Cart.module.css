@@ -321,7 +321,7 @@ line-height: 1.5;
   border-radius: 14px;
   margin-top: 6px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
-  z-index: 100;
+  z-index: 1100;
   position: absolute;
   right: 0;
   left: 0;
@@ -397,6 +397,11 @@ line-height: 1.5;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
 }
 
+.dropdownButton:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
 .dropdownButton.open {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
 }
@@ -414,4 +419,143 @@ line-height: 1.5;
   color: #888;
   display: flex;
   align-items: center;
+}
+
+/* 배달옵션 스타일 */
+.deliveryOption {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deliveryOption.selected {
+  border: 2px solid var(--theme-color);
+  background: #f7faff;
+}
+
+.deliveryOption:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.deliveryOptionInput {
+  margin-right: 12px;
+}
+
+.deliveryOptionContent {
+  flex: 1;
+}
+
+.deliveryOptionLabel {
+  font-weight: 500;
+}
+
+.deliveryOptionDescription {
+  font-size: 13px;
+  color: #888;
+}
+
+.deliveryOptionPrice {
+  min-width: 48px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.deliveryOptionPrice.free {
+  color: #e53935;
+}
+
+.deliveryOptionInfo {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* 요청사항 스타일 */
+.requestSection {
+  font-weight: 700;
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.requestGroup {
+  margin-bottom: 16px;
+}
+
+.requestLabel {
+  font-weight: 500;
+  font-size: 15px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.requestInput {
+  width: 96%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 15px;
+}
+
+.requestInput:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #2196f3;
+  margin-right: 8px;
+}
+
+.checkboxLabel {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.checkboxDescription {
+  font-size: 13px;
+  color: #888;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 15px;
+}
+
+.selectInput:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.selectDescription {
+  font-size: 13px;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* 결제금액 스타일 */
+.paymentSectionTitle {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.discountRow {
+  color: #e53935;
 }
