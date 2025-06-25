@@ -124,7 +124,7 @@ export const useOrderTracking = (orderId, options = {}) => {
     return () => {
       stopTracking();
     };
-  }, [orderId, autoStart]);
+  }, [orderId, autoStart, startTracking, stopTracking]);
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
@@ -134,7 +134,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         startTracking();
       }
     }
-  }, [orderId]);
+  }, [orderId, startTracking, stopTracking]);
 
   return {
     isTracking,
@@ -155,6 +155,9 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
   const [trackingStates, setTrackingStates] = useState({});
   const intervalRefs = useRef({});
   
+  // orderIds 배열을 문자열로 변환하여 의존성 체크
+  const orderIdsString = orderIds.join(',');
+  
   // 각 주문에 대한 추적 상태 초기화
   useEffect(() => {
     const newStates = {};
@@ -171,7 +174,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     if (Object.keys(newStates).length > 0) {
       setTrackingStates(prev => ({ ...prev, ...newStates }));
     }
-  }, [orderIds.join(',')]);
+  }, [orderIdsString, trackingStates]);
   
   // 개별 주문 추적 함수
   const trackOrder = useCallback(async (orderId) => {
@@ -223,7 +226,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
         };
       });
     }
-  }, [dispatch, options.onStatusChange]);
+     }, [dispatch, options, stopTracking]);
 
   // 개별 주문 추적 시작
   const startTracking = useCallback((orderId) => {
@@ -284,7 +287,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     return () => {
       stopAllTracking();
     };
-  }, [orderIds.join(','), options.autoStart]);
+  }, [orderIdsString, options.autoStart, startAllTracking, stopAllTracking]);
 
   return {
     trackingStates,
