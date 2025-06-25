@@ -58,84 +58,41 @@ export default function Cart() {
 
   return (
     <div className={styles.container}>
-      <CartAddressSection />
-      <CartDeliveryOptionSection />
-      <CartMenuListSection />
-      <CartCouponSection />
-      <CartPaymentSummarySection />
-      <CartPaymentMethodSection />
-      <CartRequestSection />
-      <Header
-        title=""
-        leftIcon="close"
-        rightIcon={null}
-        leftButtonAction={() => navigate(-1)}
-      />
-
-      <span className={styles.fixed}>
-        <DeliveryToggle onChange={(value) => setIsDelivery(value)} />
-      </span>
-
-      <section>
-        <h2>스타벅스 구름톤점</h2>
-        <hr />
-        {orderMenus.map((menu, index) => (
-          <div key={index} className={styles.menuItem}>
-            <div className={styles.menuDetails}>
-              <p className={styles.menuName}>{menu.menuName}</p>
-              <div>
-                {menu.menuOption.map((optionGroup, groupIndex) => (
-                  <React.Fragment key={groupIndex}>
-                    {optionGroup.options.length > 0 && (
-                      <span className={styles.optionGroup}>
-                        <span className={styles.optionGroupName}>
-                          {optionGroup.optionGroupName}:
-                        </span>
-                        {optionGroup.options.map((option, optionIndex) => (
-                          <span key={optionIndex} className={styles.option}>
-                            {option.optionName} (+
-                            {option.optionPrice.toLocaleString()}원)
-                            {optionIndex < optionGroup.options.length - 1 && ", "}
-                          </span>
-                        ))}
-                      </span>
-                    )}
-                  </React.Fragment>
-                ))}
-                <p className={styles.menuPrice}>
-                  {calculateCartTotal(menu).toLocaleString()}원
-                </p>
-              </div>
-            </div>
-            <div className={styles.quantity}>
-              <QuantityControl
-                quantity={menu.quantity}
-                onQuantityChange={(delta) =>
-                  handleQuantityChange(menu.menuId, menu.menuOption, delta)
-                }
-                onDelete={() => handleDelete(menu.menuId, menu.menuOption)}
-              />
-            </div>
-          </div>
-        ))}
-
-        {orderMenus.length === 0 && (
-          <p className={styles.emptyCart}>카트가 비었습니다.</p>
-        )}
-      </section>
-
-      <BottomButton
-        onClick={handlePayment}
-        disabled={orderMenus.length === 0}
-        cartInfo={cartInfo}
-      />
-
-      <RiderRequestBottomSheet
-        request={riderRequest}
-        isOpen={isRiderRequestSheetOpen}
-        onClose={() => setRiderRequestSheetOpen(false)}
-        onSelect={(request) => setRiderRequest(request)}
-      />
+      {orderMenus.length === 0 ? (
+        <div className={styles.emptyCart} style={{padding: '80px 0', textAlign: 'center', fontSize: '16px', color: '#888'}}>
+          카트가 비어있습니다.
+        </div>
+      ) : (
+        <>
+          <CartAddressSection />
+          <CartDeliveryOptionSection />
+          <CartMenuListSection />
+          <CartCouponSection />
+          <CartPaymentSummarySection />
+          <CartPaymentMethodSection />
+          <CartRequestSection />
+          <Header
+            title=""
+            leftIcon="close"
+            rightIcon={null}
+            leftButtonAction={() => navigate(-1)}
+          />
+          <span className={styles.fixed}>
+            <DeliveryToggle onChange={(value) => setIsDelivery(value)} />
+          </span>
+          <BottomButton
+            onClick={handlePayment}
+            disabled={orderMenus.length === 0}
+            cartInfo={cartInfo}
+          />
+          <RiderRequestBottomSheet
+            request={riderRequest}
+            isOpen={isRiderRequestSheetOpen}
+            onClose={() => setRiderRequestSheetOpen(false)}
+            onSelect={(request) => setRiderRequest(request)}
+          />
+        </>
+      )}
     </div>
   );
 }
