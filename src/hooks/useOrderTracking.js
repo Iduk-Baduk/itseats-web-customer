@@ -3,6 +3,9 @@ import { useDispatch } from 'react-redux';
 import { trackOrderAsync, updateOrderStatus } from '../store/orderSlice';
 import { ORDER_STATUS } from '../constants/orderStatus';
 
+// 완료 상태 상수 배열 (성능 최적화를 위해 최상위에서 정의)
+const COMPLETED_STATUSES = [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELED];
+
 /**
  * 실시간 주문 추적을 위한 커스텀 훅
  * @param {string} orderId - 추적할 주문 ID
@@ -60,8 +63,7 @@ export const useOrderTracking = (orderId, options = {}) => {
       }
       
       // 완료 상태에 도달하면 추적 중단
-      const completedStatuses = [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELED];
-      if (completedStatuses.includes(orderData.status)) {
+      if (COMPLETED_STATUSES.includes(orderData.status)) {
         stopTracking();
       }
       
@@ -231,8 +233,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
       }
       
       // 완료 상태 확인
-      const completedStatuses = ['DELIVERED', 'COMPLETED', 'CANCELED'];
-      if (completedStatuses.includes(orderData.status)) {
+      if (COMPLETED_STATUSES.includes(orderData.status)) {
         stopTracking(orderId);
       }
       
