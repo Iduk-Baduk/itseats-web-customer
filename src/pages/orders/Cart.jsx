@@ -94,7 +94,7 @@ export default function Cart() {
     try {
       // ✅ API를 통한 주문 생성 (서버 연동 준비)
       // 개발 중에는 로컬 저장소 사용, 배포 시 실제 API 사용
-      const useLocalStorage = process.env.REACT_APP_MOCK_MODE === 'true';
+      const useLocalStorage = import.meta.env.VITE_MOCK_MODE === 'true';
       
       if (useLocalStorage) {
         // 로컬 개발 환경: Redux로 주문 추가

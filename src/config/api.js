@@ -1,15 +1,15 @@
 // API 설정 관리
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3001',
-  TIMEOUT: parseInt(process.env.REACT_APP_TIMEOUT) || 10000,
-  MOCK_MODE: process.env.REACT_APP_MOCK_MODE === 'true',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+  TIMEOUT: parseInt(import.meta.env.VITE_TIMEOUT) || 10000,
+  MOCK_MODE: import.meta.env.VITE_MOCK_MODE === 'true',
 };
 
 // 환경별 설정
 export const ENV_CONFIG = {
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
-  version: process.env.REACT_APP_VERSION || '1.0.0',
+  isDevelopment: import.meta.env.DEV,
+  isProduction: import.meta.env.PROD,
+  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
 };
 
 // API 엔드포인트 상수
