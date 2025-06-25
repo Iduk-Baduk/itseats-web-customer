@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from '../../../pages/orders/Cart.module.css';
 
 const DELIVERY_OPTIONS = [
@@ -18,9 +18,7 @@ const DELIVERY_OPTIONS = [
   },
 ];
 
-export default function CartDeliveryOptionSection() {
-  const [selected, setSelected] = useState(DELIVERY_OPTIONS[0].label);
-
+export default function CartDeliveryOptionSection({ selected, onChange }) {
   return (
     <section className={styles.section}>
       <div style={{ fontWeight: 600, marginBottom: 12 }}>배달 옵션</div>
@@ -32,18 +30,18 @@ export default function CartDeliveryOptionSection() {
               display: 'flex',
               alignItems: 'center',
               marginBottom: 12,
-              border: selected === opt.label ? '2px solid var(--theme-color)' : '1px solid #eee',
+              border: selected.label === opt.label ? '2px solid var(--theme-color)' : '1px solid #eee',
               borderRadius: 12,
               padding: 12,
-              background: selected === opt.label ? '#f7faff' : '#fff',
+              background: selected.label === opt.label ? '#f7faff' : '#fff',
               cursor: 'pointer',
             }}
           >
             <input
               type="radio"
               name="deliveryOption"
-              checked={selected === opt.label}
-              onChange={() => setSelected(opt.label)}
+              checked={selected.label === opt.label}
+              onChange={() => onChange(opt)}
               style={{ marginRight: 12 }}
             />
             <div style={{ flex: 1 }}>

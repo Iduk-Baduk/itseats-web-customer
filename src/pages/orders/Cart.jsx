@@ -25,6 +25,12 @@ export default function Cart() {
   const dispatch = useDispatch();
   const orderMenus = useSelector((state) => state.cart.orderMenus);
 
+  // 배달 옵션 및 배달비 상태 추가
+  const [deliveryOption, setDeliveryOption] = useState({
+    label: '무료배달',
+    price: 0,
+  });
+
   const [isDelivery, setIsDelivery] = useState("delivery");
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
@@ -52,9 +58,11 @@ export default function Cart() {
     totalPrice: orderMenus.reduce(
       (sum, m) => sum + calculateCartTotal(m),
       0
-    ),
+    ) + (deliveryOption.price || 0), // 배달비 포함
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-  }), [orderMenus]);
+    deliveryFee: deliveryOption.price || 0,
+    deliveryLabel: deliveryOption.label,
+  }), [orderMenus, deliveryOption]);
 
   return (
     <div className={styles.container}>
@@ -65,10 +73,13 @@ export default function Cart() {
       ) : (
         <>
           <CartAddressSection />
-          <CartDeliveryOptionSection />
+          <CartDeliveryOptionSection
+            selected={deliveryOption}
+            onChange={setDeliveryOption}
+          />
           <CartMenuListSection />
           <CartCouponSection />
-          <CartPaymentSummarySection />
+          <CartPaymentSummarySection cartInfo={cartInfo} />
           <CartPaymentMethodSection />
           <CartRequestSection />
           <Header
