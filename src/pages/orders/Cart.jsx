@@ -58,8 +58,8 @@ export default function Cart() {
 
   return (
     <div className={styles.container}>
-      <CartDeliveryOptionSection />
       <CartAddressSection />
+      <CartDeliveryOptionSection />
       <CartMenuListSection />
       <CartCouponSection />
       <CartPaymentSummarySection />
