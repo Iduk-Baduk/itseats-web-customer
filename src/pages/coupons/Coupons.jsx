@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { applyCoupon } from "../../store/couponSlice";
+import { applyCoupon, selectNormalizedCoupons } from "../../store/couponSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import styles from "./Coupons.module.css";
 import Header from "../../components/common/Header";
@@ -9,7 +9,7 @@ export default function Coupons() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const coupons = useSelector(state => state.coupon.coupons);
+  const coupons = useSelector(selectNormalizedCoupons);
   const orderMenus = useSelector(state => state.cart.orderMenus);
   const fromCart = location.state && location.state.from === 'cart';
 
@@ -38,13 +38,13 @@ export default function Coupons() {
             <li key={coupon.id} className={styles.couponCard}>
               <div className={styles.couponInfo}>
                 <p className={styles.amount}>
-                  {coupon.discount ? coupon.discount.toLocaleString() : coupon.salePrice.toLocaleString()}원 할인
+                  {coupon.discount.toLocaleString()}원 할인
                 </p>
-                <span className={styles.tag}>{coupon.type || coupon.deliveryType}</span>
+                <span className={styles.tag}>{coupon.type}</span>
                 <p className={styles.desc}>
-                  {coupon.name || coupon.storeName} {coupon.type || coupon.deliveryType} 전용 할인쿠폰
+                  {coupon.name} {coupon.type} 전용 할인쿠폰
                 </p>
-                <p className={styles.date}>{coupon.description || coupon.validDate}까지 사용 가능</p>
+                <p className={styles.date}>{coupon.description}까지 사용 가능</p>
               </div>
               {fromCart ? (
                 <button
