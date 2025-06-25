@@ -124,7 +124,7 @@ export const useOrderTracking = (orderId, options = {}) => {
     return () => {
       stopTracking();
     };
-  }, [orderId, autoStart, startTracking, stopTracking]);
+  }, [orderId, autoStart]); // 콜백 함수는 제외
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
@@ -134,7 +134,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         startTracking();
       }
     }
-  }, [orderId, startTracking, stopTracking]);
+  }, [orderId]); // 콜백 함수는 제외
 
   return {
     isTracking,
@@ -175,6 +175,21 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
       setTrackingStates(prev => ({ ...prev, ...newStates }));
     }
   }, [orderIdsString, trackingStates]);
+  
+  // 개별 주문 추적 중단 (trackOrder보다 먼저 정의)
+  const stopTracking = useCallback((orderId) => {
+    if (intervalRefs.current[orderId]) {
+      clearInterval(intervalRefs.current[orderId]);
+      delete intervalRefs.current[orderId];
+    }
+    
+    setTrackingStates(prev => ({
+      ...prev,
+      [orderId]: { ...prev[orderId], isTracking: false }
+    }));
+    
+    console.log(`⏹️ 주문 ${orderId} 추적 중단`);
+  }, []);
   
   // 개별 주문 추적 함수
   const trackOrder = useCallback(async (orderId) => {
@@ -248,21 +263,6 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     }, options.pollingInterval || 10000);
   }, [trackOrder, options.pollingInterval]);
 
-  // 개별 주문 추적 중단
-  const stopTracking = useCallback((orderId) => {
-    if (intervalRefs.current[orderId]) {
-      clearInterval(intervalRefs.current[orderId]);
-      delete intervalRefs.current[orderId];
-    }
-    
-    setTrackingStates(prev => ({
-      ...prev,
-      [orderId]: { ...prev[orderId], isTracking: false }
-    }));
-    
-    console.log(`⏹️ 주문 ${orderId} 추적 중단`);
-  }, []);
-
   // 모든 주문 추적 시작
   const startAllTracking = useCallback(() => {
     orderIds.forEach(orderId => startTracking(orderId));
@@ -287,7 +287,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     return () => {
       stopAllTracking();
     };
-  }, [orderIdsString, options.autoStart, startAllTracking, stopAllTracking]);
+  }, [orderIdsString, options.autoStart]); // 콜백 함수는 제외
 
   return {
     trackingStates,

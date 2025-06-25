@@ -6,7 +6,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(error) {
     // 에러가 발생하면 상태를 업데이트하여 다음 렌더링에서 폴백 UI를 보여줍니다.
     return { hasError: true };
   }
