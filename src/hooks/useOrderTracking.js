@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { trackOrderAsync, updateOrderStatus } from '../store/orderSlice';
 import { ORDER_STATUS } from '../constants/orderStatus';
@@ -14,19 +14,15 @@ export const useOrderTracking = (orderId, options = {}) => {
     pollingInterval = 10000, // 10초마다 폴링
     autoStart = true,
     onStatusChange = null,
-    enabledStatuses = [
-      ORDER_STATUS.WAITING,
-      ORDER_STATUS.COOKING,
-      ORDER_STATUS.COOKED,
-      ORDER_STATUS.RIDER_READY,
-      ORDER_STATUS.DELIVERING
-    ]
   } = options;
 
   const dispatch = useDispatch();
   const intervalRef = useRef(null);
   const isTrackingRef = useRef(false);
+  const [isTracking, setIsTracking] = useState(false);
   const lastStatusRef = useRef(null);
+  const errorCountRef = useRef(0);
+  const MAX_ERROR_COUNT = 3;
 
   /**
    * 주문 상태를 확인하고 업데이트
@@ -36,6 +32,7 @@ export const useOrderTracking = (orderId, options = {}) => {
 
     try {
       const orderData = await dispatch(trackOrderAsync(orderId)).unwrap();
+      errorCountRef.current = 0; // 성공 시 에러 카운터 초기화
       
       // 상태가 변경된 경우
       if (lastStatusRef.current !== orderData.status) {
@@ -70,9 +67,13 @@ export const useOrderTracking = (orderId, options = {}) => {
       
     } catch (error) {
       console.error('주문 추적 실패:', error);
-      // 에러가 지속되면 추적 중단 (예: 3번 연속 실패)
+      errorCountRef.current++;
+      if (errorCountRef.current >= MAX_ERROR_COUNT) {
+        console.error(`주문 ${orderId} 추적 중단: ${MAX_ERROR_COUNT}번 연속 실패`);
+        stopTracking();
+      }
     }
-  }, [orderId, dispatch, onStatusChange]);
+  }, [orderId, dispatch, onStatusChange, stopTracking]);
 
   /**
    * 추적 시작
@@ -82,6 +83,7 @@ export const useOrderTracking = (orderId, options = {}) => {
     
     console.log(`🚀 주문 ${orderId} 추적 시작`);
     isTrackingRef.current = true;
+    setIsTracking(true);
     
     // 즉시 한 번 실행
     trackOrder();
@@ -98,6 +100,7 @@ export const useOrderTracking = (orderId, options = {}) => {
     
     console.log(`⏹️ 주문 ${orderId} 추적 중단`);
     isTrackingRef.current = false;
+    setIsTracking(false);
     
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -121,7 +124,7 @@ export const useOrderTracking = (orderId, options = {}) => {
     return () => {
       stopTracking();
     };
-  }, [orderId, autoStart, startTracking, stopTracking]);
+  }, [orderId, autoStart]);
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
@@ -131,10 +134,10 @@ export const useOrderTracking = (orderId, options = {}) => {
         startTracking();
       }
     }
-  }, [orderId, startTracking, stopTracking]);
+  }, [orderId]);
 
   return {
-    isTracking: isTrackingRef.current,
+    isTracking,
     startTracking,
     stopTracking,
     refreshStatus,
@@ -148,22 +151,131 @@ export const useOrderTracking = (orderId, options = {}) => {
  * @returns {Object} 추적 상태와 제어 함수들
  */
 export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
-  const trackingHooks = orderIds.map(orderId => 
-    useOrderTracking(orderId, { ...options, autoStart: false })
-  );
+  const dispatch = useDispatch();
+  const [trackingStates, setTrackingStates] = useState({});
+  const intervalRefs = useRef({});
+  
+  // 각 주문에 대한 추적 상태 초기화
+  useEffect(() => {
+    const newStates = {};
+    orderIds.forEach(orderId => {
+      if (!trackingStates[orderId]) {
+        newStates[orderId] = {
+          isTracking: false,
+          lastStatus: null,
+          errorCount: 0
+        };
+      }
+    });
+    
+    if (Object.keys(newStates).length > 0) {
+      setTrackingStates(prev => ({ ...prev, ...newStates }));
+    }
+  }, [orderIds.join(',')]);
+  
+  // 개별 주문 추적 함수
+  const trackOrder = useCallback(async (orderId) => {
+    try {
+      const orderData = await dispatch(trackOrderAsync(orderId)).unwrap();
+      
+      setTrackingStates(prev => ({
+        ...prev,
+        [orderId]: {
+          ...prev[orderId],
+          errorCount: 0,
+          lastStatus: orderData.status
+        }
+      }));
+      
+      // 상태 변경 콜백 실행
+      if (options.onStatusChange) {
+        options.onStatusChange({
+          orderId,
+          currentStatus: orderData.status,
+          orderData
+        });
+      }
+      
+      // 완료 상태 확인
+      const completedStatuses = ['DELIVERED', 'COMPLETED', 'CANCELED'];
+      if (completedStatuses.includes(orderData.status)) {
+        stopTracking(orderId);
+      }
+      
+    } catch (error) {
+      console.error(`주문 ${orderId} 추적 실패:`, error);
+      
+      setTrackingStates(prev => {
+        const currentState = prev[orderId] || {};
+        const newErrorCount = (currentState.errorCount || 0) + 1;
+        
+        if (newErrorCount >= 3) {
+          console.error(`주문 ${orderId} 추적 중단: 3번 연속 실패`);
+          stopTracking(orderId);
+        }
+        
+        return {
+          ...prev,
+          [orderId]: {
+            ...currentState,
+            errorCount: newErrorCount
+          }
+        };
+      });
+    }
+  }, [dispatch, options.onStatusChange]);
 
+  // 개별 주문 추적 시작
+  const startTracking = useCallback((orderId) => {
+    if (intervalRefs.current[orderId]) return;
+    
+    console.log(`🚀 주문 ${orderId} 추적 시작`);
+    
+    setTrackingStates(prev => ({
+      ...prev,
+      [orderId]: { ...prev[orderId], isTracking: true }
+    }));
+    
+    // 즉시 실행
+    trackOrder(orderId);
+    
+    // 주기적 실행
+    intervalRefs.current[orderId] = setInterval(() => {
+      trackOrder(orderId);
+    }, options.pollingInterval || 10000);
+  }, [trackOrder, options.pollingInterval]);
+
+  // 개별 주문 추적 중단
+  const stopTracking = useCallback((orderId) => {
+    if (intervalRefs.current[orderId]) {
+      clearInterval(intervalRefs.current[orderId]);
+      delete intervalRefs.current[orderId];
+    }
+    
+    setTrackingStates(prev => ({
+      ...prev,
+      [orderId]: { ...prev[orderId], isTracking: false }
+    }));
+    
+    console.log(`⏹️ 주문 ${orderId} 추적 중단`);
+  }, []);
+
+  // 모든 주문 추적 시작
   const startAllTracking = useCallback(() => {
-    trackingHooks.forEach(hook => hook.startTracking());
-  }, [trackingHooks]);
+    orderIds.forEach(orderId => startTracking(orderId));
+  }, [orderIds, startTracking]);
 
+  // 모든 주문 추적 중단
   const stopAllTracking = useCallback(() => {
-    trackingHooks.forEach(hook => hook.stopTracking());
-  }, [trackingHooks]);
+    orderIds.forEach(orderId => stopTracking(orderId));
+  }, [orderIds, stopTracking]);
 
+  // 모든 주문 상태 새로고침
   const refreshAllStatus = useCallback(() => {
-    trackingHooks.forEach(hook => hook.refreshStatus());
-  }, [trackingHooks]);
+    orderIds.forEach(orderId => trackOrder(orderId));
+  }, [orderIds, trackOrder]);
 
+  // 자동 시작
   useEffect(() => {
     if (options.autoStart !== false) {
       startAllTracking();
@@ -172,13 +284,15 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     return () => {
       stopAllTracking();
     };
-  }, [orderIds.length, startAllTracking, stopAllTracking, options.autoStart]);
+  }, [orderIds.join(','), options.autoStart]);
 
   return {
-    trackingStates: trackingHooks,
+    trackingStates,
     startAllTracking,
     stopAllTracking,
     refreshAllStatus,
+    startTracking,
+    stopTracking,
   };
 };
 
