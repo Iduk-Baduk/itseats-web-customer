@@ -80,9 +80,16 @@ export default function AddressEdit() {
       <Header
         title={"주소 수정"}
         leftIcon="back"
-        rightIcon="delete"
+        rightIcon={null}
         leftButtonAction={() => navigate(-1)}
-        rightButtonAction={() => setIsModalOpen(true)}
+        rightButtonAction={
+          <button
+            style={{ color: '#e53935', fontWeight: 'bold', background: 'none', border: 'none', fontSize: 16, cursor: 'pointer' }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            삭제
+          </button>
+        }
       />
       <AddressForm
         address={currentAddress || addressToEdit}

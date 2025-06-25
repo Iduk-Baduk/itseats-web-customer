@@ -58,6 +58,13 @@ export default function Cart() {
 
   return (
     <div className={styles.container}>
+      <CartDeliveryOptionSection />
+      <CartAddressSection />
+      <CartMenuListSection />
+      <CartCouponSection />
+      <CartPaymentSummarySection />
+      <CartPaymentMethodSection />
+      <CartRequestSection />
       <Header
         title=""
         leftIcon="close"
@@ -129,14 +136,6 @@ export default function Cart() {
         onClose={() => setRiderRequestSheetOpen(false)}
         onSelect={(request) => setRiderRequest(request)}
       />
-
-      <CartAddressSection />
-      <CartDeliveryOptionSection />
-      <CartMenuListSection />
-      <CartCouponSection />
-      <CartPaymentSummarySection />
-      <CartPaymentMethodSection />
-      <CartRequestSection />
     </div>
   );
 }
