@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateRequestInfo, selectRequestInfo } from '../../../store/cartSlice';
 import styles from '../../../pages/orders/Cart.module.css';
 
 export default function CartRequestSection() {
-  const [storeRequest, setStoreRequest] = useState('');
-  const [disposableChecked, setDisposableChecked] = useState(false);
-  const [deliveryRequest, setDeliveryRequest] = useState('문 앞에 놔주세요 (초인종 O)');
+  const dispatch = useDispatch();
+  const requestInfo = useSelector(selectRequestInfo);
+
+  const handleStoreRequestChange = (value) => {
+    dispatch(updateRequestInfo({ storeRequest: value }));
+  };
+
+  const handleDisposableChange = (checked) => {
+    dispatch(updateRequestInfo({ disposableChecked: checked }));
+  };
+
+  const handleDeliveryRequestChange = (value) => {
+    dispatch(updateRequestInfo({ deliveryRequest: value }));
+  };
 
   return (
     <section className={styles.section}>
@@ -17,8 +30,8 @@ export default function CartRequestSection() {
           type="text"
           placeholder="가게 요청사항을 입력해주세요"
           className={styles.requestInput}
-          value={storeRequest}
-          onChange={e => setStoreRequest(e.target.value)}
+          value={requestInfo.storeRequest}
+          onChange={e => handleStoreRequestChange(e.target.value)}
         />
       </div>
       
@@ -26,8 +39,8 @@ export default function CartRequestSection() {
       <div className={styles.checkboxGroup}>
         <input
           type="checkbox"
-          checked={disposableChecked}
-          onChange={e => setDisposableChecked(e.target.checked)}
+          checked={requestInfo.disposableChecked}
+          onChange={e => handleDisposableChange(e.target.checked)}
           className={styles.checkbox}
         />
         <div>
@@ -40,8 +53,8 @@ export default function CartRequestSection() {
       <div className={styles.requestGroup}>
         <label className={styles.requestLabel}>배달파트너님께</label>
         <select
-          value={deliveryRequest}
-          onChange={e => setDeliveryRequest(e.target.value)}
+          value={requestInfo.deliveryRequest}
+          onChange={e => handleDeliveryRequestChange(e.target.value)}
           className={styles.selectInput}
         >
           <option value="문 앞에 놔주세요 (초인종 O)">문 앞에 놔주세요 (초인종 O)</option>
