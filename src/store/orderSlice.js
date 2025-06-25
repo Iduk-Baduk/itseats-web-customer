@@ -1,6 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { isValidOrderStatus } from "../utils/orderUtils";
+import { orderAPI } from "../services";
 
 // localStorage 저장 함수
 const saveOrdersToLocalStorage = (orders) => {
@@ -26,6 +27,43 @@ export const loadOrdersFromLocalStorage = () => {
 const generateOrderId = () => {
   return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
+
+// API 기반 Thunk들
+export const createOrderAsync = createAsyncThunk(
+  'order/createOrder',
+  async (orderData) => {
+    return await orderAPI.createOrder(orderData);
+  }
+);
+
+export const fetchOrdersAsync = createAsyncThunk(
+  'order/fetchOrders',
+  async (params = {}) => {
+    return await orderAPI.getOrders(params);
+  }
+);
+
+export const fetchOrderByIdAsync = createAsyncThunk(
+  'order/fetchOrderById',
+  async (orderId) => {
+    return await orderAPI.getOrderById(orderId);
+  }
+);
+
+export const updateOrderStatusAsync = createAsyncThunk(
+  'order/updateOrderStatus',
+  async ({ orderId, status, message }) => {
+    await orderAPI.updateOrderStatus(orderId, status, message);
+    return { orderId, status, message };
+  }
+);
+
+export const trackOrderAsync = createAsyncThunk(
+  'order/trackOrder',
+  async (orderId) => {
+    return await orderAPI.trackOrder(orderId);
+  }
+);
 
 const initialState = {
   orders: loadOrdersFromLocalStorage(), // 주문 목록
