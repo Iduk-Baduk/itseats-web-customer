@@ -16,7 +16,6 @@
 }
 
 .coupayDesc {
-
     font-size: 12px;
     margin-top: 6px;
     color: gray;
@@ -74,3 +73,5 @@
 .addButton:hover {
   background-color: #005fcc;
 }
+
+

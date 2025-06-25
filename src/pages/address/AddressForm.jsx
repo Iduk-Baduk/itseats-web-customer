@@ -219,7 +219,7 @@ export default function AddressForm({
           className={styles.detailInput}
           value={customLabel}
           onChange={onChangeCustomLabel}
-          placeholder="기타 라벨 입력"
+          placeholder="별칭 입력"
         />
       )}
 

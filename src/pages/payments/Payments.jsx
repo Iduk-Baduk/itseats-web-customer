@@ -6,6 +6,7 @@ import {
   removeCard,
   removeAccount,
   fetchPaymentMethods,
+  setSelectedPaymentMethod,
 } from "../../store/paymentSlice";
 
 import Header from "../../components/common/Header";
@@ -19,7 +20,16 @@ export default function Payments() {
 
   const payment = useSelector((state) => state.payment);
 
-  const { cards, accounts, coupayMoney, isLoading, error } = payment;
+  const {
+    cards,
+    accounts,
+    coupayMoney,
+    isLoading,
+    error,
+    selectedPaymentType,
+    selectedCardId,
+    selectedAccountId,
+  } = payment;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -64,6 +74,17 @@ export default function Payments() {
     }
   };
 
+  // 결제수단 선택 핸들러
+  const handleSelectPayment = (type, id) => {
+    if (type === 'card') {
+      dispatch(setSelectedPaymentMethod({ type: 'card', cardId: id }));
+    } else if (type === 'account') {
+      dispatch(setSelectedPaymentMethod({ type: 'account', accountId: id }));
+    } else {
+      dispatch(setSelectedPaymentMethod({ type: 'coupay' }));
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Header
@@ -78,7 +99,14 @@ export default function Payments() {
 
       <section>
         <p className={styles.label}>쿠페이 머니</p>
-        <div className={styles.item}>
+        <div className={styles.item} style={{alignItems: 'center'}}>
+          <input
+            type="radio"
+            name="paymentType"
+            checked={selectedPaymentType === 'coupay'}
+            onChange={() => handleSelectPayment('coupay')}
+            style={{marginRight: 8}}
+          />
           <img
             src="/icons/logos/coupay.jpg"
             alt="coupay"
@@ -97,7 +125,14 @@ export default function Payments() {
         <section>
           <p className={styles.label}>신용/체크카드</p>
           {cards.map((card) => (
-            <div key={card.id} className={styles.item}>
+            <div key={card.id} className={styles.item} style={{alignItems: 'center'}}>
+              <input
+                type="radio"
+                name="paymentType"
+                checked={selectedPaymentType === 'card' && selectedCardId === card.id}
+                onChange={() => handleSelectPayment('card', card.id)}
+                style={{marginRight: 8}}
+              />
               <img src={card.image} alt={card.name} className={styles.icon} />
               <span>
                 {card.name} ****{card.last4}
@@ -117,7 +152,14 @@ export default function Payments() {
         <section>
           <p className={styles.label}>계좌이체</p>
           {accounts.map((account) => (
-            <div key={account.id} className={styles.item}>
+            <div key={account.id} className={styles.item} style={{alignItems: 'center'}}>
+              <input
+                type="radio"
+                name="paymentType"
+                checked={selectedPaymentType === 'account' && selectedAccountId === account.id}
+                onChange={() => handleSelectPayment('account', account.id)}
+                style={{marginRight: 8}}
+              />
               <img
                 src={account.image}
                 alt={account.bankName}
@@ -139,7 +181,7 @@ export default function Payments() {
 
       <div className={styles.addButtonWrapper}>
         <button
-          onClick={() => navigate("/add-payments")}
+          onClick={() => navigate('/payments/add')}
           className={styles.addButton}
         >
           + 결제수단 추가
@@ -154,6 +196,8 @@ export default function Payments() {
         />
       )}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg("")} />}
+
+
     </div>
   );
 }

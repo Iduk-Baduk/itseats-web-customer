@@ -27,7 +27,11 @@ export default function Header({
         <h1 className={styles.title}>{title}</h1>
       </div>
 
-      {rightIcon && (
+      {rightButtonAction ? (
+        <div style={{ minWidth: 48, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          {rightButtonAction}
+        </div>
+      ) : rightIcon && (
         <button
           className={styles.iconButton}
           aria-label="검색"
