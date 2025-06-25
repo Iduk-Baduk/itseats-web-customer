@@ -35,21 +35,44 @@ const paymentSlice = createSlice({
     coupayMoney: 0,
     isLoading: false,
     error: null,
+    selectedPaymentType: 'card', // 'coupay', 'card', 'account'
+    selectedCardId: null,
+    selectedAccountId: null,
   },
   reducers: {
     removeCard: (state, action) => {
       state.cards = state.cards.filter((card) => card.id !== action.payload);
+      if (state.selectedCardId === action.payload) {
+        state.selectedCardId = null;
+      }
     },
     removeAccount: (state, action) => {
       state.accounts = state.accounts.filter(
         (account) => account.id !== action.payload
       );
+      if (state.selectedAccountId === action.payload) {
+        state.selectedAccountId = null;
+      }
     },
     addCard: (state, action) => {
       state.cards.push(action.payload);
     },
     addAccount: (state, action) => {
       state.accounts.push(action.payload);
+    },
+    setSelectedPaymentMethod: (state, action) => {
+      const { type, cardId, accountId } = action.payload;
+      state.selectedPaymentType = type;
+      if (type === 'card') {
+        state.selectedCardId = cardId;
+        state.selectedAccountId = null;
+      } else if (type === 'account') {
+        state.selectedAccountId = accountId;
+        state.selectedCardId = null;
+      } else {
+        state.selectedCardId = null;
+        state.selectedAccountId = null;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -71,7 +94,7 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { removeCard, removeAccount, addCard, addAccount } =
+export const { removeCard, removeAccount, addCard, addAccount, setSelectedPaymentMethod } =
   paymentSlice.actions;
 
 export default paymentSlice.reducer;
