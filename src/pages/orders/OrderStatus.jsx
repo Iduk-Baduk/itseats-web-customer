@@ -6,6 +6,7 @@ import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
 import LineButton from "../../components/common/basic/LineButton";
 import { useOrderStatus } from "../../hooks/useOrderStatus";
+import useOrderTracking from "../../hooks/useOrderTracking";
 import styles from "./OrderStatus.module.css";
 
 // 공통 레이아웃 컴포넌트
@@ -37,6 +38,16 @@ export default function OrderStatus() {
     updateStatus,
     isActiveOrder
   } = useOrderStatus();
+
+  // 실시간 주문 추적 활성화
+  const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
+    autoStart: isActiveOrder,
+    pollingInterval: 8000, // 8초마다 폴링
+    onStatusChange: (statusChange) => {
+      console.log('🔔 주문 상태 변경 알림:', statusChange);
+      // TODO: 푸시 알림이나 토스트 표시
+    }
+  });
 
   // 안전한 데이터 접근을 위한 기본값 설정 - useMemo로 최적화
   const safeOrderData = useMemo(() => {

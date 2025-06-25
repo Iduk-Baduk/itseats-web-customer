@@ -65,7 +65,7 @@ class ErrorBoundary extends React.Component {
           >
             이전 페이지
           </button>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <details style={{ marginTop: '20px', textAlign: 'left' }}>
               <summary style={{ cursor: 'pointer', color: '#007bff' }}>
                 개발자용: 에러 상세 정보

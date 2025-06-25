@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addCard } from "../../store/paymentSlice";
+import { addCardAsync } from "../../store/paymentSlice";
 
 import Header from "../../components/common/Header";
 import styles from "./AddCard.module.css";
@@ -48,18 +48,16 @@ export default function AddCard() {
     };
 
     try {
-      const response = await fetch("/api/cards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("등록 실패");
-
-      const result = await response.json(); // { id, name, last4, image }
-
-      dispatch(addCard(result)); // ✅ Redux에 등록된 카드 push
-      setPopup("success");
+      // ✅ Axios 기반 API 서비스 사용
+      dispatch(addCardAsync(payload))
+        .unwrap() // unwrap으로 실제 결과값 추출
+        .then(() => {
+          setPopup("success");
+        })
+        .catch((error) => {
+          console.error("카드 등록 실패:", error);
+          setPopup("error");
+        });
     } catch (error) {
       console.error("카드 등록 실패:", error);
       setPopup("error");
