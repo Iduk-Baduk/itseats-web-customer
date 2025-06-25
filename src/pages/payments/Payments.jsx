@@ -7,6 +7,8 @@ import {
   removeAccount,
   fetchPaymentMethods,
   setSelectedPaymentMethod,
+  deleteCardAsync,
+  deleteAccountAsync,
 } from "../../store/paymentSlice";
 
 import Header from "../../components/common/Header";
@@ -49,22 +51,18 @@ export default function Payments() {
     setModalOpen(true);
   };
 
-  // ✅ 수정된 handleConfirmDelete 함수
+  // ✅ Axios 기반으로 수정된 handleConfirmDelete 함수
   const handleConfirmDelete = async () => {
     try {
       const { type, id } = deleteTarget;
-      const endpoint =
-        type === "card" ? `/api/cards/${id}` : `/api/accounts/${id}`;
-
-      const res = await fetch(endpoint, { method: "DELETE" });
-
-      if (!res.ok) throw new Error("삭제 실패");
 
       if (type === "card") {
-        dispatch(removeCard(id));
+        await dispatch(deleteCardAsync(id)).unwrap();
       } else {
-        dispatch(removeAccount(id));
+        await dispatch(deleteAccountAsync(id)).unwrap();
       }
+      
+      showToast("삭제가 완료되었습니다.");
     } catch (err) {
       console.error("삭제 실패:", err);
       showToast("삭제에 실패했어요. 다시 시도해 주세요.");

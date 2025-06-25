@@ -1,29 +1,46 @@
 // src/store/paymentSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { paymentAPI } from "../services";
 
-// 🎯 수정된 Thunk: cards/accounts 개별 fetch
+// 🎯 Axios 기반 Thunk로 변경
 export const fetchPaymentMethods = createAsyncThunk(
   "payment/fetchPaymentMethods",
   async () => {
-    const [cardsRes, accountsRes] = await Promise.all([
-      fetch("/api/cards"),
-      fetch("/api/accounts"),
-    ]);
+    return await paymentAPI.getPaymentMethods();
+  }
+);
 
-    if (!cardsRes.ok || !accountsRes.ok) {
-      throw new Error("API 요청 실패");
-    }
+// 카드 추가 Thunk
+export const addCardAsync = createAsyncThunk(
+  "payment/addCard",
+  async (cardData) => {
+    return await paymentAPI.addCard(cardData);
+  }
+);
 
-    const [cards, accounts] = await Promise.all([
-      cardsRes.json(),
-      accountsRes.json(),
-    ]);
+// 계좌 추가 Thunk
+export const addAccountAsync = createAsyncThunk(
+  "payment/addAccount",
+  async (accountData) => {
+    return await paymentAPI.addAccount(accountData);
+  }
+);
 
-    return {
-      cards,
-      accounts,
-      coupayMoney: 10000, // 더미 데이터
-    };
+// 카드 삭제 Thunk
+export const deleteCardAsync = createAsyncThunk(
+  "payment/deleteCard",
+  async (cardId) => {
+    await paymentAPI.deleteCard(cardId);
+    return cardId;
+  }
+);
+
+// 계좌 삭제 Thunk
+export const deleteAccountAsync = createAsyncThunk(
+  "payment/deleteAccount",
+  async (accountId) => {
+    await paymentAPI.deleteAccount(accountId);
+    return accountId;
   }
 );
 
@@ -90,6 +107,48 @@ const paymentSlice = createSlice({
       .addCase(fetchPaymentMethods.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message;
+      })
+      // 카드 추가
+      .addCase(addCardAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(addCardAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.cards.push(action.payload);
+      })
+      .addCase(addCardAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 계좌 추가
+      .addCase(addAccountAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(addAccountAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.accounts.push(action.payload);
+      })
+      .addCase(addAccountAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 카드 삭제
+      .addCase(deleteCardAsync.fulfilled, (state, action) => {
+        state.cards = state.cards.filter((card) => card.id !== action.payload);
+        if (state.selectedCardId === action.payload) {
+          state.selectedCardId = null;
+        }
+      })
+      // 계좌 삭제
+      .addCase(deleteAccountAsync.fulfilled, (state, action) => {
+        state.accounts = state.accounts.filter(
+          (account) => account.id !== action.payload
+        );
+        if (state.selectedAccountId === action.payload) {
+          state.selectedAccountId = null;
+        }
       });
   },
 });

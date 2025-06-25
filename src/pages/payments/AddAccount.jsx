@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addAccount } from "../../store/paymentSlice";
+import { addAccountAsync } from "../../store/paymentSlice";
 
 import Header from "../../components/common/Header";
 import styles from "./AddAccount.module.css";
@@ -37,19 +37,16 @@ export default function AddAccount() {
     };
 
     try {
-      const response = await fetch("/api/accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("등록 실패");
-
-      const result = await response.json(); // { id, bankName, last4, image }
-      dispatch(addAccount(result)); // ✅ Redux 상태에 추가
-      setPopup("success");
+      // ✅ Axios 기반 API 서비스 사용
+      dispatch(addAccountAsync(payload))
+        .unwrap() // unwrap으로 실제 결과값 추출
+        .then(() => {
+          setPopup("success");
+        })
+        .catch((error) => {
+          console.error("계좌 등록 실패:", error);
+          setPopup("error");
+        });
     } catch (error) {
       console.error("계좌 등록 실패:", error);
       setPopup("error");
