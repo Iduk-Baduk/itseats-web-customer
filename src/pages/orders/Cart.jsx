@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu, selectRequestInfo } from "../../store/cartSlice";
-import { addOrder } from "../../store/orderSlice";
+import { addOrder, createOrderAsync } from "../../store/orderSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 
@@ -61,7 +61,7 @@ export default function Cart() {
     dispatch(removeMenu({ menuId, menuOptionHash }));
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     // 주문 데이터 생성
     const orderData = {
       storeName: DUMMY_DATA.storeName,
@@ -91,11 +91,26 @@ export default function Cart() {
       })),
     };
 
-    // Redux에 주문 추가
-    dispatch(addOrder(orderData));
-    
-    // 주문 상태 페이지로 이동
-    navigate("/orders/status");
+    try {
+      // ✅ API를 통한 주문 생성 (서버 연동 준비)
+      // 개발 중에는 로컬 저장소 사용, 배포 시 실제 API 사용
+      const useLocalStorage = process.env.REACT_APP_MOCK_MODE === 'true';
+      
+      if (useLocalStorage) {
+        // 로컬 개발 환경: Redux로 주문 추가
+        dispatch(addOrder(orderData));
+      } else {
+        // 실제 환경: API를 통한 주문 생성
+        await dispatch(createOrderAsync(orderData)).unwrap();
+      }
+      
+      // 주문 상태 페이지로 이동
+      navigate("/orders/status");
+    } catch (error) {
+      console.error("주문 생성 실패:", error);
+      // TODO: 에러 토스트 표시
+      alert("주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
   };
 
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
