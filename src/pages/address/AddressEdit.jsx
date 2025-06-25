@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import useAddressRedux from "../../hooks/useAddressRedux";
 import Header from "../../components/common/Header";
 import AddressForm from "./AddressForm";
@@ -8,6 +8,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 export default function AddressEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addresses, updateAddress, removeAddress } = useAddressRedux();
   const addressToEdit = addresses.find((addr) => addr.id === id);
 
@@ -67,7 +68,11 @@ export default function AddressEdit() {
       lng: currentAddress.lng,
     };
     updateAddress(updatedAddress);
-    navigate("/address", { replace: true });
+    if (location.state && location.state.from === 'cart') {
+      navigate('/cart', { replace: true });
+    } else {
+      navigate('/address', { replace: true });
+    }
   };
 
   const handleDelete = () => {

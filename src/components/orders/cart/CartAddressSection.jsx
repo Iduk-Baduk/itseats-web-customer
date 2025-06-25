@@ -24,7 +24,7 @@ export default function CartAddressSection() {
         )}
       </div>
       <div className={styles.addressEdit}>
-        <a href="#" onClick={e => {e.preventDefault(); navigate('/address');}}>
+        <a href="#" onClick={e => {e.preventDefault(); navigate('/address', { state: { from: 'cart' } });}}>
           {selectedAddress ? '수정' : '주소 추가'}
         </a>
       </div>

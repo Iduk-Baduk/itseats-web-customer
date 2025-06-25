@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useAddressRedux from "../../hooks/useAddressRedux";
 import { getIconByLabel } from "../../utils/addressUtils";
 import Header from "../../components/common/Header";
@@ -7,6 +7,7 @@ import styles from "./Address.module.css";
 
 export default function Address() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { addresses, selectedAddressId, selectAddress } = useAddressRedux();
   const [keyword, setKeyword] = useState("");
 
@@ -17,8 +18,12 @@ export default function Address() {
 
   const handleAddressSelect = (addressId) => {
     selectAddress(addressId);
-    // 주소 선택 후 홈 화면으로 이동
-    navigate("/", { replace: true });
+    // 주소 선택 후 카트에서 진입한 경우 카트로, 아니면 홈으로 이동
+    if (location.state && location.state.from === 'cart') {
+      navigate('/cart', { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
   };
 
   const hasHomeAddress = addresses.some((addr) => addr.label === "집");
