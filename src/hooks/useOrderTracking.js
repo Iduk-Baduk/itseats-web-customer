@@ -102,9 +102,13 @@ export const useOrderTracking = (orderId, options = {}) => {
     isTrackingRef.current = false;
     setIsTracking(false);
     
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    try {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    } catch (error) {
+      console.error(`주문 ${orderId} interval 정리 실패:`, error);
     }
   }, [orderId]);
 
@@ -122,16 +126,24 @@ export const useOrderTracking = (orderId, options = {}) => {
     }
 
     return () => {
-      stopTracking();
+      try {
+        stopTracking();
+      } catch (error) {
+        console.error(`컴포넌트 언마운트 시 주문 ${orderId} 추적 정리 실패:`, error);
+      }
     };
   }, [orderId, autoStart]); // 콜백 함수는 제외
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
     if (isTrackingRef.current) {
-      stopTracking();
-      if (orderId) {
-        startTracking();
+      try {
+        stopTracking();
+        if (orderId) {
+          startTracking();
+        }
+      } catch (error) {
+        console.error(`주문 ID 변경 시 추적 재시작 실패:`, error);
       }
     }
   }, [orderId]); // 콜백 함수는 제외
@@ -178,9 +190,13 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
   
   // 개별 주문 추적 중단 (trackOrder보다 먼저 정의)
   const stopTracking = useCallback((orderId) => {
-    if (intervalRefs.current[orderId]) {
-      clearInterval(intervalRefs.current[orderId]);
-      delete intervalRefs.current[orderId];
+    try {
+      if (intervalRefs.current[orderId]) {
+        clearInterval(intervalRefs.current[orderId]);
+        delete intervalRefs.current[orderId];
+      }
+    } catch (error) {
+      console.error(`주문 ${orderId} interval 정리 실패:`, error);
     }
     
     setTrackingStates(prev => ({
@@ -285,7 +301,11 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     }
 
     return () => {
-      stopAllTracking();
+      try {
+        stopAllTracking();
+      } catch (error) {
+        console.error('다중 주문 추적 정리 실패:', error);
+      }
     };
   }, [orderIdsString, options.autoStart]); // 콜백 함수는 제외
 
