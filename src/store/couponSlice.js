@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { couponAPI } from '../services';
 
 // 쿠폰 유효성 검사 함수
 const isValidCoupon = (coupon, cartTotal = 0) => {
@@ -22,18 +23,27 @@ const isValidCoupon = (coupon, cartTotal = 0) => {
   return true;
 };
 
-// 쿠폰 목록 API 연동 Thunk
+// 쿠폰 목록 API 연동 Thunk - Axios 기반으로 변경
 export const fetchCoupons = createAsyncThunk(
   'coupon/fetchCoupons',
   async () => {
-    const res = await fetch('/api/coupons');
-    if (!res.ok) throw new Error('쿠폰 목록을 불러오지 못했습니다.');
-    const data = await res.json();
-    // 유효기간을 Date 객체로 변환
-    return data.map(coupon => ({
-      ...coupon,
-      validDate: coupon.validDate ? new Date(coupon.validDate) : null,
-    }));
+    return await couponAPI.getCoupons();
+  }
+);
+
+// 사용 가능한 쿠폰 조회 Thunk
+export const fetchAvailableCoupons = createAsyncThunk(
+  'coupon/fetchAvailableCoupons',
+  async (orderData) => {
+    return await couponAPI.getAvailableCoupons(orderData);
+  }
+);
+
+// 쿠폰 사용 Thunk
+export const useCouponAsync = createAsyncThunk(
+  'coupon/useCoupon',
+  async ({ couponId, orderData }) => {
+    return await couponAPI.useCoupon(couponId, orderData);
   }
 );
 
