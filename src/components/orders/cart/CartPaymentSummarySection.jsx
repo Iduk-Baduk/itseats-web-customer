@@ -15,7 +15,12 @@ export default function CartPaymentSummarySection({ cartInfo }) {
           <span>배달비</span>
           <span>{cartInfo.deliveryFee === 0 ? '무료' : `+${cartInfo.deliveryFee.toLocaleString()}원`}</span>
         </div>
-        {/* 할인/쿠폰 등은 추후 추가 */}
+        {cartInfo.couponDiscount > 0 && (
+          <div className={styles.paymentRow}>
+            <span>쿠폰 할인</span>
+            <span style={{ color: '#e53935' }}>- {cartInfo.couponDiscount.toLocaleString()}원</span>
+          </div>
+        )}
         <div className={styles.totalCost}>
           <span>총 결제금액</span>
           <span>{cartInfo.totalPrice.toLocaleString()}원</span>

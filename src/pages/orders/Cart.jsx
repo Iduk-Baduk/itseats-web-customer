@@ -24,6 +24,11 @@ export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const orderMenus = useSelector((state) => state.cart.orderMenus);
+  
+  // Redux에서 쿠폰 정보 가져오기
+  const coupons = useSelector(state => state.coupon.coupons);
+  const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
+  const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
 
   // 배달 옵션 및 배달비 상태 추가
   const [deliveryOption, setDeliveryOption] = useState({
@@ -52,17 +57,18 @@ export default function Cart() {
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
   const cartInfo = useMemo(() => ({
     orderPrice: orderMenus.reduce(
-      (sum, m) => sum + m.menuPrice * m.quantity,
-      0
-    ),
-    totalPrice: orderMenus.reduce(
       (sum, m) => sum + calculateCartTotal(m),
       0
-    ) + (deliveryOption.price || 0), // 배달비 포함
+    ),
+    totalPrice: Math.max(0, orderMenus.reduce(
+      (sum, m) => sum + calculateCartTotal(m),
+      0
+    ) + (deliveryOption.price || 0) - (appliedCoupon ? appliedCoupon.discount : 0)), // Redux에서 쿠폰 할인 가져오기
     itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
     deliveryFee: deliveryOption.price || 0,
     deliveryLabel: deliveryOption.label,
-  }), [orderMenus, deliveryOption]);
+    couponDiscount: appliedCoupon ? appliedCoupon.discount : 0, // Redux에서 쿠폰 할인 가져오기
+  }), [orderMenus, deliveryOption, appliedCoupon]);
 
   return (
     <div className={styles.container}>
