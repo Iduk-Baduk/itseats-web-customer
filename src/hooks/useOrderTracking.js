@@ -28,6 +28,25 @@ export const useOrderTracking = (orderId, options = {}) => {
   const MAX_ERROR_COUNT = 3;
 
   /**
+   * 내부적으로 추적을 중단하는 헬퍼 함수
+   */
+  const internalStopTracking = useCallback((reason = '') => {
+    isTrackingRef.current = false;
+    setIsTracking(false);
+    try {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    } catch (error) {
+      console.error(`주문 ${orderId} interval 정리 실패:`, error);
+    }
+    if (reason) {
+      console.log(`⏹️ 주문 ${orderId} 추적 중단 (${reason})`);
+    }
+  }, [orderId]);
+
+  /**
    * 주문 상태를 확인하고 업데이트
    */
   const trackOrder = useCallback(async () => {
@@ -64,7 +83,7 @@ export const useOrderTracking = (orderId, options = {}) => {
       
       // 완료 상태에 도달하면 추적 중단
       if (COMPLETED_STATUSES.includes(orderData.status)) {
-        stopTracking();
+        internalStopTracking('완료 상태');
       }
       
     } catch (error) {
@@ -72,10 +91,10 @@ export const useOrderTracking = (orderId, options = {}) => {
       errorCountRef.current++;
       if (errorCountRef.current >= MAX_ERROR_COUNT) {
         console.error(`주문 ${orderId} 추적 중단: ${MAX_ERROR_COUNT}번 연속 실패`);
-        stopTracking();
+        internalStopTracking('연속 실패');
       }
     }
-  }, [orderId, dispatch, onStatusChange, stopTracking]);
+  }, [orderId, dispatch, onStatusChange, internalStopTracking]);
 
   /**
    * 추적 시작
