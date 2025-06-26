@@ -1,6 +1,7 @@
 // src/store/cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import { createMenuOptionHash } from "../utils/hashUtils";
+import { loadAndMigrateCartData } from "../utils/dataMigration";
 
 // localStorage 저장 함수 추가
 const saveToLocalStorage = (state) => {
@@ -15,13 +16,18 @@ const saveToLocalStorage = (state) => {
   }
 };
 
+// 마이그레이션된 데이터로 초기 상태 설정
+const migratedCartData = loadAndMigrateCartData();
+
 const initialState = {
-  orderMenus: [], // [{ menuId, menuName, ... }]
-  requestInfo: {
+  orderMenus: migratedCartData.orderMenus || [], // [{ menuId, menuName, ... }]
+  requestInfo: migratedCartData.requestInfo || {
     storeRequest: '',
     deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
     disposableChecked: false,
   },
+  _version: migratedCartData._version,
+  _migratedAt: migratedCartData._migratedAt,
 };
 
 const cartSlice = createSlice({

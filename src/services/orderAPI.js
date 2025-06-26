@@ -4,7 +4,55 @@ import apiClient from './apiClient';
 export const orderAPI = {
   // 새 주문 생성
   createOrder: async (orderData) => {
-    return await apiClient.post('/api/orders', orderData);
+    // API 스펙에 맞는 데이터 구조 검증
+    const {
+      coupons = [],
+      totalCost,
+      paymentMethod,
+      paymentStatus = "PENDING",
+      storeRequest = "",
+      riderRequest = "",
+      orderDetails
+    } = orderData;
+
+    // 주문 상세 정보 검증
+    const {
+      addrId,
+      storeId,
+      orderMenus,
+      deliveryType = "DEFAULT"
+    } = orderDetails || {};
+
+    // 필수 필드 검증
+    if (!totalCost || !paymentMethod || !addrId || !storeId || !orderMenus?.length) {
+      throw new Error("필수 주문 정보가 누락되었습니다.");
+    }
+
+    // 서버로 전송할 데이터 구조
+    const requestData = {
+      // 주문 기본 정보
+      orderId: null, // 서버에서 생성
+      coupons,
+      totalCost,
+      paymentMethod,
+      paymentStatus,
+      storeRequest,
+      riderRequest,
+      
+      // 주문 상세 정보
+      addrId,
+      storeId,
+      orderMenus: orderMenus.map(menu => ({
+        menuId: menu.menuId,
+        menuName: menu.menuName,
+        menuOptions: menu.menuOptions || [],
+        menuTotalPrice: menu.menuTotalPrice,
+        quantity: menu.quantity
+      })),
+      deliveryType
+    };
+
+    return await apiClient.post('/api/orders', requestData);
   },
 
   // 주문 목록 조회

@@ -55,6 +55,11 @@ const paymentSlice = createSlice({
     selectedPaymentType: 'card', // 'coupay', 'card', 'account'
     selectedCardId: null,
     selectedAccountId: null,
+    
+    // 결제 처리 상태 추가
+    isProcessingPayment: false,
+    paymentError: null,
+    lastPaymentResult: null,
   },
   reducers: {
     removeCard: (state, action) => {
@@ -90,6 +95,39 @@ const paymentSlice = createSlice({
         state.selectedCardId = null;
         state.selectedAccountId = null;
       }
+    },
+    
+    // 결제 처리 상태 관리 액션들 추가
+    setPaymentProcessing: (state, action) => {
+      state.isProcessingPayment = action.payload;
+      if (action.payload) {
+        state.paymentError = null; // 처리 시작 시 이전 에러 초기화
+      }
+    },
+    
+    setPaymentSuccess: (state, action) => {
+      state.isProcessingPayment = false;
+      state.paymentError = null;
+      state.lastPaymentResult = {
+        success: true,
+        data: action.payload,
+        timestamp: new Date().toISOString()
+      };
+    },
+    
+    setPaymentError: (state, action) => {
+      state.isProcessingPayment = false;
+      state.paymentError = action.payload;
+      state.lastPaymentResult = {
+        success: false,
+        error: action.payload,
+        timestamp: new Date().toISOString()
+      };
+    },
+    
+    clearPaymentResult: (state) => {
+      state.paymentError = null;
+      state.lastPaymentResult = null;
     },
   },
   extraReducers: (builder) => {
@@ -153,7 +191,16 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { removeCard, removeAccount, addCard, addAccount, setSelectedPaymentMethod } =
-  paymentSlice.actions;
+export const { 
+  removeCard, 
+  removeAccount, 
+  addCard, 
+  addAccount, 
+  setSelectedPaymentMethod,
+  setPaymentProcessing,
+  setPaymentSuccess,
+  setPaymentError,
+  clearPaymentResult 
+} = paymentSlice.actions;
 
 export default paymentSlice.reducer;
