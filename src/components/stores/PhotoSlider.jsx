@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import OptimizedImage from '../common/OptimizedImage';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -20,9 +21,12 @@ export default function PhotoSlider({ images = ["/samples/banner.jpg"] }) {
       >
         {images.map((src, index) => (
           <SwiperSlide key={index}>
-            <img
+            <OptimizedImage
               src={src}
-              alt={`slide-${index}`}
+              alt={`매장 이미지 ${index + 1}`}
+              priority={index === 0} // 첫 번째 이미지만 우선 로딩
+              width={400}
+              height={280}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </SwiperSlide>

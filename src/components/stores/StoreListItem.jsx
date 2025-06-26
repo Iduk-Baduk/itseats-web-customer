@@ -1,25 +1,35 @@
 import React from "react";
+import OptimizedImage from "../common/OptimizedImage";
 import styles from "./StoreListItem.module.css";
 
 const StoreListItem = React.memo(({ store, onClick }) => {
   return (
     <div className={styles.storeListItem} onClick={onClick}>
       <div className={styles.storeImageContainer}>
-        <img
-          src="/samples/banner.jpg"
-          alt="가맹점 이미지"
+        <OptimizedImage
+          src={store.image || "/samples/banner.jpg"}
+          alt={`${store.name} 가맹점 이미지`}
           className={styles.storeImage}
+          width={120}
+          height={80}
+          priority={false}
         />
         <div className={styles.menuImageContainer}>
-          <img
-            src="/samples/banner.jpg"
-            alt="메뉴 이미지"
+          <OptimizedImage
+            src={store.menuImage1 || "/samples/food1.jpg"}
+            alt={`${store.name} 메뉴 이미지`}
             className={styles.menuImage}
+            width={40}
+            height={40}
+            priority={false}
           />
-          <img
-            src="/samples/banner.jpg"
-            alt="메뉴 이미지"
+          <OptimizedImage
+            src={store.menuImage2 || "/samples/food2.jpg"}
+            alt={`${store.name} 메뉴 이미지`}
             className={styles.menuImage}
+            width={40}
+            height={40}
+            priority={false}
           />
         </div>
       </div>

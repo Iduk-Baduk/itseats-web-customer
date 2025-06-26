@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import OptimizedImage from "../common/OptimizedImage";
 import styles from "./MenuItem.module.css";
 
 const MenuItem = React.memo(({ storeId, menu }) => {
@@ -23,15 +24,28 @@ const MenuItem = React.memo(({ storeId, menu }) => {
       </div>
       {menu.image ? (
         <div className={styles.menuImageWrapper}>
-          <img
+          <OptimizedImage
             src={menu.image}
             alt={menu.menuName}
             className={`${styles.menuImage} ${isSoldOut ? styles.dimmed : ""}`}
+            width={80}
+            height={80}
+            priority={false}
+            placeholder="/samples/favoriteDefault.png"
           />
           {isSoldOut && <span className={styles.soldOutBadge}>품절</span>}
         </div>
       ) : (
-        <div className={`${styles.menuImageWrapper} ${styles.noImage}`} />
+        <div className={`${styles.menuImageWrapper} ${styles.noImage}`}>
+          <OptimizedImage
+            src="/samples/favoriteDefault.png"
+            alt="기본 메뉴 이미지"
+            className={styles.menuImage}
+            width={80}
+            height={80}
+            priority={false}
+          />
+        </div>
       )}
     </div>
   );

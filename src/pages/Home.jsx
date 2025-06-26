@@ -5,6 +5,7 @@ import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
+import OptimizedImage from "../components/common/OptimizedImage";
 import styles from "./Home.module.css";
 import StoreListItem from "../components/stores/StoreListItem";
 import BottomButton from "../components/common/BottomButton";
@@ -90,7 +91,14 @@ export default function Home() {
         />
         <MenuGrid />
         <div className={styles.bannerContainer}>
-          <img src="/samples/banner.jpg" alt="배너 이미지" />
+          <OptimizedImage 
+            src="/samples/banner.jpg" 
+            alt="홈 페이지 배너 이미지" 
+            priority={true}
+            className={styles.bannerImage}
+            width={350}
+            height={200}
+          />
         </div>
       </div>
 

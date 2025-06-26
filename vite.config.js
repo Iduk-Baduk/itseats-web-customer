@@ -55,6 +55,10 @@ export default defineConfig({
           if (assetInfo.name.endsWith('.css')) {
             return 'css/[name]-[hash].css';
           }
+          // 이미지 파일들을 별도 디렉토리로 구분
+          if (/\.(jpe?g|png|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
+            return 'images/[name]-[hash].[ext]';
+          }
           return 'assets/[name]-[hash].[ext]';
         }
       }
@@ -62,7 +66,9 @@ export default defineConfig({
     // 청크 사이즈 경고 임계값 설정
     chunkSizeWarningLimit: 1000,
     // 소스맵 생성 (개발 시에만)
-    sourcemap: process.env.NODE_ENV === 'development'
+    sourcemap: process.env.NODE_ENV === 'development',
+    // 이미지 최적화를 위한 추가 설정
+    assetsInlineLimit: 4096, // 4KB 미만의 이미지는 base64로 인라인
   },
   // 최적화 설정
   optimizeDeps: {
@@ -76,5 +82,23 @@ export default defineConfig({
     exclude: [
       'framer-motion' // 지연 로딩되므로 사전 번들링에서 제외
     ]
+  },
+  // 정적 자산 캐싱 설정
+  assetsInclude: ['**/*.webp'],
+  
+  // CSS 전처리기 설정
+  css: {
+    modules: {
+      // CSS 모듈 클래스명 최적화
+      generateScopedName: process.env.NODE_ENV === 'production' 
+        ? '[hash:base64:5]' 
+        : '[name]__[local]___[hash:base64:5]'
+    },
+    postcss: {
+      plugins: [
+        // 자동으로 vendor prefix 추가
+        require('autoprefixer') || null
+      ].filter(Boolean)
+    }
   }
 });

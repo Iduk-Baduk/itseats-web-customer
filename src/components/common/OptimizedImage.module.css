@@ -1,0 +1,191 @@
+.imageContainer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--background-color-secondary, #f5f5f5);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optimizedImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out;
+  border-radius: inherit;
+}
+
+/* 로딩 상태 */
+.optimizedImage.loading {
+  opacity: 0;
+  filter: blur(5px);
+}
+
+/* 로드 완료 상태 */
+.optimizedImage.loaded {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* 에러 상태 */
+.optimizedImage.error {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+/* 플레이스홀더 */
+.placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: inherit;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.placeholderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--black-300, #999);
+}
+
+.placeholderIcon {
+  font-size: 24px;
+  opacity: 0.6;
+}
+
+.placeholderText {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 에러 상태 */
+.errorState {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-color-secondary, #f5f5f5);
+  color: var(--black-300, #999);
+  gap: 8px;
+  border-radius: inherit;
+}
+
+.errorIcon {
+  font-size: 20px;
+  opacity: 0.7;
+}
+
+.errorText {
+  font-size: 11px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 호버 효과 (상호작용이 있는 이미지용) */
+.imageContainer:hover .optimizedImage.loaded {
+  transform: scale(1.02);
+  transition: transform 0.2s ease-out;
+}
+
+/* 반응형 이미지 */
+.responsive {
+  width: 100%;
+  height: auto;
+}
+
+/* 고정 비율 유지 */
+.aspectRatio16x9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspectRatio4x3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspectRatio1x1 {
+  aspect-ratio: 1 / 1;
+}
+
+/* 크기별 변형 */
+.small {
+  width: 60px;
+  height: 60px;
+}
+
+.medium {
+  width: 120px;
+  height: 120px;
+}
+
+.large {
+  width: 200px;
+  height: 200px;
+}
+
+/* 로딩 스켈레톤 효과 */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--background-color-secondary, #f5f5f5) 25%,
+    var(--border-color-light, #e0e0e0) 50%,
+    var(--background-color-secondary, #f5f5f5) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .imageContainer {
+    background-color: #2a2a2a;
+  }
+  
+  .placeholder {
+    background: linear-gradient(90deg, #3a3a3a 25%, #4a4a4a 50%, #3a3a3a 75%);
+    background-size: 200% 100%;
+  }
+  
+  .errorState {
+    background-color: #2a2a2a;
+    color: #999;
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+  }
+} 
