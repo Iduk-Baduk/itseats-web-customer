@@ -80,10 +80,11 @@ export default function App() {
   // 성능 모니터링 (개발 환경에서만)
   useEffect(() => {
     if (import.meta.env.DEV) {
+      let timeoutId;
       // 페이지 로드 완료 후 성능 리포트 생성
       const handleLoad = async () => {
         // 조금 지연시켜 모든 리소스 로딩 완료 후 측정
-        setTimeout(async () => {
+        timeoutId = setTimeout(async () => {
           try {
             await generatePerformanceReport();
           } catch (error) {
@@ -96,7 +97,10 @@ export default function App() {
         handleLoad();
       } else {
         window.addEventListener('load', handleLoad);
-        return () => window.removeEventListener('load', handleLoad);
+        return () => {
+          window.removeEventListener('load', handleLoad);
+          if (timeoutId) clearTimeout(timeoutId);
+        };
       }
     }
   }, []);

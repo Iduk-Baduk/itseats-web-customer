@@ -114,6 +114,8 @@ const OptimizedImage = ({
           sizes={sizes}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          role={alt ? 'img' : 'presentation'}
+          aria-hidden={!alt ? 'true' : 'false'}
         />
       )}
 
