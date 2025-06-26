@@ -1,30 +1,129 @@
 :root {
-    /* Global */
+    /* ===== 색상 변수 ===== */
+    /* Primary Colors */
     --black-700: #161032;
     --black-500: #727272;
     --black-300: #B2B2B2;
+    --black-100: #f5f5f5;
     --theme-color: #00AFFE;
     --theme-color-rgb: 0, 175, 254;
+    --theme-hover-color: #009EDD;
     --wow-color: #2B5C9F;
 
-    --theme-hover-color: #009EDD;
+    /* Background Colors */
+    --background-color: #F5F6F8;
+    --background-color-secondary: #f5f5f5;
+    --background-hover-color: rgba(0, 0, 0, 0.043); /* #F4F4F4 */
+    --background-selected-color: #CCEDFE;
+    --background-disabled-color: #D9D9D9;
+    --white: #ffffff;
+
+    /* Border Colors */
     --border-color-light: #EEE;
     --border-color: #B2B2B2;
-    --background-hover-color: rgba(0, 0, 0, 0.043) /* #F4F4F4 */;
-    --background-selected-color: #CCEDFE;
+    --border-color-dark: #ddd;
+
+    /* State Colors */
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --error-color: #FF4D4F;
+    --info-color: #2196F3;
+
+    /* Icon Colors */
     --unchecked-icon-color: #D9D9D9;
+    --disabled-color: #8C8C8C;
 
-    --background-color: #F5F6F8;
-
+    /* Component Specific */
     --toggle-button-color: #212B35;
     --toggle-button-background-color: #F5F6F8;
-
-    --disabled-color: #8C8C8C;
-    --background-disabled-color: #D9D9D9;
-
     --minus-red: #FF4D4F;
 
-    /* Navigation Bar */
+    /* Navigation */
     --nav-active-color: #161032;
     --nav-inactive-color: #8E9EA6;
+
+    /* ===== 크기 변수 ===== */
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 20px;
+    --spacing-xxl: 24px;
+    --spacing-3xl: 32px;
+    --spacing-4xl: 40px;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
+    --radius-xxl: 12px;
+    --radius-round: 50%;
+
+    /* Layout */
+    --header-height: 60px;
+    --navigation-height: 60px;
+    --max-width-mobile: 100%;
+    --max-width-tablet: 720px;
+    --max-width-desktop: 720px;
+
+    /* ===== 타이포그래피 변수 ===== */
+    /* Font Sizes */
+    --font-size-xs: 10px;
+    --font-size-sm: 12px;
+    --font-size-base: 14px;
+    --font-size-md: 15px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+    --font-size-2xl: 20px;
+    --font-size-3xl: 24px;
+    --font-size-4xl: 30px;
+
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.4;
+    --line-height-relaxed: 1.5;
+
+    /* ===== 그림자 변수 ===== */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* ===== 전환 애니메이션 변수 ===== */
+    --transition-fast: 0.15s ease-out;
+    --transition-normal: 0.2s ease-out;
+    --transition-slow: 0.3s ease-out;
+
+    /* ===== Z-Index 변수 ===== */
+    --z-index-dropdown: 100;
+    --z-index-sticky: 200;
+    --z-index-navigation: 500;
+    --z-index-header: 1000;
+    --z-index-overlay: 1500;
+    --z-index-modal: 2000;
+    --z-index-toast: 9999;
+}
+
+/* ===== 다크 모드 지원 ===== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1a1a1a;
+        --background-color-secondary: #2a2a2a;
+        --background-hover-color: rgba(255, 255, 255, 0.05);
+        --white: #2a2a2a;
+        --black-700: #ffffff;
+        --black-500: #cccccc;
+        --black-300: #999999;
+        --border-color-light: #333333;
+        --border-color: #444444;
+        --border-color-dark: #555555;
+    }
 }

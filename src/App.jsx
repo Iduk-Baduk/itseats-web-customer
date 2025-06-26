@@ -1,15 +1,20 @@
 // src/App.jsx
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import Root from "./Root";
 import { saveCart, saveCount } from "./store/localStorage"; // 경로는 실제 위치에 맞게 조정
 import { loadAndMigrateCartData } from "./utils/dataMigration";
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import { generatePerformanceReport } from "./utils/performance";
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
   const count = useSelector((state) => state.counter.count);
+  const showDataMigrationNotice = useSelector(
+    (state) => state.showDataMigrationNotice
+  );
 
   // 앱 시작 시 데이터 마이그레이션 확인
   useEffect(() => {
@@ -41,10 +46,36 @@ export default function App() {
     saveCount(count);
   }, [count]);
 
+  // 성능 모니터링 (개발 환경에서만)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      // 페이지 로드 완료 후 성능 리포트 생성
+      const handleLoad = async () => {
+        // 조금 지연시켜 모든 리소스 로딩 완료 후 측정
+        setTimeout(async () => {
+          try {
+            await generatePerformanceReport();
+          } catch (error) {
+            console.warn('성능 리포트 생성 실패:', error);
+          }
+        }, 1000);
+      };
+
+      if (document.readyState === 'complete') {
+        handleLoad();
+      } else {
+        window.addEventListener('load', handleLoad);
+        return () => window.removeEventListener('load', handleLoad);
+      }
+    }
+  }, []);
+
   return (
-    <BrowserRouter>
-      <Root />
-      <DataMigrationNotice />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <Router>
+        <Root />
+        {showDataMigrationNotice && <DataMigrationNotice />}
+      </Router>
+    </ErrorBoundary>
   );
 }

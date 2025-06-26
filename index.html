@@ -1,18 +1,82 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <!-- 필수 메타 태그 -->
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    
+    <!-- 성능 최적화 메타 태그 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+    
+    <!-- SEO 메타 태그 -->
+    <title>잇츠잇츠 - 당신을 위한 맛있는 배달 서비스</title>
+    <meta name="description" content="잇츠잇츠에서 다양한 음식을 빠르고 간편하게 주문하세요. 맛있는 배달 음식을 언제 어디서나!" />
+    <meta name="keywords" content="음식 배달, 배달 앱, 잇츠잇츠, 음식 주문, 배달 음식" />
+    <meta name="author" content="잇츠잇츠" />
+    
+    <!-- 파비콘 및 앱 아이콘 -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#00AFFE" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="잇츠잇츠" />
+    
+    <!-- 소셜 미디어 메타 태그 (Open Graph) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="잇츠잇츠 - 당신을 위한 맛있는 배달 서비스" />
+    <meta property="og:description" content="잇츠잇츠에서 다양한 음식을 빠르고 간편하게 주문하세요!" />
+    <meta property="og:url" content="https://itseats.com" />
+    <meta property="og:site_name" content="잇츠잇츠" />
+    
+    <!-- 리소스 힌트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://dapi.kakao.com" crossorigin>
+    <link rel="dns-prefetch" href="//api.example.com" />
+    
+    <!-- 카카오 맵 SDK -->
     <script
       type="text/javascript"
       src="//dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_APP_KAKAOMAP_KEY%&libraries=services,clusterer"
+      defer
     ></script>
-    <title>잇츠잇츠</title>
-    <meta name="description" content="잇츠잇츠: 당신을 위한 맛있는 배달 서비스" />
+    
+    <!-- Critical CSS 인라인 (필요시 추가) -->
+    <style>
+      /* 초기 로딩 중 FOUC 방지 */
+      #root {
+        min-height: 100vh;
+        background-color: #F5F6F8;
+      }
+      
+      /* 로딩 스피너 (옵션) */
+      .initial-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #EEE;
+        border-top: 4px solid #00AFFE;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- 초기 로딩 표시 (JavaScript가 로드되기 전까지) -->
+      <div class="initial-loading"></div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
