@@ -1,10 +1,7 @@
 /* OrderCard.module.css */
 
 .orderCard {
-  border: 0.6px solid #ddd;
-  border-radius: 10px;
-  padding: 16px;
-  background-color: #fff;
+  /* 기본 카드 스타일은 Card 컴포넌트에서 처리 */
 }
 
 .storeInfo {
@@ -27,6 +24,17 @@
 .storeInfo .date {
   color: var(--black-300);
   font-size: small;
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rating {
+  font-size: 14px;
 }
 .summaryRow {
   display: flex;

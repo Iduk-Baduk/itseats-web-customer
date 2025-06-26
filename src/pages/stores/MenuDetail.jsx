@@ -6,7 +6,7 @@ import { fetchStoreById } from "../../store/storeSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import { ConfirmModal } from "../../components/common/Modal";
 import styles from "./MenuDetail.module.css";
 import OptionInput from "../../components/stores/OptionInput";
 import BottomButton from "../../components/common/BottomButton";
@@ -381,19 +381,18 @@ export default function MenuDetail() {
           </BottomButton>
         )}
 
-        {showStoreChangeModal && (
-          <ConfirmModal
-            message={
-              currentStore ? 
-              `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${store?.name}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
-              `장바구니를 새로 시작하시겠습니까?`
-            }
-            confirmText="네, 새로 담기"
-            cancelText="취소"
-            onConfirm={handleReplaceCart}
-            onCancel={handleKeepCurrentCart}
-          />
-        )}
+        <ConfirmModal
+          isOpen={showStoreChangeModal}
+          onClose={handleKeepCurrentCart}
+          onConfirm={handleReplaceCart}
+          message={
+            currentStore ? 
+            `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${store?.name}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
+            `장바구니를 새로 시작하시겠습니까?`
+          }
+          confirmText="네, 새로 담기"
+          cancelText="취소"
+        />
       </div>
     </SlideInFromRight>
   );
