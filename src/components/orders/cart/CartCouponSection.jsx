@@ -2,22 +2,25 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { selectNormalizedCoupons } from '../../../store/couponSlice';
-import { calculateMultipleCouponsDiscount, getCouponDisplayText } from '../../../utils/couponUtils';
+import { calculateMultipleCouponsDiscount } from '../../../utils/couponUtils';
 import calculateCartTotal from '../../../utils/calculateCartTotal';
 import styles from '../../../pages/orders/Cart.module.css';
 
 export default function CartCouponSection() {
   const navigate = useNavigate();
-  const coupons = useSelector(selectNormalizedCoupons);
+
+  // Redux에서 데이터 가져오기
   const orderMenus = useSelector(state => state.cart.orderMenus);
-  
-  // Cart.jsx와 일관성을 위해 selectedCouponIds 사용
+  const currentStore = useSelector(state => state.store.currentStore);
+  const coupons = useSelector(selectNormalizedCoupons);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
   // 주문 금액 및 배달비 계산
   const orderPrice = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
-  const deliveryFee = 2500; // 기본 배달비 (실제로는 매장 정보에서 가져와야 함)
+  const deliveryFee = currentStore?.deliveryFee || 0;
+  
+  // 적용된 쿠폰 목록 계산
+  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
   // 전체 coupon 상태 디버깅
   const couponState = useSelector(state => state.coupon);

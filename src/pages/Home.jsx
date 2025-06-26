@@ -60,15 +60,12 @@ export default function Home() {
     dispatch(fetchStores());
   }, [dispatch]);
   
-  // 디버깅: 매장 데이터 확인
+  // 개발 환경에서만 디버깅 로그 출력
   useEffect(() => {
-    // console.log('🏪 Home.jsx - 매장 데이터:', {
-    //   storesCount: stores.length,
-    //   storeLoading,
-    //   storeError,
-    //   firstStore: stores[0]?.name
-    // });
-  }, [stores, storeLoading, storeError]);
+    if (import.meta.env.DEV) {
+      console.log('🏪 매장 데이터:', { count: stores.length, loading: storeLoading });
+    }
+  }, [stores.length, storeLoading]);
   
   // 디버깅: 전체 Redux 상태 확인
   useEffect(() => {

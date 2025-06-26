@@ -14,41 +14,45 @@ export function calculateCouponDiscount(coupon, orderPrice = 0, deliveryFee = 0)
 
   switch (coupon.type) {
     case 'percentage':
-      // 퍼센테이지 할인: 주문 금액의 %로 계산 후 100원 단위 내림
-      const rawPercentageDiscount = orderPrice * (coupon.discount / 100);
-      discountAmount = Math.floor(rawPercentageDiscount / 100) * 100;
-      
-      // 최대 할인 금액 제한 적용
-      if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-        discountAmount = coupon.maxDiscount;
+      {
+        // 퍼센테이지 할인: 주문 금액의 %로 계산 후 100원 단위 내림
+        const rawPercentageDiscount = orderPrice * (coupon.discount / 100);
+        discountAmount = Math.floor(rawPercentageDiscount / 100) * 100;
+        
+        // 최대 할인 금액 제한 적용
+        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
+          discountAmount = coupon.maxDiscount;
+        }
+        
+        // 주문금액을 초과할 수 없음
+        discountAmount = Math.min(discountAmount, orderPrice);
+        break;
       }
-      
-      // 주문금액을 초과할 수 없음
-      discountAmount = Math.min(discountAmount, orderPrice);
-      break;
 
     case 'delivery':
-      // 배달비 할인: 배달비에서만 할인 (주문금액과 별도)
-      if (coupon.discount >= 100) {
-        // 100% 이상이면 배달비 전액 할인
-        discountAmount = deliveryFee;
-      } else if (coupon.discount > 1) {
-        // 고정 금액 할인
-        discountAmount = Math.min(coupon.discount, deliveryFee);
-      } else {
-        // 퍼센테이지 할인 (0~1 사이) - 배달비도 100원 단위 내림
-        const rawDeliveryDiscount = deliveryFee * coupon.discount;
-        discountAmount = Math.floor(rawDeliveryDiscount / 100) * 100;
+      {
+        // 배달비 할인: 배달비에서만 할인 (주문금액과 별도)
+        if (coupon.discount >= 100) {
+          // 100% 이상이면 배달비 전액 할인
+          discountAmount = deliveryFee;
+        } else if (coupon.discount > 1) {
+          // 고정 금액 할인
+          discountAmount = Math.min(coupon.discount, deliveryFee);
+        } else {
+          // 퍼센테이지 할인 (0~1 사이) - 배달비도 100원 단위 내림
+          const rawDeliveryDiscount = deliveryFee * coupon.discount;
+          discountAmount = Math.floor(rawDeliveryDiscount / 100) * 100;
+        }
+        
+        // 최대 할인 금액 제한 적용
+        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
+          discountAmount = coupon.maxDiscount;
+        }
+        
+        // 배달비를 초과할 수 없음
+        discountAmount = Math.min(discountAmount, deliveryFee);
+        break;
       }
-      
-      // 최대 할인 금액 제한 적용
-      if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-        discountAmount = coupon.maxDiscount;
-      }
-      
-      // 배달비를 초과할 수 없음
-      discountAmount = Math.min(discountAmount, deliveryFee);
-      break;
 
     case 'general':
     default:

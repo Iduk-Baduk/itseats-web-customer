@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { applyCoupon, clearAllCoupons, selectNormalizedCoupons } from "../../store/couponSlice";
+import { clearAllCoupons, applyCoupons, selectNormalizedCoupons } from "../../store/couponSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { getCouponDisplayText, validateCoupon, isCouponStackable, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
 import styles from "./Coupons.module.css";
@@ -15,6 +15,7 @@ export default function Coupons() {
   const coupons = useSelector(selectNormalizedCoupons);
   const orderMenus = useSelector(state => state.cart.orderMenus);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
+  const currentStore = useSelector(state => state.store.currentStore);
   const fromCart = location.state && location.state.from === 'cart';
 
   // 임시 선택된 쿠폰 상태 (실제 적용 전)
@@ -27,7 +28,7 @@ export default function Coupons() {
 
   // 장바구니 총액 계산
   const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
-  const deliveryFee = 2500; // 기본 배달비
+  const deliveryFee = currentStore?.deliveryFee || 0;
 
   // 유효기간 포맷팅 함수
   const formatValidDate = (validDate) => {
@@ -97,19 +98,15 @@ export default function Coupons() {
 
   // 실제 쿠폰 적용 및 카트로 이동
   const handleApplyCoupons = () => {
-    // console.log('🎫 쿠폰 적용 및 카트 이동:', tempSelectedCouponIds);
-
-    const cartTotal = calculateTotal();
-    
     if (tempSelectedCouponIds.length > 0) {
       // 선택된 쿠폰들을 모두 적용
       dispatch(applyCoupons({ 
         couponIds: tempSelectedCouponIds,
-        cartTotal: cartTotal
+        cartTotal: cartTotal // 이미 계산된 cartTotal 사용
       }));
     } else {
       // 선택된 쿠폰이 없으면 모든 쿠폰 해제
-      dispatch(removeAllCoupons());
+      dispatch(clearAllCoupons());
     }
     
     navigate('/cart');

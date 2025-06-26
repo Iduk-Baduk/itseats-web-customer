@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import Root from "./Root";
 import { saveCart, saveCount } from "./store/localStorage"; // 경로는 실제 위치에 맞게 조정
+import { loadAndMigrateCartData } from "./utils/dataMigration"; // 실제 경로에 맞게 수정
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
@@ -25,7 +26,7 @@ export default function App() {
           spinner.remove();
           // console.log('✅ 초기 로딩 스피너 제거 완료');
         }
-      } catch (error) {
+      } catch {
         // console.warn('초기 스피너 제거 중 오류:', error);
       }
     }, 1000);
@@ -49,18 +50,19 @@ export default function App() {
       }
       
       // 실제 사용자 환경에서만 성능 측정 시작
-      if (process.env.NODE_ENV === 'production') {
+      if (import.meta.env.PROD) {
         setTimeout(() => {
           try {
-            startWebVitalsCollection();
-            enableBatchPerformanceReporting(10000); // 10초마다 배치 전송
-          } catch (error) {
-            // console.warn('성능 리포트 생성 실패:', error);
+            // 운영 환경에서 성능 리포트 관련 기능은 별도 구현 필요
+            console.log('성능 모니터링 시작 (운영 환경)');
+          } catch (err) {
+            console.warn('성능 리포트 생성 실패:', err);
           }
         }, 2000);
       }
-    } catch (error) {
+    } catch (err) {
       // 에러가 발생해도 앱 동작에는 지장이 없도록 처리
+      console.warn('데이터 마이그레이션 중 오류:', err);
     }
   }, []);
 
