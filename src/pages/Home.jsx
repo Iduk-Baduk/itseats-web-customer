@@ -76,13 +76,12 @@ export default function Home() {
     const timer = setTimeout(() => {
       // console.log('🔍 전체 Redux 상태 확인:', {
       //   storeState: { stores: stores.length, loading: storeLoading, error: storeError },
-      //   cartState: { orderMenus: orderMenus.length },
-      //   otherState: state
+      //   cartState: { orderMenus: orderMenus.length }
       // });
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [stores, storeLoading, storeError, orderMenus, state]);
+  }, [stores, storeLoading, storeError, orderMenus]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {
