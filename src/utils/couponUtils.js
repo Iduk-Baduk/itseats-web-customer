@@ -124,14 +124,8 @@ export function getCouponDisplayText(coupon, orderPrice = 0, deliveryFee = 0) {
 
   switch (coupon.type) {
     case 'percentage':
-      if (orderPrice > 0) {
-        // 실제 할인 금액 계산해서 표시
-        const actualDiscount = calculateCouponDiscount(coupon, orderPrice, deliveryFee);
-        return `${actualDiscount.toLocaleString()}원 할인 (${coupon.discount}%)`;
-      } else {
-        // 주문 금액이 없을 때는 퍼센테이지만 표시
-        return `${coupon.discount}% 할인`;
-      }
+      // 퍼센테이지 쿠폰은 항상 퍼센테이지로만 표시
+      return `${coupon.discount}% 할인`;
 
     case 'delivery':
       if (coupon.discount >= 100 || coupon.discount === deliveryFee) {
