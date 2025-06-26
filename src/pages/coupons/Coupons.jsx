@@ -13,6 +13,46 @@ export default function Coupons() {
   const orderMenus = useSelector(state => state.cart.orderMenus);
   const fromCart = location.state && location.state.from === 'cart';
 
+  // 유효기간 포맷팅 함수
+  const formatValidDate = (validDate) => {
+    if (!validDate) return '유효기간 없음';
+    
+    try {
+      const date = new Date(validDate);
+      const now = new Date();
+      const isExpired = now > date;
+      
+      const formatted = date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      return {
+        text: `${formatted}까지`,
+        isExpired,
+        style: isExpired ? { color: '#ff4444', fontWeight: 'bold' } : { color: '#666' }
+      };
+    } catch (error) {
+      return {
+        text: '유효기간 오류',
+        isExpired: true,
+        style: { color: '#ff4444' }
+      };
+    }
+  };
+
+  // 쿠폰 사용 가능 여부 체크
+  const isCouponUsable = (coupon) => {
+    const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+    const validDateInfo = formatValidDate(coupon.validDate);
+    
+    return !coupon.isUsed && 
+           !coupon.isExpired && 
+           !validDateInfo.isExpired &&
+           cartTotal >= (coupon.minOrderAmount || 0);
+  };
+
   const handleUseCoupon = (couponId) => {
     console.log('=== 🎫 쿠폰 사용하기 클릭 ===');
     console.log('클릭한 쿠폰 ID:', couponId, typeof couponId);
@@ -89,37 +129,68 @@ export default function Coupons() {
         <p className={styles.empty}>보유한 쿠폰이 없습니다.</p>
       ) : (
         <ul className={styles.couponList}>
-          {coupons.map((coupon) => (
-            <li key={coupon.id} className={styles.couponCard}>
-              <div className={styles.couponInfo}>
-                <p className={styles.amount}>
-                  {coupon.discount.toLocaleString()}원 할인
-                </p>
-                <span className={styles.tag}>{coupon.type}</span>
-                <p className={styles.desc}>
-                  {coupon.name} {coupon.type} 전용 할인쿠폰
-                </p>
-                <p className={styles.date}>{coupon.description}까지 사용 가능</p>
-              </div>
-              {fromCart ? (
-                <button
-                  className={styles.linkBtn}
-                  onClick={() => handleUseCoupon(coupon.id)}
-                >
-                  쿠폰 사용하기
-                </button>
-              ) : (
-                <button
-                  className={styles.linkBtn}
-                  onClick={() => navigate(`/stores/${coupon.storeId}`)}
-                >
-                  →<br />
-                  적용가능<br />
-                  매장보기
-                </button>
-              )}
-            </li>
-          ))}
+          {coupons.map((coupon) => {
+            const validDateInfo = formatValidDate(coupon.validDate);
+            const isUsable = isCouponUsable(coupon);
+            const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+            
+            return (
+              <li key={coupon.id} className={`${styles.couponCard} ${!isUsable ? styles.disabled : ''}`}>
+                <div className={styles.couponInfo}>
+                  <p className={styles.amount}>
+                    {coupon.discount.toLocaleString()}원 할인
+                  </p>
+                  <span className={styles.tag}>{coupon.type}</span>
+                  <p className={styles.desc}>
+                    {coupon.name}
+                    {coupon.minOrderAmount > 0 && (
+                      <span style={{ color: cartTotal >= coupon.minOrderAmount ? '#2196f3' : '#ff4444' }}>
+                        {' '}(최소 {coupon.minOrderAmount.toLocaleString()}원)
+                      </span>
+                    )}
+                  </p>
+                  <p className={styles.date} style={validDateInfo.style}>
+                    📅 {validDateInfo.text}
+                  </p>
+                  
+                  {/* 상태 정보 */}
+                  <div className={styles.statusInfo}>
+                    {coupon.isUsed && <span style={{ color: '#ff4444' }}>🚫 이미 사용됨</span>}
+                    {coupon.isExpired && <span style={{ color: '#ff4444' }}>⏰ 만료됨</span>}
+                    {validDateInfo.isExpired && <span style={{ color: '#ff4444' }}>📅 유효기간 만료</span>}
+                    {fromCart && cartTotal < (coupon.minOrderAmount || 0) && (
+                      <span style={{ color: '#ff4444' }}>
+                        💰 최소 주문 금액 미달 (현재: {cartTotal.toLocaleString()}원)
+                      </span>
+                    )}
+                    {isUsable && <span style={{ color: '#4caf50' }}>✅ 사용 가능</span>}
+                  </div>
+                </div>
+                {fromCart ? (
+                  <button
+                    className={styles.linkBtn}
+                    onClick={() => handleUseCoupon(coupon.id)}
+                    disabled={!isUsable}
+                    style={{ 
+                      opacity: isUsable ? 1 : 0.5,
+                      cursor: isUsable ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    {isUsable ? '쿠폰 사용하기' : '사용 불가'}
+                  </button>
+                ) : (
+                  <button
+                    className={styles.linkBtn}
+                    onClick={() => navigate(`/stores/${coupon.storeId}`)}
+                  >
+                    →<br />
+                    적용가능<br />
+                    매장보기
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

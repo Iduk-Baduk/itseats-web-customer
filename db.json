@@ -99,7 +99,7 @@
       "type": "general",
       "description": "첫 주문 시 3,000원 할인",
       "minOrderAmount": 15000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
       "isExpired": false
     },
@@ -110,7 +110,7 @@
       "type": "delivery",
       "description": "배달비 무료 쿠폰",
       "minOrderAmount": 10000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
       "isExpired": false
     },
@@ -133,7 +133,7 @@
       "type": "general",
       "description": "신규 가입 축하 5,000원 할인",
       "minOrderAmount": 25000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": true,
       "isExpired": false
     },
@@ -144,7 +144,7 @@
       "type": "general",
       "description": "테스트용 1,000원 할인",
       "minOrderAmount": 5000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
       "isExpired": false
     }
