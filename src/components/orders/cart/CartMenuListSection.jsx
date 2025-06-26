@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateQuantity, removeMenu, selectCurrentStore } from '../../../store/cartSlice';
 import { createMenuOptionHash } from '../../../utils/hashUtils';
@@ -6,20 +6,20 @@ import calculateCartTotal from '../../../utils/calculateCartTotal';
 import QuantityControl from './QuantityControl';
 import styles from '../../../pages/orders/Cart.module.css';
 
-export default function CartMenuListSection() {
+const CartMenuListSection = React.memo(() => {
   const dispatch = useDispatch();
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   const currentStore = useSelector(selectCurrentStore);
 
-  const handleQuantityChange = (menuId, menuOption, delta) => {
+  const handleQuantityChange = useCallback((menuId, menuOption, delta) => {
     const menuOptionHash = createMenuOptionHash(menuOption);
     dispatch(updateQuantity({ menuId, menuOptionHash, delta }));
-  };
+  }, [dispatch]);
 
-  const handleDelete = (menuId, menuOption) => {
+  const handleDelete = useCallback((menuId, menuOption) => {
     const menuOptionHash = createMenuOptionHash(menuOption);
     dispatch(removeMenu({ menuId, menuOptionHash }));
-  };
+  }, [dispatch]);
 
   return (
     <section className={styles.section}>
@@ -79,4 +79,8 @@ export default function CartMenuListSection() {
       )}
     </section>
   );
-}
+});
+
+CartMenuListSection.displayName = 'CartMenuListSection';
+
+export default CartMenuListSection;

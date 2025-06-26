@@ -1,6 +1,7 @@
+import React from "react";
 import styles from "./StoreListItem.module.css";
 
-export default function StoreListItem({ store, onClick }) {
+const StoreListItem = React.memo(({ store, onClick }) => {
   return (
     <div className={styles.storeListItem} onClick={onClick}>
       <div className={styles.storeImageContainer}>
@@ -35,4 +36,8 @@ export default function StoreListItem({ store, onClick }) {
       </div>
     </div>
   );
-}
+});
+
+StoreListItem.displayName = 'StoreListItem';
+
+export default StoreListItem;

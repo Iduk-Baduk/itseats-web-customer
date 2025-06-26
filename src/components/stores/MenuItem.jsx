@@ -1,13 +1,18 @@
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./MenuItem.module.css";
 
-export default function MenuItem({ storeId, menu }) {
+const MenuItem = React.memo(({ storeId, menu }) => {
   const navigate = useNavigate();
 
   const isSoldOut = menu.menuStatus === "OUT_OF_STOCK";
 
+  const handleClick = useCallback(() => {
+    navigate(`/stores/${storeId}/menus/${menu.menuId}`);
+  }, [navigate, storeId, menu.menuId]);
+
   return (
-    <div className={styles.menuItem} onClick={() => navigate(`/stores/${storeId}/menus/${menu.menuId}`)}>
+    <div className={styles.menuItem} onClick={handleClick}>
       <div className={styles.menuInfo}>
         <h3 className={`${styles.menuName} ${isSoldOut ? styles.soldOut : ""}`}>
           {menu.menuName}
@@ -30,4 +35,8 @@ export default function MenuItem({ storeId, menu }) {
       )}
     </div>
   );
-}
+});
+
+MenuItem.displayName = 'MenuItem';
+
+export default MenuItem;
