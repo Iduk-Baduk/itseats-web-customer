@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateQuantity, removeMenu } from '../../../store/cartSlice';
+import { updateQuantity, removeMenu, selectCurrentStore } from '../../../store/cartSlice';
 import { createMenuOptionHash } from '../../../utils/hashUtils';
 import calculateCartTotal from '../../../utils/calculateCartTotal';
 import QuantityControl from './QuantityControl';
@@ -9,6 +9,7 @@ import styles from '../../../pages/orders/Cart.module.css';
 export default function CartMenuListSection() {
   const dispatch = useDispatch();
   const orderMenus = useSelector((state) => state.cart.orderMenus);
+  const currentStore = useSelector(selectCurrentStore);
 
   const handleQuantityChange = (menuId, menuOption, delta) => {
     const menuOptionHash = createMenuOptionHash(menuOption);
@@ -20,12 +21,16 @@ export default function CartMenuListSection() {
     dispatch(removeMenu({ menuId, menuOptionHash }));
   };
 
-  // 첫 번째 메뉴의 storeName 사용 (없으면 '주문 메뉴')
-  const storeName = orderMenus.length > 0 ? orderMenus[0].storeName : null;
-
   return (
     <section className={styles.section}>
-      <h2>{storeName || '주문 메뉴'}</h2>
+      <h2>
+        {currentStore ? currentStore.storeName : '주문 메뉴'}
+        {currentStore && (
+          <span className={styles.storeInfo}>
+            {" "}• {orderMenus.length}개 메뉴
+          </span>
+        )}
+      </h2>
       <hr />
       {orderMenus.map((menu) => {
         const uniqueKey = `${menu.menuId}-${createMenuOptionHash(menu.menuOption)}`;
