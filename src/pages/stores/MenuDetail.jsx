@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addMenu, replaceCartWithNewStore, selectCurrentStore } from "../../store/cartSlice";
+import { fetchStoreById } from "../../store/storeSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
@@ -18,15 +19,43 @@ export default function MenuDetail() {
   
   // Redux에서 현재 장바구니의 가게 정보 가져오기
   const currentStore = useSelector(selectCurrentStore);
+  
+  // Redux에서 매장 정보 가져오기
+  const store = useSelector((state) => state.store.currentStore);
+  const storeLoading = useSelector((state) => state.store.loading);
+  
+  // 현재 메뉴 찾기
+  const currentMenu = store?.menus?.find(menu => menu.id == menuId);
+  
+  console.log("MenuDetail Debug:", {
+    storeId,
+    menuId,
+    store,
+    currentMenu
+  });
 
   const [isTransparent, setTransparent] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [selectedOptions, setSelectedOptions] = useState(
-    dummyMenu.optionGroups.map((group) => ({ ...group, options: [] }))
-  );
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
   const [pendingMenuData, setPendingMenuData] = useState(null);
+  
+  // 컴포넌트 마운트 시 매장 정보 로딩
+  useEffect(() => {
+    if (storeId) {
+      dispatch(fetchStoreById(storeId));
+    }
+  }, [dispatch, storeId]);
+  
+  // 메뉴 데이터가 로딩되면 옵션 초기화
+  useEffect(() => {
+    if (currentMenu?.options) {
+      setSelectedOptions(
+        currentMenu.options.map((group) => ({ ...group, options: [] }))
+      );
+    }
+  }, [currentMenu]);
 
   useEffect(() => {
     console.log("selectedOptions:", selectedOptions);
@@ -37,7 +66,9 @@ export default function MenuDetail() {
   }, [selectedOptions]);
 
   useEffect(() => {
-    const basePrice = parseInt(dummyMenu.menuPrice);
+    if (!currentMenu) return;
+    
+    const basePrice = parseInt(currentMenu.price || currentMenu.menuPrice || 0);
     const optionsPrice = selectedOptions.reduce(
       (total, group) =>
         total +
@@ -45,7 +76,7 @@ export default function MenuDetail() {
       0
     );
     setTotalPrice((basePrice + optionsPrice) * quantity);
-  }, [quantity, selectedOptions]);
+  }, [quantity, selectedOptions, currentMenu]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -69,9 +100,11 @@ export default function MenuDetail() {
   }
 
   function createMenuData() {
+    if (!currentMenu || !store) return null;
+    
     // API 스펙에 맞는 menuOptions 구조로 변환
     const menuOptions = selectedOptions.map((group, index) => ({
-      optionGroupName: dummyMenu.optionGroups[index].optionGroupName,
+      optionGroupName: currentMenu.options?.[index]?.name || group.optionGroupName,
       options: group.options.map(option => ({
         optionName: option.optionName,
         optionPrice: option.optionPrice
@@ -79,21 +112,25 @@ export default function MenuDetail() {
     })).filter(group => group.options.length > 0); // 선택된 옵션이 있는 그룹만
 
     return {
-      menuId: dummyMenu.menuId,
-      menuName: dummyMenu.menuName,
-      menuPrice: dummyMenu.menuPrice,
+      menuId: currentMenu.id || currentMenu.menuId,
+      menuName: currentMenu.name || currentMenu.menuName,
+      menuPrice: currentMenu.price || currentMenu.menuPrice,
       menuOptions: menuOptions, // API 스펙에 맞는 구조
       menuOption: selectedOptions, // 기존 구조 (하위 호환성)
       quantity,
       // 가게 정보 추가
-      storeId: parseInt(storeId) || dummyStore.storeId,
-      storeName: dummyStore.storeName,
-      storeImage: dummyStore.storeImage
+      storeId: parseInt(storeId),
+      storeName: store.name,
+      storeImage: store.imageUrl
     };
   }
 
   function addToCart() {
     const menuData = createMenuData();
+    if (!menuData) {
+      alert("메뉴 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
     
     // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
     if (currentStore && currentStore.storeId !== menuData.storeId) {
@@ -129,7 +166,7 @@ export default function MenuDetail() {
       <div className={styles.container}>
         <HeaderMenuDetail
           isTransparent={isTransparent}
-          title={dummyMenu.menuName}
+          title={currentMenu?.name || currentMenu?.menuName || "메뉴"}
           backButtonAction={() => navigate(-1)}
           shareButtonAction={async () => {
             const result = await shareViaWebAPI();
@@ -141,15 +178,18 @@ export default function MenuDetail() {
         />
 
         <div id="intro" className={styles.intro}>
-          <img src={dummyMenu.image} alt={dummyMenu.menuName} />
+          <img 
+            src={currentMenu?.imageUrl || currentMenu?.image || "/samples/food1.jpg"} 
+            alt={currentMenu?.name || currentMenu?.menuName || "메뉴"} 
+          />
         </div>
 
         <div className={styles.introContent}>
-          <h1>{dummyMenu.menuName}</h1>
+          <h1>{currentMenu?.name || currentMenu?.menuName || "메뉴"}</h1>
         </div>
 
         <div className={styles.description}>
-          <p>{dummyMenu.menuDescription}</p>
+          <p>{currentMenu?.description || currentMenu?.menuDescription || "메뉴 설명이 없습니다."}</p>
         </div>
 
         <div className={styles.row}>
@@ -192,7 +232,7 @@ export default function MenuDetail() {
           </div>
         </div>
 
-        {dummyMenu.optionGroups.map((group, index) => {
+        {currentMenu?.options?.map((group, index) => {
           const inputType =
             group.minSelect === 1 && group.maxSelect === 1
               ? "radio"
@@ -202,45 +242,40 @@ export default function MenuDetail() {
             <div key={index} className={styles.optionGroup}>
               <div className={styles.optionGroupTitleContainer}>
                 <h2 className={styles.optionGroupTitle}>
-                  {group.optionGroupName}
+                  {group.name || group.optionGroupName}
                 </h2>
                 <span className={styles.optionGroupInfo}>
-                  {group.minSelect === 1 && group.maxSelect === 1
-                    ? "필수"
-                    : [
-                        group.minSelect > 0
-                          ? `최소 ${group.minSelect}개`
-                          : null,
-                        group.maxSelect > 0
-                          ? `최대 ${group.maxSelect}개`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
+                  {group.required ? "필수" :
+                    [
+                      group.minSelect > 0
+                        ? `최소 ${group.minSelect}개`
+                        : null,
+                      group.maxSelect > 0
+                        ? `최대 ${group.maxSelect}개`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                 </span>
               </div>
 
               <div className={styles.options}>
-                {group.options.map((option, idx) => {
-                  const isHidden = option.optionStatus === "HIDDEN";
-                  const isOutOfStock = option.optionStatus === "OUT_OF_STOCK";
-                  if (isHidden) return null;
-
+                {group.choices?.map((option, idx) => {
                   return (
                     <div key={idx} className={styles.option}>
                       <OptionInput
                         type={inputType}
-                        checked={selectedOptions[index].options.some(
-                          (opt) => opt.optionName === option.optionName
+                        checked={selectedOptions[index]?.options?.some(
+                          (opt) => opt.optionName === option.name
                         )}
                         onChange={() => {
                           setSelectedOptions((prev) =>
                             prev.map((g, i) => {
                               if (i !== index) return g;
 
-                              const newOptions = [...g.options];
+                              const newOptions = [...(g.options || [])];
                               const alreadySelected = newOptions.some(
-                                (opt) => opt.optionName === option.optionName
+                                (opt) => opt.optionName === option.name
                               );
 
                               if (inputType === "radio") {
@@ -248,8 +283,8 @@ export default function MenuDetail() {
                                   ...g,
                                   options: [
                                     {
-                                      optionName: option.optionName,
-                                      optionPrice: option.optionPrice,
+                                      optionName: option.name,
+                                      optionPrice: option.price,
                                     },
                                   ],
                                 };
@@ -260,7 +295,7 @@ export default function MenuDetail() {
                                   ...g,
                                   options: newOptions.filter(
                                     (opt) =>
-                                      opt.optionName !== option.optionName
+                                      opt.optionName !== option.name
                                   ),
                                 };
                               } else {
@@ -279,8 +314,8 @@ export default function MenuDetail() {
                                   options: [
                                     ...newOptions,
                                     {
-                                      optionName: option.optionName,
-                                      optionPrice: option.optionPrice,
+                                      optionName: option.name,
+                                      optionPrice: option.price,
                                     },
                                   ],
                                 };
@@ -288,10 +323,10 @@ export default function MenuDetail() {
                             })
                           );
                         }}
-                        label={option.optionName}
-                        price={option.optionPrice}
+                        label={option.name}
+                        price={option.price}
                         id={`option-${index}-${idx}`}
-                        disabled={isOutOfStock}
+                        disabled={false}
                       />
                     </div>
                   );
@@ -301,9 +336,9 @@ export default function MenuDetail() {
           );
         })}
 
-        {dummyMenu.menuStatus === "OUT_OF_STOCK" ? (
+        {!currentMenu || storeLoading ? (
           <BottomButton disabled={true}>
-            <p>이 메뉴는 현재 품절입니다.</p>
+            <p>메뉴 정보를 불러오는 중...</p>
           </BottomButton>
         ) : (
           <BottomButton
@@ -311,7 +346,7 @@ export default function MenuDetail() {
             disabled={isRequiredOptionsNotSelected()}
             cartInfo={{
               itemCount: quantity,
-              orderPrice: dummyMenu.menuPrice * quantity,
+              orderPrice: (currentMenu.price || currentMenu.menuPrice) * quantity,
               totalPrice: totalPrice,
             }}
           >
@@ -323,7 +358,7 @@ export default function MenuDetail() {
           <ConfirmModal
             message={
               currentStore ? 
-              `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${dummyStore.storeName}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
+              `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${store?.name}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
               `장바구니를 새로 시작하시겠습니까?`
             }
             confirmText="네, 새로 담기"
@@ -337,41 +372,4 @@ export default function MenuDetail() {
   );
 }
 
-// 💡 테스트용 가게 데이터
-const dummyStore = {
-  storeId: 1,
-  storeName: "카페 구름톤",
-  storeImage: "/samples/food1.jpg"
-};
-
-// 💡 테스트용 메뉴 데이터
-const dummyMenu = {
-  menuId: 11,
-  menuName: "아메리카노",
-  menuDescription: "평범한 아메리카노입니다.",
-  menuPrice: 2000,
-  menuStatus: "ONSALE",
-  menuGroupName: "음료",
-  image: "/samples/food2.jpg",
-  optionGroups: [
-    {
-      optionGroupName: "사이즈",
-      minSelect: 1,
-      maxSelect: 1,
-      options: [
-        { optionName: "숏", optionPrice: 0, optionStatus: "ONSALE" },
-        { optionName: "톨", optionPrice: 500, optionStatus: "ONSALE" },
-        { optionName: "벤티", optionPrice: 1000, optionStatus: "OUT_OF_STOCK" },
-      ],
-    },
-    {
-      optionGroupName: "샷 추가",
-      minSelect: 0,
-      maxSelect: 1,
-      options: [
-        { optionName: "1샷", optionPrice: 500, optionStatus: "ONSALE" },
-        { optionName: "2샷", optionPrice: 1000, optionStatus: "ONSALE" },
-      ],
-    },
-  ],
-};
+// 더미 데이터 제거됨 - 실제 API 데이터를 사용합니다.

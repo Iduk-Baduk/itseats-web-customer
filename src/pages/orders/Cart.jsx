@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeMenu, selectRequestInfo } from "../../store/cartSlice";
+import { updateQuantity, removeMenu, clearCart, selectRequestInfo } from "../../store/cartSlice";
 import { addOrder, createOrderAsync } from "../../store/orderSlice";
 import { 
   setPaymentProcessing, 
@@ -316,6 +316,28 @@ export default function Cart() {
 
   return (
     <div className={styles.container}>
+      {/* 디버깅용 장바구니 비우기 버튼 - 개발 중에만 표시 */}
+      {process.env.NODE_ENV === 'development' && orderMenus.length > 0 && (
+        <div style={{ padding: '10px', backgroundColor: '#f0f0f0', margin: '10px 0', textAlign: 'center' }}>
+          <button 
+            onClick={() => {
+              dispatch(clearCart());
+              showToast('장바구니가 비워졌습니다.');
+            }}
+            style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#ff4444', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            🗑️ 장바구니 비우기 (개발용)
+          </button>
+        </div>
+      )}
+      
       {orderMenus.length === 0 ? (
         <div className={styles.emptyCart}>
           카트가 비어있습니다.
