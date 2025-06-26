@@ -24,22 +24,15 @@ export default function CartCouponSection() {
   
   // 디버깅을 위한 콘솔 로그 (조건부 - 쿠폰 선택 상태 변경 시만)
   React.useEffect(() => {
-    if (selectedCouponIds.length > 0 || appliedCoupons.length > 0) {
-      const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
-      console.log('🎫 CartCouponSection 쿠폰 상태 변경:', {
-        selectedCouponIds,
-        appliedCouponsCount: appliedCoupons.length,
-        appliedCoupons: appliedCoupons.map(c => ({ 
-          id: c.id, 
-          name: c.name, 
-          discount: c.discount,
-          type: c.type,
-          isStackable: c.isStackable
-        })),
-        할인결과: discountResult
-      });
-    }
-  }, [selectedCouponIds.length, appliedCoupons.length, orderPrice]);
+    // console.log('🎫 CartCouponSection 쿠폰 상태 변경:', {
+    //   appliedCoupons: appliedCoupons.length,
+    //   appliedCouponsData: appliedCoupons,
+    //   selectedCouponIds: selectedCouponIds.length,
+    //   selectedCouponIdsData: selectedCouponIds,
+    //   orderMenus: orderMenus.length,
+    //   cartTotal: orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0)
+    // });
+  }, [appliedCoupons, selectedCouponIds, orderMenus]);
 
   // 다중 쿠폰 할인 금액 계산
   const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);

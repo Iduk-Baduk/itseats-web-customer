@@ -39,18 +39,18 @@ const CartMenuListSection = React.memo(() => {
             <div className={styles.menuDetails}>
               <p className={styles.menuName}>{menu.menuName}</p>
               <div>
-                {menu.menuOption.map((optionGroup, groupIndex) => (
+                {(menu.menuOption || []).map((optionGroup, groupIndex) => (
                   <React.Fragment key={`${uniqueKey}-group-${groupIndex}`}>
-                    {optionGroup.options.length > 0 && (
+                    {(optionGroup?.options || []).length > 0 && (
                       <span className={styles.optionGroup}>
                         <span className={styles.optionGroupName}>
-                          {optionGroup.optionGroupName}:
+                          {optionGroup?.optionGroupName || '옵션'}:
                         </span>
-                        {optionGroup.options.map((option, optionIndex) => (
+                        {(optionGroup?.options || []).map((option, optionIndex) => (
                           <span key={`${uniqueKey}-option-${groupIndex}-${optionIndex}`} className={styles.option}>
-                            {option.optionName} (+
-                            {option.optionPrice.toLocaleString()}원)
-                            {optionIndex < optionGroup.options.length - 1 && ', '}
+                            {option?.optionName || '옵션'} (+
+                            {(Number(option?.optionPrice) || 0).toLocaleString()}원)
+                            {optionIndex < (optionGroup?.options || []).length - 1 && ', '}
                           </span>
                         ))}
                       </span>

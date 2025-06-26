@@ -53,6 +53,7 @@ export default function Home() {
   // Redux에서 매장 목록 가져오기
   const stores = useSelector((state) => state.store?.stores || []);
   const storeLoading = useSelector((state) => state.store?.loading || false);
+  const storeError = useSelector((state) => state.store?.error || null);
   
   // 컴포넌트 마운트 시 매장 데이터 로딩
   useEffect(() => {
@@ -61,30 +62,27 @@ export default function Home() {
   
   // 디버깅: 매장 데이터 확인
   useEffect(() => {
-    console.log('🏪 Home.jsx - 매장 데이터:', {
-      stores,
-      storeCount: stores.length,
-      storeLoading,
-      firstStore: stores[0]
-    });
-  }, [stores, storeLoading]);
+    // console.log('🏪 Home.jsx - 매장 데이터:', {
+    //   storesCount: stores.length,
+    //   storeLoading,
+    //   storeError,
+    //   firstStore: stores[0]?.name
+    // });
+  }, [stores, storeLoading, storeError]);
   
   // 디버깅: 전체 Redux 상태 확인
   useEffect(() => {
-    const checkReduxState = () => {
-      if (window.debugRedux) {
-        const fullState = window.debugRedux.getState();
-        console.log('🔍 전체 Redux 상태 확인:', {
-          hasStoreSlice: !!fullState.store,
-          storeState: fullState.store,
-          allKeys: Object.keys(fullState)
-        });
-      }
-    };
-    
-    // 약간의 지연을 주어 Redux 초기화 완료 후 확인
-    setTimeout(checkReduxState, 1000);
-  }, []);
+    // Redux 전체 상태를 1회성으로 확인
+    const timer = setTimeout(() => {
+      // console.log('🔍 전체 Redux 상태 확인:', {
+      //   storeState: { stores: stores.length, loading: storeLoading, error: storeError },
+      //   cartState: { orderMenus: orderMenus.length },
+      //   otherState: state
+      // });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [stores, storeLoading, storeError, orderMenus, state]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {

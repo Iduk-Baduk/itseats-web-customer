@@ -83,73 +83,41 @@ export default function Coupons() {
   };
 
   // 쿠폰 임시 선택/해제 처리
-  const handleCouponSelect = (couponId) => {
-    console.log('🎫 쿠폰 임시 선택/해제:', couponId);
+  const handleToggleCoupon = (couponId) => {
+    // console.log('🎫 쿠폰 임시 선택/해제:', couponId);
     
-    const coupon = coupons.find(c => c.id === couponId);
-    if (!coupon) return;
-
-    const validationResult = validateCoupon(coupon, cartTotal);
-    if (!validationResult.isValid) {
-      alert(validationResult.reason);
-      return;
-    }
-
-    setTempSelectedCouponIds(prevIds => {
-      const newIds = [...prevIds];
+    setTempSelectedCouponIds(prev => {
+      const newSelection = prev.includes(couponId)
+        ? prev.filter(id => id !== couponId)
+        : [...prev, couponId];
       
-      if (newIds.includes(couponId)) {
-        // 쿠폰 해제
-        return newIds.filter(id => id !== couponId);
-      } else {
-        // 쿠폰 선택
-        const selectedCoupons = coupons.filter(c => newIds.includes(c.id));
-        const hasNonStackable = selectedCoupons.some(c => !isCouponStackable(c));
-        
-        // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
-        if (hasNonStackable) {
-          alert('이미 중복 불가능한 쿠폰이 선택되어 있습니다.');
-          return newIds;
-        }
-        
-        // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
-        if (!isCouponStackable(coupon)) {
-          return [couponId];
-        }
-        
-        return [...newIds, couponId];
-      }
+      return newSelection;
     });
   };
 
   // 실제 쿠폰 적용 및 카트로 이동
   const handleApplyCoupons = () => {
-    console.log('🎫 쿠폰 적용 및 카트 이동:', tempSelectedCouponIds);
+    // console.log('🎫 쿠폰 적용 및 카트 이동:', tempSelectedCouponIds);
+
+    const cartTotal = calculateTotal();
     
-    // 임시 선택된 쿠폰들을 실제 Redux 상태에 적용
-    tempSelectedCouponIds.forEach(couponId => {
-      if (!selectedCouponIds.includes(couponId)) {
-        dispatch(applyCoupon({ couponId, cartTotal }));
-      }
-    });
-    
-    // 선택 해제된 쿠폰들 제거
-    selectedCouponIds.forEach(couponId => {
-      if (!tempSelectedCouponIds.includes(couponId)) {
-        dispatch(applyCoupon({ couponId, cartTotal })); // 토글 방식으로 제거
-      }
-    });
+    if (tempSelectedCouponIds.length > 0) {
+      // 선택된 쿠폰들을 모두 적용
+      dispatch(applyCoupons({ 
+        couponIds: tempSelectedCouponIds,
+        cartTotal: cartTotal
+      }));
+    } else {
+      // 선택된 쿠폰이 없으면 모든 쿠폰 해제
+      dispatch(removeAllCoupons());
+    }
     
     navigate('/cart');
   };
 
   // 쿠폰 적용하지 않고 카트로 이동
-  const handleSkipCoupons = () => {
-    console.log('🎫 쿠폰 적용하지 않고 카트 이동');
-    
-    // 모든 쿠폰 해제
-    dispatch(clearAllCoupons());
-    
+  const handleGoToCartOnly = () => {
+    // console.log('🎫 쿠폰 적용하지 않고 카트 이동');
     navigate('/cart');
   };
 
@@ -234,7 +202,7 @@ export default function Coupons() {
                 {fromCart ? (
                   <button
                     className={styles.linkBtn}
-                    onClick={() => handleCouponSelect(coupon.id)}
+                    onClick={() => handleToggleCoupon(coupon.id)}
                     disabled={!isUsable}
                     style={{ 
                       opacity: isUsable ? 1 : 0.5,
@@ -264,7 +232,7 @@ export default function Coupons() {
       {/* 바텀 버튼 - 장바구니에서 온 경우에만 표시 */}
       {fromCart && (
         <BottomButton
-          onClick={tempSelectedCouponIds.length > 0 ? handleApplyCoupons : handleSkipCoupons}
+          onClick={tempSelectedCouponIds.length > 0 ? handleApplyCoupons : handleGoToCartOnly}
         >
           {getBottomButtonText()}
         </BottomButton>

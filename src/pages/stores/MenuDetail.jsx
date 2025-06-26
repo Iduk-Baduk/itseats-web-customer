@@ -27,12 +27,12 @@ export default function MenuDetail() {
   // 현재 메뉴 찾기
   const currentMenu = store?.menus?.find(menu => menu.id == menuId);
   
-  console.log("MenuDetail Debug:", {
-    storeId,
-    menuId,
-    store,
-    currentMenu
-  });
+  // console.log("MenuDetail Debug:", {
+  //   storeId,
+  //   menuId,
+  //   store,
+  //   currentMenu
+  // });
 
   const [isTransparent, setTransparent] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -58,11 +58,11 @@ export default function MenuDetail() {
   }, [currentMenu]);
 
   useEffect(() => {
-    console.log("selectedOptions:", selectedOptions);
-    console.log(
-      "isRequiredOptionsNotSelected():",
-      isRequiredOptionsNotSelected()
-    );
+    // console.log("selectedOptions:", selectedOptions);
+    // console.log(
+    //   "isRequiredOptionsNotSelected():",
+    //   isRequiredOptionsNotSelected()
+    // );
   }, [selectedOptions]);
 
   useEffect(() => {
@@ -132,8 +132,18 @@ export default function MenuDetail() {
       return;
     }
     
-    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
-    if (currentStore && currentStore.storeId !== menuData.storeId) {
+    // 디버깅: 가게 ID 비교
+    // console.log('🛒 addToCart 디버깅:', {
+    //   currentStore,
+    //   menuData: {
+    //     storeId: menuData.storeId,
+    //     storeName: menuData.storeName
+    //   },
+    //   comparison: String(currentStore?.storeId) !== String(menuData.storeId)
+    // });
+    
+    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인 (타입 안전한 비교)
+    if (currentStore && String(currentStore.storeId) !== String(menuData.storeId)) {
       // 다른 가게 메뉴가 있으면 확인 모달 표시
       setPendingMenuData(menuData);
       setShowStoreChangeModal(true);

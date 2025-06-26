@@ -29,12 +29,12 @@ export default function StoreDetail() {
   // 현재 매장 데이터 (Redux에서 우선, 없으면 전체 목록에서 검색)
   const currentStore = store || stores.find(s => s.id === storeId || s.id === parseInt(storeId));
   
-  console.log('🏪 StoreDetail - 매장 데이터:', {
-    storeId,
-    store,
-    currentStore,
-    storesCount: stores.length
-  });
+  // console.log('🏪 StoreDetail - 매장 데이터:', {
+  //   storeId,
+  //   store,
+  //   stores: stores.length,
+  //   loading: storeLoading
+  // });
 
   // 매장 데이터 로딩
   useEffect(() => {

@@ -6,7 +6,7 @@ export const fetchStores = createAsyncThunk(
   'store/fetchStores',
   async () => {
     const data = await apiClient.get('/stores');
-    console.log('🏪 fetchStores API 응답:', data);
+    // console.log('🏪 fetchStores API 응답:', data);
     return data;
   }
 );
@@ -16,7 +16,7 @@ export const fetchStoreById = createAsyncThunk(
   'store/fetchStoreById',
   async (storeId) => {
     const data = await apiClient.get(`/stores/${storeId}`);
-    console.log('🏪 fetchStoreById API 응답:', data);
+    // console.log('🏪 fetchStoreById API 응답:', data);
     return data;
   }
 );

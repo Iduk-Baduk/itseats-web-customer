@@ -2,83 +2,83 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { couponAPI } from '../services';
 
 // 쿠폰 유효성 검사 함수
-const isValidCoupon = (coupon, cartTotal = 0) => {
-  console.log('🔍 === 쿠폰 유효성 검사 시작 ===');
-  console.log('🔍 검사할 쿠폰:', {
-    id: coupon.id,
-    name: coupon.name,
-    discount: coupon.discount,
-    minOrderAmount: coupon.minOrderAmount,
-    isUsed: coupon.isUsed,
-    isExpired: coupon.isExpired,
-    validDate: coupon.validDate
-  });
-  console.log('🔍 장바구니 총액:', cartTotal);
-  
-  // 1. 유효기간 검사
+function isValidCoupon(coupon, cartTotal) {
+  // console.log('🔍 === 쿠폰 유효성 검사 시작 ===');
+  // console.log('🔍 검사할 쿠폰:', {
+  //   id: coupon.id,
+  //   name: coupon.name,
+  //   discount: coupon.discount,
+  //   type: coupon.type,
+  //   minOrderAmount: coupon.minOrderAmount,
+  //   validDate: coupon.validDate,
+  //   isUsed: coupon.isUsed,
+  //   isExpired: coupon.isExpired
+  // });
+  // console.log('🔍 장바구니 총액:', cartTotal);
+
+  // 1. 유효기간 체크
   if (coupon.validDate) {
-    console.log('🔍 유효기간 검사 중...');
-    const validDate = coupon.validDate instanceof Date ? coupon.validDate : new Date(coupon.validDate);
+    // console.log('🔍 유효기간 검사 중...');
     const now = new Date();
-    console.log('🔍 유효기간 비교:', { 
-      현재시간: now.toISOString(), 
-      쿠폰만료일: validDate.toISOString(),
-      만료여부: now > validDate
-    });
+    const validDate = new Date(coupon.validDate);
+    // console.log('🔍 유효기간 비교:', {
+    //   현재시간: now.toISOString(),
+    //   유효기간: validDate.toISOString(),
+    //   만료여부: now > validDate
+    // });
     
     if (now > validDate) {
-      console.log('❌ [실패 원인] 유효기간 만료');
+      // console.log('❌ [실패 원인] 유효기간 만료');
       return false;
     }
-    console.log('✅ 유효기간 검사 통과');
+    // console.log('✅ 유효기간 검사 통과');
   } else {
-    console.log('ℹ️ 유효기간 없음 - 통과');
+    // console.log('ℹ️ 유효기간 없음 - 통과');
   }
-  
-  // 2. 최소 주문 금액 검사
-  if (coupon.minOrderAmount && coupon.minOrderAmount > 0) {
-    console.log('🔍 최소 주문 금액 검사 중...');
-    console.log('🔍 금액 비교:', { 
-      필요금액: coupon.minOrderAmount, 
-      현재금액: cartTotal,
-      충족여부: cartTotal >= coupon.minOrderAmount
-    });
+
+  // 2. 최소 주문 금액 체크
+  if (coupon.minOrderAmount) {
+    // console.log('🔍 최소 주문 금액 검사 중...');
+    // console.log('🔍 금액 비교:', {
+    //   장바구니총액: cartTotal,
+    //   최소주문금액: coupon.minOrderAmount,
+    //   조건만족: cartTotal >= coupon.minOrderAmount
+    // });
     
     if (cartTotal < coupon.minOrderAmount) {
-      console.log('❌ [실패 원인] 최소 주문 금액 미달성:', { 
-        required: coupon.minOrderAmount, 
-        current: cartTotal,
-        부족금액: coupon.minOrderAmount - cartTotal
-      });
+      // console.log('❌ [실패 원인] 최소 주문 금액 미달성:', {
+      //   필요금액: coupon.minOrderAmount,
+      //   현재금액: cartTotal,
+      //   부족금액: coupon.minOrderAmount - cartTotal
+      // });
       return false;
     }
-    console.log('✅ 최소 주문 금액 검사 통과');
+    // console.log('✅ 최소 주문 금액 검사 통과');
   } else {
-    console.log('ℹ️ 최소 주문 금액 없음 - 통과');
+    // console.log('ℹ️ 최소 주문 금액 없음 - 통과');
   }
-  
-  // 3. 사용 가능 여부 검사
-  console.log('🔍 사용 가능 여부 검사 중...');
-  console.log('🔍 사용 상태:', { 
-    isUsed: coupon.isUsed, 
-    isExpired: coupon.isExpired,
-    사용가능: !coupon.isUsed && !coupon.isExpired
-  });
+
+  // 3. 사용 가능 여부 체크
+  // console.log('🔍 사용 가능 여부 검사 중...');
+  // console.log('🔍 사용 상태:', {
+  //   isUsed: coupon.isUsed,
+  //   isExpired: coupon.isExpired
+  // });
   
   if (coupon.isUsed) {
-    console.log('❌ [실패 원인] 이미 사용된 쿠폰');
+    // console.log('❌ [실패 원인] 이미 사용된 쿠폰');
     return false;
   }
   
   if (coupon.isExpired) {
-    console.log('❌ [실패 원인] 만료된 쿠폰 (isExpired = true)');
+    // console.log('❌ [실패 원인] 만료된 쿠폰 (isExpired = true)');
     return false;
   }
-  
-  console.log('✅ 사용 가능 여부 검사 통과');
-  console.log('🔍 === 쿠폰 유효성 검사 완료: 모든 조건 통과 ===');
+
+  // console.log('✅ 사용 가능 여부 검사 통과');
+  // console.log('🔍 === 쿠폰 유효성 검사 완료: 모든 조건 통과 ===');
   return true;
-};
+}
 
 // 쿠폰 목록 API 연동 Thunk - Axios 기반으로 변경
 export const fetchCoupons = createAsyncThunk(
@@ -117,113 +117,102 @@ const couponSlice = createSlice({
   initialState,
   reducers: {
     applyCoupon(state, action) {
-      console.log('🎫 === applyCoupon 액션 시작 ===');
-      console.log('🎫 받은 payload:', action.payload);
+      // console.log('🎫 === applyCoupon 액션 시작 ===');
+      // console.log('🎫 받은 payload:', action.payload);
       
       const { couponId, cartTotal } = action.payload;
       
-      console.log('🎫 applyCoupon 액션 실행:', {
-        couponId,
-        couponIdType: typeof couponId,
-        cartTotal,
-        cartTotalType: typeof cartTotal,
-        availableCoupons: state.coupons.length,
-        currentSelectedId: state.selectedCouponId,
-        currentSelectedIds: state.selectedCouponIds,
-        allCouponIds: state.coupons.map(c => ({ id: c.id, idType: typeof c.id }))
-      });
+      // console.log('🎫 applyCoupon 액션 실행:', {
+      //   couponId,
+      //   cartTotal,
+      //   type: typeof couponId,
+      //   현재선택된쿠폰들: state.selectedCouponIds,
+      //   전체쿠폰개수: state.coupons.length
+      // });
       
-      // cartTotal이 제공되지 않았을 때 경고
+      // cartTotal 검증
       if (cartTotal === undefined || cartTotal === null) {
-        console.error('❌ applyCoupon: cartTotal이 제공되지 않았습니다', { cartTotal });
+        // console.error('❌ applyCoupon: cartTotal이 제공되지 않았습니다', { cartTotal });
         return;
       }
       
-      // ID 타입 안전한 검색 (문자열과 숫자 모두 고려)
-      const coupon = state.coupons.find(c => c.id === couponId || c.id === String(couponId) || String(c.id) === String(couponId));
-      console.log('🎫 쿠폰 검색 결과:', {
-        찾은쿠폰: coupon,
-        전체쿠폰수: state.coupons.length,
-        검색한ID: couponId,
-        검색한ID타입: typeof couponId,
-        모든쿠폰: state.coupons.map(c => ({ id: c.id, idType: typeof c.id, name: c.name })),
-        검색방법들: {
-          정확일치: state.coupons.find(c => c.id === couponId),
-          문자열변환: state.coupons.find(c => String(c.id) === String(couponId)),
-          숫자변환시도: state.coupons.find(c => c.id === Number(couponId))
-        }
-      });
+      // 쿠폰 찾기 (ID 타입 안전성 고려)
+      const coupon = state.coupons.find(c => String(c.id) === String(couponId));
+      // console.log('🎫 쿠폰 검색 결과:', {
+      //   검색ID: couponId,
+      //   검색ID타입: typeof couponId,
+      //   찾은쿠폰: coupon ? {
+      //     id: coupon.id,
+      //     id타입: typeof coupon.id,
+      //     name: coupon.name,
+      //     discount: coupon.discount,
+      //     isStackable: coupon.isStackable
+      //   } : null,
+      //   전체쿠폰IDs: state.coupons.map(c => ({ id: c.id, type: typeof c.id }))
+      // });
       
       if (coupon) {
-        console.log('🎫 쿠폰 발견! 유효성 검사 진행...');
-        const isValid = isValidCoupon(coupon, cartTotal);
-        console.log('🎫 쿠폰 유효성 검사 결과:', { 
-          isValid, 
-          minOrderAmount: coupon.minOrderAmount,
-          cartTotal,
-          isUsed: coupon.isUsed,
-          isExpired: coupon.isExpired,
-          isStackable: coupon.isStackable
-        });
+        // console.log('🎫 쿠폰 발견! 유효성 검사 진행...');
+        const validationResult = isValidCoupon(coupon, cartTotal);
+        // console.log('🎫 쿠폰 유효성 검사 결과:', {
+        //   쿠폰: coupon.name,
+        //   유효함: validationResult,
+        //   장바구니총액: cartTotal,
+        //   최소주문금액: coupon.minOrderAmount,
+        //   이미사용됨: coupon.isUsed,
+        //   만료됨: coupon.isExpired
+        // });
         
-        if (isValid) {
-          console.log('✅ 쿠폰이 유효함! 중복 적용 가능 여부 확인...');
+        if (validationResult) {
+          // console.log('✅ 쿠폰이 유효함! 중복 적용 가능 여부 확인...');
           
-          const previousState = {
-            selectedCouponId: state.selectedCouponId,
-            selectedCouponIds: [...state.selectedCouponIds]
-          };
+          // 이미 선택된 쿠폰인지 확인 (토글 방식)
+          const alreadySelected = state.selectedCouponIds.some(id => String(id) === String(couponId));
           
-          // 쿠폰이 이미 선택되어 있으면 제거, 없으면 추가
-          if (state.selectedCouponIds.includes(couponId)) {
-            console.log('🔄 쿠폰 제거:', couponId);
-            state.selectedCouponIds = state.selectedCouponIds.filter(id => id !== couponId);
-            // 주 쿠폰이 제거된 경우 다음 쿠폰으로 업데이트
-            if (state.selectedCouponId === couponId) {
-              state.selectedCouponId = state.selectedCouponIds[0] || null;
-            }
+          if (alreadySelected) {
+            // 쿠폰 제거
+            // console.log('🔄 쿠폰 제거:', couponId);
+            state.selectedCouponIds = state.selectedCouponIds.filter(id => String(id) !== String(couponId));
           } else {
-            // 새로운 쿠폰을 추가할 때만 중복 로직 확인
-            if (state.selectedCouponIds.length > 0) {
-              const selectedCoupons = state.coupons.filter(c => state.selectedCouponIds.includes(c.id));
-              const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
-              
-              // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
-              if (hasNonStackable) {
-                console.error('❌ 쿠폰 적용 실패: 이미 중복 불가능한 쿠폰이 선택됨');
-                return;
-              }
-              
-              // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
-              if (!coupon.isStackable) {
-                console.log('🔄 중복 불가능한 쿠폰 선택 - 기존 쿠폰들 제거');
-                state.selectedCouponIds = [];
-              }
+            // 새 쿠폰 추가 로직
+            const selectedCoupons = state.coupons.filter(c => 
+              state.selectedCouponIds.some(id => String(id) === String(c.id))
+            );
+            const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
+            
+            // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
+            if (hasNonStackable && coupon.isStackable) {
+              // console.error('❌ 쿠폰 적용 실패: 이미 중복 불가능한 쿠폰이 선택됨');
+              return;
             }
             
-            console.log('✅ 쿠폰 추가:', couponId);
-            state.selectedCouponId = couponId;
-            state.selectedCouponIds.push(couponId);
-          }
-          
-          console.log('✅ 쿠폰 적용 성공!', {
-            couponId,
-            이전상태: previousState,
-            새로운상태: {
-              selectedCouponId: state.selectedCouponId,
-              selectedCouponIds: [...state.selectedCouponIds]
+            // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
+            if (!coupon.isStackable) {
+              // console.log('🔄 중복 불가능한 쿠폰 선택 - 기존 쿠폰들 제거');
+              state.selectedCouponIds = [];
             }
-          });
+            
+            // console.log('✅ 쿠폰 추가:', couponId);
+            state.selectedCouponIds.push(String(couponId));
+          }
+
+          // console.log('✅ 쿠폰 적용 성공!', {
+          //   현재선택된쿠폰들: state.selectedCouponIds,
+          //   적용된쿠폰이름들: state.coupons
+          //     .filter(c => state.selectedCouponIds.some(id => String(id) === String(c.id)))
+          //     .map(c => c.name)
+          // });
         } else {
-          console.error('❌ 쿠폰 적용 실패: 유효하지 않은 쿠폰');
+          // console.error('❌ 쿠폰 적용 실패: 유효하지 않은 쿠폰');
         }
       } else {
-        console.error('❌ 쿠폰 적용 실패: 쿠폰을 찾을 수 없음', {
-          찾는ID: couponId,
-          가능한ID들: state.coupons.map(c => c.id)
-        });
+        // console.error('❌ 쿠폰 적용 실패: 쿠폰을 찾을 수 없음', {
+        //   요청된쿠폰ID: couponId,
+        //   요청된쿠폰ID타입: typeof couponId
+        // });
       }
-      console.log('🎫 === applyCoupon 액션 종료 ===');
+      
+      // console.log('🎫 === applyCoupon 액션 종료 ===');
     },
     clearCoupon(state) {
       state.selectedCouponId = null;
