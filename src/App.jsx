@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import Root from "./Root";
 import { saveCart, saveCount } from "./store/localStorage"; // 경로는 실제 위치에 맞게 조정
-import { loadAndMigrateCartData } from "./utils/dataMigration";
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
@@ -22,12 +21,18 @@ export default function App() {
       try {
         const initialSpinner = document.querySelector('.initial-loading');
         if (initialSpinner) {
-          console.log('🔄 초기 로딩 스피너 제거 중...');
+          if (import.meta.env.DEV) {
+            console.log('🔄 초기 로딩 스피너 제거 중...');
+          }
           initialSpinner.remove(); // 더 현대적인 방법
-          console.log('✅ 초기 로딩 스피너 제거 완료');
+          if (import.meta.env.DEV) {
+            console.log('✅ 초기 로딩 스피너 제거 완료');
+          }
         }
       } catch (error) {
-        console.warn('초기 스피너 제거 중 오류:', error);
+        if (import.meta.env.DEV) {
+          console.warn('초기 스피너 제거 중 오류:', error);
+        }
       }
     };
 
@@ -74,7 +79,7 @@ export default function App() {
 
   // 성능 모니터링 (개발 환경에서만)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       // 페이지 로드 완료 후 성능 리포트 생성
       const handleLoad = async () => {
         // 조금 지연시켜 모든 리소스 로딩 완료 후 측정

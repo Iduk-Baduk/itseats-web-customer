@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import styles from './OptimizedImage.module.css';
 
 // 컴포넌트 외부에서 한 번만 WebP 지원 여부 검사
@@ -10,7 +11,7 @@ const checkWebPSupport = () => {
     canvas.width = 1;
     canvas.height = 1;
     return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
@@ -134,16 +135,22 @@ const OptimizedImage = ({
           </div>
         </div>
       )}
-
-      {/* 에러 상태 오버레이 */}
-      {hasError && (
-        <div className={styles.errorState}>
-          <span className={styles.errorIcon}>❌</span>
-          <span className={styles.errorText}>이미지 로드 실패</span>
-        </div>
-      )}
     </div>
   );
+};
+
+OptimizedImage.propTypes = {
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string,
+  webpSrc: PropTypes.string,
+  placeholder: PropTypes.string,
+  priority: PropTypes.bool,
+  className: PropTypes.string,
+  sizes: PropTypes.string,
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onLoad: PropTypes.func,
+  onError: PropTypes.func,
 };
 
 export default OptimizedImage; 

@@ -28,9 +28,18 @@ export const measurePageLoad = () => {
   }
   
   const navTiming = perfEntries[0];
+  // 타이밍 값 유효성 검사
+  if (navTiming.loadEventEnd === 0 || navTiming.fetchStart === 0) {
+    return null;
+  }
   const loadTime = navTiming.loadEventEnd - navTiming.fetchStart;
   const domReady = navTiming.domContentLoadedEventEnd - navTiming.fetchStart;
   const firstPaint = navTiming.responseStart - navTiming.fetchStart;
+
+  // 음수 값 방지
+  if (loadTime < 0 || domReady < 0 || firstPaint < 0) {
+    return null;
+  }
 
   return {
     loadTime,
@@ -46,10 +55,19 @@ export const measurePageLoad = () => {
  */
 export const measureComponentRender = (componentName, renderFn) => {
   const startTime = performance.now();
-  const result = renderFn();
+  let result;
+  try {
+    result = renderFn();
+  } catch (error) {
+    const endTime = performance.now();
+    if (import.meta.env.DEV) {
+      console.error(`${componentName} 렌더링 중 에러 발생: ${(endTime - startTime).toFixed(2)}ms`, error);
+    }
+    throw error; // 에러를 다시 던져서 정상적인 에러 처리 유지
+  }
   const endTime = performance.now();
   
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.log(`${componentName} 렌더링 시간: ${(endTime - startTime).toFixed(2)}ms`);
   }
   
@@ -139,11 +157,14 @@ export const measureCoreWebVitals = () => {
     };
 
     let completedCount = 0;
+    let isResolved = false;
     let clsObserver = null;
 
     function checkComplete() {
+      if (isResolved) return;
       completedCount++;
       if (completedCount >= 3) { // LCP, FID, CLS 완료 시
+        isResolved = true;
         resolve(vitals);
       }
     }
@@ -159,7 +180,7 @@ export const measureCoreWebVitals = () => {
     
     try {
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-    } catch (e) {
+    } catch {
       vitals.LCP = 'not-supported';
       checkComplete();
     }
@@ -176,7 +197,7 @@ export const measureCoreWebVitals = () => {
 
     try {
       fidObserver.observe({ entryTypes: ['first-input'] });
-    } catch (e) {
+    } catch {
       vitals.FID = 'not-supported';
       checkComplete();
     }
@@ -195,7 +216,7 @@ export const measureCoreWebVitals = () => {
 
     try {
       clsObserver.observe({ entryTypes: ['layout-shift'] });
-    } catch (e) {
+    } catch {
       vitals.CLS = 'not-supported';
       checkComplete();
       return;
@@ -203,11 +224,13 @@ export const measureCoreWebVitals = () => {
 
     // 5초 후 CLS 측정 완료
     setTimeout(() => {
+      if (isResolved) return;
       if (clsObserver) {
         clsObserver.disconnect();
       }
       vitals.CLS = vitals.CLS || Math.round(clsValue * 1000) / 1000;
-      checkComplete();
+      isResolved = true;
+      resolve(vitals);
     }, 5000);
   });
 };
@@ -234,7 +257,7 @@ export const generatePerformanceReport = async () => {
     }
   };
 
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.group('🚀 성능 리포트');
     console.table(report.pageLoad);
     console.table(report.memory);
@@ -250,7 +273,7 @@ export const generatePerformanceReport = async () => {
  * 성능 데이터를 서버로 전송 (옵션)
  */
 export const sendPerformanceData = async (report) => {
-  if (process.env.NODE_ENV !== 'production') return;
+  if (import.meta.env.DEV) return;
 
   try {
     // 실제 환경에서는 적절한 API 엔드포인트로 변경
