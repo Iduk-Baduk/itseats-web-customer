@@ -53,6 +53,21 @@ export default function Cart() {
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
+  // 디버깅: 장바구니와 쿠폰 상태 확인
+  console.log('🛒 Cart 페이지 디버깅:', {
+    orderMenusCount: orderMenus.length,
+    orderMenusDetails: orderMenus.map(m => ({
+      menuId: m.menuId,
+      menuName: m.menuName,
+      quantity: m.quantity,
+      total: calculateCartTotal(m)
+    })),
+    couponsCount: coupons.length,
+    selectedCouponIds: selectedCouponIds,
+    appliedCouponsCount: appliedCoupons.length,
+    storeInfo: storeInfo ? { id: storeInfo.id, name: storeInfo.name } : '없음'
+  });
+  
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)

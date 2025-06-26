@@ -10,6 +10,9 @@ export default function CartCouponSection() {
   const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
   const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
   
+  // 전체 coupon 상태 디버깅
+  const couponState = useSelector(state => state.coupon);
+  
   // 디버깅을 위한 콘솔 로그
   console.log('🎫 CartCouponSection 디버깅:', {
     coupons: coupons.length,
@@ -21,7 +24,8 @@ export default function CartCouponSection() {
       discount: c.discount,
       isUsed: c.isUsed,
       isExpired: c.isExpired
-    }))
+    })),
+    fullCouponState: couponState
   });
 
   return (

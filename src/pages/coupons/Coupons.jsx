@@ -34,10 +34,17 @@ export default function Coupons() {
         return;
       }
 
-      dispatch(applyCoupon({ couponId, cartTotal }));
+      console.log('🚀 Redux applyCoupon 액션 디스패치 시작');
+      const result = dispatch(applyCoupon({ couponId, cartTotal }));
+      console.log('🎯 Redux applyCoupon 액션 결과:', result);
       
       console.log('✅ 쿠폰 적용 액션 디스패치 완료');
-      navigate('/cart');
+      
+      // Redux 상태가 업데이트될 시간을 줌
+      setTimeout(() => {
+        console.log('📱 장바구니로 이동');
+        navigate('/cart');
+      }, 100);
     } catch (error) {
       console.error('쿠폰 적용 중 오류가 발생했습니다:', error);
       alert('쿠폰 적용에 실패했습니다. 다시 시도해주세요.');

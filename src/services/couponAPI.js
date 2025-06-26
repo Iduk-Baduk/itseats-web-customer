@@ -7,11 +7,8 @@ export const couponAPI = {
   getCoupons: async () => {
     const data = await apiClient.get(API_ENDPOINTS.COUPONS);
     
-    // 유효기간을 Date 객체로 변환
-    return data.map(coupon => ({
-      ...coupon,
-      validDate: coupon.validDate ? new Date(coupon.validDate) : null,
-    }));
+    // 데이터를 그대로 반환 (직렬화 문제 방지)
+    return data;
   },
 
   // 쿠폰 사용

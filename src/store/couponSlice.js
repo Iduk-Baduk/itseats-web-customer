@@ -185,7 +185,7 @@ export const selectNormalizedCoupons = (state) =>
     type: coupon.type || coupon.deliveryType || 'general',
     name: coupon.name || coupon.storeName || '이름 없는 쿠폰',
     description: coupon.description || (coupon.validDate ? 
-      `${coupon.validDate.toLocaleDateString()}까지` : '설명 없음'),
+      `${new Date(coupon.validDate).toLocaleDateString()}까지` : '설명 없음'),
     validDate: coupon.validDate || null,
     minOrderAmount: coupon.minOrderAmount || 0,
     isUsed: coupon.isUsed || false,
