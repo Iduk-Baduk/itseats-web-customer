@@ -1,5 +1,49 @@
 {
   "cards": [],
   "accounts": [],
-  "coupayMoney": 10000
+  "coupayMoney": 10000,
+  "orders": [],
+  "coupons": [
+    {
+      "id": 1,
+      "name": "첫 주문 할인",
+      "discount": 3000,
+      "type": "general",
+      "description": "첫 주문 시 3,000원 할인",
+      "minOrderAmount": 15000,
+      "validDate": "2024-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false
+    },
+    {
+      "id": 2,
+      "name": "배달비 무료",
+      "discount": 2500,
+      "type": "delivery",
+      "description": "배달비 무료 쿠폰",
+      "minOrderAmount": 10000,
+      "validDate": "2024-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false
+    }
+  ],
+  "stores": [
+    {
+      "id": 1,
+      "name": "도미노피자 구름점",
+      "location": {
+        "lat": 37.4979,
+        "lng": 127.0276
+      }
+    }
+  ],
+  "addresses": [
+    {
+      "id": 1,
+      "address": "경기 성남시 판교로 242 PDC A동 902호",
+      "roadAddress": "경기 성남시 수정구 판교로 242",
+      "lat": 37.501887,
+      "lng": 127.039252
+    }
+  ]
 }
