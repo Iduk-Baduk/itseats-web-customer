@@ -3,49 +3,80 @@ import { couponAPI } from '../services';
 
 // 쿠폰 유효성 검사 함수
 const isValidCoupon = (coupon, cartTotal = 0) => {
-  console.log('🔍 쿠폰 유효성 검사 시작:', {
-    couponId: coupon.id,
-    couponName: coupon.name,
-    cartTotal,
-    coupon: {
-      validDate: coupon.validDate,
-      minOrderAmount: coupon.minOrderAmount,
-      isUsed: coupon.isUsed,
-      isExpired: coupon.isExpired
-    }
+  console.log('🔍 === 쿠폰 유효성 검사 시작 ===');
+  console.log('🔍 검사할 쿠폰:', {
+    id: coupon.id,
+    name: coupon.name,
+    discount: coupon.discount,
+    minOrderAmount: coupon.minOrderAmount,
+    isUsed: coupon.isUsed,
+    isExpired: coupon.isExpired,
+    validDate: coupon.validDate
   });
+  console.log('🔍 장바구니 총액:', cartTotal);
   
-  // 유효기간 검사
+  // 1. 유효기간 검사
   if (coupon.validDate) {
+    console.log('🔍 유효기간 검사 중...');
     const validDate = coupon.validDate instanceof Date ? coupon.validDate : new Date(coupon.validDate);
     const now = new Date();
+    console.log('🔍 유효기간 비교:', { 
+      현재시간: now.toISOString(), 
+      쿠폰만료일: validDate.toISOString(),
+      만료여부: now > validDate
+    });
+    
     if (now > validDate) {
-      console.log('❌ 유효기간 만료:', { now, validDate });
+      console.log('❌ [실패 원인] 유효기간 만료');
       return false;
     }
+    console.log('✅ 유효기간 검사 통과');
+  } else {
+    console.log('ℹ️ 유효기간 없음 - 통과');
   }
   
-  // 최소 주문 금액 검사 (있는 경우)
+  // 2. 최소 주문 금액 검사
   if (coupon.minOrderAmount && coupon.minOrderAmount > 0) {
+    console.log('🔍 최소 주문 금액 검사 중...');
+    console.log('🔍 금액 비교:', { 
+      필요금액: coupon.minOrderAmount, 
+      현재금액: cartTotal,
+      충족여부: cartTotal >= coupon.minOrderAmount
+    });
+    
     if (cartTotal < coupon.minOrderAmount) {
-      console.log('❌ 최소 주문 금액 미달성:', { 
+      console.log('❌ [실패 원인] 최소 주문 금액 미달성:', { 
         required: coupon.minOrderAmount, 
-        current: cartTotal 
+        current: cartTotal,
+        부족금액: coupon.minOrderAmount - cartTotal
       });
       return false;
     }
+    console.log('✅ 최소 주문 금액 검사 통과');
+  } else {
+    console.log('ℹ️ 최소 주문 금액 없음 - 통과');
   }
   
-  // 사용 가능 여부 검사
-  if (coupon.isUsed || coupon.isExpired) {
-    console.log('❌ 이미 사용된 쿠폰 또는 만료된 쿠폰:', { 
-      isUsed: coupon.isUsed, 
-      isExpired: coupon.isExpired 
-    });
+  // 3. 사용 가능 여부 검사
+  console.log('🔍 사용 가능 여부 검사 중...');
+  console.log('🔍 사용 상태:', { 
+    isUsed: coupon.isUsed, 
+    isExpired: coupon.isExpired,
+    사용가능: !coupon.isUsed && !coupon.isExpired
+  });
+  
+  if (coupon.isUsed) {
+    console.log('❌ [실패 원인] 이미 사용된 쿠폰');
     return false;
   }
   
-  console.log('✅ 쿠폰 유효성 검사 통과');
+  if (coupon.isExpired) {
+    console.log('❌ [실패 원인] 만료된 쿠폰 (isExpired = true)');
+    return false;
+  }
+  
+  console.log('✅ 사용 가능 여부 검사 통과');
+  console.log('🔍 === 쿠폰 유효성 검사 완료: 모든 조건 통과 ===');
   return true;
 };
 

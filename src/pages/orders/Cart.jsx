@@ -53,34 +53,41 @@ export default function Cart() {
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
-  // 디버깅: 장바구니와 쿠폰 상태 확인
-  console.log('🛒 Cart 페이지 디버깅:', {
-    orderMenusCount: orderMenus.length,
-    orderMenusDetails: orderMenus.map(m => ({
-      menuId: m.menuId,
-      menuName: m.menuName,
-      quantity: m.quantity,
-      menuPrice: m.menuPrice,
-      total: calculateCartTotal(m)
-    })),
-    couponsCount: coupons.length,
-    couponsDetails: coupons.map(c => ({
-      id: c.id,
-      name: c.name,
-      discount: c.discount,
-      minOrderAmount: c.minOrderAmount,
-      isUsed: c.isUsed,
-      isExpired: c.isExpired
-    })),
-    selectedCouponIds: selectedCouponIds,
-    appliedCouponsCount: appliedCoupons.length,
-    appliedCouponsDetails: appliedCoupons.map(c => ({
-      id: c.id,
-      name: c.name,
-      discount: c.discount
-    })),
-    storeInfo: storeInfo ? { id: storeInfo.id, name: storeInfo.name } : '없음'
-  });
+  // 디버깅: 장바구니와 쿠폰 상태 확인 (1초에 한 번만)
+  const [lastLogTime, setLastLogTime] = useState(0);
+  useEffect(() => {
+    const now = Date.now();
+    if (now - lastLogTime > 1000) { // 1초 간격으로 제한
+      console.log('🛒 Cart 페이지 디버깅:', {
+        orderMenusCount: orderMenus.length,
+        orderMenusDetails: orderMenus.map(m => ({
+          menuId: m.menuId,
+          menuName: m.menuName,
+          quantity: m.quantity,
+          menuPrice: m.menuPrice,
+          total: calculateCartTotal(m)
+        })),
+        couponsCount: coupons.length,
+        couponsDetails: coupons.map(c => ({
+          id: c.id,
+          name: c.name,
+          discount: c.discount,
+          minOrderAmount: c.minOrderAmount,
+          isUsed: c.isUsed,
+          isExpired: c.isExpired
+        })),
+        selectedCouponIds: selectedCouponIds,
+        appliedCouponsCount: appliedCoupons.length,
+        appliedCouponsDetails: appliedCoupons.map(c => ({
+          id: c.id,
+          name: c.name,
+          discount: c.discount
+        })),
+        storeInfo: storeInfo ? { id: storeInfo.id, name: storeInfo.name } : '없음'
+      });
+      setLastLogTime(now);
+    }
+  }, [orderMenus, coupons, selectedCouponIds, appliedCoupons, storeInfo, lastLogTime]);
   
   // 브라우저 콘솔에서 쉽게 확인할 수 있도록 전역 함수로 노출
   if (process.env.NODE_ENV === 'development') {

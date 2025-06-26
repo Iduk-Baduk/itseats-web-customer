@@ -15,21 +15,16 @@ export default function CartCouponSection() {
   // 전체 coupon 상태 디버깅
   const couponState = useSelector(state => state.coupon);
   
-  // 디버깅을 위한 콘솔 로그
-  console.log('🎫 CartCouponSection 디버깅:', {
-    coupons: coupons.length,
-    selectedCouponIds,
-    appliedCouponsCount: appliedCoupons.length,
-    appliedCoupons: appliedCoupons.map(c => ({ id: c.id, name: c.name, discount: c.discount })),
-    couponDetails: coupons.map(c => ({
-      id: c.id,
-      name: c.name,
-      discount: c.discount,
-      isUsed: c.isUsed,
-      isExpired: c.isExpired
-    })),
-    fullCouponState: couponState
-  });
+  // 디버깅을 위한 콘솔 로그 (조건부 - 쿠폰 선택 상태 변경 시만)
+  React.useEffect(() => {
+    if (selectedCouponIds.length > 0 || appliedCoupons.length > 0) {
+      console.log('🎫 CartCouponSection 쿠폰 상태 변경:', {
+        selectedCouponIds,
+        appliedCouponsCount: appliedCoupons.length,
+        appliedCoupons: appliedCoupons.map(c => ({ id: c.id, name: c.name, discount: c.discount }))
+      });
+    }
+  }, [selectedCouponIds.length, appliedCoupons.length]);
 
   return (
     <section className={styles.section}>
