@@ -16,6 +16,27 @@ export default function App() {
     (state) => state.showDataMigrationNotice
   );
 
+  // React 마운트 후 초기 로딩 스피너 제거
+  useEffect(() => {
+    const removeInitialSpinner = () => {
+      const initialSpinner = document.querySelector('.initial-loading');
+      if (initialSpinner && initialSpinner.parentNode) {
+        initialSpinner.parentNode.removeChild(initialSpinner);
+      }
+    };
+
+    // DOM이 준비되면 즉시 제거
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', removeInitialSpinner);
+    } else {
+      removeInitialSpinner();
+    }
+
+    return () => {
+      document.removeEventListener('DOMContentLoaded', removeInitialSpinner);
+    };
+  }, []);
+
   // 앱 시작 시 데이터 마이그레이션 확인
   useEffect(() => {
     console.log('🚀 App 시작 - 데이터 마이그레이션 확인 완료');

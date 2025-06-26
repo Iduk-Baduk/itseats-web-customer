@@ -1,6 +1,5 @@
 // src/Root.jsx
 import React, { Suspense } from "react";
-import { useDispatch } from "react-redux";
 import { AnimatePresence } from "framer-motion";
 import { Routes, Route, useLocation } from "react-router-dom";
 
@@ -67,7 +66,6 @@ const LazyPageWrapper = ({ children }) => {
 
 export default function Root() {
   const location = useLocation();
-  const dispatch = useDispatch();
 
   return (
     <ErrorBoundary>

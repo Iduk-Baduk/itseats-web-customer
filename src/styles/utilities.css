@@ -130,12 +130,14 @@
 .text-black-500 { color: var(--black-500); }
 .text-black-300 { color: var(--black-300); }
 .text-theme { color: var(--theme-color); }
-.text-white { color: var(--white); }
+.text-white { color: #ffffff; }
 .text-error { color: var(--error-color); }
 .text-success { color: var(--success-color); }
 .text-warning { color: var(--warning-color); }
 
-.bg-white { background-color: var(--white); }
+.bg-surface-primary { background-color: var(--surface-primary); }
+.bg-surface-secondary { background-color: var(--surface-secondary); }
+.bg-surface-elevated { background-color: var(--surface-elevated); }
 .bg-theme { background-color: var(--theme-color); }
 .bg-background { background-color: var(--background-color); }
 .bg-background-secondary { background-color: var(--background-color-secondary); }
@@ -230,7 +232,7 @@
 }
 
 .card {
-  background: var(--white);
+  background: var(--surface-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-lg);
@@ -247,7 +249,7 @@
 
 .btn-primary {
   background-color: var(--theme-color);
-  color: var(--white);
+  color: #ffffff;
   border: none;
   padding: var(--spacing-lg) var(--spacing-xxl);
   border-radius: var(--radius-md);
@@ -268,7 +270,7 @@
 }
 
 .btn-secondary {
-  background-color: var(--white);
+  background-color: var(--surface-primary);
   color: var(--theme-color);
   border: 1px solid var(--theme-color);
   padding: var(--spacing-lg) var(--spacing-xxl);

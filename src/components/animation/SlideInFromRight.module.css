@@ -1,0 +1,31 @@
+/* SlideInFromRight 애니메이션 */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slideContainer {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+/* 프리퍼 리듀스드 모션 지원 */
+@media (prefers-reduced-motion: reduce) {
+  .slideContainer {
+    animation: none;
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
+  @keyframes slideInFromRight {
+    from, to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+} 

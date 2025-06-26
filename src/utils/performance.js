@@ -6,16 +6,38 @@
 export const measurePageLoad = () => {
   if (!window.performance) return null;
 
-  const perfData = window.performance.timing;
-  const loadTime = perfData.loadEventEnd - perfData.navigationStart;
-  const domReady = perfData.domContentLoadedEventEnd - perfData.navigationStart;
-  const firstPaint = perfData.responseStart - perfData.navigationStart;
+  // Navigation Timing API v2 사용
+  const perfEntries = performance.getEntriesByType('navigation');
+  if (perfEntries.length === 0) {
+    // 폴백: 기존 API 사용 (지원되는 경우)
+    if (window.performance.timing) {
+      const perfData = window.performance.timing;
+      const loadTime = perfData.loadEventEnd - perfData.navigationStart;
+      const domReady = perfData.domContentLoadedEventEnd - perfData.navigationStart;
+      const firstPaint = perfData.responseStart - perfData.navigationStart;
+      
+      return {
+        loadTime,
+        domReady,
+        firstPaint,
+        timestamp: Date.now(),
+        apiVersion: 'v1-fallback'
+      };
+    }
+    return null;
+  }
+  
+  const navTiming = perfEntries[0];
+  const loadTime = navTiming.loadEventEnd - navTiming.fetchStart;
+  const domReady = navTiming.domContentLoadedEventEnd - navTiming.fetchStart;
+  const firstPaint = navTiming.responseStart - navTiming.fetchStart;
 
   return {
     loadTime,
     domReady,
     firstPaint,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    apiVersion: 'v2'
   };
 };
 
@@ -116,6 +138,16 @@ export const measureCoreWebVitals = () => {
       CLS: null  // Cumulative Layout Shift
     };
 
+    let completedCount = 0;
+    let clsObserver = null;
+
+    function checkComplete() {
+      completedCount++;
+      if (completedCount >= 3) { // LCP, FID, CLS 완료 시
+        resolve(vitals);
+      }
+    }
+
     // LCP 측정
     const lcpObserver = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
@@ -151,7 +183,7 @@ export const measureCoreWebVitals = () => {
 
     // CLS 측정
     let clsValue = 0;
-    const clsObserver = new PerformanceObserver((entryList) => {
+    clsObserver = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
       entries.forEach((entry) => {
         if (!entry.hadRecentInput) {
@@ -165,22 +197,18 @@ export const measureCoreWebVitals = () => {
       clsObserver.observe({ entryTypes: ['layout-shift'] });
     } catch (e) {
       vitals.CLS = 'not-supported';
+      checkComplete();
+      return;
     }
 
-    // 5초 후 측정 완료
+    // 5초 후 CLS 측정 완료
     setTimeout(() => {
-      clsObserver.disconnect();
+      if (clsObserver) {
+        clsObserver.disconnect();
+      }
       vitals.CLS = vitals.CLS || Math.round(clsValue * 1000) / 1000;
       checkComplete();
     }, 5000);
-
-    let completedCount = 0;
-    function checkComplete() {
-      completedCount++;
-      if (completedCount >= 2) { // LCP, FID 완료 시
-        resolve(vitals);
-      }
-    }
   });
 };
 

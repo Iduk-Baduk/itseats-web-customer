@@ -1,85 +1,36 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { Suspense, lazy } from 'react';
+import styles from './SlideInFromRight.module.css';
 
-// 지연 로딩을 위한 Framer Motion import
-const loadFramerMotion = () => import("framer-motion");
-
-export default function SlideInFromRight({ children }) {
-  const [isAnimating, setIsAnimating] = useState(true);
-  const [MotionDiv, setMotionDiv] = useState(null);
-  const [isLoadingMotion, setIsLoadingMotion] = useState(true);
-
-  // Framer Motion 지연 로딩
-  useEffect(() => {
-    let mounted = true;
-
-    const loadMotion = async () => {
-      try {
-        const { motion } = await loadFramerMotion();
-        if (mounted) {
-          setMotionDiv(() => motion.div);
-          setIsLoadingMotion(false);
-        }
-      } catch (error) {
-        console.warn('Framer Motion 로딩 실패, 기본 애니메이션 사용:', error);
-        if (mounted) {
-          setIsLoadingMotion(false);
-        }
-      }
-    };
-
-    loadMotion();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // 애니메이션 타이머
-  useEffect(() => {
-    const timer = setTimeout(() => setIsAnimating(false), 250);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 애니메이션 설정
-  const animationProps = useMemo(() => ({
-    initial: { x: "100%" },
-    animate: { x: 0 },
-    transition: { duration: 0.25, ease: "easeInOut" },
-    style: {
-      backgroundColor: "#ffffff",
-      overflow: isAnimating ? "hidden" : "unset",
-    }
-  }), [isAnimating]);
-
-  // Framer Motion 로딩 중이거나 실패한 경우 기본 CSS 애니메이션 사용
-  if (isLoadingMotion || !MotionDiv) {
-    return (
-      <div 
-        style={{
-          backgroundColor: "#ffffff",
-          overflow: isAnimating ? "hidden" : "unset",
-          animation: "slideInFromRight 0.25s ease-in-out",
-        }}
+// Framer Motion을 지연 로딩
+const MotionDiv = lazy(() => 
+  import('framer-motion').then(module => ({
+    default: ({ children, ...props }) => (
+      <module.motion.div
+        initial={{ x: '100%', opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: '100%', opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        {...props}
       >
         {children}
-        <style jsx>{`
-          @keyframes slideInFromRight {
-            from {
-              transform: translateX(100%);
-            }
-            to {
-              transform: translateX(0);
-            }
-          }
-        `}</style>
-      </div>
-    );
-  }
+      </module.motion.div>
+    )
+  }))
+);
 
-  // Framer Motion이 로드된 경우
+// CSS 폴백 컴포넌트
+const CSSFallback = ({ children }) => (
+  <div className={styles.slideContainer}>
+    {children}
+  </div>
+);
+
+export default function SlideInFromRight({ children }) {
   return (
-    <MotionDiv {...animationProps}>
-      {children}
-    </MotionDiv>
+    <Suspense fallback={<CSSFallback>{children}</CSSFallback>}>
+      <MotionDiv>
+        {children}
+      </MotionDiv>
+    </Suspense>
   );
 }

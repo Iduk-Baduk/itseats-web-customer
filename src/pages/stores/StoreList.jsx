@@ -102,7 +102,6 @@ export default function StoreList() {
           return a.minutesToDelivery - b.minutesToDelivery;
         case 'reviewCount':
           return b.reviewCount - a.reviewCount;
-        case 'order':
         default:
           return 0; // 기본 순서 유지
       }
