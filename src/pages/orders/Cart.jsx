@@ -1,5 +1,5 @@
 // src/pages/Cart/Cart.jsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu, selectRequestInfo } from "../../store/cartSlice";
@@ -10,6 +10,9 @@ import {
   setPaymentError, 
   clearPaymentResult 
 } from "../../store/paymentSlice";
+import { fetchCoupons } from "../../store/couponSlice";
+import { fetchPaymentMethods } from "../../store/paymentSlice";
+import { fetchStores, fetchStoreById } from "../../store/storeSlice";
 import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
@@ -29,19 +32,19 @@ import CartPaymentSummarySection from '../../components/orders/cart/CartPaymentS
 import CartPaymentMethodSection from '../../components/orders/cart/CartPaymentMethodSection';
 import CartRequestSection from '../../components/orders/cart/CartRequestSection';
 
-// 더미 데이터 상수 (나중에 실제 데이터로 교체 예정)
-const DUMMY_DATA = {
-  storeName: "도미노피자 구름톤점", // TODO: 실제 매장 정보로 교체
-  deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호", // TODO: 선택된 주소로 교체
-  destinationLocation: { lat: 37.501887, lng: 127.039252 }, // TODO: 실제 좌표로 교체
-  storeLocation: { lat: 37.4979, lng: 127.0276 }, // TODO: 실제 매장 좌표로 교체
-  storeImage: "/samples/food1.jpg" // TODO: 실제 매장 이미지로 교체
-};
-
 export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { storeId } = useParams(); // URL에서 storeId 추출
+  
+  // 매장 정보를 Redux에서 가져오기
+  const currentStore = useSelector(state => state.cart.currentStore);
+  const allStores = useSelector(state => state.store?.stores || []);
+  
+  // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
+  const storeInfo = currentStore || allStores.find(store => 
+    store.id === storeId || store.id === parseInt(storeId)
+  );
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   const requestInfo = useSelector(selectRequestInfo);
   
@@ -80,6 +83,32 @@ export default function Cart() {
     setToast({ show: false, message: "" });
   };
 
+  // 컴포넌트 마운트 시 필요한 데이터 로딩
+  useEffect(() => {
+    // 쿠폰 데이터 로딩
+    dispatch(fetchCoupons());
+    // 결제 수단 데이터 로딩
+    dispatch(fetchPaymentMethods());
+    // 매장 목록 데이터 로딩
+    dispatch(fetchStores());
+    
+    // storeId가 있으면 해당 매장 정보도 로딩
+    if (storeId) {
+      dispatch(fetchStoreById(storeId));
+    }
+  }, [dispatch, storeId]);
+
+  // 매장 정보 검증
+  useEffect(() => {
+    if (!storeInfo && orderMenus.length > 0) {
+      console.warn('매장 정보가 없지만 장바구니에 상품이 있습니다.', {
+        storeId,
+        currentStore,
+        orderMenusCount: orderMenus.length
+      });
+    }
+  }, [storeInfo, orderMenus, storeId, currentStore]);
+
   const handleQuantityChange = (menuId, menuOption, delta) => {
     const menuOptionHash = createMenuOptionHash(menuOption);
     dispatch(updateQuantity({ menuId, menuOptionHash, delta }));
@@ -91,11 +120,17 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 현재 페이지의 storeId 추출
-    const currentStoreId = storeId && !isNaN(parseInt(storeId)) ? parseInt(storeId) : null;
+    // 현재 페이지의 storeId 추출 및 검증
+    const currentStoreId = storeId || storeInfo?.id;
     
-    if (!currentStoreId) {
-      showToast("유효한 매장 정보가 없습니다.");
+    if (!currentStoreId || !storeInfo) {
+      showToast("유효한 매장 정보가 없습니다. 매장을 선택해주세요.");
+      return;
+    }
+    
+    // 장바구니가 비어있는지 확인
+    if (!orderMenus || orderMenus.length === 0) {
+      showToast("장바구니에 상품이 없습니다.");
       return;
     }
     
@@ -154,23 +189,29 @@ export default function Cart() {
       dispatch(clearPaymentResult());
 
       // ✅ API를 통한 주문 생성 (서버 연동 준비)
-      // 개발 중에는 로컬 저장소 사용, 배포 시 실제 API 사용
+      // 환경 변수에 따라 목 모드 결정
       const useLocalStorage = import.meta.env.VITE_MOCK_MODE === 'true';
       
       let orderResponse;
       
       if (useLocalStorage) {
-        // 로컬 개발 환경: Redux로 주문 추가 (기존 데이터 구조 유지)
+        // 로컬 개발 환경: Redux로 주문 추가 (실제 데이터 사용)
         const localOrderData = {
           ...finalOrderData,
-          // 로컬 개발용 추가 필드들
-          storeName: DUMMY_DATA.storeName,
-          deliveryAddress: selectedAddress?.address || DUMMY_DATA.deliveryAddress,
-          destinationLocation: DUMMY_DATA.destinationLocation,
-          storeLocation: DUMMY_DATA.storeLocation,
+          // 실제 데이터 사용
+          storeName: storeInfo?.name || "알 수 없는 매장",
+          deliveryAddress: selectedAddress?.address || "주소 미설정",
+          destinationLocation: { 
+            lat: selectedAddress?.lat || 37.501887, 
+            lng: selectedAddress?.lng || 127.039252 
+          },
+          storeLocation: { 
+            lat: storeInfo?.location?.lat || 37.4979, 
+            lng: storeInfo?.location?.lng || 127.0276 
+          },
           deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-          storeImage: DUMMY_DATA.storeImage,
+          storeImage: storeInfo?.imageUrl || "/samples/food1.jpg",
           // Mock orderId 생성
           orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
