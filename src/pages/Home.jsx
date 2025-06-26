@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
+import { fetchStores } from "../store/storeSlice";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import OptimizedImage from "../components/common/OptimizedImage";
@@ -43,18 +44,30 @@ function HomeHeader() {
   );
 }
 
-const dummyStores = [
-  { storeId: 1, name: "버거킹 구름점", review: 4.9, reviewCount: 1742, minutesToDelivery: 30 },
-  { storeId: 2, name: "맘스터치 구름점", review: 4.8, reviewCount: 52, minutesToDelivery: 25 },
-  { storeId: 3, name: "청년닭발 구름점", review: 3.1, reviewCount: 124, minutesToDelivery: 40 },
-  { storeId: 4, name: "피자헛 구름점", review: 4.2, reviewCount: 172, minutesToDelivery: 35 },
-  { storeId: 5, name: "청룡각 구름점", review: 4.9, reviewCount: 742, minutesToDelivery: 30 },
-];
-
 export default function Home() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [keyword, setKeyword] = useState("");
   const orderMenus = useSelector((state) => state.cart.orderMenus);
+  
+  // Redux에서 매장 목록 가져오기
+  const stores = useSelector((state) => state.store?.stores || []);
+  const storeLoading = useSelector((state) => state.store?.loading || false);
+  
+  // 컴포넌트 마운트 시 매장 데이터 로딩
+  useEffect(() => {
+    dispatch(fetchStores());
+  }, [dispatch]);
+  
+  // 디버깅: 매장 데이터 확인
+  useEffect(() => {
+    console.log('🏪 Home.jsx - 매장 데이터:', {
+      stores,
+      storeCount: stores.length,
+      storeLoading,
+      firstStore: stores[0]
+    });
+  }, [stores, storeLoading]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {
@@ -104,13 +117,25 @@ export default function Home() {
 
       <div className={styles.section}>
         <h2>골라먹는 맛집</h2>
-        {dummyStores.map((store) => (
-          <StoreListItem
-            key={store.storeId}
-            store={store}
-            onClick={() => handleStoreClick(store.storeId)}
-          />
-        ))}
+        {storeLoading ? (
+          <div>매장 정보를 불러오는 중...</div>
+        ) : stores.length > 0 ? (
+          stores.map((store) => (
+            <StoreListItem
+              key={store.id}
+              store={{
+                storeId: store.id,
+                name: store.name,
+                review: store.rating,
+                reviewCount: store.reviewCount,
+                minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
+              }}
+              onClick={() => handleStoreClick(store.id)}
+            />
+          ))
+        ) : (
+          <div>매장 정보가 없습니다.</div>
+        )}
       </div>
 
       {hasItemsInCart && (
