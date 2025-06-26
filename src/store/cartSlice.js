@@ -55,7 +55,7 @@ const cartSlice = createSlice({
       // 첫 번째 메뉴 추가 시 현재 가게 설정
       if (state.orderMenus.length === 0) {
         state.currentStore = {
-          storeId: newItem.storeId,
+          storeId: String(newItem.storeId), // 일관된 문자열 타입 사용
           storeName: newItem.storeName,
           storeImage: newItem.storeImage || null
         };
@@ -64,7 +64,8 @@ const cartSlice = createSlice({
       // 다른 가게 메뉴 추가 시도 시 에러 처리 (타입 안전 비교)
       if (state.currentStore && String(state.currentStore.storeId) !== String(newItem.storeId)) {
         // 이 경우는 UI에서 미리 확인 모달을 띄워야 함
-        console.warn(`다른 가게 메뉴 추가 시도: 현재 가게 ${state.currentStore.storeId} (${typeof state.currentStore.storeId}), 새 가게 ${newItem.storeId} (${typeof newItem.storeId})`);
+        console.warn(`🚫 다른 가게 메뉴 추가 시도 차단: 현재 가게 ${state.currentStore.storeId} (${typeof state.currentStore.storeId}), 새 가게 ${newItem.storeId} (${typeof newItem.storeId})`);
+        console.warn('UI에서 확인 모달을 띄워야 합니다.');
         return;
       }
 
@@ -97,7 +98,7 @@ const cartSlice = createSlice({
       
       // 새 가게 정보 설정
       state.currentStore = {
-        storeId: newItem.storeId,
+        storeId: String(newItem.storeId), // 일관된 문자열 타입 사용
         storeName: newItem.storeName,
         storeImage: newItem.storeImage || null
       };

@@ -94,15 +94,20 @@ export const migrateCartData = (legacyCartData) => {
     .filter(item => item !== null);
 
   // 기존 장바구니에 메뉴가 있으면 첫 번째 메뉴의 가게 정보로 currentStore 설정
-  let currentStore = null;
-  if (migratedMenus.length > 0) {
+  let currentStore = legacyCartData.currentStore || null;
+  if (!currentStore && migratedMenus.length > 0) {
     const firstMenu = migratedMenus[0];
     if (firstMenu.storeId && firstMenu.storeName) {
       currentStore = {
-        storeId: firstMenu.storeId,
+        storeId: String(firstMenu.storeId), // 일관된 문자열 타입 사용
         storeName: firstMenu.storeName,
         storeImage: firstMenu.storeImage || null
       };
+      console.log('🔧 currentStore 복구됨 (메뉴 데이터 기반):', currentStore.storeName);
+    } else if (firstMenu.menuId) {
+      // storeId가 없으면 알려진 메뉴 ID로 추정
+      console.log('⚠️ 메뉴에 storeId 정보가 없음. 메뉴 ID로 추정 시도:', firstMenu.menuId);
+      // 필요시 여기서 메뉴 ID를 기반으로 가게 정보 추정 로직 추가
     }
   }
 
