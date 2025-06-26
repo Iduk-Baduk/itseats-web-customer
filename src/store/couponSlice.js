@@ -52,6 +52,7 @@ const initialState = {
   loading: false,
   error: null,
   selectedCouponId: null,
+  selectedCouponIds: [], // 다중 쿠폰 선택 (API 스펙 대응)
 };
 
 const couponSlice = createSlice({
@@ -70,10 +71,42 @@ const couponSlice = createSlice({
       const coupon = state.coupons.find(c => c.id === couponId);
       if (coupon && isValidCoupon(coupon, cartTotal)) {
         state.selectedCouponId = couponId;
+        // 다중 쿠폰을 위한 배열도 업데이트
+        if (!state.selectedCouponIds.includes(couponId)) {
+          state.selectedCouponIds.push(couponId);
+        }
       }
     },
     clearCoupon(state) {
       state.selectedCouponId = null;
+      state.selectedCouponIds = [];
+    },
+    // 다중 쿠폰 관리를 위한 새로운 액션들
+    applyCoupons(state, action) {
+      const { couponIds, cartTotal } = action.payload;
+      
+      if (cartTotal === undefined) {
+        console.warn('applyCoupons: cartTotal이 제공되지 않았습니다');
+        return;
+      }
+      
+      const validCouponIds = couponIds.filter(couponId => {
+        const coupon = state.coupons.find(c => c.id === couponId);
+        return coupon && isValidCoupon(coupon, cartTotal);
+      });
+      
+      state.selectedCouponIds = validCouponIds;
+      // 첫 번째 쿠폰을 주 쿠폰으로 설정 (기존 로직 유지)
+      state.selectedCouponId = validCouponIds[0] || null;
+    },
+    removeCoupon(state, action) {
+      const couponId = action.payload;
+      state.selectedCouponIds = state.selectedCouponIds.filter(id => id !== couponId);
+      
+      // 주 쿠폰이 제거된 경우 다음 쿠폰으로 업데이트
+      if (state.selectedCouponId === couponId) {
+        state.selectedCouponId = state.selectedCouponIds[0] || null;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -112,5 +145,5 @@ export const selectNormalizedCoupons = (state) =>
 export const selectValidCoupons = (state, cartTotal = 0) =>
   selectNormalizedCoupons(state).filter(coupon => isValidCoupon(coupon, cartTotal));
 
-export const { applyCoupon, clearCoupon } = couponSlice.actions;
+export const { applyCoupon, clearCoupon, applyCoupons, removeCoupon } = couponSlice.actions;
 export default couponSlice.reducer;
