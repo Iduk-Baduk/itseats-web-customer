@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import styles from './EmptyState.module.css';
 
 const EmptyState = ({
-  icon = "📦",
-  title = "데이터가 없습니다",
-  description = "",
+  icon,
+  title,
+  description,
   actionText = "",
   onAction = null,
   variant = "default", // default, search, order, favorite
@@ -39,14 +39,20 @@ const EmptyState = ({
           description: "맛있는 메뉴를 담아보세요"
         };
       default:
-        return { icon, title, description };
+        return { 
+          icon: "📦", 
+          title: "데이터가 없습니다", 
+          description: "" 
+        };
     }
   };
 
   const config = getVariantConfig();
-  const displayIcon = icon !== "📦" ? icon : config.icon;
-  const displayTitle = title !== "데이터가 없습니다" ? title : config.title;
-  const displayDescription = description || config.description;
+  
+  // 명시적으로 전달된 props가 있으면 우선 사용, 없으면 variant 설정 사용
+  const displayIcon = icon !== undefined ? icon : config.icon;
+  const displayTitle = title !== undefined ? title : config.title;
+  const displayDescription = description !== undefined ? description : config.description;
 
   return (
     <div className={`${styles.container} ${styles[variant]} ${className}`}>
