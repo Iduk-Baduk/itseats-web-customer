@@ -4,6 +4,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu, selectRequestInfo } from "../../store/cartSlice";
 import { addOrder, createOrderAsync } from "../../store/orderSlice";
+import { 
+  setPaymentProcessing, 
+  setPaymentSuccess, 
+  setPaymentError, 
+  clearPaymentResult 
+} from "../../store/paymentSlice";
+import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 
@@ -50,6 +57,8 @@ export default function Cart() {
   const selectedPaymentType = useSelector(state => state.payment.selectedPaymentType);
   const selectedCardId = useSelector(state => state.payment.selectedCardId);
   const selectedAccountId = useSelector(state => state.payment.selectedAccountId);
+  const isProcessingPayment = useSelector(state => state.payment.isProcessingPayment);
+  const paymentError = useSelector(state => state.payment.paymentError);
 
   // 배달 옵션 및 배달비 상태 추가
   const [deliveryOption, setDeliveryOption] = useState({
@@ -125,9 +134,15 @@ export default function Cart() {
     }
 
     try {
+      // 🔄 결제 처리 시작
+      dispatch(setPaymentProcessing(true));
+      dispatch(clearPaymentResult());
+
       // ✅ API를 통한 주문 생성 (서버 연동 준비)
       // 개발 중에는 로컬 저장소 사용, 배포 시 실제 API 사용
       const useLocalStorage = import.meta.env.VITE_MOCK_MODE === 'true';
+      
+      let orderResponse;
       
       if (useLocalStorage) {
         // 로컬 개발 환경: Redux로 주문 추가 (기존 데이터 구조 유지)
@@ -141,20 +156,70 @@ export default function Cart() {
           deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
           storeImage: DUMMY_DATA.storeImage,
+          // Mock orderId 생성
+          orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
+        
         dispatch(addOrder(localOrderData));
+        orderResponse = { data: localOrderData };
       } else {
         // 실제 환경: API를 통한 주문 생성
-        const response = await dispatch(createOrderAsync(finalOrderData)).unwrap();
-        console.log("주문 생성 성공:", response);
+        orderResponse = await dispatch(createOrderAsync(finalOrderData)).unwrap();
+        console.log("주문 생성 성공:", orderResponse);
+      }
+
+      // 💳 실제 결제 처리 (Mock 모드에서도 테스트)
+      const paymentData = {
+        orderId: orderResponse.data.orderId,
+        paymentMethod: paymentMethod,
+        amount: cartInfo.totalPrice,
+        cardId: selectedPaymentType === 'card' ? selectedCardId : null,
+        accountId: selectedPaymentType === 'account' ? selectedAccountId : null,
+        customerInfo: {
+          address: selectedAddress
+        }
+      };
+
+      console.log('💳 결제 처리 시작:', paymentData);
+      
+      // 결제 API 호출 (Mock 모드에서는 시뮬레이션)
+      if (useLocalStorage) {
+        // Mock 결제 처리 (2초 지연)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 90% 확률로 성공
+        if (Math.random() > 0.1) {
+          const mockPaymentResult = {
+            paymentId: `payment_${Date.now()}`,
+            status: 'SUCCESS',
+            amount: paymentData.amount,
+            method: paymentData.paymentMethod,
+            timestamp: new Date().toISOString()
+          };
+          
+          dispatch(setPaymentSuccess(mockPaymentResult));
+          console.log('✅ Mock 결제 성공:', mockPaymentResult);
+        } else {
+          throw new Error('결제가 거절되었습니다. (Mock 테스트)');
+        }
+      } else {
+        // 실제 결제 API 호출
+        const paymentResult = await paymentAPI.processPayment(paymentData);
+        dispatch(setPaymentSuccess(paymentResult));
+        console.log('✅ 실제 결제 성공:', paymentResult);
       }
       
-      // 주문 상태 페이지로 이동
+      // 🎉 결제 성공 시 주문 상태 페이지로 이동
       navigate("/orders/status");
+      
     } catch (error) {
-      console.error("주문 생성 실패:", error);
-      // TODO: 에러 토스트 표시
-      alert("주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      console.error("❌ 주문/결제 실패:", error);
+      
+      // 결제 실패 상태 업데이트
+      dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
+      
+      // 사용자에게 에러 알림
+      alert(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.'}`);
     }
   };
 
@@ -203,8 +268,10 @@ export default function Cart() {
           </span>
           <BottomButton
             onClick={handlePayment}
-            disabled={orderMenus.length === 0}
+            disabled={orderMenus.length === 0 || isProcessingPayment}
             cartInfo={cartInfo}
+            loading={isProcessingPayment}
+            loadingText="결제 처리 중..."
           />
           <RiderRequestBottomSheet
             request={riderRequest}
