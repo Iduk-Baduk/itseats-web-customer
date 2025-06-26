@@ -9,6 +9,20 @@ export default function CartCouponSection() {
   const coupons = useSelector(selectNormalizedCoupons);
   const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
   const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
+  
+  // 디버깅을 위한 콘솔 로그
+  console.log('🎫 CartCouponSection 디버깅:', {
+    coupons: coupons.length,
+    selectedCouponId,
+    appliedCoupon: appliedCoupon ? appliedCoupon.name : '없음',
+    couponDetails: coupons.map(c => ({
+      id: c.id,
+      name: c.name,
+      discount: c.discount,
+      isUsed: c.isUsed,
+      isExpired: c.isExpired
+    }))
+  });
 
   return (
     <section className={styles.section}>

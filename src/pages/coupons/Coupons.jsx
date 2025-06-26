@@ -18,12 +18,25 @@ export default function Coupons() {
       // 장바구니 총액 계산
       const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
       
+      console.log('🎫 쿠폰 적용 시도:', {
+        couponId,
+        cartTotal,
+        orderMenusCount: orderMenus.length,
+        orderMenus: orderMenus.map(m => ({
+          menuName: m.menuName,
+          quantity: m.quantity,
+          total: calculateCartTotal(m)
+        }))
+      });
+      
       if (cartTotal <= 0) {
         alert('장바구니가 비어있습니다.');
         return;
       }
 
       dispatch(applyCoupon({ couponId, cartTotal }));
+      
+      console.log('✅ 쿠폰 적용 액션 디스패치 완료');
       navigate('/cart');
     } catch (error) {
       console.error('쿠폰 적용 중 오류가 발생했습니다:', error);
