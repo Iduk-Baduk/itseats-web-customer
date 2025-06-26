@@ -4,16 +4,16 @@
     --black-700: #161032;
     --black-500: #727272;
     --black-300: #B2B2B2;
-    --black-100: #f5f5f5;
+    --black-100: #ffffff;
     --theme-color: #00AFFE;
     --theme-color-rgb: 0, 175, 254;
     --theme-hover-color: #009EDD;
     --wow-color: #2B5C9F;
 
     /* Background Colors */
-    --background-color: #F5F6F8;
-    --background-color-secondary: #f5f5f5;
-    --background-hover-color: rgba(0, 0, 0, 0.043); /* #F4F4F4 */
+    --background-color: #ffffff;
+    --background-color-secondary: #ffffff;
+    --background-hover-color: rgba(0, 0, 0, 0.03); /* 더 연한 호버 효과 */
     --background-selected-color: #CCEDFE;
     --background-disabled-color: #D9D9D9;
 
@@ -34,7 +34,7 @@
 
     /* Component Specific */
     --toggle-button-color: #212B35;
-    --toggle-button-background-color: #F5F6F8;
+    --toggle-button-background-color: #ffffff;
     --minus-red: #FF4D4F;
 
     /* Navigation */
