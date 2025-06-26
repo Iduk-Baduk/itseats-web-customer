@@ -9,24 +9,25 @@ const MenuItem = React.memo(({ storeId, menu }) => {
   const isSoldOut = menu.menuStatus === "OUT_OF_STOCK";
 
   const handleClick = useCallback(() => {
-    navigate(`/stores/${storeId}/menus/${menu.menuId}`);
-  }, [navigate, storeId, menu.menuId]);
+    const menuId = menu.menuId || menu.id;
+    navigate(`/stores/${storeId}/menus/${menuId}`);
+  }, [navigate, storeId, menu.menuId, menu.id]);
 
   return (
     <div className={styles.menuItem} onClick={handleClick}>
       <div className={styles.menuInfo}>
         <h3 className={`${styles.menuName} ${isSoldOut ? styles.soldOut : ""}`}>
-          {menu.menuName}
+          {menu.menuName || menu.name}
         </h3>
         <p className={`${styles.menuPrice} ${isSoldOut ? styles.soldOut : ""}`}>
-          {menu.menuPrice.toLocaleString()}원
+          {(menu.menuPrice || menu.price || 0).toLocaleString()}원
         </p>
       </div>
-      {menu.image ? (
+      {(menu.image || menu.imageUrl) ? (
         <div className={styles.menuImageWrapper}>
           <OptimizedImage
-            src={menu.image}
-            alt={menu.menuName}
+            src={menu.image || menu.imageUrl}
+            alt={menu.menuName || menu.name}
             className={`${styles.menuImage} ${isSoldOut ? styles.dimmed : ""}`}
             width={80}
             height={80}
