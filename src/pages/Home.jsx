@@ -68,6 +68,23 @@ export default function Home() {
       firstStore: stores[0]
     });
   }, [stores, storeLoading]);
+  
+  // 디버깅: 전체 Redux 상태 확인
+  useEffect(() => {
+    const checkReduxState = () => {
+      if (window.debugRedux) {
+        const fullState = window.debugRedux.getState();
+        console.log('🔍 전체 Redux 상태 확인:', {
+          hasStoreSlice: !!fullState.store,
+          storeState: fullState.store,
+          allKeys: Object.keys(fullState)
+        });
+      }
+    };
+    
+    // 약간의 지연을 주어 Redux 초기화 완료 후 확인
+    setTimeout(checkReduxState, 1000);
+  }, []);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {

@@ -80,6 +80,7 @@ if (process.env.NODE_ENV === 'development') {
     getState: () => store.getState(),
     getCart: () => store.getState().cart,
     getCoupons: () => store.getState().coupon,
+    getStores: () => store.getState().store,
     logCartState: () => {
       const state = store.getState();
       console.log('🛒 장바구니 상태:', {
@@ -101,6 +102,16 @@ if (process.env.NODE_ENV === 'development') {
         error: state.coupon.error
       });
     },
+    logStoreState: () => {
+      const state = store.getState();
+      console.log('🏪 매장 상태:', {
+        stores: state.store?.stores || [],
+        storeCount: state.store?.stores?.length || 0,
+        loading: state.store?.loading || false,
+        error: state.store?.error || null,
+        currentStore: state.store?.currentStore || null
+      });
+    },
     logFullState: () => {
       console.log('🔍 전체 Redux 상태:', store.getState());
     }
@@ -110,6 +121,7 @@ if (process.env.NODE_ENV === 'development') {
   console.log('브라우저 콘솔에서 다음 명령어를 사용할 수 있습니다:');
   console.log('- debugRedux.logCartState() : 장바구니 상태 확인');
   console.log('- debugRedux.logCouponState() : 쿠폰 상태 확인');
+  console.log('- debugRedux.logStoreState() : 매장 상태 확인');
   console.log('- debugRedux.logFullState() : 전체 상태 확인');
 }
 
