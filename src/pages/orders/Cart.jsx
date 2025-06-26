@@ -19,6 +19,7 @@ import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
 import QuantityControl from "../../components/orders/cart/QuantityControl";
 import RiderRequestBottomSheet from "../../components/orders/cart/RiderRequestBottomSheet";
 import BottomButton from "../../components/common/BottomButton";
+import Toast from "../../components/common/Toast";
 import styles from "./Cart.module.css";
 import CartAddressSection from '../../components/orders/cart/CartAddressSection';
 import CartDeliveryOptionSection from '../../components/orders/cart/CartDeliveryOptionSection';
@@ -46,9 +47,8 @@ export default function Cart() {
   
   // Redux에서 쿠폰 정보 가져오기
   const coupons = useSelector(state => state.coupon.coupons);
-  const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
+  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
@@ -69,6 +69,16 @@ export default function Cart() {
   const [isDelivery, setIsDelivery] = useState("delivery");
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "" });
+
+  // Toast 헬퍼 함수
+  const showToast = (message) => {
+    setToast({ show: true, message });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "" });
+  };
 
   const handleQuantityChange = (menuId, menuOption, delta) => {
     const menuOptionHash = createMenuOptionHash(menuOption);
@@ -82,7 +92,12 @@ export default function Cart() {
 
   const handlePayment = async () => {
     // 현재 페이지의 storeId 추출
-    const currentStoreId = storeId ? parseInt(storeId) : 1; // URL params에서 가져오거나 기본값
+    const currentStoreId = storeId && !isNaN(parseInt(storeId)) ? parseInt(storeId) : null;
+    
+    if (!currentStoreId) {
+      showToast("유효한 매장 정보가 없습니다.");
+      return;
+    }
     
     // 결제 수단 문자열 생성
     let paymentMethod = 'coupay'; // 기본값
@@ -124,12 +139,12 @@ export default function Cart() {
 
     // 유효성 검사
     if (!selectedAddress) {
-      alert("배송 주소를 선택해 주세요.");
+      showToast("배송 주소를 선택해 주세요.");
       return;
     }
     
     if (!paymentMethod) {
-      alert("결제 수단을 선택해 주세요.");
+      showToast("결제 수단을 선택해 주세요.");
       return;
     }
 
@@ -219,25 +234,29 @@ export default function Cart() {
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
       
       // 사용자에게 에러 알림
-      alert(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.'}`);
+      showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.'}`);
     }
   };
 
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
-  const cartInfo = useMemo(() => ({
-    orderPrice: orderMenus.reduce(
-      (sum, m) => sum + calculateCartTotal(m),
-      0
-    ),
-    totalPrice: Math.max(0, orderMenus.reduce(
-      (sum, m) => sum + calculateCartTotal(m),
-      0
-    ) + (deliveryOption.price || 0) - (appliedCoupon ? appliedCoupon.discount : 0)), // Redux에서 쿠폰 할인 가져오기
-    itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-    deliveryFee: deliveryOption.price || 0,
-    deliveryLabel: deliveryOption.label,
-    couponDiscount: appliedCoupon ? appliedCoupon.discount : 0, // Redux에서 쿠폰 할인 가져오기
-  }), [orderMenus, deliveryOption, appliedCoupon]);
+  const cartInfo = useMemo(() => {
+    const totalCouponDiscount = appliedCoupons.reduce((sum, coupon) => sum + coupon.discount, 0);
+    
+    return {
+      orderPrice: orderMenus.reduce(
+        (sum, m) => sum + calculateCartTotal(m),
+        0
+      ),
+      totalPrice: Math.max(0, orderMenus.reduce(
+        (sum, m) => sum + calculateCartTotal(m),
+        0
+      ) + (deliveryOption.price || 0) - totalCouponDiscount), // 다중 쿠폰 할인 적용
+      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
+      deliveryFee: deliveryOption.price || 0,
+      deliveryLabel: deliveryOption.label,
+      couponDiscount: totalCouponDiscount, // 다중 쿠폰 할인 총합
+    };
+  }, [orderMenus, deliveryOption, appliedCoupons]);
 
   return (
     <div className={styles.container}>
@@ -280,6 +299,12 @@ export default function Cart() {
             onSelect={(request) => setRiderRequest(request)}
           />
         </>
+      )}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          onClose={hideToast}
+        />
       )}
     </div>
   );
