@@ -7,6 +7,10 @@ import { fetchStores } from "../store/storeSlice";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import OptimizedImage from "../components/common/OptimizedImage";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import EmptyState from "../components/common/EmptyState";
+import ErrorState from "../components/common/ErrorState";
+import { useUIState, getErrorVariant } from "../hooks/useUIState";
 import styles from "./Home.module.css";
 import StoreListItem from "../components/stores/StoreListItem";
 import BottomButton from "../components/common/BottomButton";
@@ -54,6 +58,15 @@ export default function Home() {
   const stores = useSelector((state) => state.store?.stores || []);
   const storeLoading = useSelector((state) => state.store?.loading || false);
   const storeError = useSelector((state) => state.store?.error || null);
+
+  // UI 상태 관리
+  const storeUIState = useUIState({
+    isLoading: storeLoading,
+    error: storeError,
+    data: stores,
+    loadingMessage: "매장 정보를 불러오는 중...",
+    emptyMessage: "주변에 매장이 없습니다"
+  });
   
   // 컴포넌트 마운트 시 매장 데이터 로딩
   useEffect(() => {
@@ -66,19 +79,6 @@ export default function Home() {
       console.log('🏪 매장 데이터:', { count: stores.length, loading: storeLoading });
     }
   }, [stores.length, storeLoading]);
-  
-  // 디버깅: 전체 Redux 상태 확인
-  useEffect(() => {
-    // Redux 전체 상태를 1회성으로 확인
-    const timer = setTimeout(() => {
-      // console.log('🔍 전체 Redux 상태 확인:', {
-      //   storeState: { stores: stores.length, loading: storeLoading, error: storeError },
-      //   cartState: { orderMenus: orderMenus.length }
-      // });
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [stores, storeLoading, storeError, orderMenus]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {
@@ -93,6 +93,14 @@ export default function Home() {
     navigate("/cart");
   }, [navigate]);
 
+  const handleRetryStores = useCallback(() => {
+    dispatch(fetchStores());
+  }, [dispatch]);
+
+  const handleSearchStores = useCallback(() => {
+    navigate("/search");
+  }, [navigate]);
+
   // useMemo로 장바구니 정보 계산 최적화
   const cartInfo = useMemo(() => {
     return {
@@ -103,6 +111,60 @@ export default function Home() {
   }, [orderMenus]);
 
   const hasItemsInCart = cartInfo.itemCount > 0;
+
+  // 매장 목록 렌더링
+  const renderStoreSection = () => {
+    if (storeUIState.isLoading) {
+      return (
+        <LoadingSpinner 
+          message="매장 정보를 불러오는 중..." 
+          size="medium"
+          variant="skeleton"
+        />
+      );
+    }
+
+    if (storeUIState.hasError) {
+      return (
+        <ErrorState
+          variant={getErrorVariant(storeError)}
+          title="매장 정보를 불러올 수 없습니다"
+          onPrimaryAction={handleRetryStores}
+          onSecondaryAction={handleSearchStores}
+          primaryActionText="다시 시도"
+          secondaryActionText="매장 검색"
+        />
+      );
+    }
+
+    if (storeUIState.isEmpty) {
+      return (
+        <EmptyState
+          variant="default"
+          icon="🏪"
+          title="주변에 매장이 없습니다"
+          description="다른 지역의 매장을 찾아보세요"
+          actionText="매장 검색"
+          onAction={handleSearchStores}
+        />
+      );
+    }
+
+    // 성공 상태: 매장 목록 표시
+    return stores.map((store) => (
+      <StoreListItem
+        key={store.id}
+        store={{
+          storeId: store.id,
+          name: store.name,
+          review: store.rating,
+          reviewCount: store.reviewCount,
+          minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
+        }}
+        onClick={() => handleStoreClick(store.id)}
+      />
+    ));
+  };
 
   return (
     <>
@@ -128,25 +190,7 @@ export default function Home() {
 
       <div className={styles.section}>
         <h2>골라먹는 맛집</h2>
-        {storeLoading ? (
-          <div>매장 정보를 불러오는 중...</div>
-        ) : stores.length > 0 ? (
-          stores.map((store) => (
-            <StoreListItem
-              key={store.id}
-              store={{
-                storeId: store.id,
-                name: store.name,
-                review: store.rating,
-                reviewCount: store.reviewCount,
-                minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
-              }}
-              onClick={() => handleStoreClick(store.id)}
-            />
-          ))
-        ) : (
-          <div>매장 정보가 없습니다.</div>
-        )}
+        {renderStoreSection()}
       </div>
 
       {hasItemsInCart && (
