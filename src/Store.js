@@ -74,4 +74,43 @@ if (import.meta.env.DEV) {
   window.__REDUX_STORE__ = store;
 }
 
+// 개발 환경에서 브라우저 콘솔에서 Redux 상태 확인을 위한 전역 함수
+if (process.env.NODE_ENV === 'development') {
+  window.debugRedux = {
+    getState: () => store.getState(),
+    getCart: () => store.getState().cart,
+    getCoupons: () => store.getState().coupon,
+    logCartState: () => {
+      const state = store.getState();
+      console.log('🛒 장바구니 상태:', {
+        orderMenus: state.cart.orderMenus,
+        menuCount: state.cart.orderMenus.length,
+        cartTotal: state.cart.orderMenus.reduce((sum, menu) => {
+          const price = menu.price || menu.menuPrice || menu.totalPrice || 0;
+          return sum + (price * menu.quantity);
+        }, 0)
+      });
+    },
+    logCouponState: () => {
+      const state = store.getState();
+      console.log('🎫 쿠폰 상태:', {
+        coupons: state.coupon.coupons,
+        selectedCouponId: state.coupon.selectedCouponId,
+        selectedCouponIds: state.coupon.selectedCouponIds,
+        loading: state.coupon.loading,
+        error: state.coupon.error
+      });
+    },
+    logFullState: () => {
+      console.log('🔍 전체 Redux 상태:', store.getState());
+    }
+  };
+  
+  console.log('🔧 Redux 디버깅 도구가 활성화되었습니다!');
+  console.log('브라우저 콘솔에서 다음 명령어를 사용할 수 있습니다:');
+  console.log('- debugRedux.logCartState() : 장바구니 상태 확인');
+  console.log('- debugRedux.logCouponState() : 쿠폰 상태 확인');
+  console.log('- debugRedux.logFullState() : 전체 상태 확인');
+}
+
 export default store;

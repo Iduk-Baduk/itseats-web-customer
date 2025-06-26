@@ -136,6 +136,17 @@
       "validDate": "2024-12-31T23:59:59.000Z",
       "isUsed": true,
       "isExpired": false
+    },
+    {
+      "id": "5",
+      "name": "테스트 쿠폰",
+      "discount": 1000,
+      "type": "general",
+      "description": "테스트용 1,000원 할인",
+      "minOrderAmount": 5000,
+      "validDate": "2024-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false
     }
   ],
   "stores": [
@@ -221,6 +232,14 @@
           "description": "시원한 콜라",
           "imageUrl": "/samples/food3.jpg",
           "category": "음료"
+        },
+        {
+          "id": 4,
+          "name": "테스트 메뉴",
+          "price": 6000,
+          "description": "테스트용 간단한 메뉴",
+          "imageUrl": "/samples/food1.jpg",
+          "category": "테스트"
         }
       ]
     },
