@@ -137,7 +137,7 @@
       "description": "신규 가입 축하 5,000원 할인",
       "minOrderAmount": 25000,
       "validDate": "2026-12-31T23:59:59.000Z",
-      "isUsed": true,
+      "isUsed": false,
       "isExpired": false,
       "isStackable": false
     },

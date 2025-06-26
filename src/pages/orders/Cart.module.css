@@ -140,33 +140,54 @@ text-align: right;
   flex: 1;
 }
 
-/* 쿠폰 섹션 개선된 스타일 */
+/* 쿠폰 섹션 스타일 */
 .couponIcon {
 display: flex;
 align-items: center;
-gap: 6px;
+gap: 8px;
+font-weight: 600;
+color: #007aff;
+font-size: 16px;
 }
 
 .couponCount {
-color: #222;
+color: #666;
 font-weight: 500;
-font-size: 15px;
+font-size: 14px;
 }
 
-.appliedCoupon {
-margin: 8px 0 0 0;
-font-size: 15px;
-color: #222;
+.appliedCouponInfo {
+margin-top: 12px;
+}
+
+.appliedCouponItem {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 8px 0;
+border-bottom: 1px solid #f0f0f0;
+}
+
+.appliedCouponItem:last-child {
+border-bottom: none;
+}
+
+.couponName {
+font-size: 14px;
+color: #333;
 font-weight: 500;
 }
 
-.discountAmount {
-color: #e53935;
-margin-left: 8px;
+.couponDiscount {
+font-size: 14px;
+color: #007aff;
+font-weight: 600;
 }
 
-.noCoupon {
-color: #888;
+.noCouponApplied {
+margin-top: 8px;
+font-size: 14px;
+color: #999;
 }
 
 /* 결제금액 */
