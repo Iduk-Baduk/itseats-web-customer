@@ -15,31 +15,31 @@ export const ENV_CONFIG = {
 // API 엔드포인트 상수
 export const API_ENDPOINTS = {
   // 주문 관련
-  ORDERS: '/api/orders',
-  ORDER_BY_ID: (id) => `/api/orders/${id}`,
-  ORDER_STATUS: (id) => `/api/orders/${id}/status`,
-  ORDER_TRACK: (id) => `/api/orders/${id}/track`,
-  ORDER_CANCEL: (id) => `/api/orders/${id}/cancel`,
-  ORDER_COMPLETE: (id) => `/api/orders/${id}/complete`,
+  ORDERS: '/orders',
+  ORDER_BY_ID: (id) => `/orders/${id}`,
+  ORDER_STATUS: (id) => `/orders/${id}/status`,
+  ORDER_TRACK: (id) => `/orders/${id}/track`,
+  ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
+  ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
   
   // 결제 관련
-  CARDS: '/api/cards',
-  CARD_BY_ID: (id) => `/api/cards/${id}`,
-  ACCOUNTS: '/api/accounts',
-  ACCOUNT_BY_ID: (id) => `/api/accounts/${id}`,
-  PAYMENTS: '/api/payments',
+  CARDS: '/cards',
+  CARD_BY_ID: (id) => `/cards/${id}`,
+  ACCOUNTS: '/accounts',
+  ACCOUNT_BY_ID: (id) => `/accounts/${id}`,
+  PAYMENTS: '/payments',
   
   // 쿠폰 관련
-  COUPONS: '/api/coupons',
-  COUPON_USE: (id) => `/api/coupons/${id}/use`,
-  COUPON_AVAILABLE: '/api/coupons/available',
-  COUPON_REGISTER: '/api/coupons/register',
+  COUPONS: '/coupons',
+  COUPON_USE: (id) => `/coupons/${id}/use`,
+  COUPON_AVAILABLE: '/coupons/available',
+  COUPON_REGISTER: '/coupons/register',
   
   // 인증 관련
-  AUTH_REGISTER: '/api/members/regist',
-  AUTH_LOGIN: '/api/auth/login',
-  AUTH_LOGOUT: '/api/auth/logout',
-  AUTH_REFRESH: '/api/auth/refresh',
+  AUTH_REGISTER: '/members/regist',
+  AUTH_LOGIN: '/auth/login',
+  AUTH_LOGOUT: '/auth/logout',
+  AUTH_REFRESH: '/auth/refresh',
 };
 
 export default API_CONFIG; 

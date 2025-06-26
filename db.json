@@ -3,17 +3,21 @@
     {
       "id": 1,
       "cardNumber": "**** **** **** 1234",
-      "cardName": "신한카드",
+      "name": "신한카드",
       "cardType": "신용카드",
       "bank": "신한은행",
+      "last4": "1234",
+      "image": "/icons/logos/shinhan.png",
       "isDefault": true
     },
     {
       "id": 2,
       "cardNumber": "**** **** **** 5678",
-      "cardName": "국민카드",
+      "name": "국민카드",
       "cardType": "체크카드",
       "bank": "국민은행",
+      "last4": "5678",
+      "image": "/icons/logos/kbbank.jpg",
       "isDefault": false
     }
   ],
@@ -21,8 +25,10 @@
     {
       "id": 1,
       "accountNumber": "110-***-****12",
-      "bank": "신한은행",
+      "bankName": "신한은행",
       "accountName": "홍길동",
+      "last4": "4012",
+      "image": "/icons/logos/shinhan.png",
       "isDefault": true
     }
   ],

@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../config/api';
 
 // 주문 API 서비스
 export const orderAPI = {
@@ -52,22 +53,22 @@ export const orderAPI = {
       deliveryType
     };
 
-    return await apiClient.post('/api/orders', requestData);
+    return await apiClient.post(API_ENDPOINTS.ORDERS, requestData);
   },
 
   // 주문 목록 조회
   getOrders: async (params = {}) => {
-    return await apiClient.get('/api/orders', { params });
+    return await apiClient.get(API_ENDPOINTS.ORDERS, { params });
   },
 
   // 특정 주문 조회
   getOrderById: async (orderId) => {
-    return await apiClient.get(`/api/orders/${orderId}`);
+    return await apiClient.get(API_ENDPOINTS.ORDER_BY_ID(orderId));
   },
 
   // 주문 상태 업데이트
   updateOrderStatus: async (orderId, status, message) => {
-    return await apiClient.patch(`/api/orders/${orderId}/status`, {
+    return await apiClient.patch(API_ENDPOINTS.ORDER_STATUS(orderId), {
       status,
       message,
     });
@@ -75,19 +76,19 @@ export const orderAPI = {
 
   // 주문 취소
   cancelOrder: async (orderId, reason) => {
-    return await apiClient.patch(`/api/orders/${orderId}/cancel`, {
+    return await apiClient.patch(API_ENDPOINTS.ORDER_CANCEL(orderId), {
       reason,
     });
   },
 
   // 주문 완료 처리
   completeOrder: async (orderId) => {
-    return await apiClient.patch(`/api/orders/${orderId}/complete`);
+    return await apiClient.patch(API_ENDPOINTS.ORDER_COMPLETE(orderId));
   },
 
   // 실시간 주문 상태 추적 (WebSocket 대안으로 폴링)
   trackOrder: async (orderId) => {
-    return await apiClient.get(`/api/orders/${orderId}/track`);
+    return await apiClient.get(API_ENDPOINTS.ORDER_TRACK(orderId));
   },
 };
 

@@ -1,10 +1,11 @@
 import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../config/api';
 
 // 쿠폰 API 서비스
 export const couponAPI = {
   // 쿠폰 목록 조회
   getCoupons: async () => {
-    const data = await apiClient.get('/api/coupons');
+    const data = await apiClient.get(API_ENDPOINTS.COUPONS);
     
     // 유효기간을 Date 객체로 변환
     return data.map(coupon => ({
@@ -15,17 +16,17 @@ export const couponAPI = {
 
   // 쿠폰 사용
   useCoupon: async (couponId, orderData) => {
-    return await apiClient.post(`/api/coupons/${couponId}/use`, orderData);
+    return await apiClient.post(API_ENDPOINTS.COUPON_USE(couponId), orderData);
   },
 
   // 사용 가능한 쿠폰 조회 (특정 주문에 대해)
   getAvailableCoupons: async (orderData) => {
-    return await apiClient.post('/api/coupons/available', orderData);
+    return await apiClient.post(API_ENDPOINTS.COUPON_AVAILABLE, orderData);
   },
 
   // 쿠폰 등록 (프로모션 코드)
   registerCoupon: async (promoCode) => {
-    return await apiClient.post('/api/coupons/register', { promoCode });
+    return await apiClient.post(API_ENDPOINTS.COUPON_REGISTER, { promoCode });
   },
 };
 
