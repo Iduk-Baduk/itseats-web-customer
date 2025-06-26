@@ -1,3 +1,4 @@
+import React, { useState, useCallback, useMemo } from "react";
 import Header from "../../components/common/Header";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -9,7 +10,6 @@ import Tabs from "../../components/stores/Tabs";
 import { getCategoryName } from "../../utils/categoryUtils";
 
 import styles from "./StoreList.module.css";
-import { useState } from "react";
 
 const dummyStores = [
   {
@@ -65,17 +65,56 @@ export default function StoreList() {
   const [sort, setSort] = useState(sortParam || "order");
   const [isSortSheetOpen, setSortSheetOpen] = useState(false);
 
+  // useCallback으로 이벤트 핸들러 최적화
+  const handleBackClick = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
+  const handleSearchClick = useCallback(() => {
+    navigate("/search");
+  }, [navigate]);
+
+  const handleSortButtonClick = useCallback(() => {
+    setSortSheetOpen(true);
+  }, []);
+
+  const handleSortSheetClose = useCallback(() => {
+    setSortSheetOpen(false);
+  }, []);
+
+  const handleSortSelect = useCallback((newSort) => {
+    setSort(newSort);
+    const params = Object.fromEntries(searchParams.entries());
+    setSearchParams({ ...params, sort: newSort }, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleStoreClick = useCallback((storeId) => {
+    navigate(`/stores/${storeId}`);
+  }, [navigate]);
+
+  // useMemo로 정렬된 매장 목록 최적화
+  const sortedStores = useMemo(() => {
+    return [...dummyStores].sort((a, b) => {
+      switch(sort) {
+        case 'rating':
+          return b.review - a.review;
+        case 'delivery':
+          return a.minutesToDelivery - b.minutesToDelivery;
+        case 'reviewCount':
+          return b.reviewCount - a.reviewCount;
+        default:
+          return 0; // 기본 순서 유지
+      }
+    });
+  }, [sort]);
+
   return (
     <SlideInFromRight>
       <div>
         <Header
           title={getCategoryName(category)}
-          leftButtonAction={() => {
-            navigate(-1);
-          }}
-          rightButtonAction={() => {
-            navigate("/search");
-          }}
+          leftButtonAction={handleBackClick}
+          rightButtonAction={handleSearchClick}
           shadow={false}
         />
         <Tabs />
@@ -84,7 +123,7 @@ export default function StoreList() {
             <button
               className={styles.sortButton}
               aria-label="정렬 조건"
-              onClick={() => setSortSheetOpen(true)}
+              onClick={handleSortButtonClick}
             >
               <span>{getSortLabel(sort)}</span>
               <svg
@@ -100,11 +139,11 @@ export default function StoreList() {
               </svg>
             </button>
           </div>
-          {dummyStores.map((store) => (
+          {sortedStores.map((store) => (
             <StoreListItem
               key={store.storeId}
               store={store}
-              onClick={() => navigate(`/stores/${store.storeId}`)}
+              onClick={() => handleStoreClick(store.storeId)}
             />
           ))}
         </div>
@@ -112,12 +151,8 @@ export default function StoreList() {
         <SortBottomSheet
           sort={sort}
           isOpen={isSortSheetOpen}
-          onClose={() => setSortSheetOpen(false)}
-          onSelect={(sort) => {
-            setSort(sort);
-            const params = Object.fromEntries(searchParams.entries());
-            setSearchParams({ ...params, sort }, { replace: true });
-          }}
+          onClose={handleSortSheetClose}
+          onSelect={handleSortSelect}
         />
       </div>
     </SlideInFromRight>

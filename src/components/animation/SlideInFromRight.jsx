@@ -1,25 +1,36 @@
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import React, { Suspense, lazy } from 'react';
+import styles from './SlideInFromRight.module.css';
+
+// Framer Motion을 지연 로딩
+const MotionDiv = lazy(() => 
+  import('framer-motion').then(module => ({
+    default: ({ children, ...props }) => (
+      <module.motion.div
+        initial={{ x: '100%', opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: '100%', opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        {...props}
+      >
+        {children}
+      </module.motion.div>
+    )
+  }))
+);
+
+// CSS 폴백 컴포넌트
+const CSSFallback = ({ children }) => (
+  <div className={styles.slideContainer}>
+    {children}
+  </div>
+);
 
 export default function SlideInFromRight({ children }) {
-  const [isAnimating, setIsAnimating] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsAnimating(false), 250);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-      style={{
-        backgroundColor: "#ffffff",
-        overflow: isAnimating ? "hidden" : "unset",
-      }}
-    >
-      {children}
-    </motion.div>
+    <Suspense fallback={<CSSFallback>{children}</CSSFallback>}>
+      <MotionDiv>
+        {children}
+      </MotionDiv>
+    </Suspense>
   );
 }

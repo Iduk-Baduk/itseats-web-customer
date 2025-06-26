@@ -1,4 +1,4 @@
-import { Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
+import { Map as KakaoMap, MapMarker, Polyline, useKakaoLoader } from "react-kakao-maps-sdk";
 
 /*
  * lat: 위도
@@ -10,11 +10,48 @@ import { Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
  *  target: "store" | "user" | null
  */
 export default function CommonMap({ lat, lng, markers = [], height = "300px", level = 3 }) {
-  // 카카오맵 로드 상태 확인
-  if (typeof window === 'undefined' || !window.kakao?.maps) {
+  // API 키 확인 및 디버깅
+  const apiKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
+  
+  // 개발 환경에서만 디버깅 로그 출력
+  if (import.meta.env.DEV) {
+    console.log('환경변수 디버깅:', {
+      apiKey: apiKey ? '설정됨' : '미설정',
+      nodeEnv: import.meta.env.NODE_ENV,
+      mode: import.meta.env.MODE
+    });
+  }
+  
+  if (!apiKey) {
+    console.error('카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_APP_KAKAOMAP_KEY를 설정해주세요.');
     return (
-      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
+        <p>지도 설정이 필요합니다.</p>
+      </div>
+    );
+  }
+
+  // 카카오 맵 SDK 로더 사용
+  const [loading, error] = useKakaoLoader({
+    appkey: apiKey,
+    libraries: ["services", "clusterer"],
+  });
+
+  // 로딩 중이면 로딩 표시
+  if (loading) {
+    return (
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
         <p>지도를 불러오는 중입니다...</p>
+      </div>
+    );
+  }
+
+  // 에러가 발생하면 에러 표시
+  if (error) {
+    console.error('카카오 맵 로드 오류:', error);
+    return (
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
+        <p>지도를 불러오는 데 실패했습니다.</p>
       </div>
     );
   }
@@ -22,7 +59,7 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
   // 좌표 유효성 검사
   if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
     return (
-      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
         <p>위치 정보를 확인할 수 없습니다.</p>
       </div>
     );
@@ -30,7 +67,7 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
 
   try {
     return (
-      <Map center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
+      <KakaoMap center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
         {markers.map((marker, index) => {
         const markerImageSrc =
           marker.type === "store"
@@ -70,12 +107,12 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
           strokeStyle="dash"
         />
         )}
-      </Map>
+      </KakaoMap>
     );
   } catch (error) {
     console.error('카카오맵 렌더링 오류:', error);
     return (
-      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
         <p>지도를 불러오는 데 문제가 발생했습니다.</p>
       </div>
     );
