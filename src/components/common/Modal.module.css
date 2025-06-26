@@ -1,0 +1,234 @@
+/* ===== 오버레이 ===== */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal, 9999);
+  padding: 20px;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== 모달 기본 스타일 ===== */
+.modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===== 크기 변형 ===== */
+.modal.small {
+  width: 320px;
+  min-width: 280px;
+}
+
+.modal.medium {
+  width: 480px;
+  min-width: 320px;
+}
+
+.modal.large {
+  width: 640px;
+  min-width: 480px;
+}
+
+/* ===== 헤더 ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid var(--border-color-light, #f0f0f0);
+  margin-bottom: 0;
+  min-height: 60px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--black-800, #222);
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--black-500, #666);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 12px;
+}
+
+.closeButton:hover {
+  background-color: var(--background-color-secondary, #f5f5f5);
+  color: var(--black-700, #333);
+}
+
+/* ===== 콘텐츠 ===== */
+.content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.message {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--black-700, #333);
+  margin: 0;
+  text-align: center;
+  white-space: pre-line;
+}
+
+/* ===== 액션 버튼 영역 ===== */
+.actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid var(--border-color-light, #f0f0f0);
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* ===== 변형별 스타일 ===== */
+
+/* Confirm 모달 */
+.modal.confirm .content {
+  text-align: center;
+  padding: 32px 24px 24px 24px;
+}
+
+.modal.confirm .actions {
+  justify-content: center;
+  gap: 16px;
+}
+
+.modal.confirm .header {
+  display: none;
+}
+
+/* Alert 모달 */
+.modal.alert .content {
+  text-align: center;
+  padding: 32px 24px 24px 24px;
+}
+
+.modal.alert .actions {
+  justify-content: center;
+}
+
+.modal.alert .header {
+  display: none;
+}
+
+/* Form 모달 */
+.modal.form .content {
+  padding: 24px;
+}
+
+.modal.form .actions {
+  justify-content: space-between;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .overlay {
+    padding: 16px;
+  }
+  
+  .modal.small,
+  .modal.medium,
+  .modal.large {
+    width: 100%;
+    min-width: unset;
+    max-width: 100%;
+  }
+  
+  .header {
+    padding: 20px 20px 0 20px;
+    min-height: 56px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  .actions {
+    padding: 16px 20px 20px 20px;
+    flex-direction: column-reverse;
+  }
+  
+  .modal.confirm .actions,
+  .modal.alert .actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* ===== 접근성 ===== */
+.modal:focus {
+  outline: none;
+}
+
+/* 스크롤바 스타일링 */
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color, #ddd);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--black-300, #999);
+} 
