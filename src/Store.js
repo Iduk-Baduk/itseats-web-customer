@@ -13,8 +13,18 @@ const loadCartWithRequests = () => {
     if (serializedCart) {
       const cartData = JSON.parse(serializedCart);
       // 새로운 구조에 맞게 데이터 반환
-      if (cartData.orderMenus || cartData.requestInfo) {
-        return cartData;
+      if (cartData.orderMenus || cartData.requestInfo || cartData.currentStore) {
+        return {
+          orderMenus: cartData.orderMenus || [],
+          requestInfo: cartData.requestInfo || {
+            storeRequest: '',
+            deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
+            disposableChecked: false,
+          },
+          currentStore: cartData.currentStore || null,
+          _version: cartData._version,
+          _migratedAt: cartData._migratedAt
+        };
       }
       // 기존 구조 (배열만 있는 경우) 호환성 유지
       if (Array.isArray(cartData)) {
@@ -24,7 +34,8 @@ const loadCartWithRequests = () => {
             storeRequest: '',
             deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
             disposableChecked: false,
-          }
+          },
+          currentStore: null
         };
       }
     }
@@ -37,7 +48,8 @@ const loadCartWithRequests = () => {
       storeRequest: '',
       deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
       disposableChecked: false,
-    }
+    },
+    currentStore: null
   };
 };
 

@@ -73,6 +73,7 @@ export const migrateCartData = (legacyCartData) => {
         deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
         disposableChecked: false,
       },
+      currentStore: null,
       _version: CART_DATA_VERSION
     };
   }
@@ -88,15 +89,31 @@ export const migrateCartData = (legacyCartData) => {
     itemCount: legacyCartData.orderMenus?.length || 0
   });
 
+  const migratedMenus = (legacyCartData.orderMenus || [])
+    .map(migrateLegacyCartItem)
+    .filter(item => item !== null);
+
+  // 기존 장바구니에 메뉴가 있으면 첫 번째 메뉴의 가게 정보로 currentStore 설정
+  let currentStore = null;
+  if (migratedMenus.length > 0) {
+    const firstMenu = migratedMenus[0];
+    if (firstMenu.storeId && firstMenu.storeName) {
+      currentStore = {
+        storeId: firstMenu.storeId,
+        storeName: firstMenu.storeName,
+        storeImage: firstMenu.storeImage || null
+      };
+    }
+  }
+
   const migratedData = {
-    orderMenus: (legacyCartData.orderMenus || [])
-      .map(migrateLegacyCartItem)
-      .filter(item => item !== null),
+    orderMenus: migratedMenus,
     requestInfo: {
       storeRequest: legacyCartData.requestInfo?.storeRequest || '',
       deliveryRequest: legacyCartData.requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)',
       disposableChecked: legacyCartData.requestInfo?.disposableChecked || false,
     },
+    currentStore: currentStore,
     
     // 마이그레이션 메타데이터
     _version: CART_DATA_VERSION,
@@ -106,6 +123,7 @@ export const migrateCartData = (legacyCartData) => {
 
   console.log('✅ 장바구니 데이터 마이그레이션 완료', {
     migratedItems: migratedData.orderMenus.length,
+    currentStore: migratedData.currentStore?.storeName || 'none',
     version: migratedData._version
   });
 
@@ -138,6 +156,7 @@ export const loadAndMigrateCartData = () => {
         deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
         disposableChecked: false,
       },
+      currentStore: null,
       _version: CART_DATA_VERSION,
       _error: error.message
     };
