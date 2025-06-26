@@ -1,6 +1,6 @@
 // src/pages/Cart/Cart.jsx
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeMenu, selectRequestInfo } from "../../store/cartSlice";
 import { addOrder, createOrderAsync } from "../../store/orderSlice";
@@ -33,13 +33,23 @@ const DUMMY_DATA = {
 export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { storeId } = useParams(); // URL에서 storeId 추출
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   const requestInfo = useSelector(selectRequestInfo);
   
   // Redux에서 쿠폰 정보 가져오기
   const coupons = useSelector(state => state.coupon.coupons);
   const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
+  const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
+  
+  // Redux에서 주소 및 결제 정보 가져오기
+  const selectedAddress = useSelector(state => 
+    state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
+  );
+  const selectedPaymentType = useSelector(state => state.payment.selectedPaymentType);
+  const selectedCardId = useSelector(state => state.payment.selectedCardId);
+  const selectedAccountId = useSelector(state => state.payment.selectedAccountId);
 
   // 배달 옵션 및 배달비 상태 추가
   const [deliveryOption, setDeliveryOption] = useState({
@@ -62,34 +72,57 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 주문 데이터 생성
-    const orderData = {
-      storeName: DUMMY_DATA.storeName,
-      orderPrice: cartInfo.totalPrice,
-      orderMenuCount: cartInfo.itemCount,
-      deliveryAddress: DUMMY_DATA.deliveryAddress,
-      destinationLocation: DUMMY_DATA.destinationLocation,
-      storeLocation: DUMMY_DATA.storeLocation,
-      deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-      storeImage: DUMMY_DATA.storeImage,
-      // 요청사항 데이터 포함
-      storeRequest: requestInfo.storeRequest,
-      deliveryRequest: requestInfo.deliveryRequest,
-      disposableChecked: requestInfo.disposableChecked,
-      // 배달/포장 옵션 포함
-      isDelivery,
-      deliveryOption: deliveryOption.label,
-      deliveryFee: deliveryOption.price,
-      // 쿠폰 정보 포함
-      appliedCouponId: selectedCouponId,
-      couponDiscount: appliedCoupon ? appliedCoupon.discount : 0,
-      // 주문 메뉴 정보
+    // 현재 페이지의 storeId 추출
+    const currentStoreId = storeId ? parseInt(storeId) : 1; // URL params에서 가져오거나 기본값
+    
+    // 결제 수단 문자열 생성
+    let paymentMethod = 'coupay'; // 기본값
+    if (selectedPaymentType === 'card') {
+      paymentMethod = 'card';
+    } else if (selectedPaymentType === 'account') {
+      paymentMethod = 'account';
+    }
+
+    // API 스펙에 맞는 주문 데이터 구조 생성
+    const orderRequestData = {
+      // 주문 기본 정보
+      addrId: selectedAddress?.id || null,
+      storeId: currentStoreId,
       orderMenus: orderMenus.map(menu => ({
-        ...menu,
-        menuOptionHash: createMenuOptionHash(menu.menuOption)
+        menuId: menu.menuId,
+        menuName: menu.menuName,
+        menuOptions: menu.menuOptions || [], // API 스펙에 맞는 구조 사용
+        menuTotalPrice: calculateCartTotal(menu),
+        quantity: menu.quantity
       })),
+      coupons: selectedCouponIds.length > 0 ? selectedCouponIds : [],
+      deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
     };
+
+    // 서버로 전송할 최종 주문 데이터
+    const finalOrderData = {
+      // orderId는 서버에서 생성되어 응답으로 받음
+      coupons: orderRequestData.coupons,
+      totalCost: cartInfo.totalPrice,
+      paymentMethod: paymentMethod,
+      paymentStatus: "PENDING", // 결제 대기 상태
+      storeRequest: requestInfo.storeRequest || "",
+      riderRequest: requestInfo.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
+      
+      // 주문 상세 정보 (주문 생성 시 필요)
+      orderDetails: orderRequestData
+    };
+
+    // 유효성 검사
+    if (!selectedAddress) {
+      alert("배송 주소를 선택해 주세요.");
+      return;
+    }
+    
+    if (!paymentMethod) {
+      alert("결제 수단을 선택해 주세요.");
+      return;
+    }
 
     try {
       // ✅ API를 통한 주문 생성 (서버 연동 준비)
@@ -97,11 +130,23 @@ export default function Cart() {
       const useLocalStorage = import.meta.env.VITE_MOCK_MODE === 'true';
       
       if (useLocalStorage) {
-        // 로컬 개발 환경: Redux로 주문 추가
-        dispatch(addOrder(orderData));
+        // 로컬 개발 환경: Redux로 주문 추가 (기존 데이터 구조 유지)
+        const localOrderData = {
+          ...finalOrderData,
+          // 로컬 개발용 추가 필드들
+          storeName: DUMMY_DATA.storeName,
+          deliveryAddress: selectedAddress?.address || DUMMY_DATA.deliveryAddress,
+          destinationLocation: DUMMY_DATA.destinationLocation,
+          storeLocation: DUMMY_DATA.storeLocation,
+          deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+          menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
+          storeImage: DUMMY_DATA.storeImage,
+        };
+        dispatch(addOrder(localOrderData));
       } else {
         // 실제 환경: API를 통한 주문 생성
-        await dispatch(createOrderAsync(orderData)).unwrap();
+        const response = await dispatch(createOrderAsync(finalOrderData)).unwrap();
+        console.log("주문 생성 성공:", response);
       }
       
       // 주문 상태 페이지로 이동

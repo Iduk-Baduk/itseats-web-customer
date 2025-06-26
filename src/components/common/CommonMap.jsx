@@ -10,9 +10,28 @@ import { Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
  *  target: "store" | "user" | null
  */
 export default function CommonMap({ lat, lng, markers = [], height = "300px", level = 3 }) {
-  return (
-    <Map center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
-      {markers.map((marker, index) => {
+  // 카카오맵 로드 상태 확인
+  if (typeof window === 'undefined' || !window.kakao?.maps) {
+    return (
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+        <p>지도를 불러오는 중입니다...</p>
+      </div>
+    );
+  }
+
+  // 좌표 유효성 검사
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+    return (
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+        <p>위치 정보를 확인할 수 없습니다.</p>
+      </div>
+    );
+  }
+
+  try {
+    return (
+      <Map center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
+        {markers.map((marker, index) => {
         const markerImageSrc =
           marker.type === "store"
             ? storeSvgDataUrl
@@ -50,9 +69,17 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
           strokeOpacity={0.8}
           strokeStyle="dash"
         />
-      )}
-    </Map>
-  );
+        )}
+      </Map>
+    );
+  } catch (error) {
+    console.error('카카오맵 렌더링 오류:', error);
+    return (
+      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+        <p>지도를 불러오는 데 문제가 발생했습니다.</p>
+      </div>
+    );
+  }
 }
 
 // 마커 아이콘

@@ -62,11 +62,21 @@ export default function MenuDetail() {
   }
 
   function addToCart() {
+    // API 스펙에 맞는 menuOptions 구조로 변환
+    const menuOptions = selectedOptions.map((group, index) => ({
+      optionGroupName: dummyMenu.optionGroups[index].optionGroupName,
+      options: group.options.map(option => ({
+        optionName: option.optionName,
+        optionPrice: option.optionPrice
+      }))
+    })).filter(group => group.options.length > 0); // 선택된 옵션이 있는 그룹만
+
     const menu = {
       menuId: dummyMenu.menuId,
       menuName: dummyMenu.menuName,
       menuPrice: dummyMenu.menuPrice,
-      menuOption: selectedOptions,
+      menuOptions: menuOptions, // API 스펙에 맞는 구조
+      menuOption: selectedOptions, // 기존 구조 (하위 호환성)
       quantity,
     };
     dispatch(addMenu(menu));
