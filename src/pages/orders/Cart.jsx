@@ -16,6 +16,7 @@ import { fetchStores, fetchStoreById } from "../../store/storeSlice";
 import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
+import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -330,21 +331,21 @@ export default function Cart() {
 
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
   const cartInfo = useMemo(() => {
-    const totalCouponDiscount = appliedCoupons.reduce((sum, coupon) => sum + coupon.discount, 0);
+    const orderPrice = orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0);
+    const deliveryFee = deliveryOption.price || 0;
+    
+    // 다중 쿠폰 할인 계산 (주문금액과 배달비 분리)
+    const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
     
     return {
-      orderPrice: orderMenus.reduce(
-        (sum, m) => sum + calculateCartTotal(m),
-        0
-      ),
-      totalPrice: Math.max(0, orderMenus.reduce(
-        (sum, m) => sum + calculateCartTotal(m),
-        0
-      ) + (deliveryOption.price || 0) - totalCouponDiscount), // 다중 쿠폰 할인 적용
+      orderPrice,
+      totalPrice: Math.max(0, orderPrice + deliveryFee - discountResult.totalDiscount),
       itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-      deliveryFee: deliveryOption.price || 0,
+      deliveryFee,
       deliveryLabel: deliveryOption.label,
-      couponDiscount: totalCouponDiscount, // 다중 쿠폰 할인 총합
+      couponDiscount: discountResult.totalDiscount,
+      orderDiscount: discountResult.orderDiscount,
+      deliveryDiscount: discountResult.deliveryDiscount,
     };
   }, [orderMenus, deliveryOption, appliedCoupons]);
 

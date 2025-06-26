@@ -162,19 +162,47 @@ const couponSlice = createSlice({
           minOrderAmount: coupon.minOrderAmount,
           cartTotal,
           isUsed: coupon.isUsed,
-          isExpired: coupon.isExpired
+          isExpired: coupon.isExpired,
+          isStackable: coupon.isStackable
         });
         
         if (isValid) {
-          console.log('✅ 쿠폰이 유효함! 상태 업데이트 시작...');
+          console.log('✅ 쿠폰이 유효함! 중복 적용 가능 여부 확인...');
+          
           const previousState = {
             selectedCouponId: state.selectedCouponId,
             selectedCouponIds: [...state.selectedCouponIds]
           };
           
-          state.selectedCouponId = couponId;
-          // 다중 쿠폰을 위한 배열도 업데이트
-          if (!state.selectedCouponIds.includes(couponId)) {
+          // 쿠폰이 이미 선택되어 있으면 제거, 없으면 추가
+          if (state.selectedCouponIds.includes(couponId)) {
+            console.log('🔄 쿠폰 제거:', couponId);
+            state.selectedCouponIds = state.selectedCouponIds.filter(id => id !== couponId);
+            // 주 쿠폰이 제거된 경우 다음 쿠폰으로 업데이트
+            if (state.selectedCouponId === couponId) {
+              state.selectedCouponId = state.selectedCouponIds[0] || null;
+            }
+          } else {
+            // 새로운 쿠폰을 추가할 때만 중복 로직 확인
+            if (state.selectedCouponIds.length > 0) {
+              const selectedCoupons = state.coupons.filter(c => state.selectedCouponIds.includes(c.id));
+              const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
+              
+              // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
+              if (hasNonStackable) {
+                console.error('❌ 쿠폰 적용 실패: 이미 중복 불가능한 쿠폰이 선택됨');
+                return;
+              }
+              
+              // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
+              if (!coupon.isStackable) {
+                console.log('🔄 중복 불가능한 쿠폰 선택 - 기존 쿠폰들 제거');
+                state.selectedCouponIds = [];
+              }
+            }
+            
+            console.log('✅ 쿠폰 추가:', couponId);
+            state.selectedCouponId = couponId;
             state.selectedCouponIds.push(couponId);
           }
           
@@ -198,6 +226,10 @@ const couponSlice = createSlice({
       console.log('🎫 === applyCoupon 액션 종료 ===');
     },
     clearCoupon(state) {
+      state.selectedCouponId = null;
+      state.selectedCouponIds = [];
+    },
+    clearAllCoupons(state) {
       state.selectedCouponId = null;
       state.selectedCouponIds = [];
     },
@@ -265,5 +297,5 @@ export const selectNormalizedCoupons = (state) =>
 export const selectValidCoupons = (state, cartTotal = 0) =>
   selectNormalizedCoupons(state).filter(coupon => isValidCoupon(coupon, cartTotal));
 
-export const { applyCoupon, clearCoupon, applyCoupons, removeCoupon } = couponSlice.actions;
+export const { applyCoupon, clearCoupon, clearAllCoupons, applyCoupons, removeCoupon } = couponSlice.actions;
 export default couponSlice.reducer;

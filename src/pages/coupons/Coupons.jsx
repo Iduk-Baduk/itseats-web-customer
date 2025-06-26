@@ -1,9 +1,12 @@
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { applyCoupon, selectNormalizedCoupons } from "../../store/couponSlice";
+import { applyCoupon, clearAllCoupons, selectNormalizedCoupons } from "../../store/couponSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
+import { getCouponDisplayText, validateCoupon, isCouponStackable, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
 import styles from "./Coupons.module.css";
 import Header from "../../components/common/Header";
+import BottomButton from "../../components/common/BottomButton";
 
 export default function Coupons() {
   const navigate = useNavigate();
@@ -11,7 +14,20 @@ export default function Coupons() {
   const dispatch = useDispatch();
   const coupons = useSelector(selectNormalizedCoupons);
   const orderMenus = useSelector(state => state.cart.orderMenus);
+  const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const fromCart = location.state && location.state.from === 'cart';
+
+  // 임시 선택된 쿠폰 상태 (실제 적용 전)
+  const [tempSelectedCouponIds, setTempSelectedCouponIds] = React.useState([...selectedCouponIds]);
+
+  // selectedCouponIds가 변경될 때 임시 상태도 동기화
+  React.useEffect(() => {
+    setTempSelectedCouponIds([...selectedCouponIds]);
+  }, [selectedCouponIds]);
+
+  // 장바구니 총액 계산
+  const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+  const deliveryFee = 2500; // 기본 배달비
 
   // 유효기간 포맷팅 함수
   const formatValidDate = (validDate) => {
@@ -42,77 +58,111 @@ export default function Coupons() {
     }
   };
 
-  // 쿠폰 사용 가능 여부 체크
+  // 쿠폰 사용 가능 여부 체크 (임시 선택 기준)
   const isCouponUsable = (coupon) => {
-    const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
-    const validDateInfo = formatValidDate(coupon.validDate);
-    
-    return !coupon.isUsed && 
-           !coupon.isExpired && 
-           !validDateInfo.isExpired &&
-           cartTotal >= (coupon.minOrderAmount || 0);
+    const validationResult = validateCoupon(coupon, cartTotal);
+    if (!validationResult.isValid) return false;
+
+    // 임시 선택된 쿠폰은 항상 사용 가능 (해제를 위해)
+    const isSelected = tempSelectedCouponIds.includes(coupon.id);
+    if (isSelected) return true;
+
+    // 이미 선택된 쿠폰이 있는 경우 중복 로직 확인
+    if (tempSelectedCouponIds.length > 0) {
+      const selectedCoupons = coupons.filter(c => tempSelectedCouponIds.includes(c.id));
+      const hasNonStackable = selectedCoupons.some(c => !isCouponStackable(c));
+      
+      // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
+      if (hasNonStackable) return false;
+      
+      // 현재 쿠폰이 비중복이면 다른 쿠폰이 이미 있을 때 선택 불가
+      if (!isCouponStackable(coupon) && tempSelectedCouponIds.length > 0) return false;
+    }
+
+    return true;
   };
 
-  const handleUseCoupon = (couponId) => {
-    console.log('=== 🎫 쿠폰 사용하기 클릭 ===');
-    console.log('클릭한 쿠폰 ID:', couponId, typeof couponId);
+  // 쿠폰 임시 선택/해제 처리
+  const handleCouponSelect = (couponId) => {
+    console.log('🎫 쿠폰 임시 선택/해제:', couponId);
     
-    try {
-      // 장바구니 총액 계산
-      const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
-      
-      console.log('🎫 쿠폰 적용 시도:', {
-        couponId,
-        couponIdType: typeof couponId,
-        cartTotal,
-        cartTotalType: typeof cartTotal,
-        orderMenusCount: orderMenus.length,
-        orderMenus: orderMenus.map(m => ({
-          menuName: m.menuName,
-          quantity: m.quantity,
-          menuPrice: m.menuPrice,
-          total: calculateCartTotal(m)
-        })),
-        모든쿠폰: coupons.map(c => ({
-          id: c.id,
-          idType: typeof c.id,
-          name: c.name,
-          discount: c.discount,
-          minOrderAmount: c.minOrderAmount,
-          isUsed: c.isUsed,
-          isExpired: c.isExpired
-        }))
-      });
-      
-      if (cartTotal <= 0) {
-        alert('장바구니가 비어있습니다.');
-        return;
-      }
+    const coupon = coupons.find(c => c.id === couponId);
+    if (!coupon) return;
 
-      console.log('🚀 Redux applyCoupon 액션 디스패치 시작');
-      console.log('디스패치할 payload:', { couponId, cartTotal });
-      const result = dispatch(applyCoupon({ couponId, cartTotal }));
-      console.log('🎯 Redux applyCoupon 액션 디스패치 완료. 반환값:', result);
+    const validationResult = validateCoupon(coupon, cartTotal);
+    if (!validationResult.isValid) {
+      alert(validationResult.reason);
+      return;
+    }
+
+    setTempSelectedCouponIds(prevIds => {
+      const newIds = [...prevIds];
       
-      // 즉시 Redux 상태 확인
-      setTimeout(() => {
-        if (window.__REDUX_STORE__) {
-          const newState = window.__REDUX_STORE__.getState();
-          console.log('🔍 쿠폰 적용 후 Redux 상태:', {
-            selectedCouponId: newState.coupon.selectedCouponId,
-            selectedCouponIds: newState.coupon.selectedCouponIds,
-            전체쿠폰상태: newState.coupon
-          });
+      if (newIds.includes(couponId)) {
+        // 쿠폰 해제
+        return newIds.filter(id => id !== couponId);
+      } else {
+        // 쿠폰 선택
+        const selectedCoupons = coupons.filter(c => newIds.includes(c.id));
+        const hasNonStackable = selectedCoupons.some(c => !isCouponStackable(c));
+        
+        // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
+        if (hasNonStackable) {
+          alert('이미 중복 불가능한 쿠폰이 선택되어 있습니다.');
+          return newIds;
         }
-        if (window.debugRedux) {
-          window.debugRedux.logCouponState();
+        
+        // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
+        if (!isCouponStackable(coupon)) {
+          return [couponId];
         }
-        console.log('📱 장바구니로 이동');
-        navigate('/cart');
-      }, 200);
-    } catch (error) {
-      console.error('쿠폰 적용 중 오류가 발생했습니다:', error);
-      alert('쿠폰 적용에 실패했습니다. 다시 시도해주세요.');
+        
+        return [...newIds, couponId];
+      }
+    });
+  };
+
+  // 실제 쿠폰 적용 및 카트로 이동
+  const handleApplyCoupons = () => {
+    console.log('🎫 쿠폰 적용 및 카트 이동:', tempSelectedCouponIds);
+    
+    // 임시 선택된 쿠폰들을 실제 Redux 상태에 적용
+    tempSelectedCouponIds.forEach(couponId => {
+      if (!selectedCouponIds.includes(couponId)) {
+        dispatch(applyCoupon({ couponId, cartTotal }));
+      }
+    });
+    
+    // 선택 해제된 쿠폰들 제거
+    selectedCouponIds.forEach(couponId => {
+      if (!tempSelectedCouponIds.includes(couponId)) {
+        dispatch(applyCoupon({ couponId, cartTotal })); // 토글 방식으로 제거
+      }
+    });
+    
+    navigate('/cart');
+  };
+
+  // 쿠폰 적용하지 않고 카트로 이동
+  const handleSkipCoupons = () => {
+    console.log('🎫 쿠폰 적용하지 않고 카트 이동');
+    
+    // 모든 쿠폰 해제
+    dispatch(clearAllCoupons());
+    
+    navigate('/cart');
+  };
+
+  // 임시 선택된 쿠폰들의 할인 금액 계산
+  const tempSelectedCoupons = coupons.filter(c => tempSelectedCouponIds.includes(c.id));
+  const discountResult = calculateMultipleCouponsDiscount(tempSelectedCoupons, cartTotal, deliveryFee);
+  
+  // 바텀 버튼 텍스트 결정
+  const getBottomButtonText = () => {
+    if (tempSelectedCouponIds.length === 0) {
+      return '쿠폰 적용 안함';
+    } else {
+      return `${discountResult.totalDiscount.toLocaleString()}원 쿠폰 적용하기`;
     }
   };
 
@@ -132,13 +182,17 @@ export default function Coupons() {
           {coupons.map((coupon) => {
             const validDateInfo = formatValidDate(coupon.validDate);
             const isUsable = isCouponUsable(coupon);
-            const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+            const validationResult = validateCoupon(coupon, cartTotal);
+            const isSelected = tempSelectedCouponIds.includes(coupon.id);
             
             return (
-              <li key={coupon.id} className={`${styles.couponCard} ${!isUsable ? styles.disabled : ''}`}>
+              <li key={coupon.id} className={`${styles.couponCard} ${!isUsable ? styles.disabled : ''} ${isSelected ? styles.selected : ''}`}>
                 <div className={styles.couponInfo}>
                   <p className={styles.amount}>
-                    {coupon.discount.toLocaleString()}원 할인
+                    {getCouponDisplayText(coupon, cartTotal, deliveryFee)}
+                    {isCouponStackable(coupon) && (
+                      <span className={styles.stackableTag}>중복가능</span>
+                    )}
                   </p>
                   <span className={styles.tag}>{coupon.type}</span>
                   <p className={styles.desc}>
@@ -146,6 +200,11 @@ export default function Coupons() {
                     {coupon.minOrderAmount > 0 && (
                       <span style={{ color: cartTotal >= coupon.minOrderAmount ? '#2196f3' : '#ff4444' }}>
                         {' '}(최소 {coupon.minOrderAmount.toLocaleString()}원)
+                      </span>
+                    )}
+                    {coupon.maxDiscount && coupon.type === 'percentage' && (
+                      <span style={{ color: '#888', fontSize: '13px' }}>
+                        {' '}최대 {coupon.maxDiscount.toLocaleString()}원
                       </span>
                     )}
                   </p>
@@ -158,25 +217,33 @@ export default function Coupons() {
                     {coupon.isUsed && <span style={{ color: '#ff4444' }}>🚫 이미 사용됨</span>}
                     {coupon.isExpired && <span style={{ color: '#ff4444' }}>⏰ 만료됨</span>}
                     {validDateInfo.isExpired && <span style={{ color: '#ff4444' }}>📅 유효기간 만료</span>}
-                    {fromCart && cartTotal < (coupon.minOrderAmount || 0) && (
+                    {fromCart && !validationResult.isValid && (
                       <span style={{ color: '#ff4444' }}>
-                        💰 최소 주문 금액 미달 (현재: {cartTotal.toLocaleString()}원)
+                        💰 {validationResult.reason}
+                      </span>
+                    )}
+                    {fromCart && tempSelectedCouponIds.length > 0 && !isCouponStackable(coupon) && !isSelected && (
+                      <span style={{ color: '#ff4444' }}>
+                        🚫 중복 불가 (다른 쿠폰과 함께 사용 불가)
                       </span>
                     )}
                     {isUsable && <span style={{ color: '#4caf50' }}>✅ 사용 가능</span>}
+                    {isSelected && <span style={{ color: '#2196f3' }}>🎯 선택됨</span>}
                   </div>
                 </div>
                 {fromCart ? (
                   <button
                     className={styles.linkBtn}
-                    onClick={() => handleUseCoupon(coupon.id)}
+                    onClick={() => handleCouponSelect(coupon.id)}
                     disabled={!isUsable}
                     style={{ 
                       opacity: isUsable ? 1 : 0.5,
-                      cursor: isUsable ? 'pointer' : 'not-allowed'
+                      cursor: isUsable ? 'pointer' : 'not-allowed',
+                      backgroundColor: isSelected ? '#2196f3' : undefined,
+                      color: isSelected ? 'white' : undefined
                     }}
                   >
-                    {isUsable ? '쿠폰 사용하기' : '사용 불가'}
+                    {isSelected ? '선택됨' : isUsable ? '선택하기' : '사용 불가'}
                   </button>
                 ) : (
                   <button
@@ -192,6 +259,15 @@ export default function Coupons() {
             );
           })}
         </ul>
+      )}
+      
+      {/* 바텀 버튼 - 장바구니에서 온 경우에만 표시 */}
+      {fromCart && (
+        <BottomButton
+          onClick={tempSelectedCouponIds.length > 0 ? handleApplyCoupons : handleSkipCoupons}
+        >
+          {getBottomButtonText()}
+        </BottomButton>
       )}
     </div>
   );

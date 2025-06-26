@@ -2,15 +2,22 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { selectNormalizedCoupons } from '../../../store/couponSlice';
+import { calculateMultipleCouponsDiscount, getCouponDisplayText } from '../../../utils/couponUtils';
+import calculateCartTotal from '../../../utils/calculateCartTotal';
 import styles from '../../../pages/orders/Cart.module.css';
 
 export default function CartCouponSection() {
   const navigate = useNavigate();
   const coupons = useSelector(selectNormalizedCoupons);
+  const orderMenus = useSelector(state => state.cart.orderMenus);
   
   // Cart.jsx와 일관성을 위해 selectedCouponIds 사용
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
+  
+  // 주문 금액 및 배달비 계산
+  const orderPrice = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
+  const deliveryFee = 2500; // 기본 배달비 (실제로는 매장 정보에서 가져와야 함)
   
   // 전체 coupon 상태 디버깅
   const couponState = useSelector(state => state.coupon);
@@ -18,13 +25,24 @@ export default function CartCouponSection() {
   // 디버깅을 위한 콘솔 로그 (조건부 - 쿠폰 선택 상태 변경 시만)
   React.useEffect(() => {
     if (selectedCouponIds.length > 0 || appliedCoupons.length > 0) {
+      const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
       console.log('🎫 CartCouponSection 쿠폰 상태 변경:', {
         selectedCouponIds,
         appliedCouponsCount: appliedCoupons.length,
-        appliedCoupons: appliedCoupons.map(c => ({ id: c.id, name: c.name, discount: c.discount }))
+        appliedCoupons: appliedCoupons.map(c => ({ 
+          id: c.id, 
+          name: c.name, 
+          discount: c.discount,
+          type: c.type,
+          isStackable: c.isStackable
+        })),
+        할인결과: discountResult
       });
     }
-  }, [selectedCouponIds.length, appliedCoupons.length]);
+  }, [selectedCouponIds.length, appliedCoupons.length, orderPrice]);
+
+  // 다중 쿠폰 할인 금액 계산
+  const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
 
   return (
     <section className={styles.section}>
@@ -47,14 +65,24 @@ export default function CartCouponSection() {
           appliedCoupons.length === 1 ? (
             <>
               {appliedCoupons[0].name}
-              <span className={styles.discountAmount}>- {appliedCoupons[0].discount.toLocaleString()}원</span>
+              <span className={styles.discountAmount}>- {discountResult.totalDiscount.toLocaleString()}원</span>
+              {discountResult.orderDiscount > 0 && discountResult.deliveryDiscount > 0 && (
+                <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+                  주문할인 {discountResult.orderDiscount.toLocaleString()}원 + 배달할인 {discountResult.deliveryDiscount.toLocaleString()}원
+                </div>
+              )}
             </>
           ) : (
             <>
               {appliedCoupons.length}개 쿠폰 적용
               <span className={styles.discountAmount}>
-                - {appliedCoupons.reduce((sum, c) => sum + c.discount, 0).toLocaleString()}원
+                - {discountResult.totalDiscount.toLocaleString()}원
               </span>
+              <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+                {discountResult.orderDiscount > 0 && `주문할인 ${discountResult.orderDiscount.toLocaleString()}원`}
+                {discountResult.orderDiscount > 0 && discountResult.deliveryDiscount > 0 && ' + '}
+                {discountResult.deliveryDiscount > 0 && `배달할인 ${discountResult.deliveryDiscount.toLocaleString()}원`}
+              </div>
             </>
           )
         ) : (

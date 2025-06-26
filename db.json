@@ -101,7 +101,8 @@
       "minOrderAmount": 15000,
       "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": true
     },
     {
       "id": "2",
@@ -112,7 +113,8 @@
       "minOrderAmount": 10000,
       "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": true
     },
     {
       "id": "3",
@@ -122,9 +124,10 @@
       "description": "주말 한정 전 메뉴 15% 할인 (최대 5,000원)",
       "minOrderAmount": 20000,
       "maxDiscount": 5000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2025-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": false
     },
     {
       "id": "4",
@@ -135,7 +138,8 @@
       "minOrderAmount": 25000,
       "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": true,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": false
     },
     {
       "id": "5",
@@ -146,7 +150,8 @@
       "minOrderAmount": 5000,
       "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": true
     }
   ],
   "stores": [
