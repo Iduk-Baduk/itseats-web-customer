@@ -60,13 +60,40 @@ export default function Cart() {
       menuId: m.menuId,
       menuName: m.menuName,
       quantity: m.quantity,
+      menuPrice: m.menuPrice,
       total: calculateCartTotal(m)
     })),
     couponsCount: coupons.length,
+    couponsDetails: coupons.map(c => ({
+      id: c.id,
+      name: c.name,
+      discount: c.discount,
+      minOrderAmount: c.minOrderAmount,
+      isUsed: c.isUsed,
+      isExpired: c.isExpired
+    })),
     selectedCouponIds: selectedCouponIds,
     appliedCouponsCount: appliedCoupons.length,
+    appliedCouponsDetails: appliedCoupons.map(c => ({
+      id: c.id,
+      name: c.name,
+      discount: c.discount
+    })),
     storeInfo: storeInfo ? { id: storeInfo.id, name: storeInfo.name } : '없음'
   });
+  
+  // 브라우저 콘솔에서 쉽게 확인할 수 있도록 전역 함수로 노출
+  if (process.env.NODE_ENV === 'development') {
+    window.cartDebug = () => {
+      console.log('=== 🛒 Cart 디버깅 정보 ===');
+      console.log('장바구니 총액:', orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0));
+      console.log('적용된 쿠폰 할인:', appliedCoupons.reduce((sum, c) => sum + c.discount, 0));
+      if (window.debugRedux) {
+        window.debugRedux.logCouponState();
+        window.debugRedux.logCartState();
+      }
+    };
+  }
   
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 

@@ -7,8 +7,10 @@ import styles from '../../../pages/orders/Cart.module.css';
 export default function CartCouponSection() {
   const navigate = useNavigate();
   const coupons = useSelector(selectNormalizedCoupons);
-  const selectedCouponId = useSelector(state => state.coupon.selectedCouponId);
-  const appliedCoupon = coupons.find(c => c.id === selectedCouponId);
+  
+  // Cart.jsx와 일관성을 위해 selectedCouponIds 사용
+  const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
+  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
   // 전체 coupon 상태 디버깅
   const couponState = useSelector(state => state.coupon);
@@ -16,8 +18,9 @@ export default function CartCouponSection() {
   // 디버깅을 위한 콘솔 로그
   console.log('🎫 CartCouponSection 디버깅:', {
     coupons: coupons.length,
-    selectedCouponId,
-    appliedCoupon: appliedCoupon ? appliedCoupon.name : '없음',
+    selectedCouponIds,
+    appliedCouponsCount: appliedCoupons.length,
+    appliedCoupons: appliedCoupons.map(c => ({ id: c.id, name: c.name, discount: c.discount })),
     couponDetails: coupons.map(c => ({
       id: c.id,
       name: c.name,
@@ -45,11 +48,20 @@ export default function CartCouponSection() {
       </div>
       {/* 적용된 쿠폰 요약 */}
       <div className={styles.appliedCoupon}>
-        {appliedCoupon ? (
-          <>
-            {appliedCoupon.name}
-            <span className={styles.discountAmount}>- {appliedCoupon.discount.toLocaleString()}원</span>
-          </>
+        {appliedCoupons.length > 0 ? (
+          appliedCoupons.length === 1 ? (
+            <>
+              {appliedCoupons[0].name}
+              <span className={styles.discountAmount}>- {appliedCoupons[0].discount.toLocaleString()}원</span>
+            </>
+          ) : (
+            <>
+              {appliedCoupons.length}개 쿠폰 적용
+              <span className={styles.discountAmount}>
+                - {appliedCoupons.reduce((sum, c) => sum + c.discount, 0).toLocaleString()}원
+              </span>
+            </>
+          )
         ) : (
           <span className={styles.noCoupon}>쿠폰을 선택하세요</span>
         )}

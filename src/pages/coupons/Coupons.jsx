@@ -25,7 +25,16 @@ export default function Coupons() {
         orderMenus: orderMenus.map(m => ({
           menuName: m.menuName,
           quantity: m.quantity,
+          menuPrice: m.menuPrice,
           total: calculateCartTotal(m)
+        })),
+        모든쿠폰: coupons.map(c => ({
+          id: c.id,
+          name: c.name,
+          discount: c.discount,
+          minOrderAmount: c.minOrderAmount,
+          isUsed: c.isUsed,
+          isExpired: c.isExpired
         }))
       });
       
@@ -38,13 +47,22 @@ export default function Coupons() {
       const result = dispatch(applyCoupon({ couponId, cartTotal }));
       console.log('🎯 Redux applyCoupon 액션 결과:', result);
       
-      console.log('✅ 쿠폰 적용 액션 디스패치 완료');
-      
-      // Redux 상태가 업데이트될 시간을 줌
+      // 즉시 Redux 상태 확인
       setTimeout(() => {
+        if (window.__REDUX_STORE__) {
+          const newState = window.__REDUX_STORE__.getState();
+          console.log('🔍 쿠폰 적용 후 Redux 상태:', {
+            selectedCouponId: newState.coupon.selectedCouponId,
+            selectedCouponIds: newState.coupon.selectedCouponIds,
+            전체쿠폰상태: newState.coupon
+          });
+        }
+        if (window.debugRedux) {
+          window.debugRedux.logCouponState();
+        }
         console.log('📱 장바구니로 이동');
         navigate('/cart');
-      }, 100);
+      }, 200);
     } catch (error) {
       console.error('쿠폰 적용 중 오류가 발생했습니다:', error);
       alert('쿠폰 적용에 실패했습니다. 다시 시도해주세요.');
