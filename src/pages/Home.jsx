@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
+import OptimizedImage from "../components/common/OptimizedImage";
 import styles from "./Home.module.css";
 import StoreListItem from "../components/stores/StoreListItem";
 import BottomButton from "../components/common/BottomButton";
@@ -13,12 +14,16 @@ function HomeHeader() {
   const navigate = useNavigate();
   const { selectedAddress } = useAddressRedux();
 
+  const handleAddressClick = useCallback(() => {
+    navigate("/address");
+  }, [navigate]);
+
   return (
     <header className={styles.header}>
       <button
         className={styles.addressButton}
         aria-label="주소 관리"
-        onClick={() => navigate("/address")}
+        onClick={handleAddressClick}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path
@@ -51,11 +56,29 @@ export default function Home() {
   const [keyword, setKeyword] = useState("");
   const orderMenus = useSelector((state) => state.cart.orderMenus);
 
-  const cartInfo = {
-    orderPrice: orderMenus.reduce((sum, m) => sum + m.menuPrice * m.quantity, 0),
-    totalPrice: orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0),
-    itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-  };
+  // useCallback으로 이벤트 핸들러 최적화
+  const handleKeywordChange = useCallback((e) => {
+    setKeyword(e.target.value);
+  }, []);
+
+  const handleStoreClick = useCallback((storeId) => {
+    navigate(`/stores/${storeId}`);
+  }, [navigate]);
+
+  const handleCartClick = useCallback(() => {
+    navigate("/cart");
+  }, [navigate]);
+
+  // useMemo로 장바구니 정보 계산 최적화
+  const cartInfo = useMemo(() => {
+    return {
+      orderPrice: orderMenus.reduce((sum, m) => sum + m.menuPrice * m.quantity, 0),
+      totalPrice: orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0),
+      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
+    };
+  }, [orderMenus]);
+
+  const hasItemsInCart = cartInfo.itemCount > 0;
 
   return (
     <>
@@ -63,12 +86,19 @@ export default function Home() {
       <div className={styles.container}>
         <SearchInput
           value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          onChange={handleKeywordChange}
           showIcon={true}
         />
         <MenuGrid />
         <div className={styles.bannerContainer}>
-          <img src="/samples/banner.jpg" alt="배너 이미지" />
+          <OptimizedImage 
+            src="/samples/banner.jpg" 
+            alt="홈 페이지 배너 이미지" 
+            priority={true}
+            className={styles.bannerImage}
+            width={350}
+            height={200}
+          />
         </div>
       </div>
 
@@ -78,15 +108,15 @@ export default function Home() {
           <StoreListItem
             key={store.storeId}
             store={store}
-            onClick={() => navigate(`/stores/${store.storeId}`)}
+            onClick={() => handleStoreClick(store.storeId)}
           />
         ))}
       </div>
 
-      {orderMenus.length > 0 && (
+      {hasItemsInCart && (
         <BottomButton
           bottom="60px"
-          onClick={() => navigate("/cart")}
+          onClick={handleCartClick}
           cartInfo={cartInfo}
         />
       )}
