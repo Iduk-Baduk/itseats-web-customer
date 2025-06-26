@@ -1,0 +1,269 @@
+/* ===== 기본 태그 스타일 ===== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+  box-sizing: border-box;
+  line-height: 1;
+}
+
+/* ===== 크기 변형 ===== */
+.tag.small {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  min-height: 20px;
+}
+
+.tag.medium {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  min-height: 24px;
+}
+
+.tag.large {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  min-height: 32px;
+}
+
+/* ===== 둥근 모서리 ===== */
+.tag.rounded {
+  border-radius: 999px;
+}
+
+/* ===== 변형별 스타일 ===== */
+
+/* Default */
+.tag.default {
+  background-color: var(--background-color-secondary, #f5f5f5);
+  color: var(--black-600, #666);
+  border-color: var(--border-color-light, #e8e8e8);
+}
+
+.tag.default.outlined {
+  background-color: transparent;
+  border-color: var(--border-color, #ddd);
+}
+
+/* Primary */
+.tag.primary {
+  background-color: var(--theme-color);
+  color: white;
+}
+
+.tag.primary.outlined {
+  background-color: transparent;
+  color: var(--theme-color);
+  border-color: var(--theme-color);
+}
+
+/* Success */
+.tag.success {
+  background-color: #10b981;
+  color: white;
+}
+
+.tag.success.outlined {
+  background-color: transparent;
+  color: #10b981;
+  border-color: #10b981;
+}
+
+/* Warning */
+.tag.warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.tag.warning.outlined {
+  background-color: transparent;
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+/* Error */
+.tag.error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.tag.error.outlined {
+  background-color: transparent;
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Info */
+.tag.info {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.tag.info.outlined {
+  background-color: transparent;
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* ===== 아이콘 스타일 ===== */
+.icon {
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+/* ===== 제거 가능한 태그 ===== */
+.tag.removable {
+  padding-right: 4px;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  color: inherit;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.removeButton:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tag.outlined .removeButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== 호버 효과 ===== */
+.tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tag.outlined:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== PriceTag 관련 스타일 ===== */
+.priceTagContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.discountTag {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+.originalPrice {
+  font-size: 12px;
+  color: var(--black-400, #999);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .tag.large {
+    padding: 6px 12px;
+    font-size: 13px;
+    min-height: 28px;
+  }
+  
+  .tag.medium {
+    padding: 5px 10px;
+    font-size: 11px;
+    min-height: 22px;
+  }
+  
+  .tag.small {
+    padding: 3px 6px;
+    font-size: 10px;
+    min-height: 18px;
+  }
+  
+  .priceTagContainer {
+    gap: 6px;
+  }
+  
+  .originalPrice {
+    font-size: 11px;
+  }
+}
+
+/* ===== 접근성 ===== */
+.tag:focus-visible {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+.removeButton:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+}
+
+/* ===== 애니메이션 ===== */
+.tag {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== 특수 상태 ===== */
+.tag.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 다크 모드 대응 (필요시) */
+@media (prefers-color-scheme: dark) {
+  .tag.default {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* 고대비 모드 대응 */
+@media (prefers-contrast: high) {
+  .tag {
+    border-width: 2px;
+  }
+  
+  .tag.outlined {
+    border-width: 2px;
+  }
+} 

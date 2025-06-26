@@ -6,7 +6,7 @@ import { fetchStoreById } from "../../store/storeSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import { ConfirmModal } from "../../components/common/Modal";
 import styles from "./MenuDetail.module.css";
 import OptionInput from "../../components/stores/OptionInput";
 import BottomButton from "../../components/common/BottomButton";
@@ -47,6 +47,18 @@ export default function MenuDetail() {
       dispatch(fetchStoreById(storeId));
     }
   }, [dispatch, storeId]);
+
+  // 컴포넌트 마운트 시 현재 장바구니 상태 확인 (디버깅용)
+  useEffect(() => {
+    console.log('📍 MenuDetail 마운트 - 장바구니 상태 확인:', {
+      currentStore,
+      currentStoreExists: !!currentStore,
+      storeId: currentStore?.storeId,
+      storeName: currentStore?.storeName,
+      routeStoreId: storeId,
+      comparison: currentStore ? String(currentStore.storeId) !== String(storeId) : 'currentStore 없음'
+    });
+  }, [currentStore, storeId]);
   
   // 메뉴 데이터가 로딩되면 옵션 초기화
   useEffect(() => {
@@ -118,8 +130,8 @@ export default function MenuDetail() {
       menuOptions: menuOptions, // API 스펙에 맞는 구조
       menuOption: selectedOptions, // 기존 구조 (하위 호환성)
       quantity,
-      // 가게 정보 추가
-      storeId: parseInt(storeId),
+      // 가게 정보 추가 (일관된 문자열 타입 사용)
+      storeId: String(storeId),
       storeName: store.name,
       storeImage: store.imageUrl
     };
@@ -133,14 +145,19 @@ export default function MenuDetail() {
     }
     
     // 디버깅: 가게 ID 비교
-    // console.log('🛒 addToCart 디버깅:', {
-    //   currentStore,
-    //   menuData: {
-    //     storeId: menuData.storeId,
-    //     storeName: menuData.storeName
-    //   },
-    //   comparison: String(currentStore?.storeId) !== String(menuData.storeId)
-    // });
+    console.log('🛒 addToCart 디버깅:', {
+      currentStore,
+      menuData: {
+        storeId: menuData.storeId,
+        storeName: menuData.storeName
+      },
+      comparison: String(currentStore?.storeId) !== String(menuData.storeId),
+      currentStoreExists: !!currentStore,
+      storeIdTypes: {
+        current: typeof currentStore?.storeId,
+        new: typeof menuData.storeId
+      }
+    });
     
     // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인 (타입 안전한 비교)
     if (currentStore && String(currentStore.storeId) !== String(menuData.storeId)) {
@@ -364,19 +381,18 @@ export default function MenuDetail() {
           </BottomButton>
         )}
 
-        {showStoreChangeModal && (
-          <ConfirmModal
-            message={
-              currentStore ? 
-              `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${store?.name}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
-              `장바구니를 새로 시작하시겠습니까?`
-            }
-            confirmText="네, 새로 담기"
-            cancelText="취소"
-            onConfirm={handleReplaceCart}
-            onCancel={handleKeepCurrentCart}
-          />
-        )}
+        <ConfirmModal
+          isOpen={showStoreChangeModal}
+          onClose={handleKeepCurrentCart}
+          onConfirm={handleReplaceCart}
+          message={
+            currentStore ? 
+            `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${store?.name}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
+            `장바구니를 새로 시작하시겠습니까?`
+          }
+          confirmText="네, 새로 담기"
+          cancelText="취소"
+        />
       </div>
     </SlideInFromRight>
   );

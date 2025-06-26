@@ -1,9 +1,19 @@
-import styles from "./LineButton.module.css";
+import Button from "./Button";
 
-export default function LineButton({ children, onClick, className = "", disabled = false }) {
+/**
+ * @deprecated LineButton은 통합 Button 컴포넌트로 대체되었습니다.
+ * Button 컴포넌트에 variant="line"을 사용하세요.
+ */
+export default function LineButton({ children, onClick, className = "", disabled = false, ...props }) {
   return (
-    <button className={`${styles.button} ${className}`} onClick={onClick} disabled={disabled}>
+    <Button 
+      variant="line" 
+      onClick={onClick} 
+      className={className} 
+      disabled={disabled}
+      {...props}
+    >
       {children}
-    </button>
+    </Button>
   );
 }

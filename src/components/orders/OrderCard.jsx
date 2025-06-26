@@ -1,5 +1,6 @@
 import Button from "../common/basic/Button";
-import LineButton from "../common/basic/LineButton";
+import Card from "../common/Card";
+import Tag, { StatusTag } from "../common/Tag";
 import { ORDER_STATUS } from "../../constants/orderStatus";
 import styles from "./OrderCard.module.css";
 
@@ -27,12 +28,18 @@ export default function OrderCard({
 
   return (
     <div className={className}>
-      <div className={styles.orderCard}>
+      <Card variant="default" interactive className={styles.orderCard}>
         <div className={styles.storeInfo}>
           <div>
             <strong>{orderData.storeName}</strong>
             <p className={styles.date}>{orderData.date}</p>
-            <p>{orderData.status} ⭐ ⭐ ⭐ ⭐ ⭐</p>
+            <div className={styles.statusContainer}>
+              <StatusTag 
+                status={orderData.status === ORDER_STATUS.DELIVERED ? 'completed' : 'pending'} 
+                size="small"
+              />
+              <div className={styles.rating}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+            </div>
           </div>
           <img src={orderData.storeImage} className={styles.image} />
         </div>
@@ -41,17 +48,26 @@ export default function OrderCard({
           <p className={styles.summary}>{orderData.menuSummary}</p>
           <div className={styles.priceMeta}>
             <span>{(orderData.price || 0).toLocaleString()}원</span>
-            <span className={styles.badge}>영수증</span>
+            <Tag variant="default" size="small" className={styles.badge}>
+              영수증
+            </Tag>
           </div>
         </div>
 
         <div className={styles.actions}>
           {orderData.isCompleted && (
             <>
-              <Button className={styles.reorderButton} onClick={onReorder}>
+              <Button 
+                variant="primary" 
+                size="medium"
+                className={styles.reorderButton} 
+                onClick={onReorder}
+              >
                 재주문하기
               </Button>
-              <LineButton
+              <Button
+                variant="line"
+                size="medium"
                 className={
                   orderData.showReviewButton
                     ? styles.reviewButton
@@ -60,11 +76,16 @@ export default function OrderCard({
                 onClick={onWriteReview}
               >
                 {orderData.showReviewButton ? "작성한 리뷰 보기" : "리뷰 쓰기"}
-              </LineButton>
+              </Button>
             </>
           )}
           {!orderData.isCompleted && (
-            <Button className={styles.statusButton} onClick={onOpenStatus}>
+            <Button 
+              variant="primary" 
+              size="medium"
+              className={styles.statusButton} 
+              onClick={onOpenStatus}
+            >
               배달 현황 보기
             </Button>
           )}
@@ -73,7 +94,7 @@ export default function OrderCard({
         {orderData.remainingDays && (
           <p className={styles.remaining}>리뷰 작성 기간이 {orderData.remainingDays}일 남았습니다.</p>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
