@@ -86,27 +86,47 @@ const couponSlice = createSlice({
   initialState,
   reducers: {
     applyCoupon(state, action) {
+      console.log('🎫 === applyCoupon 액션 시작 ===');
+      console.log('🎫 받은 payload:', action.payload);
+      
       const { couponId, cartTotal } = action.payload;
       
       console.log('🎫 applyCoupon 액션 실행:', {
         couponId,
+        couponIdType: typeof couponId,
         cartTotal,
+        cartTotalType: typeof cartTotal,
         availableCoupons: state.coupons.length,
-        currentSelectedId: state.selectedCouponId
+        currentSelectedId: state.selectedCouponId,
+        currentSelectedIds: state.selectedCouponIds,
+        allCouponIds: state.coupons.map(c => ({ id: c.id, idType: typeof c.id }))
       });
       
       // cartTotal이 제공되지 않았을 때 경고
-      if (cartTotal === undefined) {
-        console.warn('applyCoupon: cartTotal이 제공되지 않았습니다');
+      if (cartTotal === undefined || cartTotal === null) {
+        console.error('❌ applyCoupon: cartTotal이 제공되지 않았습니다', { cartTotal });
         return;
       }
       
-      const coupon = state.coupons.find(c => c.id === couponId);
-      console.log('🎫 찾은 쿠폰:', coupon);
+      // ID 타입 안전한 검색 (문자열과 숫자 모두 고려)
+      const coupon = state.coupons.find(c => c.id === couponId || c.id === String(couponId) || String(c.id) === String(couponId));
+      console.log('🎫 쿠폰 검색 결과:', {
+        찾은쿠폰: coupon,
+        전체쿠폰수: state.coupons.length,
+        검색한ID: couponId,
+        검색한ID타입: typeof couponId,
+        모든쿠폰: state.coupons.map(c => ({ id: c.id, idType: typeof c.id, name: c.name })),
+        검색방법들: {
+          정확일치: state.coupons.find(c => c.id === couponId),
+          문자열변환: state.coupons.find(c => String(c.id) === String(couponId)),
+          숫자변환시도: state.coupons.find(c => c.id === Number(couponId))
+        }
+      });
       
       if (coupon) {
+        console.log('🎫 쿠폰 발견! 유효성 검사 진행...');
         const isValid = isValidCoupon(coupon, cartTotal);
-        console.log('🎫 쿠폰 유효성 검사:', { 
+        console.log('🎫 쿠폰 유효성 검사 결과:', { 
           isValid, 
           minOrderAmount: coupon.minOrderAmount,
           cartTotal,
@@ -115,18 +135,36 @@ const couponSlice = createSlice({
         });
         
         if (isValid) {
+          console.log('✅ 쿠폰이 유효함! 상태 업데이트 시작...');
+          const previousState = {
+            selectedCouponId: state.selectedCouponId,
+            selectedCouponIds: [...state.selectedCouponIds]
+          };
+          
           state.selectedCouponId = couponId;
           // 다중 쿠폰을 위한 배열도 업데이트
           if (!state.selectedCouponIds.includes(couponId)) {
             state.selectedCouponIds.push(couponId);
           }
-          console.log('✅ 쿠폰 적용 성공:', couponId);
+          
+          console.log('✅ 쿠폰 적용 성공!', {
+            couponId,
+            이전상태: previousState,
+            새로운상태: {
+              selectedCouponId: state.selectedCouponId,
+              selectedCouponIds: [...state.selectedCouponIds]
+            }
+          });
         } else {
-          console.warn('❌ 쿠폰 적용 실패: 유효하지 않은 쿠폰');
+          console.error('❌ 쿠폰 적용 실패: 유효하지 않은 쿠폰');
         }
       } else {
-        console.warn('❌ 쿠폰 적용 실패: 쿠폰을 찾을 수 없음');
+        console.error('❌ 쿠폰 적용 실패: 쿠폰을 찾을 수 없음', {
+          찾는ID: couponId,
+          가능한ID들: state.coupons.map(c => c.id)
+        });
       }
+      console.log('🎫 === applyCoupon 액션 종료 ===');
     },
     clearCoupon(state) {
       state.selectedCouponId = null;

@@ -14,13 +14,18 @@ export default function Coupons() {
   const fromCart = location.state && location.state.from === 'cart';
 
   const handleUseCoupon = (couponId) => {
+    console.log('=== 🎫 쿠폰 사용하기 클릭 ===');
+    console.log('클릭한 쿠폰 ID:', couponId, typeof couponId);
+    
     try {
       // 장바구니 총액 계산
       const cartTotal = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
       
       console.log('🎫 쿠폰 적용 시도:', {
         couponId,
+        couponIdType: typeof couponId,
         cartTotal,
+        cartTotalType: typeof cartTotal,
         orderMenusCount: orderMenus.length,
         orderMenus: orderMenus.map(m => ({
           menuName: m.menuName,
@@ -30,6 +35,7 @@ export default function Coupons() {
         })),
         모든쿠폰: coupons.map(c => ({
           id: c.id,
+          idType: typeof c.id,
           name: c.name,
           discount: c.discount,
           minOrderAmount: c.minOrderAmount,
@@ -44,8 +50,9 @@ export default function Coupons() {
       }
 
       console.log('🚀 Redux applyCoupon 액션 디스패치 시작');
+      console.log('디스패치할 payload:', { couponId, cartTotal });
       const result = dispatch(applyCoupon({ couponId, cartTotal }));
-      console.log('🎯 Redux applyCoupon 액션 결과:', result);
+      console.log('🎯 Redux applyCoupon 액션 디스패치 완료. 반환값:', result);
       
       // 즉시 Redux 상태 확인
       setTimeout(() => {
