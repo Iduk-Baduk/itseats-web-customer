@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addMenu } from "../../store/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addMenu, replaceCartWithNewStore, selectCurrentStore } from "../../store/cartSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import styles from "./MenuDetail.module.css";
 import OptionInput from "../../components/stores/OptionInput";
 import BottomButton from "../../components/common/BottomButton";
@@ -13,7 +14,10 @@ export default function MenuDetail() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { copyToClipboard, shareViaWebAPI } = useShare();
-  const { menuId } = useParams();
+  const { menuId, storeId } = useParams();
+  
+  // Redux에서 현재 장바구니의 가게 정보 가져오기
+  const currentStore = useSelector(selectCurrentStore);
 
   const [isTransparent, setTransparent] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -21,6 +25,9 @@ export default function MenuDetail() {
   const [selectedOptions, setSelectedOptions] = useState(
     dummyMenu.optionGroups.map((group) => ({ ...group, options: [] }))
   );
+  const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
+  const [pendingMenuData, setPendingMenuData] = useState(null);
+
   useEffect(() => {
     console.log("selectedOptions:", selectedOptions);
     console.log(
@@ -61,7 +68,7 @@ export default function MenuDetail() {
     );
   }
 
-  function addToCart() {
+  function createMenuData() {
     // API 스펙에 맞는 menuOptions 구조로 변환
     const menuOptions = selectedOptions.map((group, index) => ({
       optionGroupName: dummyMenu.optionGroups[index].optionGroupName,
@@ -71,17 +78,50 @@ export default function MenuDetail() {
       }))
     })).filter(group => group.options.length > 0); // 선택된 옵션이 있는 그룹만
 
-    const menu = {
+    return {
       menuId: dummyMenu.menuId,
       menuName: dummyMenu.menuName,
       menuPrice: dummyMenu.menuPrice,
       menuOptions: menuOptions, // API 스펙에 맞는 구조
       menuOption: selectedOptions, // 기존 구조 (하위 호환성)
       quantity,
+      // 가게 정보 추가
+      storeId: parseInt(storeId) || dummyStore.storeId,
+      storeName: dummyStore.storeName,
+      storeImage: dummyStore.storeImage
     };
-    dispatch(addMenu(menu));
+  }
+
+  function addToCart() {
+    const menuData = createMenuData();
+    
+    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
+    if (currentStore && currentStore.storeId !== menuData.storeId) {
+      // 다른 가게 메뉴가 있으면 확인 모달 표시
+      setPendingMenuData(menuData);
+      setShowStoreChangeModal(true);
+      return;
+    }
+
+    // 같은 가게이거나 장바구니가 비어있으면 바로 추가
+    dispatch(addMenu(menuData));
     alert("장바구니에 담겼습니다!");
     navigate("/cart");
+  }
+
+  function handleReplaceCart() {
+    if (pendingMenuData) {
+      dispatch(replaceCartWithNewStore(pendingMenuData));
+      alert("장바구니에 담겼습니다!");
+      navigate("/cart");
+    }
+    setShowStoreChangeModal(false);
+    setPendingMenuData(null);
+  }
+
+  function handleKeepCurrentCart() {
+    setShowStoreChangeModal(false);
+    setPendingMenuData(null);
   }
 
   return (
@@ -278,10 +318,31 @@ export default function MenuDetail() {
             <span>{totalPrice.toLocaleString()}원 담기</span>
           </BottomButton>
         )}
+
+        {showStoreChangeModal && (
+          <ConfirmModal
+            message={
+              currentStore ? 
+              `현재 장바구니에는 "${currentStore.storeName}"의 메뉴가 담겨있습니다.\n"${dummyStore.storeName}"의 메뉴를 추가하려면 기존 장바구니를 비워야 합니다.\n\n기존 장바구니를 비우고 새 메뉴를 담으시겠습니까?` :
+              `장바구니를 새로 시작하시겠습니까?`
+            }
+            confirmText="네, 새로 담기"
+            cancelText="취소"
+            onConfirm={handleReplaceCart}
+            onCancel={handleKeepCurrentCart}
+          />
+        )}
       </div>
     </SlideInFromRight>
   );
 }
+
+// 💡 테스트용 가게 데이터
+const dummyStore = {
+  storeId: 1,
+  storeName: "카페 구름톤",
+  storeImage: "/samples/food1.jpg"
+};
 
 // 💡 테스트용 메뉴 데이터
 const dummyMenu = {
