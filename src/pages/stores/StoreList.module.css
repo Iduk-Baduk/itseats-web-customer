@@ -26,3 +26,17 @@
   cursor: pointer;
   box-sizing: border-box;
 }
+
+/* 검색 정보 스타일 */
+.searchInfo {
+  padding: 12px 20px;
+  background-color: var(--background-color-secondary, #f8f9fa);
+  border-bottom: 1px solid var(--border-color-light);
+  margin-bottom: 8px;
+}
+
+.resultCount {
+  font-size: 14px;
+  color: var(--black-600);
+  font-weight: 500;
+}

@@ -8,6 +8,9 @@ import { useShare } from "../../hooks/useShare";
 import PhotoSlider from "../../components/stores/PhotoSlider";
 import DeliveryTypeTab from "../../components/stores/DeliveryTypeTab";
 import AutoScrollTabs from "../../components/stores/AutoScrollTabs";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorState from "../../components/common/ErrorState";
+import { useUIState, getErrorVariant } from "../../hooks/useUIState";
 
 import styles from "./StoreDetail.module.css";
 
@@ -25,17 +28,20 @@ export default function StoreDetail() {
   const store = useSelector(state => state.store?.currentStore);
   const stores = useSelector(state => state.store?.stores || []);
   const storeLoading = useSelector(state => state.store?.loading || false);
+  const storeError = useSelector(state => state.store?.error || null);
   
   // 현재 매장 데이터 (Redux에서 우선, 없으면 전체 목록에서 검색)
   const currentStore = store || stores.find(s => s.id === storeId || s.id === parseInt(storeId));
-  
-  // console.log('🏪 StoreDetail - 매장 데이터:', {
-  //   storeId,
-  //   store,
-  //   stores: stores.length,
-  //   loading: storeLoading
-  // });
 
+  // UI 상태 관리
+  const uiState = useUIState({
+    isLoading: storeLoading,
+    error: storeError,
+    hasData: Boolean(currentStore),
+    loadingMessage: "매장 정보를 불러오는 중...",
+    emptyMessage: "매장 정보를 찾을 수 없습니다"
+  });
+  
   // 매장 데이터 로딩
   useEffect(() => {
     if (storeId) {
@@ -69,25 +75,70 @@ export default function StoreDetail() {
     };
   }, []);
 
-  // 로딩 중이거나 매장 데이터가 없는 경우 처리
-  if (storeLoading || !currentStore) {
-    return (
-      <SlideInFromRight>
-        <div className={styles.container}>
-          <div>매장 정보를 불러오는 중...</div>
-        </div>
-      </SlideInFromRight>
-    );
-  }
+  // 에러 핸들러
+  const handleRetry = () => {
+    dispatch(fetchStoreById(storeId));
+  };
 
-  return (
-    <SlideInFromRight>
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleGoHome = () => {
+    navigate("/");
+  };
+
+  // UI 상태별 렌더링
+  const renderContent = () => {
+    if (uiState.isLoading) {
+      return (
+        <div className={styles.container}>
+          <LoadingSpinner 
+            message="매장 정보를 불러오는 중..." 
+            size="large"
+            pageLoading
+          />
+        </div>
+      );
+    }
+
+    if (uiState.hasError) {
+      return (
+        <div className={styles.container}>
+          <ErrorState
+            variant={getErrorVariant(storeError)}
+            title="매장 정보를 불러올 수 없습니다"
+            onPrimaryAction={handleRetry}
+            onSecondaryAction={handleGoHome}
+            primaryActionText="다시 시도"
+            secondaryActionText="홈으로"
+          />
+        </div>
+      );
+    }
+
+    if (uiState.isEmpty) {
+      return (
+        <div className={styles.container}>
+          <ErrorState
+            variant="notFound"
+            title="매장을 찾을 수 없습니다"
+            description="요청하신 매장이 존재하지 않거나 삭제되었습니다"
+            onPrimaryAction={handleGoHome}
+            onSecondaryAction={handleGoBack}
+            primaryActionText="홈으로"
+            secondaryActionText="이전 페이지"
+          />
+        </div>
+      );
+    }
+
+    // 성공 상태: 매장 상세 정보 표시
+    return (
       <div className={styles.container}>
         <HeaderStoreDetail
           isTransparent={isTransparent}
-          backButtonAction={() => {
-            navigate(-1);
-          }}
+          backButtonAction={handleGoBack}
           shareButtonAction={async () => {
             const result = await shareViaWebAPI();
             if (!result.success) {
@@ -139,6 +190,12 @@ export default function StoreDetail() {
           fixed={menuTabFixed}
         />
       </div>
+    );
+  };
+
+  return (
+    <SlideInFromRight>
+      {renderContent()}
     </SlideInFromRight>
   );
 }

@@ -7,6 +7,7 @@ import { getCouponDisplayText, validateCoupon, isCouponStackable, calculateMulti
 import styles from "./Coupons.module.css";
 import Header from "../../components/common/Header";
 import BottomButton from "../../components/common/BottomButton";
+import EmptyState from "../../components/common/EmptyState";
 
 export default function Coupons() {
   const navigate = useNavigate();
@@ -138,98 +139,96 @@ export default function Coupons() {
       />
 
       {coupons.length === 0 ? (
-        <p className={styles.empty}>보유한 쿠폰이 없습니다.</p>
+        <EmptyState
+          variant="default"
+          icon="🎫"
+          title="보유한 쿠폰이 없습니다"
+          description="주문 완료 후 쿠폰을 받아보세요"
+          actionText="쇼핑하러 가기"
+          onAction={() => navigate('/')}
+        />
       ) : (
-        <ul className={styles.couponList}>
-          {coupons.map((coupon) => {
-            const validDateInfo = formatValidDate(coupon.validDate);
-            const isUsable = isCouponUsable(coupon);
-            const validationResult = validateCoupon(coupon, cartTotal);
-            const isSelected = tempSelectedCouponIds.includes(coupon.id);
-            
-            return (
-              <li key={coupon.id} className={`${styles.couponCard} ${!isUsable ? styles.disabled : ''} ${isSelected ? styles.selected : ''}`}>
-                <div className={styles.couponInfo}>
-                  <p className={styles.amount}>
-                    {getCouponDisplayText(coupon, cartTotal, deliveryFee)}
-                    {isCouponStackable(coupon) && (
-                      <span className={styles.stackableTag}>중복가능</span>
-                    )}
-                  </p>
-                  <span className={styles.tag}>{coupon.type}</span>
-                  <p className={styles.desc}>
-                    {coupon.name}
-                    {coupon.minOrderAmount > 0 && (
-                      <span style={{ color: cartTotal >= coupon.minOrderAmount ? '#2196f3' : '#ff4444' }}>
-                        {' '}(최소 {coupon.minOrderAmount.toLocaleString()}원)
-                      </span>
-                    )}
-                    {coupon.maxDiscount && coupon.type === 'percentage' && (
-                      <span style={{ color: '#888', fontSize: '13px' }}>
-                        {' '}최대 {coupon.maxDiscount.toLocaleString()}원
-                      </span>
-                    )}
-                  </p>
-                  <p className={styles.date} style={validDateInfo.style}>
-                    📅 {validDateInfo.text}
-                  </p>
-                  
-                  {/* 상태 정보 */}
-                  <div className={styles.statusInfo}>
-                    {coupon.isUsed && <span style={{ color: '#ff4444' }}>🚫 이미 사용됨</span>}
-                    {coupon.isExpired && <span style={{ color: '#ff4444' }}>⏰ 만료됨</span>}
-                    {validDateInfo.isExpired && <span style={{ color: '#ff4444' }}>📅 유효기간 만료</span>}
-                    {fromCart && !validationResult.isValid && (
-                      <span style={{ color: '#ff4444' }}>
-                        💰 {validationResult.reason}
-                      </span>
-                    )}
-                    {fromCart && tempSelectedCouponIds.length > 0 && !isCouponStackable(coupon) && !isSelected && (
-                      <span style={{ color: '#ff4444' }}>
-                        🚫 중복 불가 (다른 쿠폰과 함께 사용 불가)
-                      </span>
-                    )}
-                    {isUsable && <span style={{ color: '#4caf50' }}>✅ 사용 가능</span>}
-                    {isSelected && <span style={{ color: '#2196f3' }}>🎯 선택됨</span>}
+        <>
+          <ul className={styles.couponList}>
+            {coupons.map((coupon) => {
+              const validDateInfo = formatValidDate(coupon.validDate);
+              const isUsable = isCouponUsable(coupon);
+              const validationResult = validateCoupon(coupon, cartTotal);
+              const isSelected = tempSelectedCouponIds.includes(coupon.id);
+              
+              return (
+                <li key={coupon.id} className={`${styles.couponCard} ${!isUsable ? styles.disabled : ''} ${isSelected ? styles.selected : ''}`}>
+                  <div className={styles.couponInfo}>
+                    <p className={styles.amount}>
+                      {getCouponDisplayText(coupon, cartTotal, deliveryFee)}
+                      {isCouponStackable(coupon) && (
+                        <span className={styles.stackableTag}>중복가능</span>
+                      )}
+                    </p>
+                    <span className={styles.tag}>{coupon.type}</span>
+                    <p className={styles.desc}>
+                      {coupon.name}
+                      {coupon.minOrderAmount > 0 && (
+                        <span style={{ color: cartTotal >= coupon.minOrderAmount ? '#2196f3' : '#ff4444' }}>
+                          {' '}(최소 {coupon.minOrderAmount.toLocaleString()}원)
+                        </span>
+                      )}
+                      {coupon.maxDiscount && coupon.type === 'percentage' && (
+                        <span style={{ color: '#888', fontSize: '13px' }}>
+                          {' '}최대 {coupon.maxDiscount.toLocaleString()}원
+                        </span>
+                      )}
+                    </p>
+                    <p className={styles.date} style={validDateInfo.style}>
+                      📅 {validDateInfo.text}
+                    </p>
+                    
+                    {/* 상태 정보 */}
+                    <div className={styles.statusInfo}>
+                      {coupon.isUsed && <span style={{ color: '#ff4444' }}>🚫 이미 사용됨</span>}
+                      {coupon.isExpired && <span style={{ color: '#ff4444' }}>⏰ 만료됨</span>}
+                      {validDateInfo.isExpired && <span style={{ color: '#ff4444' }}>📅 유효기간 만료</span>}
+                      {fromCart && !validationResult.isValid && (
+                        <span style={{ color: '#ff4444' }}>
+                          💰 {validationResult.reason}
+                        </span>
+                      )}
+                      {fromCart && tempSelectedCouponIds.length > 0 && !isCouponStackable(coupon) && !isSelected && (
+                        <span style={{ color: '#ff4444' }}>
+                          🚫 중복 불가 (다른 쿠폰과 함께 사용 불가)
+                        </span>
+                      )}
+                      {isUsable && <span style={{ color: '#4caf50' }}>✅ 사용 가능</span>}
+                      {isSelected && <span style={{ color: '#2196f3' }}>🎯 선택됨</span>}
+                    </div>
                   </div>
-                </div>
-                {fromCart ? (
-                  <button
-                    className={styles.linkBtn}
-                    onClick={() => handleToggleCoupon(coupon.id)}
-                    disabled={!isUsable}
-                    style={{ 
-                      opacity: isUsable ? 1 : 0.5,
-                      cursor: isUsable ? 'pointer' : 'not-allowed',
-                      backgroundColor: isSelected ? '#2196f3' : undefined,
-                      color: isSelected ? 'white' : undefined
-                    }}
-                  >
-                    {isSelected ? '선택됨' : isUsable ? '선택하기' : '사용 불가'}
-                  </button>
-                ) : (
-                  <button
-                    className={styles.linkBtn}
-                    onClick={() => navigate(`/stores/${coupon.storeId}`)}
-                  >
-                    →<br />
-                    적용가능<br />
-                    매장보기
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      
-      {/* 바텀 버튼 - 장바구니에서 온 경우에만 표시 */}
-      {fromCart && (
-        <BottomButton
-          onClick={tempSelectedCouponIds.length > 0 ? handleApplyCoupons : handleGoToCartOnly}
-        >
-          {getBottomButtonText()}
-        </BottomButton>
+                  {fromCart ? (
+                    <button
+                      className={styles.linkBtn}
+                      onClick={() => handleToggleCoupon(coupon.id)}
+                      disabled={!isUsable}
+                    >
+                      {isSelected ? '선택 해제' : '선택'}
+                    </button>
+                  ) : (
+                    <button className={styles.linkBtn} disabled>
+                      사용불가
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* 바텀 버튼 - 카트에서 온 경우에만 표시 */}
+          {fromCart && (
+            <div style={{ paddingBottom: '80px' }}>
+              <BottomButton onClick={handleApplyCoupons}>
+                {getBottomButtonText()}
+              </BottomButton>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

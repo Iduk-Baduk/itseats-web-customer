@@ -32,6 +32,7 @@ import CartCouponSection from '../../components/orders/cart/CartCouponSection';
 import CartPaymentSummarySection from '../../components/orders/cart/CartPaymentSummarySection';
 import CartPaymentMethodSection from '../../components/orders/cart/CartPaymentMethodSection';
 import CartRequestSection from '../../components/orders/cart/CartRequestSection';
+import EmptyState from '../../components/common/EmptyState';
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -430,9 +431,13 @@ export default function Cart() {
 
       
       {orderMenus.length === 0 ? (
-        <div className={styles.emptyCart}>
-          카트가 비어있습니다.
-        </div>
+        <EmptyState
+          variant="cart"
+          title="장바구니가 비어있습니다"
+          description="맛있는 메뉴를 담아보세요"
+          actionText="메뉴 둘러보기"
+          onAction={() => navigate('/')}
+        />
       ) : (
         <>
           <CartAddressSection />

@@ -5,6 +5,8 @@ import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
 import OrderTab from "../../components/orders/OrderTab";
 import { selectActiveOrders, selectCompletedOrders } from "../../store/orderSlice";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import EmptyState from "../../components/common/EmptyState";
 import styles from "./Order.module.css";
 
 export default function Order() {
@@ -38,27 +40,15 @@ export default function Order() {
   const displayCompletedOrders = completedOrders.map(transformOrderForCard);
   const displayActiveOrders = activeOrders.map(transformOrderForCard);
 
-  // 빈 상태 컴포넌트
-  const EmptyState = ({ message }) => (
-    <div style={{ 
-      padding: '40px 20px', 
-      textAlign: 'center', 
-      color: '#666',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '12px'
-    }}>
-      <div style={{ fontSize: '48px', opacity: 0.3 }}>📦</div>
-      <p>{message}</p>
-    </div>
-  );
-
   // 로딩 상태
   if (isLoading) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-        주문 정보를 불러오는 중...
+      <div>
+        <OrderTab onTabChange={setSelectedTab} />
+        <LoadingSpinner 
+          message="주문 정보를 불러오는 중..." 
+          pageLoading
+        />
       </div>
     );
   }
@@ -79,7 +69,13 @@ export default function Order() {
             />
           ))
         ) : (
-          <EmptyState message="아직 완료된 주문이 없습니다." />
+          <EmptyState
+            variant="order"
+            title="아직 완료된 주문이 없습니다"
+            description="첫 주문을 시작해보세요"
+            actionText="주문하러 가기"
+            onAction={() => navigate('/')}
+          />
         )
       )}
       
@@ -94,7 +90,13 @@ export default function Order() {
             />
           ))
         ) : (
-          <EmptyState message="진행 중인 주문이 없습니다." />
+          <EmptyState
+            variant="order"
+            title="진행 중인 주문이 없습니다"
+            description="새로운 주문을 시작해보세요"
+            actionText="주문하러 가기"
+            onAction={() => navigate('/')}
+          />
         )
       )}
     </div>
