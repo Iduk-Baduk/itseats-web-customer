@@ -5,8 +5,9 @@ import apiClient from '../services/apiClient';
 export const fetchStores = createAsyncThunk(
   'store/fetchStores',
   async () => {
-    const response = await apiClient.get('/stores');
-    return response.data;
+    const data = await apiClient.get('/stores');
+    console.log('🏪 fetchStores API 응답:', data);
+    return data;
   }
 );
 
@@ -14,8 +15,9 @@ export const fetchStores = createAsyncThunk(
 export const fetchStoreById = createAsyncThunk(
   'store/fetchStoreById',
   async (storeId) => {
-    const response = await apiClient.get(`/stores/${storeId}`);
-    return response.data;
+    const data = await apiClient.get(`/stores/${storeId}`);
+    console.log('🏪 fetchStoreById API 응답:', data);
+    return data;
   }
 );
 
