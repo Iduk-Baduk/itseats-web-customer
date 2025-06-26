@@ -18,10 +18,10 @@ export default function Coupons() {
   const currentStore = useSelector(state => state.store.currentStore);
   const fromCart = location.state && location.state.from === 'cart';
 
-  // 임시 선택된 쿠폰 상태 (실제 적용 전)
+  // 선택된 쿠폰 상태 (실제 적용 전)
   const [tempSelectedCouponIds, setTempSelectedCouponIds] = React.useState([...selectedCouponIds]);
 
-  // selectedCouponIds가 변경될 때 임시 상태도 동기화
+  // selectedCouponIds가 변경될 때 상태 동기화
   React.useEffect(() => {
     setTempSelectedCouponIds([...selectedCouponIds]);
   }, [selectedCouponIds]);
@@ -59,12 +59,12 @@ export default function Coupons() {
     }
   };
 
-  // 쿠폰 사용 가능 여부 체크 (임시 선택 기준)
+  // 쿠폰 사용 가능 여부 체크
   const isCouponUsable = (coupon) => {
     const validationResult = validateCoupon(coupon, cartTotal);
     if (!validationResult.isValid) return false;
 
-    // 임시 선택된 쿠폰은 항상 사용 가능 (해제를 위해)
+    // 선택된 쿠폰은 항상 사용 가능 (해제를 위해)
     const isSelected = tempSelectedCouponIds.includes(coupon.id);
     if (isSelected) return true;
 
@@ -83,10 +83,8 @@ export default function Coupons() {
     return true;
   };
 
-  // 쿠폰 임시 선택/해제 처리
+  // 쿠폰 선택/해제 처리
   const handleToggleCoupon = (couponId) => {
-    // console.log('🎫 쿠폰 임시 선택/해제:', couponId);
-    
     setTempSelectedCouponIds(prev => {
       const newSelection = prev.includes(couponId)
         ? prev.filter(id => id !== couponId)
@@ -102,7 +100,7 @@ export default function Coupons() {
       // 선택된 쿠폰들을 모두 적용
       dispatch(applyCoupons({ 
         couponIds: tempSelectedCouponIds,
-        cartTotal: cartTotal // 이미 계산된 cartTotal 사용
+        cartTotal: cartTotal
       }));
     } else {
       // 선택된 쿠폰이 없으면 모든 쿠폰 해제
@@ -114,11 +112,10 @@ export default function Coupons() {
 
   // 쿠폰 적용하지 않고 카트로 이동
   const handleGoToCartOnly = () => {
-    // console.log('🎫 쿠폰 적용하지 않고 카트 이동');
     navigate('/cart');
   };
 
-  // 임시 선택된 쿠폰들의 할인 금액 계산
+  // 선택된 쿠폰들의 할인 금액 계산
   const tempSelectedCoupons = coupons.filter(c => tempSelectedCouponIds.includes(c.id));
   const discountResult = calculateMultipleCouponsDiscount(tempSelectedCoupons, cartTotal, deliveryFee);
   
@@ -134,12 +131,12 @@ export default function Coupons() {
   return (
     <div className={styles.container}>
       <Header
-        title="할인 쿠폰"
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        title="할인쿠폰"
+        leftIcon="back"
+        leftButtonAction={() => navigate(-1)}
         rightIcon=""
       />
+
       {coupons.length === 0 ? (
         <p className={styles.empty}>보유한 쿠폰이 없습니다.</p>
       ) : (

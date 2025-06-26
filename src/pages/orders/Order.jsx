@@ -13,6 +13,7 @@ export default function Order() {
   // Redux에서 주문 데이터 가져오기
   const activeOrders = useSelector(selectActiveOrders);
   const completedOrders = useSelector(selectCompletedOrders);
+  const isLoading = useSelector(state => state.order?.loading || false);
 
   const handleWriteReview = () => {
     navigate("/review"); // Review 페이지로 이동
@@ -33,82 +34,69 @@ export default function Order() {
     };
   };
 
-  // 더미 데이터 (Redux에 데이터가 없을 때 사용)
-  const dummyCompletedOrders = [
-    {
-      id: 1,
-      storeName: "부리부리브리또 구름톤점",
-      date: "2024-05-28 오후 06:05",
-      status: "배달 완료",
-      rating: 5,
-      menuSummary: "불고기 부리또 + 음료 + 감자튀김",
-      price: 4500,
-      storeImage: "https://source.unsplash.com/featured/?burrito",
-      isCompleted: true,
-      showReviewButton: true,
-      remainingDays: undefined,
-    },
-    {
-      id: 2,
-      storeName: "PIZZA WAVE",
-      date: "2024-05-25 오후 06:05",
-      status: "배달 완료",
-      rating: 4,
-      menuSummary: "페퍼로니 피자 + 콜라",
-      price: 12000,
-      storeImage: "https://source.unsplash.com/featured/?pizza",
-      isCompleted: true,
-      showReviewButton: false,
-      remainingDays: 6,
-    },
-  ];
+  // Redux 데이터 변환
+  const displayCompletedOrders = completedOrders.map(transformOrderForCard);
+  const displayActiveOrders = activeOrders.map(transformOrderForCard);
 
-  const dummyActiveOrders = [
-    {
-      id: 1,
-      storeName: "북경깐풍기 구름톤점",
-      date: "2024-06-20 오후 06:05",
-      status: "배달 중",
-      rating: 4,
-      menuSummary: "북경깐풍기 2인 세트",
-      price: 18000,
-      storeImage: "/samples/food1.jpg",
-      isCompleted: false,
-      showReviewButton: true,
-      remainingDays: undefined,
-    },
-  ];
+  // 빈 상태 컴포넌트
+  const EmptyState = ({ message }) => (
+    <div style={{ 
+      padding: '40px 20px', 
+      textAlign: 'center', 
+      color: '#666',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '12px'
+    }}>
+      <div style={{ fontSize: '48px', opacity: 0.3 }}>📦</div>
+      <p>{message}</p>
+    </div>
+  );
 
-  // Redux 데이터가 있으면 변환하여 사용, 없으면 더미 데이터 사용
-  const displayCompletedOrders = completedOrders.length > 0 
-    ? completedOrders.map(transformOrderForCard) 
-    : dummyCompletedOrders;
-  const displayActiveOrders = activeOrders.length > 0 
-    ? activeOrders.map(transformOrderForCard) 
-    : dummyActiveOrders;
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+        주문 정보를 불러오는 중...
+      </div>
+    );
+  }
 
   return (
     <div>
       <OrderTab onTabChange={setSelectedTab} />
       <OrderSearch className={styles.orderSearch} />
-      {selectedTab === "past" &&
-        displayCompletedOrders.map((order) => (
-          <OrderCard
-            key={order.id}
-            order={order}
-            className={styles.orderCard}
-            onWriteReview={handleWriteReview}
-          />
-        ))}
-      {selectedTab === "preparing" &&
-        displayActiveOrders.map((order) => (
-          <OrderCard
-            key={order.id}
-            order={order}
-            className={styles.orderCard}
-            onOpenStatus={() => navigate(`/orders/${order.id}/status`)}
-          />
-        ))}
+      
+      {selectedTab === "past" && (
+        displayCompletedOrders.length > 0 ? (
+          displayCompletedOrders.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              className={styles.orderCard}
+              onWriteReview={handleWriteReview}
+            />
+          ))
+        ) : (
+          <EmptyState message="아직 완료된 주문이 없습니다." />
+        )
+      )}
+      
+      {selectedTab === "preparing" && (
+        displayActiveOrders.length > 0 ? (
+          displayActiveOrders.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              className={styles.orderCard}
+              onOpenStatus={() => navigate(`/orders/${order.id}/status`)}
+            />
+          ))
+        ) : (
+          <EmptyState message="진행 중인 주문이 없습니다." />
+        )
+      )}
     </div>
   );
 }
