@@ -15,10 +15,12 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
   
   // 개발 환경에서만 디버깅 로그 출력
   if (import.meta.env.DEV) {
-    console.log('환경변수 디버깅:', {
-      apiKey: apiKey ? '설정됨' : '미설정',
+    console.log('카카오맵 환경변수 디버깅:', {
+      apiKey: apiKey ? `설정됨 (${apiKey.substring(0, 8)}...)` : '미설정',
+      fullApiKey: apiKey, // 전체 키도 출력하여 확인
       nodeEnv: import.meta.env.NODE_ENV,
-      mode: import.meta.env.MODE
+      mode: import.meta.env.MODE,
+      allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_'))
     });
   }
   
