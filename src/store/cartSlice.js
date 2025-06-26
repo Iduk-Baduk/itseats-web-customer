@@ -8,7 +8,8 @@ const saveToLocalStorage = (state) => {
   try {
     const serializedState = JSON.stringify({
       orderMenus: state.orderMenus,
-      requestInfo: state.requestInfo
+      requestInfo: state.requestInfo,
+      currentStore: state.currentStore
     });
     localStorage.setItem("itseats-cart", serializedState);
   } catch (e) {
@@ -26,6 +27,7 @@ const initialState = {
     deliveryRequest: '문 앞에 놔주세요 (초인종 O)',
     disposableChecked: false,
   },
+  currentStore: migratedCartData.currentStore || null, // { storeId, storeName, storeImage }
   _version: migratedCartData._version,
   _migratedAt: migratedCartData._migratedAt,
 };
@@ -38,10 +40,34 @@ const cartSlice = createSlice({
       const cartData = action.payload || {};
       state.orderMenus = cartData.orderMenus || [];
       state.requestInfo = cartData.requestInfo || initialState.requestInfo;
+      state.currentStore = cartData.currentStore || null;
       saveToLocalStorage(state);
     },
     addMenu(state, action) {
       const newItem = action.payload;
+      
+      // 가게 정보 검증
+      if (!newItem.storeId || !newItem.storeName) {
+        console.error('addMenu: 가게 정보가 누락되었습니다', newItem);
+        return;
+      }
+
+      // 첫 번째 메뉴 추가 시 현재 가게 설정
+      if (state.orderMenus.length === 0) {
+        state.currentStore = {
+          storeId: newItem.storeId,
+          storeName: newItem.storeName,
+          storeImage: newItem.storeImage || null
+        };
+      }
+
+      // 다른 가게 메뉴 추가 시도 시 에러 처리
+      if (state.currentStore && state.currentStore.storeId !== newItem.storeId) {
+        // 이 경우는 UI에서 미리 확인 모달을 띄워야 함
+        console.warn(`다른 가게 메뉴 추가 시도: 현재 가게 ${state.currentStore.storeId}, 새 가게 ${newItem.storeId}`);
+        return;
+      }
+
       const newItemHash = createMenuOptionHash(newItem.menuOption);
       const existingMenuIndex = state.orderMenus.findIndex(
         (menu) =>
@@ -54,6 +80,30 @@ const cartSlice = createSlice({
       } else {
         state.orderMenus.push(newItem);
       }
+      saveToLocalStorage(state);
+    },
+    // 다른 가게 메뉴로 장바구니를 교체하는 액션
+    replaceCartWithNewStore(state, action) {
+      const newItem = action.payload;
+      
+      if (!newItem.storeId || !newItem.storeName) {
+        console.error('replaceCartWithNewStore: 가게 정보가 누락되었습니다', newItem);
+        return;
+      }
+
+      // 기존 장바구니 비우기
+      state.orderMenus = [];
+      state.requestInfo = initialState.requestInfo;
+      
+      // 새 가게 정보 설정
+      state.currentStore = {
+        storeId: newItem.storeId,
+        storeName: newItem.storeName,
+        storeImage: newItem.storeImage || null
+      };
+
+      // 새 메뉴 추가
+      state.orderMenus.push(newItem);
       saveToLocalStorage(state);
     },
     updateQuantity: (state, action) => {
@@ -71,6 +121,11 @@ const cartSlice = createSlice({
         if (newQuantity <= 0) {
           // 수량이 0 이하가 되면 아이템 제거
           state.orderMenus.splice(index, 1);
+          
+          // 장바구니가 비어있으면 현재 가게 정보도 초기화
+          if (state.orderMenus.length === 0) {
+            state.currentStore = null;
+          }
         } else {
           target.quantity = newQuantity;
         }
@@ -84,11 +139,18 @@ const cartSlice = createSlice({
           menu.menuId !== menuId ||
           createMenuOptionHash(menu.menuOption) !== menuOptionHash
       );
+      
+      // 장바구니가 비어있으면 현재 가게 정보도 초기화
+      if (state.orderMenus.length === 0) {
+        state.currentStore = null;
+      }
+      
       saveToLocalStorage(state);
     },
     clearCart(state) {
       state.orderMenus = [];
       state.requestInfo = initialState.requestInfo;
+      state.currentStore = null;
       saveToLocalStorage(state);
     },
     updateRequestInfo(state, action) {
@@ -101,6 +163,7 @@ const cartSlice = createSlice({
 export const {
   initializeCart,
   addMenu,
+  replaceCartWithNewStore,
   updateQuantity,
   removeMenu,
   clearCart,
@@ -109,5 +172,7 @@ export const {
 
 // Selectors
 export const selectRequestInfo = (state) => state.cart.requestInfo;
+export const selectCurrentStore = (state) => state.cart.currentStore;
+export const selectCartItemCount = (state) => state.cart.orderMenus.reduce((sum, menu) => sum + menu.quantity, 0);
 
 export default cartSlice.reducer;
