@@ -12,18 +12,13 @@ const LEGACY_CART_DATA_VERSION = '1.0.0'; // 기존 버전
  * @returns {Array} 새로운 menuOptions 배열
  */
 export const migrateLegacyMenuOption = (legacyMenuOption) => {
-  if (!legacyMenuOption || Array.isArray(legacyMenuOption)) {
-    // 이미 새로운 구조이거나 null인 경우
-    return legacyMenuOption || [];
+  if (!legacyMenuOption) {
+    return [];
   }
-
-  // 기존 구조에서 새로운 구조로 변환
+  
   if (Array.isArray(legacyMenuOption)) {
-    // selectedOptions 배열 형태인 경우
-    return legacyMenuOption.map((group, index) => ({
-      optionGroupName: group.groupName || `옵션 그룹 ${index + 1}`,
-      options: group.options || []
-    })).filter(group => group.options.length > 0);
+    // 이미 새로운 구조인 경우 (menuOptions 배열)
+    return legacyMenuOption;
   }
 
   // 단일 객체 형태인 경우
@@ -94,7 +89,9 @@ export const migrateCartData = (legacyCartData) => {
   });
 
   const migratedData = {
-    orderMenus: (legacyCartData.orderMenus || []).map(migrateLegacyCartItem),
+    orderMenus: (legacyCartData.orderMenus || [])
+      .map(migrateLegacyCartItem)
+      .filter(item => item !== null),
     requestInfo: {
       storeRequest: legacyCartData.requestInfo?.storeRequest || '',
       deliveryRequest: legacyCartData.requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)',

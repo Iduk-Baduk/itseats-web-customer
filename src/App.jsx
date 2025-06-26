@@ -14,14 +14,20 @@ export default function App() {
   // 앱 시작 시 데이터 마이그레이션 확인
   useEffect(() => {
     console.log('🚀 App 시작 - 데이터 마이그레이션 확인 완료');
-    const migratedData = loadAndMigrateCartData();
     
-    if (migratedData._migrated || migratedData._migratedAt) {
-      console.log('✅ 장바구니 데이터 마이그레이션이 적용되었습니다:', {
-        version: migratedData._version,
-        migratedAt: migratedData._migratedAt,
-        itemCount: migratedData.orderMenus?.length || 0
-      });
+    try {
+      const rawData = localStorage.getItem('itseats-cart');
+      const cartData = rawData ? JSON.parse(rawData) : null;
+      
+      if (cartData && (cartData._migrated || cartData._migratedAt)) {
+        console.log('✅ 장바구니 데이터 마이그레이션이 적용되었습니다:', {
+          version: cartData._version,
+          migratedAt: cartData._migratedAt,
+          itemCount: cartData.orderMenus?.length || 0
+        });
+      }
+    } catch (error) {
+      console.error('마이그레이션 상태 확인 실패:', error);
     }
   }, []);
 
