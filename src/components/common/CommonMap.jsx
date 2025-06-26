@@ -1,4 +1,4 @@
-import { Map, MapMarker, Polyline, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map as KakaoMap, MapMarker, Polyline, useKakaoLoader } from "react-kakao-maps-sdk";
 
 /*
  * lat: 위도
@@ -13,13 +13,14 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
   // API 키 확인 및 디버깅
   const apiKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
   
-  // 환경변수 디버깅
-  console.log('환경변수 디버깅:', {
-    apiKey,
-    allEnvVars: import.meta.env,
-    nodeEnv: import.meta.env.NODE_ENV,
-    mode: import.meta.env.MODE
-  });
+  // 개발 환경에서만 디버깅 로그 출력
+  if (import.meta.env.DEV) {
+    console.log('환경변수 디버깅:', {
+      apiKey: apiKey ? '설정됨' : '미설정',
+      nodeEnv: import.meta.env.NODE_ENV,
+      mode: import.meta.env.MODE
+    });
+  }
   
   if (!apiKey) {
     console.error('카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_APP_KAKAOMAP_KEY를 설정해주세요.');
@@ -66,7 +67,7 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
 
   try {
     return (
-      <Map center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
+      <KakaoMap center={{ lat, lng }} style={{ width: "100%", height }} level={level}>
         {markers.map((marker, index) => {
         const markerImageSrc =
           marker.type === "store"
@@ -106,7 +107,7 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
           strokeStyle="dash"
         />
         )}
-      </Map>
+      </KakaoMap>
     );
   } catch (error) {
     console.error('카카오맵 렌더링 오류:', error);

@@ -19,21 +19,26 @@ export default function App() {
   // React 마운트 후 초기 로딩 스피너 제거
   useEffect(() => {
     const removeInitialSpinner = () => {
-      const initialSpinner = document.querySelector('.initial-loading');
-      if (initialSpinner && initialSpinner.parentNode) {
-        initialSpinner.parentNode.removeChild(initialSpinner);
+      try {
+        const initialSpinner = document.querySelector('.initial-loading');
+        if (initialSpinner) {
+          console.log('🔄 초기 로딩 스피너 제거 중...');
+          initialSpinner.remove(); // 더 현대적인 방법
+          console.log('✅ 초기 로딩 스피너 제거 완료');
+        }
+      } catch (error) {
+        console.warn('초기 스피너 제거 중 오류:', error);
       }
     };
 
-    // DOM이 준비되면 즉시 제거
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', removeInitialSpinner);
-    } else {
-      removeInitialSpinner();
-    }
-
+    // React 컴포넌트가 마운트되자마자 즉시 실행
+    removeInitialSpinner();
+    
+    // 추가 안전장치: 약간의 지연 후 다시 한 번 확인
+    const timeoutId = setTimeout(removeInitialSpinner, 100);
+    
     return () => {
-      document.removeEventListener('DOMContentLoaded', removeInitialSpinner);
+      clearTimeout(timeoutId);
     };
   }, []);
 
