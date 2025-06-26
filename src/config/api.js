@@ -2,7 +2,6 @@
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
   TIMEOUT: parseInt(import.meta.env.VITE_TIMEOUT) || 10000,
-  MOCK_MODE: import.meta.env.VITE_MOCK_MODE === 'true',
 };
 
 // 환경별 설정

@@ -1,61 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import SearchHeaderBar from "../../components/common/SearchHeaderBar";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import StoreListItem from "../../components/stores/StoreListItem";
 import SortBottomSheet, {
   getSortLabel,
 } from "../../components/stores/SortBottomSheet";
+import { fetchStores } from "../../store/storeSlice";
 import styles from "../stores/StoreList.module.css";
 
-// 임시 데이터
-const dummyStores = [
-  {
-    storeId: 1,
-    name: "버거킹 구름점",
-    review: 4.9,
-    reviewCount: 1742,
-    minutesToDelivery: 30,
-  },
-  {
-    storeId: 2,
-    name: "맘스터치 구름점",
-    review: 4.8,
-    reviewCount: 52,
-    minutesToDelivery: 25,
-  },
-  {
-    storeId: 3,
-    name: "청년닭발 구름점",
-    review: 3.1,
-    reviewCount: 124,
-    minutesToDelivery: 40,
-  },
-  {
-    storeId: 4,
-    name: "피자헛 구름점",
-    review: 4.2,
-    reviewCount: 172,
-    minutesToDelivery: 35,
-  },
-  {
-    storeId: 5,
-    name: "청룡각 구름점",
-    review: 4.9,
-    reviewCount: 742,
-    minutesToDelivery: 30,
-  },
-  {
-    storeId: 6,
-    name: "떡볶이 참 잘하는집 구름점",
-    review: 4.2,
-    reviewCount: 945,
-    minutesToDelivery: 10,
-  },
-];
-
 export default function SearchResult() {
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialKeyword = searchParams.get("keyword") || "";
   const [keyword, setKeyword] = useState(initialKeyword);
@@ -64,9 +20,45 @@ export default function SearchResult() {
   const [sort, setSort] = useState(sortParam || "order");
   const [isSortSheetOpen, setSortSheetOpen] = useState(false);
   
+  // Redux에서 매장 데이터 가져오기
+  const stores = useSelector((state) => state.store?.stores || []);
+  const storeLoading = useSelector((state) => state.store?.loading || false);
+  
+  // 키워드 기반 매장 필터링 및 정렬
+  const filteredAndSortedStores = useMemo(() => {
+    // 검색 키워드로 필터링
+    const filteredStores = stores.filter(store => 
+      store.name?.toLowerCase().includes(keyword.toLowerCase()) ||
+      store.category?.toLowerCase().includes(keyword.toLowerCase())
+    );
+    
+    // 정렬 적용
+    return [...filteredStores].sort((a, b) => {
+      switch(sort) {
+        case 'rating':
+          return (b.rating || 0) - (a.rating || 0);
+        case 'delivery':
+          const aTime = parseInt(a.deliveryTime?.split('-')[0]) || 30;
+          const bTime = parseInt(b.deliveryTime?.split('-')[0]) || 30;
+          return aTime - bTime;
+        case 'reviewCount':
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
+        default:
+          return 0; // 기본 순서 유지
+      }
+    });
+  }, [stores, keyword, sort]);
+  
   useEffect(() => {
     setKeyword(initialKeyword);
   }, [initialKeyword]);
+  
+  // 매장 데이터가 없으면 로딩
+  useEffect(() => {
+    if (stores.length === 0 && !storeLoading) {
+      dispatch(fetchStores());
+    }
+  }, [dispatch, stores.length, storeLoading]);
   
   return (
     <>
@@ -95,13 +87,30 @@ export default function SearchResult() {
         </button>
       </div>
 
-      {dummyStores && dummyStores.map((store) => (
-        <StoreListItem
-          key={store.storeId}
-          store={store}
-          onClick={() => navigate(`/stores/${store.storeId}`)}
-        />
-      ))}
+      {storeLoading ? (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          검색 중...
+        </div>
+      ) : filteredAndSortedStores.length > 0 ? (
+        filteredAndSortedStores.map((store) => (
+          <StoreListItem
+            key={store.id}
+            store={{
+              storeId: store.id,
+              name: store.name,
+              review: store.rating,
+              reviewCount: store.reviewCount,
+              minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
+            }}
+            onClick={() => navigate(`/stores/${store.id}`)}
+          />
+        ))
+      ) : (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          "{keyword}"에 대한 검색 결과가 없습니다.
+        </div>
+      )}
+      
       <SortBottomSheet
         sort={sort}
         isOpen={isSortSheetOpen}

@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Header from "../../components/common/Header";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -8,62 +9,30 @@ import SortBottomSheet, {
 } from "../../components/stores/SortBottomSheet";
 import Tabs from "../../components/stores/Tabs";
 import { getCategoryName } from "../../utils/categoryUtils";
+import { fetchStores } from "../../store/storeSlice";
 
 import styles from "./StoreList.module.css";
 
-const dummyStores = [
-  {
-    storeId: 1,
-    name: "버거킹 구름점",
-    review: 4.9,
-    reviewCount: 1742,
-    minutesToDelivery: 30,
-  },
-  {
-    storeId: 2,
-    name: "맘스터치 구름점",
-    review: 4.8,
-    reviewCount: 52,
-    minutesToDelivery: 25,
-  },
-  {
-    storeId: 3,
-    name: "청년닭발 구름점",
-    review: 3.1,
-    reviewCount: 124,
-    minutesToDelivery: 40,
-  },
-  {
-    storeId: 4,
-    name: "피자헛 구름점",
-    review: 4.2,
-    reviewCount: 172,
-    minutesToDelivery: 35,
-  },
-  {
-    storeId: 5,
-    name: "청룡각 구름점",
-    review: 4.9,
-    reviewCount: 742,
-    minutesToDelivery: 30,
-  },
-  {
-    storeId: 6,
-    name: "떡볶이 참 잘하는집 구름점",
-    review: 4.2,
-    reviewCount: 945,
-    minutesToDelivery: 10,
-  },
-];
-
 export default function StoreList() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const category = searchParams.get("category");
 
   const sortParam = searchParams.get("sort");
   const [sort, setSort] = useState(sortParam || "order");
   const [isSortSheetOpen, setSortSheetOpen] = useState(false);
+
+  // Redux에서 매장 데이터 가져오기
+  const stores = useSelector((state) => state.store?.stores || []);
+  const storeLoading = useSelector((state) => state.store?.loading || false);
+
+  // 매장 데이터 로딩
+  useEffect(() => {
+    if (stores.length === 0 && !storeLoading) {
+      dispatch(fetchStores());
+    }
+  }, [dispatch, stores.length, storeLoading]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleBackClick = useCallback(() => {
@@ -92,21 +61,32 @@ export default function StoreList() {
     navigate(`/stores/${storeId}`);
   }, [navigate]);
 
-  // useMemo로 정렬된 매장 목록 최적화
+  // useMemo로 카테고리 필터링 및 정렬된 매장 목록 최적화
   const sortedStores = useMemo(() => {
-    return [...dummyStores].sort((a, b) => {
+    // 카테고리 필터링
+    let filteredStores = stores;
+    if (category && category !== 'all') {
+      filteredStores = stores.filter(store => 
+        store.category?.toLowerCase() === category.toLowerCase()
+      );
+    }
+    
+    // 정렬 적용
+    return [...filteredStores].sort((a, b) => {
       switch(sort) {
         case 'rating':
-          return b.review - a.review;
+          return (b.rating || 0) - (a.rating || 0);
         case 'delivery':
-          return a.minutesToDelivery - b.minutesToDelivery;
+          const aTime = parseInt(a.deliveryTime?.split('-')[0]) || 30;
+          const bTime = parseInt(b.deliveryTime?.split('-')[0]) || 30;
+          return aTime - bTime;
         case 'reviewCount':
-          return b.reviewCount - a.reviewCount;
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
           return 0; // 기본 순서 유지
       }
     });
-  }, [sort]);
+  }, [stores, category, sort]);
 
   return (
     <SlideInFromRight>
@@ -139,13 +119,29 @@ export default function StoreList() {
               </svg>
             </button>
           </div>
-          {sortedStores.map((store) => (
-            <StoreListItem
-              key={store.storeId}
-              store={store}
-              onClick={() => handleStoreClick(store.storeId)}
-            />
-          ))}
+          {storeLoading ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              매장 정보를 불러오는 중...
+            </div>
+          ) : sortedStores.length > 0 ? (
+            sortedStores.map((store) => (
+              <StoreListItem
+                key={store.id}
+                store={{
+                  storeId: store.id,
+                  name: store.name,
+                  review: store.rating,
+                  reviewCount: store.reviewCount,
+                  minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
+                }}
+                onClick={() => handleStoreClick(store.id)}
+              />
+            ))
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              {category ? `${getCategoryName(category)} 매장이 없습니다.` : '매장이 없습니다.'}
+            </div>
+          )}
         </div>
 
         <SortBottomSheet

@@ -7,39 +7,84 @@ import Header from "../../components/common/Header";
 import BottomButton from "../../components/common/BottomButton";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import styles from "./Review.module.css";
 
-const reviewDummyData = {
-  foodImage: "https://example.com/image.jpg",
-  deliveryImage: "https://example.com/image.jpg",
-  reviewItem: {
-    imageUrl: "https://example.com/image.jpg",
-    name: "[오] 필라델피아 치즈 스테이크 (L)",
-    option: "코카콜라 제로 1.25L",
-  },
-};
-
 export default function Review({ className }) {
+  const navigate = useNavigate();
+  const { orderId } = useParams();
+  const location = useLocation();
+  
+  // URL state나 Redux에서 주문 정보 가져오기
+  const orderFromState = location.state?.order;
+  const orderFromRedux = useSelector(state => 
+    state.order?.orders?.find(o => o.id === orderId)
+  );
+  
+  // 주문 정보 (state 우선, 없으면 Redux에서)
+  const currentOrder = orderFromState || orderFromRedux;
+
   const [foodRating, setFoodRating] = useState(0);
   const [deliveryRating, setDeliveryRating] = useState(0);
   const [likeStatus, setLikeStatus] = useState(null);
   const [reviewText, setReviewText] = useState("");
-  const navigate = useNavigate();
 
   const handleLike = () => setLikeStatus("like");
   const handleDislike = () => setLikeStatus("dislike");
 
-  const handleSubmit = () => {
-    alert(
-      `별점: ${foodRating}\n` +
-        `배달 별점: ${deliveryRating}\n` +
-        `음식 사진: ${reviewDummyData.foodImage}\n` +
-        `좋아요 여부: ${likeStatus}\n` +
-        `리뷰 내용: ${reviewText}`
-    );
+  const handleSubmit = async () => {
+    if (!currentOrder) {
+      alert("주문 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      // TODO: 실제 리뷰 API 연동
+      const reviewData = {
+        orderId: currentOrder.id,
+        storeId: currentOrder.storeId,
+        foodRating,
+        deliveryRating,
+        likeStatus,
+        reviewText,
+        createdAt: new Date().toISOString()
+      };
+
+      // 임시로 콘솔에 출력 (실제로는 API 호출)
+      console.log("리뷰 제출:", reviewData);
+      alert("리뷰가 성공적으로 등록되었습니다!");
+      
+      navigate("/orders", { replace: true });
+    } catch (error) {
+      console.error("리뷰 제출 실패:", error);
+      alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+    }
   };
+
+  // 주문 정보가 없는 경우
+  if (!currentOrder) {
+    return (
+      <div className={className}>
+        <Header
+          title="평가 및 리뷰 작성"
+          rightIcon="none"
+          leftIcon="close"
+          leftButtonAction={() => navigate(-1)}
+        />
+        <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+          <p>주문 정보를 찾을 수 없습니다.</p>
+          <button 
+            onClick={() => navigate("/orders")}
+            style={{ marginTop: '20px', padding: '10px 20px' }}
+          >
+            주문 목록으로 이동
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
@@ -53,12 +98,12 @@ export default function Review({ className }) {
         <div className={styles.reviewCard}>
           <ReviewCard
             object="음식"
-            image={reviewDummyData.foodImage}
+            image={currentOrder.storeImage || "/samples/food1.jpg"}
             onSelect={(value) => setFoodRating(value)}
           />
           <ReviewCard
             object="배달"
-            image={reviewDummyData.deliveryImage}
+            image="/icons/order/rider.jpg"
             onSelect={(value) => setDeliveryRating(value)}
           />
         </div>
@@ -68,13 +113,13 @@ export default function Review({ className }) {
           className={styles.reviewTextarea}
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
+          placeholder={`${currentOrder.storeName}에서의 식사는 어떠셨나요?`}
         />
-        {/* TODO: S3 스토리지 생기면 구현 */}
-        <PhotoButton onClick={() => alert("추후 구현")} />
+        <PhotoButton onClick={() => alert("사진 업로드 기능은 추후 구현 예정입니다.")} />
         <ReviewItem
-          imageUrl={reviewDummyData.reviewItem.imageUrl}
-          name={reviewDummyData.reviewItem.name}
-          option={reviewDummyData.reviewItem.option}
+          imageUrl={currentOrder.storeImage || "/samples/food1.jpg"}
+          name={currentOrder.menuSummary || currentOrder.storeName}
+          option={currentOrder.orderMenus?.[0]?.options?.join(", ") || ""}
           selected={likeStatus}
           onLike={handleLike}
           onDislike={handleDislike}
@@ -83,7 +128,7 @@ export default function Review({ className }) {
       </div>
 
       <BottomButton
-        disabled={foodRating === 0} // 버튼 비활성화 조건
+        disabled={foodRating === 0} // 음식 평점은 필수
         onClick={handleSubmit}
       >
         <p>등록하기</p>

@@ -29,10 +29,10 @@ const COMPLETED_ORDER_STATUSES = [
 
 /**
  * 주문 상태 관리를 위한 커스텀 훅
- * @param {string} orderId - 주문 ID (URL 파라미터에서 자동 추출)
+ * @param {string} orderId - 주문 ID (선택사항, URL 파라미터에서 자동 추출)
  * @returns {Object} 주문 상태 관련 데이터와 함수들
  */
-export const useOrderStatus = (orderId = null) => {
+export default function useOrderStatus(orderId = null) {
   const dispatch = useDispatch();
   const params = useParams();
   
@@ -45,7 +45,7 @@ export const useOrderStatus = (orderId = null) => {
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
 
-  // 현재 주문 설정 - 무한 루프 방지를 위해 의존성 배열에서 currentOrder 제거
+  // 현재 주문 설정
   useEffect(() => {
     if (actualOrderId) {
       dispatch(setCurrentOrder(actualOrderId));
@@ -55,47 +55,33 @@ export const useOrderStatus = (orderId = null) => {
     return () => {
       dispatch(clearCurrentOrder());
     };
-  }, [actualOrderId, dispatch]); // currentOrder 의존성 제거
+  }, [actualOrderId, dispatch]);
 
-  // 주문 데이터 (Redux에서 가져온 데이터 우선, 없으면 더미 데이터)
+  // 주문 데이터 (Redux에서 가져온 데이터만 사용)
   const orderData = useMemo(() => {
     if (orderFromStore) {
       // Redux 데이터를 OrderStatus 컴포넌트에서 기대하는 형식으로 변환
       return {
         id: orderFromStore.id,
-        orderStatus: orderFromStore.status || orderFromStore.orderStatus, // 두 필드명 모두 지원
-        deliveryEta: orderFromStore.deliveryEta || "2025-06-11T08:11:00",
-        storeName: orderFromStore.storeName || "도미노피자 구름톤점",
-        orderNumber: orderFromStore.orderNumber || "14NKFA",
-        orderPrice: orderFromStore.orderPrice || orderFromStore.totalPrice || 15900,
+        orderStatus: orderFromStore.status || orderFromStore.orderStatus,
+        deliveryEta: orderFromStore.deliveryEta || null,
+        storeName: orderFromStore.storeName,
+        orderNumber: orderFromStore.orderNumber || `ORDER${orderFromStore.id}`,
+        orderPrice: orderFromStore.orderPrice || orderFromStore.totalPrice || 0,
         orderMenuCount: orderFromStore.orderMenuCount || orderFromStore.menuCount || 1,
-        deliveryAddress: orderFromStore.deliveryAddress || "경기 성남시 판교로 242 PDC A동 902호",
+        deliveryAddress: orderFromStore.deliveryAddress,
         destinationLocation: orderFromStore.destinationLocation || { lat: 37.501887, lng: 127.039252 },
         storeLocation: orderFromStore.storeLocation || { lat: 37.4979, lng: 127.0276 },
-        riderRequest: orderFromStore.riderRequest || "문 앞에 놔주세요 (초인종 O)",
+        riderRequest: orderFromStore.riderRequest || orderFromStore.deliveryRequest,
         statusHistory: orderFromStore.statusHistory || [],
         createdAt: orderFromStore.createdAt,
         ...orderFromStore // 나머지 필드들도 포함
       };
     }
     
-    // 더미 데이터 (기존과 호환성 유지)
-    return {
-      id: actualOrderId || "dummy-order",
-      orderStatus: "COOKED",
-      deliveryEta: "2025-06-11T08:11:00",
-      storeName: "도미노피자 구름톤점",
-      orderNumber: "14NKFA",
-      orderPrice: 15900,
-      orderMenuCount: 1,
-      deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
-      destinationLocation: { lat: 37.501887, lng: 127.039252 },
-      storeLocation: { lat: 37.4979, lng: 127.0276 },
-      riderRequest: "문 앞에 놔주세요 (초인종 O)",
-      statusHistory: [],
-      createdAt: new Date().toISOString()
-    };
-  }, [orderFromStore, actualOrderId]);
+    // Redux에 데이터가 없는 경우 null 반환
+    return null;
+  }, [orderFromStore]);
 
   // 주문 상태 정보 계산
   const orderStatusInfo = useMemo(() => {
@@ -143,22 +129,16 @@ export const useOrderStatus = (orderId = null) => {
   };
 
   return {
-    // 데이터
     orderData,
+    isLoading,
+    error,
+    hasData: !!orderData,
     orderStatusInfo,
     etaInfo,
     progressStep,
-    isLoading,
-    error,
-    
-    // 함수
     updateStatus,
-    
-    // 유틸리티
     isActiveOrder: orderData.orderStatus && ACTIVE_ORDER_STATUSES.includes(orderData.orderStatus),
-    
     isCompletedOrder: orderData.orderStatus && COMPLETED_ORDER_STATUSES.includes(orderData.orderStatus),
-    
     isCanceledOrder: orderData.orderStatus === ORDER_STATUS.CANCELED,
   };
-}; 
+} 
