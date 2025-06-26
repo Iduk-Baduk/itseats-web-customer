@@ -85,7 +85,7 @@ export default function useOrderStatus(orderId = null) {
 
   // 주문 상태 정보 계산
   const orderStatusInfo = useMemo(() => {
-    const status = orderData.orderStatus;
+    const status = orderData?.orderStatus;
     
     if (!isValidOrderStatus(status)) {
       console.warn(`Unknown order status: ${status}`);
@@ -100,17 +100,17 @@ export default function useOrderStatus(orderId = null) {
     }
     
     return ORDER_STATUS_CONFIG[status];
-  }, [orderData.orderStatus]);
+  }, [orderData?.orderStatus]);
 
   // 도착 예정시간 계산
   const etaInfo = useMemo(() => {
-    return calculateETA(orderData.deliveryEta);
-  }, [orderData.deliveryEta]);
+    return calculateETA(orderData?.deliveryEta);
+  }, [orderData?.deliveryEta]);
 
   // 진행률 단계 계산
   const progressStep = useMemo(() => {
-    return getOrderStep(orderData.orderStatus);
-  }, [orderData.orderStatus]);
+    return getOrderStep(orderData?.orderStatus);
+  }, [orderData?.orderStatus]);
 
   // 주문 상태 업데이트 함수
   const updateStatus = (status, message = null) => {
@@ -137,8 +137,8 @@ export default function useOrderStatus(orderId = null) {
     etaInfo,
     progressStep,
     updateStatus,
-    isActiveOrder: orderData.orderStatus && ACTIVE_ORDER_STATUSES.includes(orderData.orderStatus),
-    isCompletedOrder: orderData.orderStatus && COMPLETED_ORDER_STATUSES.includes(orderData.orderStatus),
-    isCanceledOrder: orderData.orderStatus === ORDER_STATUS.CANCELED,
+    isActiveOrder: orderData?.orderStatus && ACTIVE_ORDER_STATUSES.includes(orderData.orderStatus),
+    isCompletedOrder: orderData?.orderStatus && COMPLETED_ORDER_STATUSES.includes(orderData.orderStatus),
+    isCanceledOrder: orderData?.orderStatus === ORDER_STATUS.CANCELED,
   };
 } 

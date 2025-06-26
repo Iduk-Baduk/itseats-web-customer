@@ -76,10 +76,11 @@ export default function StoreList() {
       switch(sort) {
         case 'rating':
           return (b.rating || 0) - (a.rating || 0);
-        case 'delivery':
+        case 'delivery': {
           const aTime = parseInt(a.deliveryTime?.split('-')[0]) || 30;
           const bTime = parseInt(b.deliveryTime?.split('-')[0]) || 30;
           return aTime - bTime;
+        }
         case 'reviewCount':
           return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
