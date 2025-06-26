@@ -14,11 +14,19 @@ export function createMenuOptionHash(menuOption) {
     return simpleHash('');
   }
   
-  // 속성 순서를 일관되게 유지하기 위해 정렬
+  // 속성 순서를 일관되게 유지하기 위해 정렬 (방어적 처리)
   const sortedOption = menuOption.map(group => ({
     ...group,
-    options: (group.options || []).sort((a, b) => a.optionName.localeCompare(b.optionName))
-  })).sort((a, b) => a.optionGroupName.localeCompare(b.optionGroupName));
+    options: (group.options || []).sort((a, b) => {
+      const nameA = a.optionName || a.name || '';
+      const nameB = b.optionName || b.name || '';
+      return nameA.localeCompare(nameB);
+    })
+  })).sort((a, b) => {
+    const groupNameA = a.optionGroupName || a.name || '';
+    const groupNameB = b.optionGroupName || b.name || '';
+    return groupNameA.localeCompare(groupNameB);
+  });
   
   return simpleHash(JSON.stringify(sortedOption));
 } 

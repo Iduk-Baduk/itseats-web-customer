@@ -10,17 +10,25 @@ import { Map as KakaoMap, MapMarker, Polyline, useKakaoLoader } from "react-kaka
  *  target: "store" | "user" | null
  */
 export default function CommonMap({ lat, lng, markers = [], height = "300px", level = 3 }) {
-  // API 키 확인 및 디버깅
+  // API 키 확인 및 디버깅 (기존 환경변수 이름 사용)
   const apiKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
   
   // 개발 환경에서만 디버깅 로그 출력
   if (import.meta.env.DEV) {
-    console.log('환경변수 디버깅:', {
-      apiKey: apiKey ? '설정됨' : '미설정',
+    console.log('카카오맵 환경변수 디버깅:', {
+      apiKey: apiKey ? `설정됨 (${apiKey.substring(0, 8)}...)` : '미설정',
+      keyLength: apiKey?.length, // 키 길이로 유효성 확인
       nodeEnv: import.meta.env.NODE_ENV,
-      mode: import.meta.env.MODE
+      mode: import.meta.env.MODE,
+      allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_'))
     });
   }
+  
+  // 카카오 맵 SDK 로더 사용 (항상 호출되어야 함)
+  const [loading, error] = useKakaoLoader({
+    appkey: apiKey,
+    libraries: ["services", "clusterer"],
+  });
   
   if (!apiKey) {
     console.error('카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_APP_KAKAOMAP_KEY를 설정해주세요.');
@@ -30,12 +38,6 @@ export default function CommonMap({ lat, lng, markers = [], height = "300px", le
       </div>
     );
   }
-
-  // 카카오 맵 SDK 로더 사용
-  const [loading, error] = useKakaoLoader({
-    appkey: apiKey,
-    libraries: ["services", "clusterer"],
-  });
 
   // 로딩 중이면 로딩 표시
   if (loading) {

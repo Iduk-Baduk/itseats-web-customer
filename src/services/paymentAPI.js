@@ -1,39 +1,41 @@
 import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../config/api';
 
 // 결제 수단 API 서비스
 export const paymentAPI = {
   // 결제 수단 목록 조회
   getPaymentMethods: async () => {
-    const [cards, accounts] = await Promise.all([
-      apiClient.get('/api/cards'),
-      apiClient.get('/api/accounts'),
+    const [cards, accounts, coupayMoney] = await Promise.all([
+      apiClient.get(API_ENDPOINTS.CARDS),
+      apiClient.get(API_ENDPOINTS.ACCOUNTS),
+      apiClient.get('/coupayMoney'),
     ]);
 
     return {
       cards,
       accounts,
-      coupayMoney: 10000, // 서버에서 받아올 예정
+      coupayMoney,
     };
   },
 
   // 카드 추가
   addCard: async (cardData) => {
-    return await apiClient.post('/api/cards', cardData);
+    return await apiClient.post(API_ENDPOINTS.CARDS, cardData);
   },
 
   // 계좌 추가
   addAccount: async (accountData) => {
-    return await apiClient.post('/api/accounts', accountData);
+    return await apiClient.post(API_ENDPOINTS.ACCOUNTS, accountData);
   },
 
   // 카드 삭제
   deleteCard: async (cardId) => {
-    return await apiClient.delete(`/api/cards/${cardId}`);
+    return await apiClient.delete(API_ENDPOINTS.CARD_BY_ID(cardId));
   },
 
   // 계좌 삭제
   deleteAccount: async (accountId) => {
-    return await apiClient.delete(`/api/accounts/${accountId}`);
+    return await apiClient.delete(API_ENDPOINTS.ACCOUNT_BY_ID(accountId));
   },
 
   // 결제 실행 (개선된 버전)
@@ -76,17 +78,17 @@ export const paymentAPI = {
         throw new Error('지원하지 않는 결제 수단입니다.');
     }
 
-    return await apiClient.post('/api/payments/process', requestData);
+    return await apiClient.post(API_ENDPOINTS.PAYMENTS + '/process', requestData);
   },
 
   // 결제 상태 확인
   getPaymentStatus: async (paymentId) => {
-    return await apiClient.get(`/api/payments/${paymentId}/status`);
+    return await apiClient.get(`${API_ENDPOINTS.PAYMENTS}/${paymentId}/status`);
   },
 
   // 결제 취소
   cancelPayment: async (paymentId, reason) => {
-    return await apiClient.post(`/api/payments/${paymentId}/cancel`, {
+    return await apiClient.post(`${API_ENDPOINTS.PAYMENTS}/${paymentId}/cancel`, {
       reason,
       timestamp: new Date().toISOString()
     });
@@ -94,7 +96,7 @@ export const paymentAPI = {
 
   // 결제 내역 조회
   getPaymentHistory: async (params = {}) => {
-    return await apiClient.get('/api/payments/history', { params });
+    return await apiClient.get(`${API_ENDPOINTS.PAYMENTS}/history`, { params });
   },
 };
 

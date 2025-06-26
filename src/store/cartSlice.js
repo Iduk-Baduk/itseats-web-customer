@@ -61,10 +61,10 @@ const cartSlice = createSlice({
         };
       }
 
-      // 다른 가게 메뉴 추가 시도 시 에러 처리
-      if (state.currentStore && state.currentStore.storeId !== newItem.storeId) {
+      // 다른 가게 메뉴 추가 시도 시 에러 처리 (타입 안전 비교)
+      if (state.currentStore && String(state.currentStore.storeId) !== String(newItem.storeId)) {
         // 이 경우는 UI에서 미리 확인 모달을 띄워야 함
-        console.warn(`다른 가게 메뉴 추가 시도: 현재 가게 ${state.currentStore.storeId}, 새 가게 ${newItem.storeId}`);
+        console.warn(`다른 가게 메뉴 추가 시도: 현재 가게 ${state.currentStore.storeId} (${typeof state.currentStore.storeId}), 새 가게 ${newItem.storeId} (${typeof newItem.storeId})`);
         return;
       }
 
@@ -157,6 +157,10 @@ const cartSlice = createSlice({
       state.requestInfo = { ...state.requestInfo, ...action.payload };
       saveToLocalStorage(state);
     },
+    updateCurrentStore(state, action) {
+      state.currentStore = action.payload;
+      saveToLocalStorage(state);
+    },
   },
 });
 
@@ -168,6 +172,7 @@ export const {
   removeMenu,
   clearCart,
   updateRequestInfo,
+  updateCurrentStore,
 } = cartSlice.actions;
 
 // Selectors

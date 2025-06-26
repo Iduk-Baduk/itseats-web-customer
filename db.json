@@ -1,28 +1,34 @@
 {
   "cards": [
     {
-      "id": 1,
+      "id": "1",
       "cardNumber": "**** **** **** 1234",
-      "cardName": "신한카드",
+      "name": "신한카드",
       "cardType": "신용카드",
       "bank": "신한은행",
+      "last4": "1234",
+      "image": "/icons/logos/shinhan.png",
       "isDefault": true
     },
     {
-      "id": 2,
+      "id": "f809",
       "cardNumber": "**** **** **** 5678",
-      "cardName": "국민카드",
+      "name": "테스트카드",
       "cardType": "체크카드",
-      "bank": "국민은행",
+      "bank": "우리은행",
+      "last4": "5678",
+      "image": "/icons/logos/woori.png",
       "isDefault": false
     }
   ],
   "accounts": [
     {
-      "id": 1,
+      "id": "1",
       "accountNumber": "110-***-****12",
-      "bank": "신한은행",
+      "bankName": "신한은행",
       "accountName": "홍길동",
+      "last4": "4012",
+      "image": "/icons/logos/shinhan.png",
       "isDefault": true
     }
   ],
@@ -43,7 +49,10 @@
           "menuName": "페퍼로니 피자 L",
           "price": 24900,
           "quantity": 1,
-          "options": ["엑스트라 치즈", "씬 도우"]
+          "options": [
+            "엑스트라 치즈",
+            "씬 도우"
+          ]
         }
       ],
       "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
@@ -65,7 +74,10 @@
           "menuName": "싸이버거 세트",
           "price": 8900,
           "quantity": 1,
-          "options": ["콜라", "감자튀김"]
+          "options": [
+            "콜라",
+            "감자튀김"
+          ]
         },
         {
           "menuId": 6,
@@ -81,54 +93,70 @@
   ],
   "coupons": [
     {
-      "id": 1,
+      "id": "1",
       "name": "첫 주문 할인",
       "discount": 3000,
       "type": "general",
       "description": "첫 주문 시 3,000원 할인",
       "minOrderAmount": 15000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": true
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "배달비 무료",
       "discount": 2500,
       "type": "delivery",
       "description": "배달비 무료 쿠폰",
       "minOrderAmount": 10000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": true
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "주말 특가 15% 할인",
       "discount": 15,
       "type": "percentage",
       "description": "주말 한정 전 메뉴 15% 할인 (최대 5,000원)",
       "minOrderAmount": 20000,
       "maxDiscount": 5000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2025-12-31T23:59:59.000Z",
       "isUsed": false,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": false
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "신규 가입 축하",
       "discount": 5000,
       "type": "general",
       "description": "신규 가입 축하 5,000원 할인",
       "minOrderAmount": 25000,
-      "validDate": "2024-12-31T23:59:59.000Z",
+      "validDate": "2026-12-31T23:59:59.000Z",
       "isUsed": true,
-      "isExpired": false
+      "isExpired": false,
+      "isStackable": false
+    },
+    {
+      "id": "5",
+      "name": "테스트 쿠폰",
+      "discount": 1000,
+      "type": "general",
+      "description": "테스트용 1,000원 할인",
+      "minOrderAmount": 5000,
+      "validDate": "2026-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": true
     }
   ],
   "stores": [
     {
-      "id": 1,
+      "id": "1",
       "name": "도미노피자 구름점",
       "category": "피자",
       "location": {
@@ -159,9 +187,18 @@
               "type": "radio",
               "required": true,
               "choices": [
-                { "name": "오리지널 도우", "price": 0 },
-                { "name": "씬 도우", "price": 0 },
-                { "name": "치즈크러스트", "price": 2000 }
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
               ]
             },
             {
@@ -169,9 +206,18 @@
               "type": "checkbox",
               "required": false,
               "choices": [
-                { "name": "엑스트라 치즈", "price": 2000 },
-                { "name": "베이컨", "price": 2500 },
-                { "name": "파인애플", "price": 1500 }
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
               ]
             }
           ]
@@ -191,11 +237,19 @@
           "description": "시원한 콜라",
           "imageUrl": "/samples/food3.jpg",
           "category": "음료"
+        },
+        {
+          "id": 4,
+          "name": "테스트 메뉴",
+          "price": 6000,
+          "description": "테스트용 간단한 메뉴",
+          "imageUrl": "/samples/food1.jpg",
+          "category": "테스트"
         }
       ]
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "맘스터치 판교점",
       "category": "햄버거",
       "location": {
@@ -225,9 +279,18 @@
               "type": "radio",
               "required": true,
               "choices": [
-                { "name": "콜라", "price": 0 },
-                { "name": "사이다", "price": 0 },
-                { "name": "오렌지주스", "price": 500 }
+                {
+                  "name": "콜라",
+                  "price": 0
+                },
+                {
+                  "name": "사이다",
+                  "price": 0
+                },
+                {
+                  "name": "오렌지주스",
+                  "price": 500
+                }
               ]
             }
           ]
@@ -243,7 +306,7 @@
       ]
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "굽네치킨 판교점",
       "category": "치킨",
       "location": {
@@ -271,7 +334,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "교촌치킨 구름점",
       "category": "치킨",
       "location": {
@@ -289,7 +352,7 @@
       "imageUrl": "/samples/food2.jpg"
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "미스터피자 판교점",
       "category": "피자",
       "location": {
@@ -309,7 +372,7 @@
   ],
   "addresses": [
     {
-      "id": 1,
+      "id": "1",
       "name": "집",
       "address": "경기 성남시 판교로 242 PDC A동 902호",
       "roadAddress": "경기 성남시 수정구 판교로 242",
@@ -319,7 +382,7 @@
       "addressType": "home"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "회사",
       "address": "경기 성남시 분당구 대왕판교로 645 카카오 판교아지트",
       "roadAddress": "경기 성남시 분당구 대왕판교로 645",
@@ -329,7 +392,7 @@
       "addressType": "company"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "친구집",
       "address": "서울 강남구 테헤란로 212 멀티캠퍼스",
       "roadAddress": "서울 강남구 테헤란로 212",
