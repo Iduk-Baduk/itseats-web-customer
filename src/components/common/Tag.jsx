@@ -42,7 +42,10 @@ export default function Tag({
       {onRemove && (
         <button 
           className={styles.removeButton}
-          onClick={onRemove}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(e);
+          }}
           aria-label="태그 제거"
           type="button"
         >
@@ -82,6 +85,10 @@ export function StatusTag({ status, ...props }) {
   return <Tag {...config} {...props} />;
 }
 
+StatusTag.propTypes = {
+  status: PropTypes.oneOf(['active', 'inactive', 'pending', 'error', 'completed', 'cancelled']).isRequired
+};
+
 export function CountTag({ count, max, ...props }) {
   const displayCount = max && count > max ? `${max}+` : count;
   const isOverMax = max && count > max;
@@ -97,6 +104,11 @@ export function CountTag({ count, max, ...props }) {
     </Tag>
   );
 }
+
+CountTag.propTypes = {
+  count: PropTypes.number.isRequired,
+  max: PropTypes.number
+};
 
 export function PriceTag({ 
   price, 
@@ -126,4 +138,11 @@ export function PriceTag({
       )}
     </div>
   );
-} 
+}
+
+PriceTag.propTypes = {
+  price: PropTypes.number.isRequired,
+  originalPrice: PropTypes.number,
+  currency: PropTypes.string,
+  showDiscount: PropTypes.bool
+}; 
