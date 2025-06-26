@@ -7,6 +7,8 @@ export default function BottomButton({
   bottom,
   label,
   disabled = false,
+  loading = false,
+  loadingText = "처리 중...",
   className,
   children,
   cartInfo,
@@ -35,7 +37,12 @@ export default function BottomButton({
             showPaymentText ? styles.centered : ""
           }`}
         >
-          {showPaymentText ? (
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.spinner}></div>
+              <span className={styles.loadingText}>{loadingText}</span>
+            </div>
+          ) : showPaymentText ? (
             <span className={styles.paymentText}>
               {cartInfo.totalPrice.toLocaleString()}원 결제하기
             </span>
