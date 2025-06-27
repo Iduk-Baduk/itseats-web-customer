@@ -97,7 +97,7 @@ export default function Root() {
             } 
           />
           <Route 
-            path="/search/results" 
+            path="/search-result" 
             element={
               <Layout>
                 <LazyPageWrapper>
