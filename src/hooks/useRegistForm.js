@@ -20,20 +20,14 @@ export default function useRegistForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(form);
-    if (
-      !form.username ||
-      !form.password ||
-      !form.nickname ||
-      !form.email ||
-      !form.phone
-    ) {
-      return setError("모든 항목을 입력해주세요.");
+    if (form.password !== form.confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
     }
 
     try {
       await regist(form);
-      alert("회원가입 완료!");
+      alert("회원가입이 완료되었습니다!");
       setError("");
     } catch (err) {
       setError("회원가입 실패. 다시 시도해주세요.");

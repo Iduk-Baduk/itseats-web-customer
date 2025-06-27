@@ -72,13 +72,14 @@ export default function Home() {
   useEffect(() => {
     dispatch(fetchStores());
   }, [dispatch]);
-  
-  // 개발 환경에서만 디버깅 로그 출력
+
+  // 검색 키워드 변경 시 필터링
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('🏪 매장 데이터:', { count: stores.length, loading: storeLoading });
-    }
-  }, [stores.length, storeLoading]);
+    const filtered = stores.filter((store) =>
+      store.name.toLowerCase().includes(keyword.toLowerCase())
+    );
+    setFilteredStores(filtered);
+  }, [stores, keyword]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {

@@ -352,4 +352,64 @@
 .focus-visible:focus-visible {
   outline: 2px solid var(--theme-color);
   outline-offset: 2px;
-} 
+}
+
+/* 공통 유틸리티 클래스 */
+
+/* Flexbox 관련 */
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-align-center {
+  display: flex;
+  align-items: center;
+}
+
+/* 간격 관련 */
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-20 { gap: 20px; }
+
+/* 패딩 관련 */
+.p-12 { padding: 12px; }
+.p-16 { padding: 16px; }
+.p-20 { padding: 20px; }
+.px-20 { padding: 0 20px; }
+.py-16 { padding: 16px 0; }
+
+/* 마진 관련 */
+.mt-8 { margin-top: 8px; }
+.mb-8 { margin-bottom: 8px; }
+.mx-auto { margin: 0 auto; }
+
+/* 테두리 반경 */
+.rounded-8 { border-radius: 8px; }
+.rounded-12 { border-radius: 12px; }
+.rounded-full { border-radius: 50px; }
+
+/* 폰트 크기 */
+.text-12 { font-size: 12px; }
+.text-14 { font-size: 14px; }
+.text-16 { font-size: 16px; }
+.text-18 { font-size: 18px; }
+
+/* 색상 */
+.text-gray { color: var(--black-600); }
+.text-error { color: #ff3b30; }
+
+/* 배경색 */
+.bg-gray { background-color: #f9f9f9; }
+
+/* 기타 */
+.w-full { width: 100%; }
+.h-auto { height: auto; }
+.overflow-hidden { overflow: hidden; } 

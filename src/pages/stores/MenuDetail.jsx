@@ -41,42 +41,22 @@ export default function MenuDetail() {
   const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
   const [pendingMenuData, setPendingMenuData] = useState(null);
   
-  // 컴포넌트 마운트 시 매장 정보 로딩
+  // 초기화 및 설정
   useEffect(() => {
+    // 매장 정보 로딩
     if (storeId) {
       dispatch(fetchStoreById(storeId));
     }
-  }, [dispatch, storeId]);
-
-  // 컴포넌트 마운트 시 현재 장바구니 상태 확인 (디버깅용)
-  useEffect(() => {
-    console.log('📍 MenuDetail 마운트 - 장바구니 상태 확인:', {
-      currentStore,
-      currentStoreExists: !!currentStore,
-      storeId: currentStore?.storeId,
-      storeName: currentStore?.storeName,
-      routeStoreId: storeId,
-      comparison: currentStore ? String(currentStore.storeId) !== String(storeId) : 'currentStore 없음'
-    });
-  }, [currentStore, storeId]);
-  
-  // 메뉴 데이터가 로딩되면 옵션 초기화
-  useEffect(() => {
+    
+    // 메뉴 옵션 초기화
     if (currentMenu?.options) {
       setSelectedOptions(
         currentMenu.options.map((group) => ({ ...group, options: [] }))
       );
     }
-  }, [currentMenu]);
+  }, [dispatch, storeId, currentMenu]);
 
-  useEffect(() => {
-    // console.log("selectedOptions:", selectedOptions);
-    // console.log(
-    //   "isRequiredOptionsNotSelected():",
-    //   isRequiredOptionsNotSelected()
-    // );
-  }, [selectedOptions]);
-
+  // 가격 계산
   useEffect(() => {
     if (!currentMenu) return;
     
@@ -90,6 +70,7 @@ export default function MenuDetail() {
     setTotalPrice((basePrice + optionsPrice) * quantity);
   }, [quantity, selectedOptions, currentMenu]);
 
+  // 스크롤 이벤트 처리
   useEffect(() => {
     const onScroll = () => {
       const target = document.getElementById("intro");
@@ -97,6 +78,7 @@ export default function MenuDetail() {
       const rect = target.getBoundingClientRect();
       setTransparent(rect.bottom > 0);
     };
+    
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -121,16 +103,15 @@ export default function MenuDetail() {
         optionName: option.optionName,
         optionPrice: option.optionPrice
       }))
-    })).filter(group => group.options.length > 0); // 선택된 옵션이 있는 그룹만
+    })).filter(group => group.options.length > 0);
 
     return {
       menuId: currentMenu.id || currentMenu.menuId,
       menuName: currentMenu.name || currentMenu.menuName,
       menuPrice: currentMenu.price || currentMenu.menuPrice,
-      menuOptions: menuOptions, // API 스펙에 맞는 구조
-      menuOption: selectedOptions, // 기존 구조 (하위 호환성)
+      menuOptions: menuOptions,
+      menuOption: selectedOptions,
       quantity,
-      // 가게 정보 추가 (일관된 문자열 타입 사용)
       storeId: String(storeId),
       storeName: store.name,
       storeImage: store.imageUrl
@@ -144,23 +125,10 @@ export default function MenuDetail() {
       return;
     }
     
-    // 디버깅: 가게 ID 비교
-    console.log('🛒 addToCart 디버깅:', {
-      currentStore,
-      menuData: {
-        storeId: menuData.storeId,
-        storeName: menuData.storeName
-      },
-      comparison: String(currentStore?.storeId) !== String(menuData.storeId),
-      currentStoreExists: !!currentStore,
-      storeIdTypes: {
-        current: typeof currentStore?.storeId,
-        new: typeof menuData.storeId
-      }
-    });
+    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
+    const isDifferentStore = currentStore && String(currentStore.storeId) !== String(menuData.storeId);
     
-    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인 (타입 안전한 비교)
-    if (currentStore && String(currentStore.storeId) !== String(menuData.storeId)) {
+    if (isDifferentStore) {
       // 다른 가게 메뉴가 있으면 확인 모달 표시
       setPendingMenuData(menuData);
       setShowStoreChangeModal(true);

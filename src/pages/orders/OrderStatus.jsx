@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -44,8 +44,7 @@ export default function OrderStatus() {
     autoStart: isActiveOrder,
     pollingInterval: 8000, // 8초마다 폴링
     onStatusChange: (statusChange) => {
-      console.log('🔔 주문 상태 변경 알림:', statusChange);
-      // TODO: 푸시 알림이나 토스트 표시
+      // 상태 변경 알림 처리 로직은 향후 구현
     }
   });
 
@@ -90,6 +89,13 @@ export default function OrderStatus() {
   if (!orderData || !orderStatusInfo) {
     return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
   }
+
+  // 주문 상태 변경 감지
+  useEffect(() => {
+    if (statusChange) {
+      // 상태 변경 알림 처리 로직은 향후 구현
+    }
+  }, [statusChange]);
 
   return (
     <SlideInFromRight>
