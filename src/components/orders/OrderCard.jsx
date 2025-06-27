@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import Button from "../common/basic/Button";
 import Card from "../common/Card";
 import Tag, { StatusTag } from "../common/Tag";
-import { ORDER_STATUS } from "../../constants/orderStatus";
+import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderStatus";
 import styles from "./OrderCard.module.css";
 
 export default function OrderCard({
@@ -11,20 +12,26 @@ export default function OrderCard({
   onWriteReview,
   onOpenStatus,
 }) {
-  // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑
-  const orderData = {
-    storeName: order.storeName || "알 수 없는 매장",
-    date: order.date || order.createdAt || new Date().toLocaleString('ko-KR'),
-    status: order.status || "주문 확인 중",
-    price: Number(order.price || order.orderPrice || 0),
-    menuSummary: order.menuSummary || "메뉴 정보 없음",
-    storeImage: order.storeImage || "/images/default-store.jpg",
-    isCompleted: order.isCompleted !== undefined ? order.isCompleted : 
-      [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
-    showReviewButton: order.showReviewButton !== undefined ? order.showReviewButton : 
-      [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
-    remainingDays: order.remainingDays,
-  };
+  // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑 - useMemo로 최적화
+  const orderData = useMemo(() => {
+    const statusConfig = ORDER_STATUS_CONFIG[order.status] || {};
+    
+    return {
+      storeName: order.storeName || "알 수 없는 매장",
+      date: order.date || (order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : new Date().toLocaleString('ko-KR')),
+      status: order.status || "주문 확인 중",
+      statusMessage: statusConfig.message || "상태 확인 중",
+      price: Number(order.price || order.orderPrice || order.totalAmount || 0),
+      menuSummary: order.menuSummary || order.items?.map(item => item.menuName).join(", ") || "메뉴 정보 없음",
+      storeImage: order.storeImage || "/samples/food1.jpg",
+      isCompleted: order.isCompleted !== undefined ? order.isCompleted : 
+        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
+      showReviewButton: order.showReviewButton !== undefined ? order.showReviewButton : 
+        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
+      remainingDays: order.remainingDays,
+      isActive: [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.status)
+    };
+  }, [order]);
 
   return (
     <div className={className}>
@@ -35,10 +42,13 @@ export default function OrderCard({
             <p className={styles.date}>{orderData.date}</p>
             <div className={styles.statusContainer}>
               <StatusTag 
-                status={orderData.status === ORDER_STATUS.DELIVERED ? 'completed' : 'pending'} 
+                status={orderData.isCompleted ? 'completed' : (orderData.isActive ? 'pending' : 'cancelled')} 
                 size="small"
               />
-              <div className={styles.rating}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+              <span className={styles.statusMessage}>{orderData.statusMessage}</span>
+              {orderData.isCompleted && (
+                <div className={styles.rating}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+              )}
             </div>
           </div>
           <img src={orderData.storeImage} className={styles.image} />

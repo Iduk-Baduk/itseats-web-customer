@@ -1,21 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
 import OrderTab from "../../components/orders/OrderTab";
-import { selectActiveOrders, selectCompletedOrders } from "../../store/orderSlice";
+import { selectActiveOrders, selectCompletedOrders, selectAllOrders } from "../../store/orderSlice";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import EmptyState from "../../components/common/EmptyState";
 import styles from "./Order.module.css";
 
 export default function Order() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Redux에서 주문 데이터 가져오기
+  const allOrders = useSelector(selectAllOrders);
   const activeOrders = useSelector(selectActiveOrders);
   const completedOrders = useSelector(selectCompletedOrders);
   const isLoading = useSelector(state => state.order?.loading || false);
+
+  // 실시간 업데이트를 위한 효과 - 주문 목록이 변경될 때마다 리렌더링
+  useEffect(() => {
+    // 디버깅을 위한 로그
+    console.log('📊 주문 목록 업데이트:', {
+      전체: allOrders.length,
+      진행중: activeOrders.length,
+      완료: completedOrders.length,
+      주문목록: allOrders.map(order => ({
+        id: order.id,
+        storeName: order.storeName,
+        status: order.status
+      }))
+    });
+  }, [allOrders, activeOrders, completedOrders]);
 
   const handleWriteReview = () => {
     navigate("/review"); // Review 페이지로 이동
