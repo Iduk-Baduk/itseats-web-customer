@@ -43,9 +43,14 @@ export default function Review({ className }) {
       reviewText,
     };
 
-    // 리뷰 API 연동은 향후 구현
-    alert("리뷰가 제출되었습니다!");
-    navigate(-1);
+    try {
+      // 리뷰 API 연동은 향후 구현
+      // await submitReview(reviewData);
+      alert("리뷰가 제출되었습니다!");
+      navigate(-1);
+    } catch (error) {
+      alert("리뷰 제출에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 주문 정보가 없는 경우

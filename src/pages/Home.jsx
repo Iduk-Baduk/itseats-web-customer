@@ -52,6 +52,7 @@ export default function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [keyword, setKeyword] = useState("");
+  const [filteredStores, setFilteredStores] = useState([]);
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   
   // Redux에서 매장 목록 가져오기
@@ -63,15 +64,22 @@ export default function Home() {
   const storeUIState = useUIState({
     isLoading: storeLoading,
     error: storeError,
-    data: stores,
+    data: filteredStores.length > 0 ? filteredStores : stores,
     loadingMessage: "매장 정보를 불러오는 중...",
-    emptyMessage: "주변에 매장이 없습니다"
+    emptyMessage: keyword ? "검색 결과가 없습니다" : "주변에 매장이 없습니다"
   });
   
   // 컴포넌트 마운트 시 매장 데이터 로딩
   useEffect(() => {
     dispatch(fetchStores());
   }, [dispatch]);
+
+  // 매장 데이터 초기화
+  useEffect(() => {
+    if (stores.length > 0 && filteredStores.length === 0) {
+      setFilteredStores(stores);
+    }
+  }, [stores, filteredStores.length]);
 
   // 검색 키워드 변경 시 필터링
   useEffect(() => {
@@ -152,7 +160,7 @@ export default function Home() {
     }
 
     // 성공 상태: 매장 목록 표시
-    return stores.map((store) => (
+    return filteredStores.map((store) => (
       <StoreListItem
         key={store.id}
         store={{

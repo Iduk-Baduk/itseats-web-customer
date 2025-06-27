@@ -146,7 +146,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         console.error(`컴포넌트 언마운트 시 주문 ${orderId} 추적 정리 실패:`, error);
       }
     };
-  }, [orderId, autoStart, startTracking, stopTracking]);
+  }, [orderId, autoStart]);
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
@@ -160,7 +160,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         console.error(`주문 ID 변경 시 추적 재시작 실패:`, error);
       }
     }
-  }, [orderId, stopTracking, startTracking]);
+  }, [orderId]);
 
   return {
     isTracking,

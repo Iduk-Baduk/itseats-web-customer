@@ -5,6 +5,7 @@ export default function useRegistForm() {
   const [form, setForm] = useState({
     username: "",
     password: "",
+    confirmPassword: "",
     nickname: "",
     email: "",
     phone: "",
