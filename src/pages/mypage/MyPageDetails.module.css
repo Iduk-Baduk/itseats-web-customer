@@ -58,6 +58,14 @@
   min-height: 200px;
 }
 
+/* 로딩 및 에러 상태 */
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
 /* 카드 리스트 (주문내역) */
 .cards {
   display: grid;
@@ -65,7 +73,6 @@
   gap: 16px; /* 카드 간 간격 */
   padding: 16px 20px;
 }
-
 
 .card {
   text-align: center;
@@ -96,6 +103,87 @@
   color: var(--black-500);
 }
 
+.card .price {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 2px;
+}
+
+/* 즐겨찾기 리스트 */
+.favoriteList {
+  padding: 0 20px;
+}
+
+.favoriteItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.favoriteItem:hover {
+  background-color: #f8f9fa;
+}
+
+.favoriteItem:last-child {
+  border-bottom: none;
+}
+
+.favoriteItem img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.favoriteInfo {
+  flex: 1;
+}
+
+.favoriteInfo h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--black-900);
+}
+
+.favoriteDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.rating {
+  font-size: 14px;
+  color: var(--orange-500);
+}
+
+.category {
+  font-size: 12px;
+  padding: 2px 6px;
+  background-color: var(--gray-100);
+  border-radius: 4px;
+  color: var(--black-700);
+}
+
+.deliveryInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--black-500);
+}
+
+.deliveryInfo span:first-child::after {
+  content: "•";
+  margin-left: 8px;
+  color: var(--black-300);
+}
+
 /* 비어있는 데이터 안내 */
 .empty {
   text-align: center;
@@ -110,7 +198,7 @@
   margin-bottom: 12px;
 }
 
-/* 간단한 텍스트 목록 (리뷰/즐겨찾기) */
+/* 간단한 텍스트 목록 (리뷰) */
 .list {
   padding: 0 8px;
 }

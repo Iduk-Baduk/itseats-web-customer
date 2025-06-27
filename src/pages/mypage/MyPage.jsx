@@ -54,7 +54,7 @@ export default function MyPage() {
 
       <button
         className={styles.detailButton}
-        onClick={() => navigate("/mypage/details")}
+        onClick={() => navigate("/mypage/details", { state: { user } })}
       >
         자세히 보기
       </button>

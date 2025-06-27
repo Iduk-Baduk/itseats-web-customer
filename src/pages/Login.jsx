@@ -17,8 +17,8 @@ export default function Login() {
   const handleLogin = async () => {
     const result = await login({ username, password });
     if (result) {
-      // localStorage.setItem("accessToken", result.accessToken); // 토큰이 있을 경우
-      alert("로그인 성공");
+      alert(`${result.user.name}님, 환영합니다!`);
+      navigate("/"); // 홈으로 이동
     }
   };
 

@@ -79,6 +79,80 @@
       ],
       "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
       "paymentMethod": "coupay"
+    },
+    {
+      "id": "ORDER-003",
+      "storeId": 2,
+      "storeName": "맘스터치 판교점",
+      "status": "delivered",
+      "orderDate": "2024-01-10T18:00:00.000Z",
+      "deliveryTime": "2024-01-10T18:45:00.000Z",
+      "totalPrice": 17800,
+      "deliveryFee": 2000,
+      "orderMenus": [
+        {
+          "menuId": 5,
+          "menuName": "싸이버거 세트",
+          "price": 8900,
+          "quantity": 2,
+          "options": ["콜라", "감자튀김"]
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "card",
+      "rating": 4,
+      "review": "버거가 맛있어요. 배달도 빨랐습니다."
+    },
+    {
+      "id": "ORDER-004",
+      "storeId": 4,
+      "storeName": "교촌치킨 구름점",
+      "status": "delivered",
+      "orderDate": "2024-01-08T19:30:00.000Z",
+      "deliveryTime": "2024-01-08T20:15:00.000Z",
+      "totalPrice": 22400,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 8,
+          "menuName": "허니콤보",
+          "price": 19900,
+          "quantity": 1,
+          "options": []
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "card",
+      "rating": 5,
+      "review": "허니콤보 정말 맛있네요! 또 주문할게요."
+    },
+    {
+      "id": "ORDER-005",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "status": "delivered",
+      "orderDate": "2024-01-05T20:00:00.000Z",
+      "deliveryTime": "2024-01-05T20:45:00.000Z",
+      "totalPrice": 31400,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "price": 24900,
+          "quantity": 1,
+          "options": ["엑스트라 치즈"]
+        },
+        {
+          "menuId": 3,
+          "menuName": "콜라 1.25L",
+          "price": 2500,
+          "quantity": 2,
+          "options": []
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "coupay"
     }
   ],
   "coupons": [
@@ -390,6 +464,107 @@
       "lng": 127.039154,
       "isDefault": false,
       "addressType": "other"
+    }
+  ],
+  "user": {
+    "id": "user-001",
+    "name": "송준경",
+    "email": "user@example.com",
+    "phone": "010-1234-6888",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "profileImage": "/icons/mypage/people.svg"
+  },
+  "userStats": {
+    "reviewCount": 3,
+    "helpCount": 0,
+    "favoriteCount": 4,
+    "orderCount": 12,
+    "totalSpent": 285400
+  },
+  "favorites": [
+    {
+      "id": "1",
+      "userId": "user-001",
+      "storeId": "1",
+      "createdAt": "2024-01-10T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "userId": "user-001",
+      "storeId": "2",
+      "createdAt": "2024-01-12T15:30:00.000Z"
+    },
+    {
+      "id": "3",
+      "userId": "user-001",
+      "storeId": "4",
+      "createdAt": "2024-01-14T20:15:00.000Z"
+    },
+    {
+      "id": "4",
+      "userId": "user-001",
+      "storeId": "5",
+      "createdAt": "2024-01-15T11:45:00.000Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-001",
+      "userId": "user-001",
+      "orderId": "ORDER-001",
+      "storeId": "1",
+      "storeName": "도미노피자 구름점",
+      "rating": 5,
+      "content": "맛있게 잘 먹었습니다!",
+      "images": [],
+      "createdAt": "2024-01-15T20:00:00.000Z",
+      "helpCount": 0
+    },
+    {
+      "id": "review-002",
+      "userId": "user-001",
+      "orderId": "ORDER-003",
+      "storeId": "2",
+      "storeName": "맘스터치 판교점",
+      "rating": 4,
+      "content": "버거가 맛있어요. 배달도 빨랐습니다.",
+      "images": [],
+      "createdAt": "2024-01-10T19:30:00.000Z",
+      "helpCount": 2
+    },
+    {
+      "id": "review-003",
+      "userId": "user-001",
+      "orderId": "ORDER-004",
+      "storeId": "4",
+      "storeName": "교촌치킨 구름점",
+      "rating": 5,
+      "content": "허니콤보 정말 맛있네요! 또 주문할게요.",
+      "images": [],
+      "createdAt": "2024-01-08T21:00:00.000Z",
+      "helpCount": 1
+    }
+  ],
+  "users": [
+    {
+      "id": "user-001",
+      "username": "test@example.com",
+      "password": "password123",
+      "name": "송준경",
+      "email": "test@example.com",
+      "phone": "010-1234-6888",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-002",
+      "username": "admin@itseats.com",
+      "password": "admin123",
+      "name": "관리자",
+      "email": "admin@itseats.com",
+      "phone": "010-9999-0000",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
     }
   ]
 }

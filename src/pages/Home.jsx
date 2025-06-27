@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import { fetchStores } from "../store/storeSlice";
+import { initializeTestData, initializeFavoriteTestData } from "../utils/testDataInitializer";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import OptimizedImage from "../components/common/OptimizedImage";
@@ -69,9 +70,13 @@ export default function Home() {
     emptyMessage: keyword ? "검색 결과가 없습니다" : "주변에 매장이 없습니다"
   });
   
-  // 컴포넌트 마운트 시 매장 데이터 로딩
+  // 컴포넌트 마운트 시 데이터 로딩 및 초기화
   useEffect(() => {
     dispatch(fetchStores());
+    
+    // 테스트 데이터 초기화
+    initializeTestData(dispatch);
+    initializeFavoriteTestData();
   }, [dispatch]);
 
   // 매장 데이터 초기화

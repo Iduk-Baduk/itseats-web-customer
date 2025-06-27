@@ -1,20 +1,31 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import useMyPageDetails from "../../hooks/useMyPageDetails";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import Header from "../../components/common/Header";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorState from "../../components/common/ErrorState";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { user } = location.state || {
+  // 기본 사용자 정보 (MyPage에서 전달받음)
+  const { user: defaultUser } = location.state || {
     user: { reviewCount: 0, helpCount: 0, favoriteCount: 0, name: "이름없음" },
   };
 
-  const { reviewData, orderData, favoriteData } = useMyPageDetails();
+  const { reviewData, orderData, favoriteData, userStats, loading, error } = useMyPageDetails();
   const [activeTab, setActiveTab] = useState("review");
+
+  // 실제 통계 데이터가 있으면 사용, 없으면 기본값 사용
+  const user = {
+    name: defaultUser.name,
+    reviewCount: userStats.reviewCount || defaultUser.reviewCount,
+    helpCount: userStats.helpCount || defaultUser.helpCount,
+    favoriteCount: userStats.favoriteCount || defaultUser.favoriteCount,
+  };
 
   const tabContentMap = {
     review: {
@@ -37,6 +48,22 @@ export default function MyPageDetails() {
   const current = tabContentMap[activeTab];
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className={styles.loading}>
+          <LoadingSpinner />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className={styles.error}>
+          <ErrorState message={error} />
+        </div>
+      );
+    }
+
     if (current.data.length === 0) {
       return (
         <div className={styles.empty}>
@@ -54,6 +81,38 @@ export default function MyPageDetails() {
               <img src={item.image} alt={item.title} />
               <p>{item.title}</p>
               <span>{item.date}</span>
+              {item.totalPrice && (
+                <span className={styles.price}>
+                  {item.totalPrice.toLocaleString()}원
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (activeTab === "favorites") {
+      return (
+        <div className={styles.favoriteList}>
+          {current.data.map((item) => (
+            <div 
+              key={item.id} 
+              className={styles.favoriteItem}
+              onClick={() => handleFavoriteClick(item.id)}
+            >
+              <img src={item.image} alt={item.title} />
+              <div className={styles.favoriteInfo}>
+                <h3>{item.title}</h3>
+                <div className={styles.favoriteDetails}>
+                  <span className={styles.rating}>⭐ {item.rating}</span>
+                  <span className={styles.category}>{item.category}</span>
+                </div>
+                <div className={styles.deliveryInfo}>
+                  <span>{item.deliveryTime}</span>
+                  <span>배달비 {item.deliveryFee?.toLocaleString()}원</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
