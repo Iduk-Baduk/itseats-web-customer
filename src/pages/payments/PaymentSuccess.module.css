@@ -1,0 +1,246 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.errorContainer h2 {
+  margin: 0 0 0.5rem 0;
+  color: #dc3545;
+  font-size: 1.5rem;
+}
+
+.errorContainer p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+.content {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 성공 섹션 */
+.successSection {
+  text-align: center;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.successIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.successTitle {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #28a745;
+  margin: 0 0 1rem 0;
+}
+
+.successMessage {
+  color: #6c757d;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 주문 정보 카드 */
+.orderInfoCard {
+  margin-bottom: 2rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.orderId {
+  font-size: 0.875rem;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+.orderDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 매장 정보 */
+.storeInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.storeImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.storeInfo h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.storeInfo p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* 금액 정보 */
+.amountInfo {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.amountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--theme-color, #007bff);
+}
+
+/* 배달 정보 */
+.deliveryInfo h5,
+.timeInfo h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.deliveryInfo p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.detailAddress {
+  font-size: 0.875rem;
+  margin-top: 0.25rem !important;
+}
+
+.estimatedTime {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--theme-color, #007bff);
+}
+
+/* 액션 버튼들 */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.primaryButton {
+  width: 100%;
+}
+
+.secondaryButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.secondaryButtons button {
+  flex: 1;
+}
+
+/* 추가 정보 */
+.additionalInfo {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.additionalInfo p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+.additionalInfo p:last-child {
+  margin-bottom: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+  
+  .successTitle {
+    font-size: 1.5rem;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .secondaryButtons {
+    flex-direction: column;
+  }
+} 

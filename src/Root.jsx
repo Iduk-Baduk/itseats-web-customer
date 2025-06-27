@@ -39,6 +39,10 @@ const Payments = React.lazy(() => import("./pages/payments/Payments"));
 const AddPaymentMethod = React.lazy(() => import("./pages/payments/AddPaymentMethod"));
 const AddCard = React.lazy(() => import("./pages/payments/AddCard"));
 const AddAccount = React.lazy(() => import("./pages/payments/AddAccount"));
+const PaymentSuccess = React.lazy(() => import("./pages/payments/PaymentSuccess"));
+const PaymentFailure = React.lazy(() => import("./pages/payments/PaymentFailure"));
+const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
 
@@ -312,6 +316,26 @@ export default function Root() {
               </Layout>
             } 
           />
+          <Route 
+            path="/payments/success" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <PaymentSuccess />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/payments/failure" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <PaymentFailure />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
 
           {/* 지연 로딩 - 기타 페이지들 */}
           <Route 
@@ -330,6 +354,16 @@ export default function Root() {
               <Layout navVisible={false}>
                 <LazyPageWrapper>
                   <Coupons />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/coupons/history" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <CouponHistory />
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -396,6 +430,16 @@ export default function Root() {
                   <TestOrder />
                 </LazyPageWrapper>
               </Layout>
+            } 
+          />
+
+          {/* 404 페이지 - 모든 라우트의 마지막에 위치 */}
+          <Route 
+            path="*" 
+            element={
+              <LazyPageWrapper>
+                <NotFound />
+              </LazyPageWrapper>
             } 
           />
         </Routes>

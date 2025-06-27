@@ -177,7 +177,8 @@ export default function Coupons() {
           title="할인쿠폰"
           leftIcon="back"
           leftButtonAction={() => navigate(-1)}
-          rightIcon=""
+          rightIcon="history"
+          rightButtonAction={() => navigate('/coupons/history')}
         />
         <LoadingSpinner message="쿠폰을 불러오는 중..." />
       </div>
@@ -192,7 +193,8 @@ export default function Coupons() {
           title="할인쿠폰"
           leftIcon="back"
           leftButtonAction={() => navigate(-1)}
-          rightIcon=""
+          rightIcon="history"
+          rightButtonAction={() => navigate('/coupons/history')}
         />
         <EmptyState
           variant="error"
@@ -212,7 +214,8 @@ export default function Coupons() {
         title="할인쿠폰"
         leftIcon="back"
         leftButtonAction={() => navigate(-1)}
-        rightIcon=""
+        rightIcon="history"
+        rightButtonAction={() => navigate('/coupons/history')}
       />
 
       {/* 쿠폰 코드 입력 */}
