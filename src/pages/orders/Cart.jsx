@@ -311,7 +311,7 @@ export default function Cart() {
       const failureParams = new URLSearchParams({
         error: 'processing_failed',
         message: error.message || '알 수 없는 오류가 발생했습니다.',
-        orderId: orderResponse?.data?.orderId || 'unknown'
+        orderId: orderResponse?.data?.orderId || `temp_${Date.now()}`
       });
       
       // 결제 실패 페이지로 이동 (3초 후)
@@ -320,7 +320,7 @@ export default function Cart() {
       }, 3000);
       
       // 사용자에게 에러 알림
-      showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다. 결제 실패 페이지로 이동합니다.'}`);
+      showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다.'}`);
     }
   };
 
