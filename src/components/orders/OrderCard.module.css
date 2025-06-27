@@ -193,29 +193,57 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #e9ecef;
-  border: 3px solid #fff;
+  background-color: #fff;
+  border: 2px solid #e9ecef;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.progressStep.active .stepDot {
-  background-color: var(--theme-color);
+/* 기본 상태 - 비어있는 원 */
+.progressStep .stepDot {
+  background-color: #fff;
+  border-color: #e9ecef;
 }
 
-.progressStep.active span {
-  color: var(--theme-color);
-  font-weight: 600;
+.progressStep span {
+  color: #6c757d;
+  font-weight: 500;
 }
 
+/* 완료된 단계 - 완전히 채워진 원 */
+.progressStep.completed .stepDot {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+.progressStep.completed span {
+  color: var(--theme-color) !important;
+  font-weight: 600 !important;
+}
+
+/* 현재 진행 중인 단계 - 내부도 채워지고 펄스 효과 */
 .progressStep.current .stepDot {
-  background-color: var(--theme-color);
-  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
-  animation: pulse 2s infinite;
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2) !important;
+  animation: pulse 2s infinite !important;
 }
 
 .progressStep.current span {
-  color: var(--theme-color);
-  font-weight: 700;
+  color: var(--theme-color) !important;
+  font-weight: 700 !important;
+}
+
+/* 활성화된 단계 (진행 중이거나 완료된) - 채워진 원 */
+.progressStep.active .stepDot {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+.progressStep.active span {
+  color: var(--theme-color) !important;
+  font-weight: 600 !important;
 }
 
 @keyframes pulse {

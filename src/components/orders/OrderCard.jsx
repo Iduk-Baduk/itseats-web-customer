@@ -138,18 +138,38 @@ export default function OrderCard({
                   { key: 'delivering', label: '배달중', statuses: [ORDER_STATUS.DELIVERING] }
                 ];
 
+                // 현재 진행 단계 인덱스 계산
+                const getCurrentStepIndex = () => {
+                  switch(orderData.status) {
+                    case ORDER_STATUS.WAITING: return 0;
+                    case ORDER_STATUS.COOKING: return 1;
+                    case ORDER_STATUS.COOKED:
+                    case ORDER_STATUS.RIDER_READY: return 2;
+                    case ORDER_STATUS.DELIVERING: return 3;
+                    default: return 0;
+                  }
+                };
+
+                const currentStepIndex = getCurrentStepIndex();
+
                 return steps.map((step, index) => {
                   const isActive = step.statuses.includes(orderData.status);
-                  const isCurrent = 
-                    (orderData.status === ORDER_STATUS.WAITING && step.key === 'order') ||
-                    (orderData.status === ORDER_STATUS.COOKING && step.key === 'cooking') ||
-                    ([ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY].includes(orderData.status) && step.key === 'cooked') ||
-                    (orderData.status === ORDER_STATUS.DELIVERING && step.key === 'delivering');
+                  const isCurrent = index === currentStepIndex;
+                  const isCompleted = index < currentStepIndex;
+
+                  // 디버깅용 로그
+                  console.log(`단계 ${index} (${step.label}):`, {
+                    status: orderData.status,
+                    currentStepIndex,
+                    isActive,
+                    isCurrent,
+                    isCompleted
+                  });
 
                   return (
                     <div 
                       key={step.key}
-                      className={`${styles.progressStep} ${isActive ? styles.active : ''} ${isCurrent ? styles.current : ''}`}
+                      className={`${styles.progressStep} ${isActive ? styles.active : ''} ${isCurrent ? styles.current : ''} ${isCompleted ? styles.completed : ''}`}
                     >
                       <div className={styles.stepDot}></div>
                       <span>{step.label}</span>
