@@ -2,6 +2,26 @@ import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
+// 토큰에서 사용자 ID 추출 유틸리티
+const extractUserIdFromToken = (token) => {
+  if (!token) return null;
+  
+  try {
+    // JWT 토큰인 경우 디코딩
+    if (token.includes('.')) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId || payload.sub;
+    }
+    
+    // 간단한 형식인 경우
+    const parts = token.split('_');
+    return parts.length > 1 ? parts[1] : null;
+  } catch (error) {
+    logger.error('토큰 파싱 실패:', error);
+    return null;
+  }
+};
+
 export const regist = async (form) => {
   const { username, password, nickname, email, phone, usertype } = form;
   
@@ -70,11 +90,10 @@ export const getCurrentUser = async () => {
     }
     
     // 안전한 토큰 파싱
-    const tokenParts = token.split('_');
-    if (tokenParts.length < 3 || !tokenParts[1]) {
+    const userId = extractUserIdFromToken(token);
+    if (!userId) {
       throw new Error('유효하지 않은 토큰입니다.');
     }
-    const userId = tokenParts[1];
     
     const response = await apiClient.get('/users');
     const users = response || [];

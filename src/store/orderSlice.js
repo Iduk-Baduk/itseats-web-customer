@@ -6,13 +6,22 @@ import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // localStorage에 저장하는 함수
 const saveOrdersToStorage = (orders) => {
-  localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+  try {
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+  } catch (error) {
+    logger.error('Failed to save orders to storage:', error);
+  }
 };
 
 // localStorage에서 불러오는 함수
 const loadOrdersFromStorage = () => {
-  const serialized = localStorage.getItem(STORAGE_KEYS.ORDERS);
-  return serialized ? JSON.parse(serialized) : [];
+  try {
+    const serialized = localStorage.getItem(STORAGE_KEYS.ORDERS);
+    return serialized ? JSON.parse(serialized) : [];
+  } catch (error) {
+    logger.error('Failed to load orders from storage:', error);
+    return [];
+  }
 };
 
 // 고유 ID 생성 함수

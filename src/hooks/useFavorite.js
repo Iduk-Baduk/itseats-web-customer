@@ -22,7 +22,9 @@ function useFavorite() {
   useEffect(() => {
     if (stores.length === 0 && !storeLoading) {
       logger.log('🔄 useFavorite에서 fetchStores 호출');
-      dispatch(fetchStores());
+      dispatch(fetchStores()).catch(error => {
+        logger.error('매장 데이터 로드 실패:', error);
+      });
     }
   }, [stores.length, storeLoading, dispatch]);
   

@@ -133,14 +133,25 @@ export const initializeTestData = (dispatch) => {
   if (existingOrders.length === 0) {
     logger.log('🧪 테스트 주문 데이터를 초기화합니다...');
     
+    const timeoutIds = [];
     sampleOrders.forEach((order, index) => {
       // 시간차를 두고 추가하여 자연스럽게 보이도록
-      setTimeout(() => {
-        dispatch(addOrder(order));
+      const timeoutId = setTimeout(() => {
+        try {
+          dispatch(addOrder(order));
+        } catch (error) {
+          logger.error('주문 추가 실패:', error);
+        }
       }, index * 100);
+      timeoutIds.push(timeoutId);
     });
     
     logger.log('✅ 테스트 주문 데이터 초기화 완료');
+    
+    // cleanup 함수 반환
+    return () => {
+      timeoutIds.forEach(id => clearTimeout(id));
+    };
   }
 
   // 즐겨찾기 테스트 데이터
@@ -151,4 +162,6 @@ export const initializeTestData = (dispatch) => {
     localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(sampleFavorites));
     logger.log('✅ 테스트 즐겨찾기 데이터 초기화 완료');
   }
+  
+  return () => {}; // no-op cleanup
 }; 

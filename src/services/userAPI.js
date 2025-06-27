@@ -1,6 +1,26 @@
 import apiClient from './apiClient';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
+// 토큰에서 사용자 ID 추출 유틸리티 (authAPI와 동일)
+const extractUserIdFromToken = (token) => {
+  if (!token) return null;
+  
+  try {
+    // JWT 토큰인 경우 디코딩
+    if (token.includes('.')) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId || payload.sub;
+    }
+    
+    // 간단한 형식인 경우
+    const parts = token.split('_');
+    return parts.length > 1 ? parts[1] : null;
+  } catch (error) {
+    logger.error('토큰 파싱 실패:', error);
+    return null;
+  }
+};
+
 // 사용자 API 서비스
 export const userAPI = {
   // 사용자 프로필 조회
@@ -19,14 +39,23 @@ export const userAPI = {
     try {
       // 동시에 여러 데이터 가져오기
       const [orders, favorites, reviews] = await Promise.all([
-        apiClient.get('/orders').catch(() => []),
-        apiClient.get('/favorites').catch(() => []),
-        apiClient.get('/reviews').catch(() => [])
+        apiClient.get('/orders').catch((error) => {
+          logger.warn('주문 데이터 로드 실패:', error);
+          return [];
+        }),
+        apiClient.get('/favorites').catch((error) => {
+          logger.warn('즐겨찾기 데이터 로드 실패:', error);
+          return [];
+        }),
+        apiClient.get('/reviews').catch((error) => {
+          logger.warn('리뷰 데이터 로드 실패:', error);
+          return [];
+        })
       ]);
 
       // 현재 사용자 ID 가져오기
-      const token = localStorage.getItem('authToken');
-      const userId = token ? token.split('_')[1] : null;
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userId = extractUserIdFromToken(token);
 
       if (!userId) {
         throw new Error('사용자 인증 정보가 없습니다.');
@@ -108,8 +137,8 @@ export const userAPI = {
   getFavorites: async () => {
     try {
       const response = await apiClient.get('/favorites');
-      const token = localStorage.getItem('authToken');
-      const userId = token ? token.split('_')[1] : null;
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userId = extractUserIdFromToken(token);
       
       if (!userId) {
         throw new Error('사용자 인증 정보가 없습니다.');
@@ -126,8 +155,8 @@ export const userAPI = {
   // 즐겨찾기 추가
   addFavorite: async (storeId) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const userId = token ? token.split('_')[1] : null;
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userId = extractUserIdFromToken(token);
       
       if (!userId) {
         throw new Error('사용자 인증 정보가 없습니다.');
@@ -148,8 +177,8 @@ export const userAPI = {
   // 즐겨찾기 제거
   removeFavorite: async (storeId) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const userId = token ? token.split('_')[1] : null;
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userId = extractUserIdFromToken(token);
       
       if (!userId) {
         throw new Error('사용자 인증 정보가 없습니다.');
