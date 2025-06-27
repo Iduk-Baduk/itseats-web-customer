@@ -30,14 +30,22 @@ export default function OrderStatus() {
   
   // URL에서 orderId 추출
   const orderId = new URLSearchParams(window.location.search).get("orderId");
-  const orderData = useOrderStatus(orderId);
+  const {
+    orderData,
+    isLoading,
+    error,
+    hasData,
+    orderStatusInfo,
+    etaInfo,
+    progressStep,
+    updateStatus,
+    isActiveOrder: isActiveOrderFromHook,
+    isCompletedOrder,
+    isCanceledOrder
+  } = useOrderStatus(orderId);
 
-  // 주문 진행 상태 확인
-  const isActiveOrder = useMemo(() => {
-    if (!orderData) return false;
-    const activeStatuses = ["WAITING", "COOKING", "COOKED", "RIDER_READY", "DELIVERING"];
-    return activeStatuses.includes(orderData.status);
-  }, [orderData]);
+  // 주문 진행 상태는 훅에서 제공하는 값 사용
+  const isActiveOrder = isActiveOrderFromHook;
 
   // 실시간 주문 추적
   const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
@@ -71,7 +79,7 @@ export default function OrderStatus() {
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-      orderStatus: orderData.status || "UNKNOWN"
+      orderStatus: orderData.orderStatus || orderData.status || "UNKNOWN"
     };
   }, [orderData]);
 
