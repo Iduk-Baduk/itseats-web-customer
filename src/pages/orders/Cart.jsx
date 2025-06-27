@@ -55,55 +55,6 @@ export default function Cart() {
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
   
-  // 디버깅: 장바구니와 쿠폰 상태 확인 (1초에 한 번만)
-  const [lastLogTime, setLastLogTime] = useState(0);
-  useEffect(() => {
-    const now = Date.now();
-    if (now - lastLogTime > 1000) { // 1초 간격으로 제한
-      // console.log('�� Cart 페이지 디버깅:', {
-      //   orderMenusCount: orderMenus.length,
-      //   orderMenusDetails: orderMenus.map(m => ({
-      //     menuId: m.menuId,
-      //     menuName: m.menuName,
-      //     quantity: m.quantity,
-      //     menuPrice: m.menuPrice,
-      //     total: calculateCartTotal(m)
-      //   })),
-      //   couponsCount: coupons.length,
-      //   couponsDetails: coupons.map(c => ({
-      //     id: c.id,
-      //     name: c.name,
-      //     discount: c.discount,
-      //     minOrderAmount: c.minOrderAmount,
-      //     isUsed: c.isUsed,
-      //     isExpired: c.isExpired
-      //   })),
-      //   selectedCouponIds: selectedCouponIds,
-      //   appliedCouponsCount: appliedCoupons.length,
-      //   appliedCouponsDetails: appliedCoupons.map(c => ({
-      //     id: c.id,
-      //     name: c.name,
-      //     discount: c.discount
-      //   })),
-      //   storeInfo: storeInfo ? { id: storeInfo.id, name: storeInfo.name } : '없음'
-      // });
-      setLastLogTime(now);
-    }
-  }, [orderMenus, coupons, selectedCouponIds, appliedCoupons, storeInfo, lastLogTime]);
-  
-  // 브라우저 콘솔에서 쉽게 확인할 수 있도록 전역 함수로 노출
-  if (process.env.NODE_ENV === 'development') {
-    window.cartDebug = () => {
-      // console.log('=== 🛒 Cart 디버깅 정보 ===');
-      // console.log('장바구니 총액:', orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0));
-      // console.log('적용된 쿠폰 할인:', appliedCoupons.reduce((sum, c) => sum + c.discount, 0));
-      if (window.debugRedux) {
-        window.debugRedux.logCouponState();
-        window.debugRedux.logCartState();
-      }
-    };
-  }
-  
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
@@ -136,105 +87,55 @@ export default function Cart() {
 
   // 컴포넌트 마운트 시 필요한 데이터 로딩
   useEffect(() => {
-    // console.log('📍 Cart 컴포넌트 데이터 로딩 시작');
-    // 쿠폰 데이터 로딩
     dispatch(fetchCoupons());
-    // 결제 수단 데이터 로딩
     dispatch(fetchPaymentMethods());
-    // 매장 목록 데이터 로딩 (중요!)
     dispatch(fetchStores());
     
-    // storeId가 있으면 해당 매장 정보도 로딩
     if (storeId) {
       dispatch(fetchStoreById(storeId));
     }
   }, [dispatch, storeId]);
 
-  // 매장 데이터 로딩 상태 모니터링
-  useEffect(() => {
-    // console.log('📍 매장 데이터 상태 변경:', {
-    //   storesCount: allStores.length,
-    //   loading: false, // storeLoading은 현재 사용하지 않음
-    //   hasStores: allStores.length > 0
-    // });
-  }, [allStores]);
-
   // 매장 정보 검증 및 복구
   useEffect(() => {
-    if (!currentStore && orderMenus.length > 0) {
-      // console.warn('currentStore가 없지만 장바구니에 상품이 있습니다. 데이터 복구를 시도합니다.', {
-      //   storeId,
-      //   currentStore,
-      //   orderMenusCount: orderMenus.length,
-      //   firstMenu: orderMenus[0],
-      //   allStoresCount: allStores.length
-      // });
+    if (!currentStore && orderMenus.length > 0 && allStores.length > 0) {
+      const firstMenu = orderMenus[0];
       
-      // 매장 데이터가 없으면 강제 로딩
-      if (allStores.length === 0) {
-        // console.log('📍 매장 데이터가 없어서 강제 로딩합니다.');
-        dispatch(fetchStores());
-        return; // 매장 데이터 로딩 후 다시 실행될 것임
+      if (firstMenu?.storeId) {
+        const foundStore = allStores.find(store => 
+          String(store.id) === String(firstMenu.storeId)
+        );
+        
+        if (foundStore) {
+          dispatch(updateCurrentStore({
+            storeId: foundStore.id,
+            storeName: foundStore.name,
+            storeImage: foundStore.imageUrl
+          }));
+        }
+      } else if (firstMenu?.menuId) {
+        const foundStore = allStores.find(store => 
+          store.menus && store.menus.some(menu => 
+            String(menu.id) === String(firstMenu.menuId)
+          )
+        );
+        
+        if (foundStore) {
+          dispatch(updateCurrentStore({
+            storeId: foundStore.id,
+            storeName: foundStore.name,
+            storeImage: foundStore.imageUrl
+          }));
+        } else if (firstMenu.menuId === 1 || firstMenu.menuId === "1") {
+          dispatch(updateCurrentStore({
+            storeId: "1",
+            storeName: "도미노피자 구름점",
+            storeImage: "/samples/food1.jpg"
+          }));
+        }
       }
-      
-             // 첫 번째 메뉴에서 storeId 정보가 있다면 currentStore 복구
-       const firstMenu = orderMenus[0];
-       if (firstMenu?.storeId) {
-         // 매장 정보를 찾아서 currentStore 설정
-         const foundStore = allStores.find(store => 
-           String(store.id) === String(firstMenu.storeId)
-         );
-         
-         if (foundStore) {
-           // console.log('🔧 currentStore 복구 (storeId 기반):', foundStore.name);
-           dispatch(updateCurrentStore({
-             storeId: foundStore.id,
-             storeName: foundStore.name,
-             storeImage: foundStore.imageUrl
-           }));
-         }
-       } else if (firstMenu?.menuId) {
-         // storeId가 없으면 menuId로 가게를 찾아서 복구
-         const foundStore = allStores.find(store => 
-           store.menus && store.menus.some(menu => 
-             String(menu.id) === String(firstMenu.menuId)
-           )
-         );
-         
-         if (foundStore) {
-           // console.log('🔧 currentStore 복구 (menuId 기반):', foundStore.name, 'for menu:', firstMenu.menuName);
-           dispatch(updateCurrentStore({
-             storeId: foundStore.id,
-             storeName: foundStore.name,
-             storeImage: foundStore.imageUrl
-           }));
-           
-           // 장바구니 아이템에도 storeId 추가하여 미래 문제 방지
-           // console.log('🔧 장바구니 메뉴에 storeId 추가');
-           // 이건 나중에 필요시 구현 (현재는 currentStore만 복구)
-         } else {
-           // 매장 데이터는 있지만 해당 메뉴를 찾을 수 없는 경우
-           // 하드코딩으로 메뉴 ID 1번은 도미노피자라는 것을 알고 있음
-           if (firstMenu.menuId === 1 || firstMenu.menuId === "1") {
-             // console.log('🔧 하드코딩으로 도미노피자 설정 (메뉴 ID 1번)');
-             dispatch(updateCurrentStore({
-               storeId: "1",
-               storeName: "도미노피자 구름점",
-               storeImage: "/samples/food1.jpg"
-             }));
-           }
-         }
-       }
     }
-    
-    if (!storeInfo && orderMenus.length > 0) {
-      // console.warn('매장 정보가 없지만 장바구니에 상품이 있습니다.', {
-      //   storeId,
-      //   currentStore,
-      //   orderMenusCount: orderMenus.length
-      // });
-    }
-  }, [storeInfo, orderMenus, storeId, currentStore, allStores, dispatch]);
+  }, [currentStore, orderMenus, allStores, dispatch]);
 
   const handleQuantityChange = (menuId, menuOption, delta) => {
     const menuOptionHash = createMenuOptionHash(menuOption);

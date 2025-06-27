@@ -52,6 +52,7 @@ export default function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [keyword, setKeyword] = useState("");
+  const [filteredStores, setFilteredStores] = useState([]);
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   
   // Redux에서 매장 목록 가져오기
@@ -63,22 +64,30 @@ export default function Home() {
   const storeUIState = useUIState({
     isLoading: storeLoading,
     error: storeError,
-    data: stores,
+    data: filteredStores.length > 0 ? filteredStores : stores,
     loadingMessage: "매장 정보를 불러오는 중...",
-    emptyMessage: "주변에 매장이 없습니다"
+    emptyMessage: keyword ? "검색 결과가 없습니다" : "주변에 매장이 없습니다"
   });
   
   // 컴포넌트 마운트 시 매장 데이터 로딩
   useEffect(() => {
     dispatch(fetchStores());
   }, [dispatch]);
-  
-  // 개발 환경에서만 디버깅 로그 출력
+
+  // 매장 데이터 초기화
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('🏪 매장 데이터:', { count: stores.length, loading: storeLoading });
+    if (stores.length > 0 && filteredStores.length === 0) {
+      setFilteredStores(stores);
     }
-  }, [stores.length, storeLoading]);
+  }, [stores, filteredStores.length]);
+
+  // 검색 키워드 변경 시 필터링
+  useEffect(() => {
+    const filtered = stores.filter((store) =>
+      store.name.toLowerCase().includes(keyword.toLowerCase())
+    );
+    setFilteredStores(filtered);
+  }, [stores, keyword]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleKeywordChange = useCallback((e) => {
@@ -151,7 +160,7 @@ export default function Home() {
     }
 
     // 성공 상태: 매장 목록 표시
-    return stores.map((store) => (
+    return filteredStores.map((store) => (
       <StoreListItem
         key={store.id}
         store={{

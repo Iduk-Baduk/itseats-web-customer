@@ -16,93 +16,66 @@ export default function App() {
     (state) => state.showDataMigrationNotice
   );
 
-  // React 마운트 후 초기 로딩 스피너 제거
+  // 초기화 및 설정
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // 초기 로딩 스피너 제거
+    const removeSpinner = () => {
       try {
-        // console.log('🔄 초기 로딩 스피너 제거 중...');
         const spinner = document.getElementById('initial-loading-spinner');
         if (spinner) {
           spinner.remove();
-          // console.log('✅ 초기 로딩 스피너 제거 완료');
         }
-      } catch {
-        // console.warn('초기 스피너 제거 중 오류:', error);
+      } catch (error) {
+        console.warn('초기 스피너 제거 중 오류:', error);
       }
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 앱 시작 시 데이터 마이그레이션 확인
-  useEffect(() => {
-    try {
-      // console.log('🚀 App 시작 - 데이터 마이그레이션 확인 완료');
-      
-      // 마이그레이션 적용 로그 (한 번만 출력)
-      const migratedData = loadAndMigrateCartData();
-      if (migratedData._migratedAt) {
-        // console.log('✅ 장바구니 데이터 마이그레이션이 적용되었습니다:', {
-        //   version: migratedData._version,
-        //   migratedAt: new Date(migratedData._migratedAt).toLocaleString(),
-        //   menuCount: migratedData.orderMenus?.length || 0
-        // });
+    // 데이터 마이그레이션 수행
+    const performDataMigration = () => {
+      try {
+        loadAndMigrateCartData();
+      } catch (error) {
+        console.warn('데이터 마이그레이션 중 오류:', error);
       }
-      
-      // 실제 사용자 환경에서만 성능 측정 시작
-      if (import.meta.env.PROD) {
-        setTimeout(() => {
-          try {
-            // 운영 환경에서 성능 리포트 관련 기능은 별도 구현 필요
-            console.log('성능 모니터링 시작 (운영 환경)');
-          } catch (err) {
-            console.warn('성능 리포트 생성 실패:', err);
-          }
-        }, 2000);
-      }
-    } catch (err) {
-      // 에러가 발생해도 앱 동작에는 지장이 없도록 처리
-      console.warn('데이터 마이그레이션 중 오류:', err);
-    }
-  }, []);
+    };
 
-  // 장바구니 상태가 변경될 때 localStorage에 저장
-  useEffect(() => {
-    saveCart(cart);
-  }, [cart]);
-
-  // 카운터 값 변경 시 localStorage에 저장
-  useEffect(() => {
-    saveCount(count);
-  }, [count]);
-
-  // 성능 모니터링 (개발 환경에서만)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      let timeoutId;
-      // 페이지 로드 완료 후 성능 리포트 생성
-      const handleLoad = async () => {
-        // 조금 지연시켜 모든 리소스 로딩 완료 후 측정
-        timeoutId = setTimeout(async () => {
+    // 개발 환경에서만 성능 모니터링
+    const initPerformanceMonitoring = () => {
+      if (import.meta.env.DEV) {
+        const timeoutId = setTimeout(async () => {
           try {
             await generatePerformanceReport();
           } catch (error) {
             console.warn('성능 리포트 생성 실패:', error);
           }
         }, 1000);
-      };
-
-      if (document.readyState === 'complete') {
-        handleLoad();
-      } else {
-        window.addEventListener('load', handleLoad);
-        return () => {
-          window.removeEventListener('load', handleLoad);
-          if (timeoutId) clearTimeout(timeoutId);
-        };
+        return () => clearTimeout(timeoutId);
       }
-    }
+    };
+
+    // 1초 후 초기화 작업 수행
+    const timer = setTimeout(() => {
+      removeSpinner();
+      performDataMigration();
+    }, 1000);
+
+    // 성능 모니터링 정리 함수
+    const cleanupPerformance = initPerformanceMonitoring();
+
+    return () => {
+      clearTimeout(timer);
+      if (cleanupPerformance) cleanupPerformance();
+    };
   }, []);
+
+  // 상태 변경 감지 및 저장
+  useEffect(() => {
+    saveCart(cart);
+  }, [cart]);
+
+  useEffect(() => {
+    saveCount(count);
+  }, [count]);
 
   return (
     <ErrorBoundary>

@@ -41,9 +41,6 @@ export const useOrderTracking = (orderId, options = {}) => {
     } catch (error) {
       console.error(`주문 ${orderId} interval 정리 실패:`, error);
     }
-    if (reason) {
-      console.log(`⏹️ 주문 ${orderId} 추적 중단 (${reason})`);
-    }
   }, [orderId]);
 
   /**
@@ -54,7 +51,7 @@ export const useOrderTracking = (orderId, options = {}) => {
 
     try {
       const orderData = await dispatch(trackOrderAsync(orderId)).unwrap();
-      errorCountRef.current = 0; // 성공 시 에러 카운터 초기화
+      errorCountRef.current = 0;
       
       // 상태가 변경된 경우
       if (lastStatusRef.current !== orderData.status) {
@@ -77,8 +74,6 @@ export const useOrderTracking = (orderId, options = {}) => {
             orderData
           });
         }
-        
-        console.log(`📦 주문 ${orderId} 상태 변경: ${previousStatus} → ${orderData.status}`);
       }
       
       // 완료 상태에 도달하면 추적 중단
@@ -102,7 +97,6 @@ export const useOrderTracking = (orderId, options = {}) => {
   const startTracking = useCallback(() => {
     if (isTrackingRef.current || !orderId) return;
     
-    console.log(`🚀 주문 ${orderId} 추적 시작`);
     isTrackingRef.current = true;
     setIsTracking(true);
     
@@ -119,7 +113,6 @@ export const useOrderTracking = (orderId, options = {}) => {
   const stopTracking = useCallback(() => {
     if (!isTrackingRef.current) return;
     
-    console.log(`⏹️ 주문 ${orderId} 추적 중단`);
     isTrackingRef.current = false;
     setIsTracking(false);
     
@@ -153,7 +146,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         console.error(`컴포넌트 언마운트 시 주문 ${orderId} 추적 정리 실패:`, error);
       }
     };
-  }, [orderId, autoStart]); // 콜백 함수는 제외
+  }, [orderId, autoStart]);
 
   // orderId가 변경되면 추적 재시작
   useEffect(() => {
@@ -167,7 +160,7 @@ export const useOrderTracking = (orderId, options = {}) => {
         console.error(`주문 ID 변경 시 추적 재시작 실패:`, error);
       }
     }
-  }, [orderId]); // 콜백 함수는 제외
+  }, [orderId]);
 
   return {
     isTracking,

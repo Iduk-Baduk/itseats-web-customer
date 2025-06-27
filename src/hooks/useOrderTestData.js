@@ -83,7 +83,7 @@ export const useOrderTestData = () => {
 };
 
 // 브라우저 콘솔에서 접근할 수 있도록 window 객체에 추가
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Redux store에 접근하기 위한 함수들
   window.orderTest = {
     // 테스트 주문 추가
@@ -92,9 +92,7 @@ if (typeof window !== 'undefined') {
       if (store) {
         try {
           const testOrder = { ...TEST_ORDER_DATA };
-
           store.dispatch(addOrder(testOrder));
-          
           console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
           return testOrder;
         } catch (error) {
@@ -111,13 +109,7 @@ if (typeof window !== 'undefined') {
       if (store) {
         try {
           const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
-
-          store.dispatch(updateOrderStatus({
-            orderId,
-            status,
-            message
-          }));
-          
+          store.dispatch(updateOrderStatus({ orderId, status, message }));
           console.log(`✅ 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
         } catch (error) {
           console.error('❌ 주문 상태 변경 실패:', error);
@@ -197,7 +189,6 @@ if (typeof window !== 'undefined') {
           }
         }, intervalMs);
 
-        // 정리 함수 반환
         return () => {
           clearInterval(interval);
           console.log('⏹️ 시뮬레이션이 중단되었습니다.');

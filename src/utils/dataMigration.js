@@ -83,12 +83,6 @@ export const migrateCartData = (legacyCartData) => {
     return legacyCartData;
   }
 
-  console.log('🔄 장바구니 데이터 마이그레이션 시작...', {
-    from: legacyCartData._version || LEGACY_CART_DATA_VERSION,
-    to: CART_DATA_VERSION,
-    itemCount: legacyCartData.orderMenus?.length || 0
-  });
-
   const migratedMenus = (legacyCartData.orderMenus || [])
     .map(migrateLegacyCartItem)
     .filter(item => item !== null);
@@ -99,15 +93,10 @@ export const migrateCartData = (legacyCartData) => {
     const firstMenu = migratedMenus[0];
     if (firstMenu.storeId && firstMenu.storeName) {
       currentStore = {
-        storeId: String(firstMenu.storeId), // 일관된 문자열 타입 사용
+        storeId: String(firstMenu.storeId),
         storeName: firstMenu.storeName,
         storeImage: firstMenu.storeImage || null
       };
-      console.log('🔧 currentStore 복구됨 (메뉴 데이터 기반):', currentStore.storeName);
-    } else if (firstMenu.menuId) {
-      // storeId가 없으면 알려진 메뉴 ID로 추정
-      console.log('⚠️ 메뉴에 storeId 정보가 없음. 메뉴 ID로 추정 시도:', firstMenu.menuId);
-      // 필요시 여기서 메뉴 ID를 기반으로 가게 정보 추정 로직 추가
     }
   }
 
@@ -125,12 +114,6 @@ export const migrateCartData = (legacyCartData) => {
     _migratedAt: new Date().toISOString(),
     _legacyVersion: legacyCartData._version || LEGACY_CART_DATA_VERSION
   };
-
-  console.log('✅ 장바구니 데이터 마이그레이션 완료', {
-    migratedItems: migratedData.orderMenus.length,
-    currentStore: migratedData.currentStore?.storeName || 'none',
-    version: migratedData._version
-  });
 
   return migratedData;
 };

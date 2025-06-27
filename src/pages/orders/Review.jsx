@@ -35,31 +35,21 @@ export default function Review({ className }) {
   const handleDislike = () => setLikeStatus("dislike");
 
   const handleSubmit = async () => {
-    if (!currentOrder) {
-      alert("주문 정보를 찾을 수 없습니다.");
-      return;
-    }
+    const reviewData = {
+      orderId,
+      foodRating,
+      deliveryRating,
+      likeStatus,
+      reviewText,
+    };
 
     try {
-      // TODO: 실제 리뷰 API 연동
-      const reviewData = {
-        orderId: currentOrder.id,
-        storeId: currentOrder.storeId,
-        foodRating,
-        deliveryRating,
-        likeStatus,
-        reviewText,
-        createdAt: new Date().toISOString()
-      };
-
-      // 임시로 콘솔에 출력 (실제로는 API 호출)
-      console.log("리뷰 제출:", reviewData);
-      alert("리뷰가 성공적으로 등록되었습니다!");
-      
-      navigate("/orders", { replace: true });
+      // 리뷰 API 연동은 향후 구현
+      // await submitReview(reviewData);
+      alert("리뷰가 제출되었습니다!");
+      navigate(-1);
     } catch (error) {
-      console.error("리뷰 제출 실패:", error);
-      alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+      alert("리뷰 제출에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

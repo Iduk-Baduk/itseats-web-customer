@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -26,26 +26,25 @@ const StatusLayout = ({ message, navigate }) => (
 
 export default function OrderStatus() {
   const navigate = useNavigate();
+  const [statusChange, setStatusChange] = useState(null);
   
-  // Redux 훅 사용
-  const {
-    orderData,
-    orderStatusInfo,
-    etaInfo,
-    progressStep,
-    isLoading,
-    error,
-    updateStatus,
-    isActiveOrder
-  } = useOrderStatus();
+  // URL에서 orderId 추출
+  const orderId = new URLSearchParams(window.location.search).get("orderId");
+  const orderData = useOrderStatus(orderId);
 
-  // 실시간 주문 추적 활성화
+  // 주문 진행 상태 확인
+  const isActiveOrder = useMemo(() => {
+    if (!orderData) return false;
+    const activeStatuses = ["WAITING", "COOKING", "COOKED", "RIDER_READY", "DELIVERING"];
+    return activeStatuses.includes(orderData.status);
+  }, [orderData]);
+
+  // 실시간 주문 추적
   const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
     autoStart: isActiveOrder,
     pollingInterval: 8000, // 8초마다 폴링
-    onStatusChange: (statusChange) => {
-      console.log('🔔 주문 상태 변경 알림:', statusChange);
-      // TODO: 푸시 알림이나 토스트 표시
+    onStatusChange: (change) => {
+      setStatusChange(change);
     }
   });
 
@@ -72,7 +71,7 @@ export default function OrderStatus() {
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-      orderStatus: orderData.orderStatus || "UNKNOWN"
+      orderStatus: orderData.status || "UNKNOWN"
     };
   }, [orderData]);
 
@@ -90,6 +89,14 @@ export default function OrderStatus() {
   if (!orderData || !orderStatusInfo) {
     return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
   }
+
+  // 주문 상태 변경 감지
+  useEffect(() => {
+    if (statusChange) {
+      // 상태 변경 알림 처리 로직은 향후 구현
+      // 예: 토스트 메시지, 푸시 알림 등
+    }
+  }, [statusChange]);
 
   return (
     <SlideInFromRight>
