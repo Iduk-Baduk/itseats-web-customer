@@ -1,10 +1,12 @@
 import { useDispatch } from "react-redux";
 import { addOrder, updateOrderStatus } from "../store/orderSlice";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
+import { getCurrentUser } from "../services/authAPI";
 
-// 상수로 분리된 테스트 데이터
-const TEST_ORDER_DATA = {
+// 기본 테스트 주문 데이터 템플릿
+const BASE_TEST_ORDER_DATA = {
   storeName: "도미노피자 구름톤점",
+  storeId: "1",
   orderNumber: "14NKFA",
   orderPrice: 15900,
   orderMenuCount: 2,
@@ -15,19 +17,21 @@ const TEST_ORDER_DATA = {
   deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   menuSummary: "페퍼로니 피자 외 1개",
   storeImage: "/samples/food1.jpg",
+  paymentMethod: "card",
+  deliveryFee: 2500,
+  totalPrice: 18400,
   // 상세 메뉴 정보 추가
-  items: [
+  orderMenus: [
     {
+      menuId: 1,
       menuName: "페퍼로니 피자",
       quantity: 1,
       price: 12900,
-      options: [
-        { name: "사이즈", value: "라지", price: 2000 },
-        { name: "도우", value: "오리지널", price: 0 }
-      ],
+      options: ["사이즈: 라지 (+2000원)", "도우: 오리지널"],
       menuImage: "/samples/food1.jpg"
     },
     {
+      menuId: 3,
       menuName: "콜라 1.25L",
       quantity: 1,
       price: 3000,
@@ -45,17 +49,62 @@ const TEST_ORDER_DATA = {
 
 /**
  * 테스트용 주문 데이터를 Redux에 추가하는 훅
- * 개발/테스트 목적으로만 사용
+ * 현재 로그인된 사용자 정보를 반영
  */
 export const useOrderTestData = () => {
   const dispatch = useDispatch();
 
-  // 테스트용 주문 데이터 추가
-  const addTestOrder = () => {
-    const testOrder = { ...TEST_ORDER_DATA };
+  // 현재 사용자 정보 기반 테스트 주문 데이터 생성
+  const generateTestOrderData = async () => {
+    try {
+      // 현재 로그인된 사용자 정보 가져오기
+      const currentUser = await getCurrentUser();
+      
+      // 사용자 정보를 반영한 테스트 주문 데이터 생성
+      const testOrder = {
+        ...BASE_TEST_ORDER_DATA,
+        // 사용자별 고유 주문 번호 생성
+        orderNumber: `TEST${Date.now().toString().slice(-6)}`,
+        // 사용자 정보 추가
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userPhone: currentUser.phone,
+        // 주문 날짜
+        orderDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
 
-    dispatch(addOrder(testOrder));
-    return testOrder;
+      return testOrder;
+    } catch (error) {
+      console.warn('사용자 정보 조회 실패, 기본 테스트 데이터 사용:', error);
+      
+      // 사용자 정보 조회 실패 시 로컬스토리지에서 정보 가져오기
+      const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      return {
+        ...BASE_TEST_ORDER_DATA,
+        orderNumber: `TEST${Date.now().toString().slice(-6)}`,
+        userId: cachedUser.id || 'unknown',
+        userName: cachedUser.name || '테스트 사용자',
+        userPhone: cachedUser.phone || '010-0000-0000',
+        orderDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+    }
+  };
+
+  // 테스트용 주문 데이터 추가
+  const addTestOrder = async () => {
+    try {
+      const testOrder = await generateTestOrderData();
+      dispatch(addOrder(testOrder));
+      
+      console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
+      return testOrder;
+    } catch (error) {
+      console.error('❌ 테스트 주문 추가 실패:', error);
+      throw error;
+    }
   };
 
   // 주문 상태 시뮬레이션
@@ -95,10 +144,30 @@ export const useOrderTestData = () => {
     return () => clearInterval(interval); // 정리 함수 반환
   };
 
+  // 현재 로그인된 사용자 정보 가져오기
+  const getCurrentUserInfo = () => {
+    try {
+      const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      return {
+        id: cachedUser.id || 'unknown',
+        name: cachedUser.name || '테스트 사용자',
+        phone: cachedUser.phone || '010-0000-0000',
+      };
+    } catch (error) {
+      console.warn('사용자 정보 조회 실패:', error);
+      return {
+        id: 'unknown',
+        name: '테스트 사용자',
+        phone: '010-0000-0000',
+      };
+    }
+  };
+
   return {
     addTestOrder,
     simulateOrderStatus,
     simulateOrderProgress,
+    getCurrentUserInfo,
   };
 };
 
@@ -106,12 +175,24 @@ export const useOrderTestData = () => {
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Redux store에 접근하기 위한 함수들
   window.orderTest = {
-    // 테스트 주문 추가
-    addTestOrder: () => {
+    // 테스트 주문 추가 (사용자 정보 반영)
+    addTestOrder: async () => {
       const store = window.__REDUX_STORE__;
       if (store) {
         try {
-          const testOrder = { ...TEST_ORDER_DATA };
+          // 현재 사용자 정보 가져오기
+          const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          
+          const testOrder = {
+            ...BASE_TEST_ORDER_DATA,
+            orderNumber: `TEST${Date.now().toString().slice(-6)}`,
+            userId: cachedUser.id || 'unknown',
+            userName: cachedUser.name || '테스트 사용자',
+            userPhone: cachedUser.phone || '010-0000-0000',
+            orderDate: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          };
+          
           store.dispatch(addOrder(testOrder));
           console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
           return testOrder;
@@ -171,6 +252,17 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       }
     },
 
+    // 현재 사용자 정보 확인
+    getCurrentUser: () => {
+      try {
+        const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        console.log('👤 현재 로그인된 사용자:', cachedUser);
+        return cachedUser;
+      } catch (error) {
+        console.error('❌ 사용자 정보 확인 실패:', error);
+      }
+    },
+
     // 주문 상태 자동 시뮬레이션
     simulateProgress: (orderId, intervalMs = 3000) => {
       const store = window.__REDUX_STORE__;
@@ -200,12 +292,12 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
               window.orderTest.updateStatus(orderId, status);
               currentIndex++;
             } catch (error) {
-              console.error('❌ 시뮬레이션 중 상태 업데이트 실패:', error);
+              console.error('❌ 상태 업데이트 실패:', error);
               clearInterval(interval);
             }
           } else {
+            console.log('✅ 주문 시뮬레이션이 완료되었습니다.');
             clearInterval(interval);
-            console.log('✅ 주문 상태 시뮬레이션이 완료되었습니다.');
           }
         }, intervalMs);
 
@@ -218,46 +310,32 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       }
     },
 
-    // 도움말
+    // 도움말 표시
     help: () => {
-      try {
-        console.log(`
+      console.log(`
 🎯 주문 테스트 도구 사용법:
 
-1. 테스트 주문 추가:
-   orderTest.addTestOrder()
+// 현재 사용자 정보 확인
+orderTest.getCurrentUser()
 
-2. 주문 상태 변경:
-   orderTest.updateStatus('주문ID', '상태')
-   예: orderTest.updateStatus('123', 'COOKING')
+// 테스트 주문 추가 (현재 사용자 정보 반영)
+orderTest.addTestOrder()
 
-3. 현재 상태 확인:
-   orderTest.getCurrentState()
+// 모든 주문 확인
+orderTest.getAllOrders()
 
-4. 모든 주문 확인:
-   orderTest.getAllOrders()
+// 주문 상태 변경
+orderTest.updateStatus('주문ID', 'delivered')
 
-5. 자동 상태 시뮬레이션:
-   const stop = orderTest.simulateProgress('주문ID', 3000)
-   // 중단하려면: stop()
+// 자동 시뮬레이션
+orderTest.simulateProgress('주문ID', 3000)
 
-사용 가능한 상태:
-- WAITING: 주문 접수
-- COOKING: 조리 중
-- COOKED: 조리 완료
-- RIDER_READY: 라이더 배차
-- DELIVERING: 배달 중
-- DELIVERED: 배달 완료
-- COMPLETED: 주문 완료
-        `);
-      } catch (error) {
-        console.error('❌ 도움말 표시 실패:', error);
-      }
+// 현재 Redux 상태 확인
+orderTest.getCurrentState()
+      `);
     }
   };
 
-  console.log(`
-🎉 주문 테스트 도구가 로드되었습니다!
-사용법을 보려면: orderTest.help()
-  `);
+  // 개발 환경에서 콘솔에 도움말 표시
+  console.log('🎯 주문 테스트 도구가 준비되었습니다! orderTest.help()를 입력하여 사용법을 확인하세요.');
 } 
