@@ -1,6 +1,7 @@
 // Favorite.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Header from "../components/common/Header";
 import SlideInFromRight from "../components/animation/SlideInFromRight";
 import useFavorite from "../hooks/useFavorite";
@@ -9,6 +10,9 @@ import styles from "./Favorite.module.css";
 
 export default function Favorite() {
   const navigate = useNavigate();
+  const stores = useSelector(state => state.store?.stores || []);
+  const storeLoading = useSelector(state => state.store?.loading || false);
+  
   const {
     favorites,
     isEditing,
@@ -21,6 +25,17 @@ export default function Favorite() {
     setSortOption,
     navigateToHome,
   } = useFavorite();
+
+  // 개발 환경에서 상태 디버그 출력
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Favorite 페이지 상태:', {
+      storesCount: stores.length,
+      storeLoading,
+      favoritesCount: favorites.length,
+      favorites: favorites.slice(0, 2), // 처음 2개만 출력
+      localStorage: localStorage.getItem('itseats-favorites')
+    });
+  }
 
   return (
     <SlideInFromRight>

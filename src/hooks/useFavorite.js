@@ -1,18 +1,39 @@
 // useFavorite.js
 import { useState, useMemo, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchStores } from "../store/storeSlice";
 
 function useFavorite() {
+  const dispatch = useDispatch();
+  
   // Redux에서 매장 데이터 가져오기
   const stores = useSelector((state) => state.store?.stores || []);
+  const storeLoading = useSelector((state) => state.store?.loading || false);
+  
+  console.log('🏪 useFavorite - Redux stores 상태:', {
+    storesCount: stores.length,
+    storeLoading,
+    firstStore: stores[0]
+  });
+
+  // stores 데이터가 없으면 직접 로드
+  useEffect(() => {
+    if (stores.length === 0 && !storeLoading) {
+      console.log('🔄 useFavorite에서 fetchStores 호출');
+      dispatch(fetchStores());
+    }
+  }, [stores.length, storeLoading, dispatch]);
   
   // 즐겨찾기 상태 관리 (실제 서비스에서는 API나 LocalStorage 연동)
   const [favoriteStoreIds, setFavoriteStoreIds] = useState(() => {
     // LocalStorage에서 즐겨찾기 목록 복원
     try {
       const saved = localStorage.getItem('itseats-favorites');
-      return saved ? JSON.parse(saved) : [];
+      const ids = saved ? JSON.parse(saved) : [];
+      console.log('💾 useFavorite - 로컬스토리지에서 즐겨찾기 로드:', ids);
+      return ids;
     } catch {
+      console.warn('💾 useFavorite - 로컬스토리지 로드 실패, 빈 배열 반환');
       return [];
     }
   });
@@ -25,6 +46,7 @@ function useFavorite() {
   useEffect(() => {
     try {
       localStorage.setItem('itseats-favorites', JSON.stringify(favoriteStoreIds));
+      console.log('💾 useFavorite - 즐겨찾기 로컬스토리지 저장:', favoriteStoreIds);
     } catch (error) {
       console.warn('즐겨찾기 저장 실패:', error);
     }
@@ -32,10 +54,24 @@ function useFavorite() {
 
   // 실제 즐겨찾기 매장 목록 생성
   const favorites = useMemo(() => {
-    return favoriteStoreIds.map(storeId => {
-      const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
-      if (!store) return null;
+    console.log('🔄 useFavorite - 즐겨찾기 목록 생성:', {
+      favoriteStoreIds,
+      storesCount: stores.length
+    });
+    
+    if (stores.length === 0) {
+      console.log('⚠️ useFavorite - stores 데이터가 없어서 빈 배열 반환');
+      return [];
+    }
+    
+    const favoriteStores = favoriteStoreIds.map(storeId => {
+      const store = stores.find(s => String(s.id) === String(storeId));
+      if (!store) {
+        console.warn(`⚠️ useFavorite - 매장을 찾을 수 없음: ${storeId}`);
+        return null;
+      }
       
+      console.log(`✅ useFavorite - 즐겨찾기 매장 매칭: ${store.name}`);
       return {
         id: store.id,
         storeId: store.id,
@@ -50,6 +86,9 @@ function useFavorite() {
         addedAt: new Date(), // 실제로는 즐겨찾기 추가 시점 저장 필요
       };
     }).filter(Boolean);
+    
+    console.log('✅ useFavorite - 최종 즐겨찾기 목록:', favoriteStores);
+    return favoriteStores;
   }, [favoriteStoreIds, stores]);
 
   const toggleEditMode = () => {
