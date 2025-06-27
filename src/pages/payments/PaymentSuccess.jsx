@@ -77,9 +77,17 @@ export default function PaymentSuccess() {
         console.error('결제 성공 처리 중 오류:', error);
         setIsLoading(false);
         
+        // 에러 타입에 따른 구체적인 처리
+        let errorType = 'processing_failed';
+        if (error.message?.includes('매장 정보')) {
+          errorType = 'store_not_found';
+        } else if (error.message?.includes('주문 생성')) {
+          errorType = 'order_creation_failed';
+        }
+        
         // 3초 지연 후 실패 페이지로 이동
         setTimeout(() => {
-          navigate('/payments/failure?error=processing_failed');
+          navigate(`/payments/failure?error=${errorType}`);
         }, 3000);
       }
     };
@@ -94,6 +102,10 @@ export default function PaymentSuccess() {
   }, [paymentId, orderId, amount, cartItems, currentStore, selectedAddress, dispatch, navigate]);
 
   const handleGoToOrderStatus = () => {
+    if (!orderData?.id) {
+      console.error('주문 데이터가 없습니다.');
+      return;
+    }
     navigate(`/orders/${orderData.id}`);
   };
 
@@ -178,7 +190,7 @@ export default function PaymentSuccess() {
               <div className={styles.amountRow}>
                 <span>결제 금액</span>
                 <span className={styles.amount}>
-                  {orderData.totalAmount.toLocaleString()}원
+                  {Number(orderData.totalAmount || 0).toLocaleString()}원
                 </span>
               </div>
             </div>

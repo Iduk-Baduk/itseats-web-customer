@@ -28,7 +28,8 @@ export default function useRegistForm() {
 
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log("🚀 회원가입 데이터 전송:", form);
+        const safeFormData = { ...form, password: '[REDACTED]', confirmPassword: '[REDACTED]' };
+        console.log("🚀 회원가입 데이터 전송:", safeFormData);
       }
       const result = await regist(form);
       if (process.env.NODE_ENV === 'development') {
