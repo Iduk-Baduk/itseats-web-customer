@@ -5,11 +5,13 @@ import { fetchStoreById } from "../../store/storeSlice";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderStoreDetail from "../../components/stores/HeaderStoreDetail";
 import { useShare } from "../../hooks/useShare";
+import useFavorite from "../../hooks/useFavorite";
 import PhotoSlider from "../../components/stores/PhotoSlider";
 import DeliveryTypeTab from "../../components/stores/DeliveryTypeTab";
 import AutoScrollTabs from "../../components/stores/AutoScrollTabs";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorState from "../../components/common/ErrorState";
+import Toast from "../../components/common/Toast";
 import { useUIState, getErrorVariant } from "../../hooks/useUIState";
 
 import styles from "./StoreDetail.module.css";
@@ -18,11 +20,13 @@ export default function StoreDetail() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { copyToClipboard, shareViaWebAPI } = useShare();
+  const { toggleFavorite, isFavorite } = useFavorite();
 
   const { storeId } = useParams();
 
   const [isTransparent, setTransparent] = useState(true);
   const [menuTabFixed, setMenuTabFixed] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   // Redux에서 매장 데이터 가져오기
   const store = useSelector(state => state.store?.currentStore);
@@ -146,8 +150,15 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={false} // 좋아요 기능은 별도 구현 필요
-          favoriteButtonAction={() => {}}
+          isFavorite={isFavorite(currentStore.id)}
+          favoriteButtonAction={() => {
+            const wasAlreadyFavorite = isFavorite(currentStore.id);
+            toggleFavorite(currentStore.id);
+            // 토스트 메시지 표시
+            const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
+            setToastMessage(message);
+            setTimeout(() => setToastMessage(""), 3000);
+          }}
         />
         <div id="intro" className={styles.intro}>
           <PhotoSlider images={[
@@ -196,6 +207,7 @@ export default function StoreDetail() {
   return (
     <SlideInFromRight>
       {renderContent()}
+      {toastMessage && <Toast message={toastMessage} />}
     </SlideInFromRight>
   );
 }
