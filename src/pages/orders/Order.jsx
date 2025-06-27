@@ -35,7 +35,7 @@ export default function Order() {
   }, [allOrders, activeOrders, completedOrders]);
 
   const handleWriteReview = () => {
-    navigate("/review"); // Review 페이지로 이동
+          navigate(`/orders/${order.id}/review`); // Review 페이지로 이동
   };
 
   const [selectedTab, setSelectedTab] = React.useState("past"); // "past" or "preparing"

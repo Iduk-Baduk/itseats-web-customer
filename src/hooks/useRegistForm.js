@@ -27,11 +27,17 @@ export default function useRegistForm() {
     }
 
     try {
-      await regist(form);
+      console.log("🚀 회원가입 데이터 전송:", form);
+      const result = await regist(form);
+      console.log("✅ 회원가입 성공 응답:", result);
       alert("회원가입이 완료되었습니다!");
       setError("");
     } catch (err) {
-      setError("회원가입 실패. 다시 시도해주세요.");
+      console.error("❌ 회원가입 실패:", err);
+      console.error("에러 타입:", err.type);
+      console.error("상태 코드:", err.statusCode);
+      console.error("원본 에러:", err.originalError);
+      setError(`회원가입 실패: ${err.message}`);
     }
   };
 

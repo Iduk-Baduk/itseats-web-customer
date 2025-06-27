@@ -63,7 +63,7 @@ export default function PaymentSuccess() {
         console.error('결제 성공 처리 중 오류:', error);
         setIsLoading(false);
         // 에러 발생 시 결제 실패 페이지로 리다이렉트
-        navigate('/payment/failure?error=processing_failed');
+        navigate('/payments/failure?error=processing_failed');
       }
     };
 

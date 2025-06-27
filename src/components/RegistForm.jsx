@@ -24,6 +24,13 @@ const RegistForm = ({ className = "" }) => {
         onChange={handleChange}
       />
       <TextInput
+        name="confirmPassword"
+        type="password"
+        placeholder="비밀번호 확인"
+        value={form.confirmPassword}
+        onChange={handleChange}
+      />
+      <TextInput
         name="nickname"
         type="text"
         placeholder="닉네임"
