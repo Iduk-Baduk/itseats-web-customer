@@ -112,3 +112,87 @@
     color: var(--black-700);
     border-color: var(--border-color);
 }
+
+/* 메뉴 상세 정보 스타일 */
+.menuDetails {
+    padding: 16px;
+    border-bottom: 1px solid var(--unchecked-icon-color);
+    box-sizing: border-box;
+}
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--black-700);
+}
+
+.menuList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.menuItem {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.menuHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.menuInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.menuName {
+    font-size: 15px;
+    color: var(--black-700);
+    font-weight: 600;
+}
+
+.menuQuantity {
+    font-size: 13px;
+    color: #666;
+    background-color: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.menuPrice {
+    font-size: 15px;
+    color: var(--black-700);
+    font-weight: 600;
+}
+
+.menuOptions {
+    padding-left: 8px;
+    border-left: 2px solid #e9ecef;
+}
+
+.optionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.optionName {
+    color: #666;
+}
+
+.optionPrice {
+    color: var(--theme-color);
+    font-weight: 500;
+}

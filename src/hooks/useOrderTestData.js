@@ -7,14 +7,34 @@ const TEST_ORDER_DATA = {
   storeName: "도미노피자 구름톤점",
   orderNumber: "14NKFA",
   orderPrice: 15900,
-  orderMenuCount: 1,
+  orderMenuCount: 2,
   deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
   destinationLocation: { lat: 37.501887, lng: 127.039252 },
   storeLocation: { lat: 37.4979, lng: 127.0276 },
   riderRequest: "문 앞에 놔주세요 (초인종 O)",
   deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  menuSummary: "페퍼로니 피자 + 콜라",
+  menuSummary: "페퍼로니 피자 외 1개",
   storeImage: "/samples/food1.jpg",
+  // 상세 메뉴 정보 추가
+  items: [
+    {
+      menuName: "페퍼로니 피자",
+      quantity: 1,
+      price: 12900,
+      options: [
+        { name: "사이즈", value: "라지", price: 2000 },
+        { name: "도우", value: "오리지널", price: 0 }
+      ],
+      menuImage: "/samples/food1.jpg"
+    },
+    {
+      menuName: "콜라 1.25L",
+      quantity: 1,
+      price: 3000,
+      options: [],
+      menuImage: "/samples/food2.jpg"
+    }
+  ],
   // OrderCard 호환성을 위한 추가 필드들
   price: 15900,
   date: new Date().toLocaleString('ko-KR'),

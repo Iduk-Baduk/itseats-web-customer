@@ -181,6 +181,39 @@ export default function OrderStatus() {
                   </span>
                 </p>
               </div>
+
+              {/* 메뉴 상세 정보 */}
+              {orderData?.items && orderData.items.length > 0 && (
+                <div className={styles.menuDetails}>
+                  <p className={styles.sectionTitle}>주문 메뉴</p>
+                  <div className={styles.menuList}>
+                    {orderData.items.map((item, index) => (
+                      <div key={index} className={styles.menuItem}>
+                        <div className={styles.menuHeader}>
+                          <div className={styles.menuInfo}>
+                            <span className={styles.menuName}>{item.menuName}</span>
+                            <span className={styles.menuQuantity}>×{item.quantity}</span>
+                          </div>
+                          <span className={styles.menuPrice}>{item.price.toLocaleString()}원</span>
+                        </div>
+                        {item.options && item.options.length > 0 && (
+                          <div className={styles.menuOptions}>
+                            {item.options.map((option, optIndex) => (
+                              <div key={optIndex} className={styles.optionItem}>
+                                <span className={styles.optionName}>{option.name}: {option.value}</span>
+                                {option.price > 0 && (
+                                  <span className={styles.optionPrice}>+{option.price.toLocaleString()}원</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className={styles.deliveryInfo}>
                 <p className={styles.storeName}>배달 주소</p>
                 <span>{safeOrderData.deliveryAddress}</span>

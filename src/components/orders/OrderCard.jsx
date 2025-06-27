@@ -60,6 +60,8 @@ export default function OrderCard({
       person: statusConfig.person || "잇츠잇츠",
       price: Number(order.price || order.orderPrice || order.totalAmount || 0),
       menuSummary: order.menuSummary || order.items?.map(item => item.menuName).join(", ") || "메뉴 정보 없음",
+      items: order.items || [],
+      orderMenuCount: order.orderMenuCount || order.items?.length || 0,
       storeImage: order.storeImage || "/samples/food1.jpg",
       isCompleted: order.isCompleted !== undefined ? order.isCompleted : 
         [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
@@ -103,6 +105,26 @@ export default function OrderCard({
             </Tag>
           </div>
         </div>
+
+        {/* 메뉴 목록 - 간략 표시 */}
+        {orderData.items && orderData.items.length > 0 && (
+          <div className={styles.menuList}>
+            {orderData.items.slice(0, 2).map((item, index) => (
+              <div key={index} className={styles.menuItem}>
+                <div className={styles.menuInfo}>
+                  <span className={styles.menuName}>{item.menuName}</span>
+                  <span className={styles.menuQuantity}>×{item.quantity}</span>
+                </div>
+                <span className={styles.menuPrice}>{item.price.toLocaleString()}원</span>
+              </div>
+            ))}
+            {orderData.items.length > 2 && (
+              <div className={styles.moreMenus}>
+                외 {orderData.items.length - 2}개 메뉴
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 진행 중인 주문의 경우 진행 단계 표시 */}
         {orderData.isActive && (
