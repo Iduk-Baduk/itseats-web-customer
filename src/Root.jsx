@@ -349,7 +349,7 @@ export default function Root() {
 
           {/* 지연 로딩 - 기타 페이지들 */}
           <Route 
-            path="/favorite" 
+            path="/favorites" 
             element={
               <Layout>
                 <LazyPageWrapper>
