@@ -2,6 +2,7 @@ import { useDispatch } from "react-redux";
 import { addOrder, updateOrderStatus } from "../store/orderSlice";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
 import { getCurrentUser } from "../services/authAPI";
+import { STORAGE_KEYS, logger } from "../utils/logger";
 
 // 기본 테스트 주문 데이터 템플릿
 const BASE_TEST_ORDER_DATA = {
@@ -76,15 +77,19 @@ export const useOrderTestData = () => {
 
       return testOrder;
     } catch (error) {
-      console.warn('사용자 정보 조회 실패, 기본 테스트 데이터 사용:', error);
+      logger.error('사용자 정보 조회 실패:', error);
       
-      // 사용자 정보 조회 실패 시 로컬스토리지에서 정보 가져오기
-      const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const cachedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || '{}');
+      
+      // 캐시된 사용자 정보도 없는 경우 에러 throw
+      if (!cachedUser.id) {
+        throw new Error('로그인이 필요합니다. 테스트 주문을 생성할 수 없습니다.');
+      }
       
       return {
         ...BASE_TEST_ORDER_DATA,
         orderNumber: `TEST${Date.now().toString().slice(-6)}`,
-        userId: cachedUser.id || 'unknown',
+        userId: cachedUser.id,
         userName: cachedUser.name || '테스트 사용자',
         userPhone: cachedUser.phone || '010-0000-0000',
         orderDate: new Date().toISOString(),
@@ -99,10 +104,10 @@ export const useOrderTestData = () => {
       const testOrder = await generateTestOrderData();
       dispatch(addOrder(testOrder));
       
-      console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
+      logger.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
       return testOrder;
     } catch (error) {
-      console.error('❌ 테스트 주문 추가 실패:', error);
+      logger.error('❌ 테스트 주문 추가 실패:', error);
       throw error;
     }
   };
@@ -147,14 +152,14 @@ export const useOrderTestData = () => {
   // 현재 로그인된 사용자 정보 가져오기
   const getCurrentUserInfo = () => {
     try {
-      const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const cachedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || '{}');
       return {
         id: cachedUser.id || 'unknown',
         name: cachedUser.name || '테스트 사용자',
         phone: cachedUser.phone || '010-0000-0000',
       };
     } catch (error) {
-      console.warn('사용자 정보 조회 실패:', error);
+      logger.warn('사용자 정보 조회 실패:', error);
       return {
         id: 'unknown',
         name: '테스트 사용자',
@@ -181,7 +186,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       if (store) {
         try {
           // 현재 사용자 정보 가져오기
-          const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          const cachedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || '{}');
           
           const testOrder = {
             ...BASE_TEST_ORDER_DATA,
@@ -194,13 +199,13 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
           };
           
           store.dispatch(addOrder(testOrder));
-          console.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
+          logger.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
           return testOrder;
         } catch (error) {
-          console.error('❌ 테스트 주문 추가 실패:', error);
+          logger.error('❌ 테스트 주문 추가 실패:', error);
         }
       } else {
-        console.error('❌ Redux store에 접근할 수 없습니다.');
+        logger.error('❌ Redux store에 접근할 수 없습니다.');
       }
     },
 
@@ -211,12 +216,12 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
         try {
           const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
           store.dispatch(updateOrderStatus({ orderId, status, message }));
-          console.log(`✅ 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
+          logger.log(`✅ 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
         } catch (error) {
-          console.error('❌ 주문 상태 변경 실패:', error);
+          logger.error('❌ 주문 상태 변경 실패:', error);
         }
       } else {
-        console.error('❌ Redux store에 접근할 수 없습니다.');
+        logger.error('❌ Redux store에 접근할 수 없습니다.');
       }
     },
 
@@ -226,13 +231,13 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       if (store) {
         try {
           const state = store.getState();
-          console.log('📊 현재 Redux 상태:', state.order);
+          logger.log('📊 현재 Redux 상태:', state.order);
           return state.order;
         } catch (error) {
-          console.error('❌ 상태 확인 실패:', error);
+          logger.error('❌ 상태 확인 실패:', error);
         }
       } else {
-        console.error('❌ Redux store에 접근할 수 없습니다.');
+        logger.error('❌ Redux store에 접근할 수 없습니다.');
       }
     },
 
@@ -242,24 +247,24 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       if (store) {
         try {
           const state = store.getState();
-          console.log('📋 모든 주문:', state.order.orders);
+          logger.log('📋 모든 주문:', state.order.orders);
           return state.order.orders;
         } catch (error) {
-          console.error('❌ 주문 목록 조회 실패:', error);
+          logger.error('❌ 주문 목록 조회 실패:', error);
         }
       } else {
-        console.error('❌ Redux store에 접근할 수 없습니다.');
+        logger.error('❌ Redux store에 접근할 수 없습니다.');
       }
     },
 
     // 현재 사용자 정보 확인
     getCurrentUser: () => {
       try {
-        const cachedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        console.log('👤 현재 로그인된 사용자:', cachedUser);
+        const cachedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || '{}');
+        logger.log('👤 현재 로그인된 사용자:', cachedUser);
         return cachedUser;
       } catch (error) {
-        console.error('❌ 사용자 정보 확인 실패:', error);
+        logger.error('❌ 사용자 정보 확인 실패:', error);
       }
     },
 
@@ -267,7 +272,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     simulateProgress: (orderId, intervalMs = 3000) => {
       const store = window.__REDUX_STORE__;
       if (!store) {
-        console.error('❌ Redux store에 접근할 수 없습니다.');
+        logger.error('❌ Redux store에 접근할 수 없습니다.');
         return;
       }
 
@@ -283,7 +288,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
         ];
 
         let currentIndex = 0;
-        console.log(`🚀 주문 ${orderId}의 상태 시뮬레이션을 시작합니다...`);
+        logger.log(`🚀 주문 ${orderId}의 상태 시뮬레이션을 시작합니다...`);
 
         const interval = setInterval(() => {
           if (currentIndex < statuses.length) {
@@ -292,27 +297,27 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
               window.orderTest.updateStatus(orderId, status);
               currentIndex++;
             } catch (error) {
-              console.error('❌ 상태 업데이트 실패:', error);
+              logger.error('❌ 상태 업데이트 실패:', error);
               clearInterval(interval);
             }
           } else {
-            console.log('✅ 주문 시뮬레이션이 완료되었습니다.');
+            logger.log('✅ 주문 시뮬레이션이 완료되었습니다.');
             clearInterval(interval);
           }
         }, intervalMs);
 
         return () => {
           clearInterval(interval);
-          console.log('⏹️ 시뮬레이션이 중단되었습니다.');
+          logger.log('⏹️ 시뮬레이션이 중단되었습니다.');
         };
       } catch (error) {
-        console.error('❌ 시뮬레이션 시작 실패:', error);
+        logger.error('❌ 시뮬레이션 시작 실패:', error);
       }
     },
 
     // 도움말 표시
     help: () => {
-      console.log(`
+      logger.log(`
 🎯 주문 테스트 도구 사용법:
 
 // 현재 사용자 정보 확인
@@ -337,5 +342,5 @@ orderTest.getCurrentState()
   };
 
   // 개발 환경에서 콘솔에 도움말 표시
-  console.log('🎯 주문 테스트 도구가 준비되었습니다! orderTest.help()를 입력하여 사용법을 확인하세요.');
+  logger.log('🎯 주문 테스트 도구가 준비되었습니다! orderTest.help()를 입력하여 사용법을 확인하세요.');
 } 

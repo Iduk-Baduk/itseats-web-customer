@@ -7,6 +7,7 @@ import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import Header from "../../components/common/Header";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorState from "../../components/common/ErrorState";
+import { logger } from "../../utils/logger";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
@@ -18,7 +19,7 @@ export default function MyPageDetails() {
   const stores = useSelector(state => state.store?.stores || []);
   const storeLoading = useSelector(state => state.store?.loading || false);
   
-  console.log('🏪 MyPageDetails - Redux stores 상태:', {
+  logger.log('🏪 MyPageDetails - Redux stores 상태:', {
     storesCount: stores.length,
     storeLoading,
     firstStore: stores[0]
@@ -27,7 +28,7 @@ export default function MyPageDetails() {
   // stores 데이터가 없으면 직접 로드
   useEffect(() => {
     if (stores.length === 0 && !storeLoading) {
-      console.log('🔄 MyPageDetails에서 fetchStores 호출');
+      logger.log('🔄 MyPageDetails에서 fetchStores 호출');
       dispatch(fetchStores());
     }
   }, [stores.length, storeLoading, dispatch]);
@@ -159,19 +160,15 @@ export default function MyPageDetails() {
   };
 
   // 개발 환경에서 상태 디버그 출력
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 MyPageDetails 상태:', {
-      loading,
-      error,
-      reviewDataCount: reviewData.length,
-      orderDataCount: orderData.length,
-      favoriteDataCount: favoriteData.length,
-      userStats,
-      favoriteData: favoriteData.slice(0, 2) // 처음 2개만 출력
-    });
-  }
-
-
+  logger.log('🔍 MyPageDetails 상태:', {
+    loading,
+    error,
+    reviewDataCount: reviewData.length,
+    orderDataCount: orderData.length,
+    favoriteDataCount: favoriteData.length,
+    userStats,
+    favoriteData: favoriteData.slice(0, 2) // 처음 2개만 출력
+  });
 
   return (
     <SlideInFromRight>
@@ -200,15 +197,13 @@ export default function MyPageDetails() {
           </div>
         </div>
         <div className={styles.tabs}>
-          {Object.entries(tabContentMap).map(([key, tab]) => (
+          {Object.entries(tabContentMap).map(([key, { label }]) => (
             <button
               key={key}
-              className={`${styles.tab} ${
-                activeTab === key ? styles.active : ""
-              }`}
+              className={activeTab === key ? styles.active : ""}
               onClick={() => setActiveTab(key)}
             >
-              {tab.label}
+              {label}
             </button>
           ))}
         </div>
