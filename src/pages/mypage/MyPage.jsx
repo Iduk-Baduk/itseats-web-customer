@@ -1,22 +1,59 @@
 import { useNavigate } from "react-router-dom";
+import useCurrentUser from "../../hooks/useCurrentUser";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorState from "../../components/common/ErrorState";
 import styles from "./MyPage.module.css";
 
 export default function MyPage() {
   const navigate = useNavigate();
+  const { user, userStats, loading, error, isLoggedIn, refreshUserData } = useCurrentUser();
 
-  // 더미데이터
-  const user = {
-    name: "송준경",
-    phone: "010-1234-6888",
-    reviewCount: 3,
-    helpCount: 0,
-    favoriteCount: 12,
-  };
+  // 로그인되지 않은 경우 로그인 페이지로 이동
+  if (!isLoggedIn && !loading) {
+    navigate("/login");
+    return null;
+  }
 
-  const maskedPhone = user.phone.replace(
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <LoadingSpinner message="사용자 정보를 불러오는 중..." />
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <ErrorState 
+          message={error} 
+          onPrimaryAction={refreshUserData}
+          primaryActionText="다시 시도"
+        />
+      </div>
+    );
+  }
+
+  // 사용자 정보가 없는 경우
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <ErrorState 
+          message="사용자 정보를 찾을 수 없습니다." 
+          onPrimaryAction={() => navigate("/login")}
+          primaryActionText="로그인"
+        />
+      </div>
+    );
+  }
+
+  // 전화번호 마스킹
+  const maskedPhone = user.phone ? user.phone.replace(
     /(\d{3})-(\d{2})\d{2}-(\d{4})/,
     "$1-****-$3"
-  );
+  ) : "전화번호 없음";
 
   const menuItems = [
     { icon: "list", label: "주소 관리", path: "/address" },
@@ -34,27 +71,36 @@ export default function MyPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.name}>{user.name}</h2>
+      <h2 className={styles.name}>{user.name || "이름 없음"}</h2>
       <p className={styles.phone}>{maskedPhone}</p>
 
       <div className={styles.stats}>
         <div>
-          <strong>{user.reviewCount}</strong>
+          <strong>{userStats.reviewCount}</strong>
           <p>내가 남긴 리뷰</p>
         </div>
         <div>
-          <strong>{user.helpCount}</strong>
+          <strong>{userStats.helpCount}</strong>
           <p>도움이 됐어요</p>
         </div>
         <div>
-          <strong>{user.favoriteCount}</strong>
+          <strong>{userStats.favoriteCount}</strong>
           <p>즐겨찾기</p>
         </div>
       </div>
 
       <button
         className={styles.detailButton}
-        onClick={() => navigate("/mypage/details", { state: { user } })}
+        onClick={() => navigate("/mypage/details", { 
+          state: { 
+            user: {
+              name: user.name,
+              reviewCount: userStats.reviewCount,
+              helpCount: userStats.helpCount,
+              favoriteCount: userStats.favoriteCount,
+            }
+          } 
+        })}
       >
         자세히 보기
       </button>
