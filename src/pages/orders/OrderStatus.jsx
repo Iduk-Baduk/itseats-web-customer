@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import CommonMap from "../../components/common/CommonMap";
@@ -28,8 +28,8 @@ export default function OrderStatus() {
   const navigate = useNavigate();
   const [statusChange, setStatusChange] = useState(null);
   
-  // URL에서 orderId 추출
-  const orderId = new URLSearchParams(window.location.search).get("orderId");
+  // URL 파라미터에서 orderId 추출
+  const { orderId } = useParams();
   const {
     orderData,
     isLoading,

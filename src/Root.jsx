@@ -181,6 +181,16 @@ export default function Root() {
             } 
           />
           <Route 
+            path="/orders/:orderId/status" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <OrderStatus />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
             path="/orders/:orderId/review" 
             element={
               <Layout navVisible={false}>
