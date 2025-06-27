@@ -16,11 +16,48 @@ export default function OrderCard({
   const orderData = useMemo(() => {
     const statusConfig = ORDER_STATUS_CONFIG[order.status] || {};
     
+    // 상태별 한국어 표시명 매핑
+    const getStatusDisplayName = (status) => {
+      switch(status) {
+        case ORDER_STATUS.WAITING: return "주문 접수 중";
+        case ORDER_STATUS.COOKING: return "조리 중";
+        case ORDER_STATUS.COOKED: return "조리 완료";
+        case ORDER_STATUS.RIDER_READY: return "라이더 배차 중";
+        case ORDER_STATUS.DELIVERING: return "배달 중";
+        case ORDER_STATUS.DELIVERED: return "배달 완료";
+        case ORDER_STATUS.COMPLETED: return "주문 완료";
+        case ORDER_STATUS.CANCELED: return "주문 취소";
+        default: return "상태 확인 중";
+      }
+    };
+
+    // 상태별 태그 타입 결정
+    const getStatusTagType = (status) => {
+      switch(status) {
+        case ORDER_STATUS.WAITING:
+        case ORDER_STATUS.COOKING:
+        case ORDER_STATUS.COOKED:
+        case ORDER_STATUS.RIDER_READY:
+        case ORDER_STATUS.DELIVERING:
+          return "pending";
+        case ORDER_STATUS.DELIVERED:
+        case ORDER_STATUS.COMPLETED:
+          return "completed";
+        case ORDER_STATUS.CANCELED:
+          return "cancelled";
+        default:
+          return "pending";
+      }
+    };
+    
     return {
       storeName: order.storeName || "알 수 없는 매장",
       date: order.date || (order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : new Date().toLocaleString('ko-KR')),
       status: order.status || "주문 확인 중",
+      statusDisplayName: getStatusDisplayName(order.status),
       statusMessage: statusConfig.message || "상태 확인 중",
+      statusTagType: getStatusTagType(order.status),
+      person: statusConfig.person || "잇츠잇츠",
       price: Number(order.price || order.orderPrice || order.totalAmount || 0),
       menuSummary: order.menuSummary || order.items?.map(item => item.menuName).join(", ") || "메뉴 정보 없음",
       storeImage: order.storeImage || "/samples/food1.jpg",
@@ -42,10 +79,13 @@ export default function OrderCard({
             <p className={styles.date}>{orderData.date}</p>
             <div className={styles.statusContainer}>
               <StatusTag 
-                status={orderData.isCompleted ? 'completed' : (orderData.isActive ? 'pending' : 'cancelled')} 
+                status={orderData.statusTagType} 
                 size="small"
               />
-              <span className={styles.statusMessage}>{orderData.statusMessage}</span>
+              <div className={styles.statusInfo}>
+                <span className={styles.statusDisplayName}>{orderData.statusDisplayName}</span>
+                <span className={styles.statusMessage}>{orderData.person}: {orderData.statusMessage}</span>
+              </div>
               {orderData.isCompleted && (
                 <div className={styles.rating}>⭐ ⭐ ⭐ ⭐ ⭐</div>
               )}
@@ -63,6 +103,41 @@ export default function OrderCard({
             </Tag>
           </div>
         </div>
+
+        {/* 진행 중인 주문의 경우 진행 단계 표시 */}
+        {orderData.isActive && (
+          <div className={styles.progressContainer}>
+            <div className={styles.progressSteps}>
+              {(() => {
+                const steps = [
+                  { key: 'order', label: '주문접수', statuses: [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
+                  { key: 'cooking', label: '조리중', statuses: [ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
+                  { key: 'cooked', label: '조리완료', statuses: [ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
+                  { key: 'delivering', label: '배달중', statuses: [ORDER_STATUS.DELIVERING] }
+                ];
+
+                return steps.map((step, index) => {
+                  const isActive = step.statuses.includes(orderData.status);
+                  const isCurrent = 
+                    (orderData.status === ORDER_STATUS.WAITING && step.key === 'order') ||
+                    (orderData.status === ORDER_STATUS.COOKING && step.key === 'cooking') ||
+                    ([ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY].includes(orderData.status) && step.key === 'cooked') ||
+                    (orderData.status === ORDER_STATUS.DELIVERING && step.key === 'delivering');
+
+                  return (
+                    <div 
+                      key={step.key}
+                      className={`${styles.progressStep} ${isActive ? styles.active : ''} ${isCurrent ? styles.current : ''}`}
+                    >
+                      <div className={styles.stepDot}></div>
+                      <span>{step.label}</span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        )}
 
         <div className={styles.actions}>
           {orderData.isCompleted && (
@@ -96,7 +171,7 @@ export default function OrderCard({
               className={styles.statusButton} 
               onClick={onOpenStatus}
             >
-              배달 현황 보기
+              배달 현황 자세히 보기
             </Button>
           )}
         </div>
