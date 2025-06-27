@@ -102,7 +102,7 @@ export default function useMyPageDetails() {
     };
 
     loadData();
-  }, [orders]); // orders만 의존성으로 설정
+  }, [orders, stores]); // stores도 의존성에 추가
 
   // stores 데이터가 변경될 때마다 즐겨찾기 데이터 다시 로드
   useEffect(() => {

@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // 사용자 API 서비스
 export const userAPI = {
@@ -72,8 +73,8 @@ export const userAPI = {
   getStatsFromLocalStorage: () => {
     try {
       // 로컬스토리지에서 데이터 가져오기
-      const orders = JSON.parse(localStorage.getItem('itseats-orders') || '[]');
-      const favorites = JSON.parse(localStorage.getItem('itseats-favorites') || '[]');
+      const orders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || '[]');
+      const favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES) || '[]');
 
       // 배달 완료된 주문만 필터링
       const completedOrders = orders.filter(order => 

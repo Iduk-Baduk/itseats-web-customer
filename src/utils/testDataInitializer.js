@@ -1,5 +1,7 @@
 // 테스트용 데이터 초기화 유틸리티
 import { addOrder } from '../store/orderSlice';
+import { ORDER_STATUS } from '../constants/orderStatus';
+import { STORAGE_KEYS, logger } from './logger';
 
 // 테스트용 주문 데이터
 const sampleOrders = [
@@ -126,10 +128,10 @@ const sampleOrders = [
 // 테스트 데이터 초기화 함수
 export const initializeTestData = (dispatch) => {
   // 기존 주문이 없는 경우에만 테스트 데이터 추가
-  const existingOrders = JSON.parse(localStorage.getItem('itseats-orders') || '[]');
+  const existingOrders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || '[]');
   
   if (existingOrders.length === 0) {
-    console.log('🧪 테스트 주문 데이터를 초기화합니다...');
+    logger.log('🧪 테스트 주문 데이터를 초기화합니다...');
     
     sampleOrders.forEach((order, index) => {
       // 시간차를 두고 추가하여 자연스럽게 보이도록
@@ -138,17 +140,15 @@ export const initializeTestData = (dispatch) => {
       }, index * 100);
     });
     
-    console.log('✅ 테스트 주문 데이터 초기화 완료');
+    logger.log('✅ 테스트 주문 데이터 초기화 완료');
   }
-};
 
-// 즐겨찾기 테스트 데이터 초기화
-export const initializeFavoriteTestData = () => {
-  const existingFavorites = JSON.parse(localStorage.getItem('itseats-favorites') || '[]');
+  // 즐겨찾기 테스트 데이터
+  const existingFavorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES) || '[]');
   
   if (existingFavorites.length === 0) {
-    const sampleFavorites = ["1", "2", "4", "5"];
-    localStorage.setItem('itseats-favorites', JSON.stringify(sampleFavorites));
-    console.log('✅ 테스트 즐겨찾기 데이터 초기화 완료');
+    const sampleFavorites = [1, 2, 3, 4, 5]; // 매장 ID들
+    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(sampleFavorites));
+    logger.log('✅ 테스트 즐겨찾기 데이터 초기화 완료');
   }
 }; 
