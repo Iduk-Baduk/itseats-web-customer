@@ -4,6 +4,7 @@ import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
+import OrderProgressSteps from "../../components/orders/OrderProgressSteps";
 import LineButton from "../../components/common/basic/LineButton";
 import { useOrderStatus } from "../../hooks/useOrderStatus";
 import useOrderTracking from "../../hooks/useOrderTracking";
@@ -153,7 +154,7 @@ export default function OrderStatus() {
               </div>
             )}
             
-            <OrderProgress orderStatus={safeOrderData.orderStatus} />
+            <OrderProgressSteps orderStatus={safeOrderData.orderStatus} />
 
             {/* 주문 상태 정보 표시 */}
             <div className={styles.statusPerson}>

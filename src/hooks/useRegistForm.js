@@ -27,16 +27,22 @@ export default function useRegistForm() {
     }
 
     try {
-      console.log("🚀 회원가입 데이터 전송:", form);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("🚀 회원가입 데이터 전송:", form);
+      }
       const result = await regist(form);
-      console.log("✅ 회원가입 성공 응답:", result);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("✅ 회원가입 성공 응답:", result);
+      }
       alert("회원가입이 완료되었습니다!");
       setError("");
     } catch (err) {
-      console.error("❌ 회원가입 실패:", err);
-      console.error("에러 타입:", err.type);
-      console.error("상태 코드:", err.statusCode);
-      console.error("원본 에러:", err.originalError);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("❌ 회원가입 실패:", err);
+        console.error("에러 타입:", err.type);
+        console.error("상태 코드:", err.statusCode);
+        console.error("원본 에러:", err.originalError);
+      }
       setError(`회원가입 실패: ${err.message}`);
     }
   };

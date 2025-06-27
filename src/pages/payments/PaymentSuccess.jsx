@@ -34,15 +34,29 @@ export default function PaymentSuccess() {
       try {
         setIsLoading(true);
 
+        // 매장 정보 검증
+        if (!currentStore) {
+          throw new Error('매장 정보가 없습니다.');
+        }
+
+        // 금액 계산 안전성 강화
+        const parsedAmount = parseInt(amount);
+        const calculatedAmount = cartItems.reduce((sum, item) => {
+          const price = Number(item.menuPrice) || 0;
+          const qty = Number(item.quantity) || 0;
+          return sum + (price * qty);
+        }, 0);
+        const finalAmount = !isNaN(parsedAmount) ? parsedAmount : calculatedAmount;
+
         // 주문 데이터 생성
         const newOrder = {
           id: orderId || `order_${Date.now()}`,
           paymentId: paymentId || `payment_${Date.now()}`,
-          storeId: currentStore?.storeId,
-          storeName: currentStore?.storeName,
-          storeImage: currentStore?.storeImage,
+          storeId: currentStore.storeId,
+          storeName: currentStore.storeName,
+          storeImage: currentStore.storeImage,
           items: cartItems,
-          totalAmount: parseInt(amount) || cartItems.reduce((sum, item) => sum + (item.menuPrice * item.quantity), 0),
+          totalAmount: finalAmount,
           deliveryAddress: selectedAddress,
           status: 'WAITING',
           statusMessage: '주문이 접수되었습니다.',
@@ -62,12 +76,16 @@ export default function PaymentSuccess() {
       } catch (error) {
         console.error('결제 성공 처리 중 오류:', error);
         setIsLoading(false);
-        // 에러 발생 시 결제 실패 페이지로 리다이렉트
-        navigate('/payments/failure?error=processing_failed');
+        
+        // 3초 지연 후 실패 페이지로 이동
+        setTimeout(() => {
+          navigate('/payments/failure?error=processing_failed');
+        }, 3000);
       }
     };
 
-    if (paymentId && orderId) {
+    // 파라미터 검증 로직 개선
+    if (paymentId || orderId || (cartItems.length > 0 && currentStore)) {
       processPaymentSuccess();
     } else {
       // 필수 파라미터가 없으면 홈으로 리다이렉트

@@ -20,69 +20,82 @@ export default function CouponHistory() {
   const orders = useSelector(state => state.order.orders);
 
   useEffect(() => {
-    // 쿠폰 사용내역 생성 (실제로는 API에서 가져와야 함)
-    const generateCouponHistory = () => {
-      const history = [];
-      
-      // 사용된 쿠폰들 (예시 데이터)
-      const usedCoupons = [
-        {
-          id: 'history_1',
-          couponId: 'coupon_1',
-          couponName: '신규 가입 축하 쿠폰',
-          discountType: 'amount',
-          discountValue: 3000,
-          orderId: 'order_1',
-          orderAmount: 25000,
-          storeName: '김치찌개 맛집',
-          usedAt: '2024-12-18T18:30:00Z',
-          status: 'used'
-        },
-        {
-          id: 'history_2',
-          couponId: 'coupon_2',
-          couponName: '주말 특가 할인',
-          discountType: 'percentage',
-          discountValue: 15,
-          orderId: 'order_2',
-          orderAmount: 18000,
-          storeName: '치킨 전문점',
-          usedAt: '2024-12-17T19:45:00Z',
-          status: 'used'
-        },
-        {
-          id: 'history_3',
-          couponId: 'coupon_3',
-          couponName: '첫 주문 할인 쿠폰',
-          discountType: 'amount',
-          discountValue: 5000,
-          orderId: null,
-          orderAmount: 0,
-          storeName: null,
-          usedAt: null,
-          expiredAt: '2024-12-15T23:59:59Z',
-          status: 'expired'
-        },
-        {
-          id: 'history_4',
-          couponId: 'coupon_4',
-          couponName: '생일 축하 쿠폰',
-          discountType: 'percentage',
-          discountValue: 20,
-          orderId: 'order_3',
-          orderAmount: 32000,
-          storeName: '피자 맛집',
-          usedAt: '2024-12-16T20:15:00Z',
-          status: 'used'
-        }
-      ];
+    const fetchCouponHistory = async () => {
+      try {
+        setIsLoading(true);
+        
+        // 실제 환경에서는 API 호출
+        // const response = await couponAPI.getCouponHistory();
+        // setCouponHistory(response.data);
+        
+        // 개발 환경에서는 Mock 데이터 사용
+        const generateCouponHistory = () => {
+          // Redux 상태 활용하여 더 현실적인 Mock 데이터 생성
+          const usedCoupons = [
+            {
+              id: 'history_1',
+              couponId: 'coupon_1',
+              couponName: '신규 가입 축하 쿠폰',
+              discountType: 'amount',
+              discountValue: 3000,
+              orderId: 'order_1',
+              orderAmount: 25000,
+              storeName: '김치찌개 맛집',
+              usedAt: '2024-12-18T18:30:00Z',
+              status: 'used'
+            },
+            {
+              id: 'history_2',
+              couponId: 'coupon_2',
+              couponName: '주말 특가 할인',
+              discountType: 'percentage',
+              discountValue: 15,
+              orderId: 'order_2',
+              orderAmount: 18000,
+              storeName: '치킨 전문점',
+              usedAt: '2024-12-17T19:45:00Z',
+              status: 'used'
+            },
+            {
+              id: 'history_3',
+              couponId: 'coupon_3',
+              couponName: '첫 주문 할인 쿠폰',
+              discountType: 'amount',
+              discountValue: 5000,
+              orderId: null,
+              orderAmount: 0,
+              storeName: null,
+              usedAt: null,
+              expiredAt: '2024-12-15T23:59:59Z',
+              status: 'expired'
+            },
+            {
+              id: 'history_4',
+              couponId: 'coupon_4',
+              couponName: '생일 축하 쿠폰',
+              discountType: 'percentage',
+              discountValue: 20,
+              orderId: 'order_3',
+              orderAmount: 32000,
+              storeName: '피자 맛집',
+              usedAt: '2024-12-16T20:15:00Z',
+              status: 'used'
+            }
+          ];
 
-      setCouponHistory(usedCoupons);
-      setIsLoading(false);
+          setCouponHistory(usedCoupons);
+          setIsLoading(false);
+        };
+        
+        setTimeout(generateCouponHistory, 1000);
+      } catch (error) {
+        console.error('쿠폰 히스토리 로딩 실패:', error);
+        setIsLoading(false);
+        // 에러 상태 처리
+      }
     };
-
-    // 실제 환경에서는 API 호출
-    setTimeout(generateCouponHistory, 1000);
+    
+    fetchCouponHistory();
   }, [coupons, orders]);
 
   const filterTabs = [

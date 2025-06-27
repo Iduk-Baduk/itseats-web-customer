@@ -21,17 +21,19 @@ export default function Order() {
 
   // 실시간 업데이트를 위한 효과 - 주문 목록이 변경될 때마다 리렌더링
   useEffect(() => {
-    // 디버깅을 위한 로그
-    console.log('📊 주문 목록 업데이트:', {
-      전체: allOrders.length,
-      진행중: activeOrders.length,
-      완료: completedOrders.length,
-      주문목록: allOrders.map(order => ({
-        id: order.id,
-        storeName: order.storeName,
-        status: order.status
-      }))
-    });
+    // 개발 환경에서만 디버깅 로그 출력
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 주문 목록 업데이트:', {
+        전체: allOrders.length,
+        진행중: activeOrders.length,
+        완료: completedOrders.length,
+        주문목록: allOrders.map(order => ({
+          id: order.id,
+          storeName: order.storeName,
+          status: order.status
+        }))
+      });
+    }
   }, [allOrders, activeOrders, completedOrders]);
 
   const handleWriteReview = () => {

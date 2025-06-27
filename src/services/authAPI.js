@@ -13,8 +13,10 @@ export const regist = async (form) => {
     usertype
   };
   
-  console.log("📡 API 요청 URL:", API_ENDPOINTS.AUTH_REGISTER);
-  console.log("📡 API 요청 데이터:", requestData);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("📡 API 요청 URL:", API_ENDPOINTS.AUTH_REGISTER);
+    console.log("📡 API 요청 데이터:", requestData);
+  }
   
   return await apiClient.post(API_ENDPOINTS.AUTH_REGISTER, requestData);
 };

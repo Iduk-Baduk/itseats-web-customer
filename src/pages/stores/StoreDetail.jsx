@@ -28,6 +28,14 @@ export default function StoreDetail() {
   const [menuTabFixed, setMenuTabFixed] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  // 토스트 메시지 타이머 정리를 위한 useEffect
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
   // Redux에서 매장 데이터 가져오기
   const store = useSelector(state => state.store?.currentStore);
   const stores = useSelector(state => state.store?.stores || []);
@@ -150,14 +158,14 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={isFavorite(currentStore.id)}
+          isFavorite={currentStore?.id ? isFavorite(currentStore.id) : false}
           favoriteButtonAction={() => {
+            if (!currentStore?.id) return;
             const wasAlreadyFavorite = isFavorite(currentStore.id);
             toggleFavorite(currentStore.id);
             // 토스트 메시지 표시
             const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
             setToastMessage(message);
-            setTimeout(() => setToastMessage(""), 3000);
           }}
         />
         <div id="intro" className={styles.intro}>
