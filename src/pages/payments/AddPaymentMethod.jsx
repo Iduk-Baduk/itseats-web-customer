@@ -19,7 +19,7 @@ export default function AddPaymentMethod() {
 
       <div
         className={styles.option}
-        onClick={() => navigate("/payments/add-account")}
+        onClick={() => navigate("/payments/add/account")}
       >
         <img
           src="/icons/logos/account.svg"
@@ -44,7 +44,7 @@ export default function AddPaymentMethod() {
 
       <div
         className={styles.option}
-        onClick={() => navigate("/payments/add-card")}
+        onClick={() => navigate("/payments/add/card")}
       >
         <img
           src="/icons/logos/credit.svg"

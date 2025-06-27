@@ -47,14 +47,21 @@ export default function MenuDetail() {
     if (storeId) {
       dispatch(fetchStoreById(storeId));
     }
-    
-    // 메뉴 옵션 초기화
-    if (currentMenu?.options) {
+  }, [dispatch, storeId]);
+
+  // 메뉴 옵션 초기화 - 별도 useEffect로 분리
+  useEffect(() => {
+    if (currentMenu?.options && Array.isArray(currentMenu.options)) {
       setSelectedOptions(
-        currentMenu.options.map((group) => ({ ...group, options: [] }))
+        currentMenu.options.map((group) => ({ 
+          ...group, 
+          options: [] 
+        }))
       );
+    } else {
+      setSelectedOptions([]);
     }
-  }, [dispatch, storeId, currentMenu]);
+  }, [currentMenu]);
 
   // 가격 계산
   useEffect(() => {
@@ -260,9 +267,9 @@ export default function MenuDetail() {
                     <div key={idx} className={styles.option}>
                       <OptionInput
                         type={inputType}
-                        checked={selectedOptions[index]?.options?.some(
+                        checked={Boolean(selectedOptions[index]?.options?.some(
                           (opt) => opt.optionName === option.name
-                        )}
+                        ))}
                         onChange={() => {
                           setSelectedOptions((prev) =>
                             prev.map((g, i) => {

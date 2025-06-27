@@ -9,16 +9,6 @@
       "last4": "1234",
       "image": "/icons/logos/shinhan.png",
       "isDefault": true
-    },
-    {
-      "id": "f809",
-      "cardNumber": "**** **** **** 5678",
-      "name": "테스트카드",
-      "cardType": "체크카드",
-      "bank": "우리은행",
-      "last4": "5678",
-      "image": "/icons/logos/woori.png",
-      "isDefault": false
     }
   ],
   "accounts": [

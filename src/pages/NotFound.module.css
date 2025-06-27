@@ -1,0 +1,178 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.content {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  background-color: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 에러 섹션 */
+.errorSection {
+  margin-bottom: 3rem;
+}
+
+.errorIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.errorCode {
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--theme-color, #007bff);
+  margin: 0 0 1rem 0;
+  text-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.errorTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 1rem 0;
+}
+
+.errorMessage {
+  color: #6c757d;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* 추천 섹션 */
+.suggestions {
+  text-align: left;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid var(--theme-color, #007bff);
+}
+
+.suggestions h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.suggestionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggestionList li {
+  padding: 0.5rem 0;
+  color: #6c757d;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* 액션 버튼들 */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.primaryButton {
+  width: 100%;
+}
+
+.secondaryButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.secondaryButtons button {
+  flex: 1;
+}
+
+/* 도움말 */
+.helpInfo {
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.helpInfo p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.helpInfo p:last-child {
+  margin-bottom: 0;
+}
+
+.helpInfo strong {
+  color: var(--theme-color, #007bff);
+  font-weight: 600;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .errorCode {
+    font-size: 3rem;
+  }
+  
+  .errorTitle {
+    font-size: 1.25rem;
+  }
+  
+  .secondaryButtons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .errorIcon {
+    font-size: 3rem;
+  }
+  
+  .errorCode {
+    font-size: 2.5rem;
+  }
+  
+  .errorTitle {
+    font-size: 1.125rem;
+  }
+  
+  .suggestions {
+    padding: 1rem;
+  }
+} 

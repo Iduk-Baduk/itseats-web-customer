@@ -1,9 +1,10 @@
 import { useMemo, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/common/Header";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
+import OrderProgressSteps from "../../components/orders/OrderProgressSteps";
 import LineButton from "../../components/common/basic/LineButton";
 import { useOrderStatus } from "../../hooks/useOrderStatus";
 import useOrderTracking from "../../hooks/useOrderTracking";
@@ -28,16 +29,24 @@ export default function OrderStatus() {
   const navigate = useNavigate();
   const [statusChange, setStatusChange] = useState(null);
   
-  // URL에서 orderId 추출
-  const orderId = new URLSearchParams(window.location.search).get("orderId");
-  const orderData = useOrderStatus(orderId);
+  // URL 파라미터에서 orderId 추출
+  const { orderId } = useParams();
+  const {
+    orderData,
+    isLoading,
+    error,
+    hasData,
+    orderStatusInfo,
+    etaInfo,
+    progressStep,
+    updateStatus,
+    isActiveOrder: isActiveOrderFromHook,
+    isCompletedOrder,
+    isCanceledOrder
+  } = useOrderStatus(orderId);
 
-  // 주문 진행 상태 확인
-  const isActiveOrder = useMemo(() => {
-    if (!orderData) return false;
-    const activeStatuses = ["WAITING", "COOKING", "COOKED", "RIDER_READY", "DELIVERING"];
-    return activeStatuses.includes(orderData.status);
-  }, [orderData]);
+  // 주문 진행 상태는 훅에서 제공하는 값 사용
+  const isActiveOrder = isActiveOrderFromHook;
 
   // 실시간 주문 추적
   const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
@@ -71,7 +80,7 @@ export default function OrderStatus() {
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-      orderStatus: orderData.status || "UNKNOWN"
+      orderStatus: orderData.orderStatus || orderData.status || "UNKNOWN"
     };
   }, [orderData]);
 
@@ -145,7 +154,7 @@ export default function OrderStatus() {
               </div>
             )}
             
-            <OrderProgress orderStatus={safeOrderData.orderStatus} />
+            <OrderProgressSteps orderStatus={safeOrderData.orderStatus} />
 
             {/* 주문 상태 정보 표시 */}
             <div className={styles.statusPerson}>
@@ -173,6 +182,39 @@ export default function OrderStatus() {
                   </span>
                 </p>
               </div>
+
+              {/* 메뉴 상세 정보 */}
+              {orderData?.items && orderData.items.length > 0 && (
+                <div className={styles.menuDetails}>
+                  <p className={styles.sectionTitle}>주문 메뉴</p>
+                  <div className={styles.menuList}>
+                    {orderData.items.map((item, index) => (
+                      <div key={index} className={styles.menuItem}>
+                        <div className={styles.menuHeader}>
+                          <div className={styles.menuInfo}>
+                            <span className={styles.menuName}>{item.menuName}</span>
+                            <span className={styles.menuQuantity}>×{item.quantity}</span>
+                          </div>
+                          <span className={styles.menuPrice}>{item.price.toLocaleString()}원</span>
+                        </div>
+                        {item.options && item.options.length > 0 && (
+                          <div className={styles.menuOptions}>
+                            {item.options.map((option, optIndex) => (
+                              <div key={optIndex} className={styles.optionItem}>
+                                <span className={styles.optionName}>{option.name}: {option.value}</span>
+                                {option.price > 0 && (
+                                  <span className={styles.optionPrice}>+{option.price.toLocaleString()}원</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className={styles.deliveryInfo}>
                 <p className={styles.storeName}>배달 주소</p>
                 <span>{safeOrderData.deliveryAddress}</span>

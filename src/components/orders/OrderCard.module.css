@@ -28,13 +28,35 @@
 
 .statusContainer {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.statusInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.statusDisplayName {
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+}
+
+.statusMessage {
+  font-size: 11px;
+  color: #666;
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 .rating {
   font-size: 14px;
+  margin-left: auto;
 }
 .summaryRow {
   display: flex;
@@ -121,4 +143,190 @@
   background-color: var(--border-color-light);
   border-color: var(--theme-color);
   color: var(--theme-color);
+}
+
+/* 진행 단계 표시 스타일 */
+.progressContainer {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.progressSteps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.progressSteps::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background-color: #e9ecef;
+  z-index: 1;
+}
+
+.progressStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.progressStep span {
+  font-size: 11px;
+  color: #6c757d;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stepDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* 기본 상태 - 비어있는 원 */
+.progressStep .stepDot {
+  background-color: #fff;
+  border-color: #e9ecef;
+}
+
+.progressStep span {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* 완료된 단계 - 완전히 채워진 원 */
+.progressStep.completed .stepDot {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+.progressStep.completed span {
+  color: var(--theme-color) !important;
+  font-weight: 600 !important;
+}
+
+/* 현재 진행 중인 단계 - 내부도 채워지고 펄스 효과 */
+.progressStep.current .stepDot {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2) !important;
+  animation: pulse 2s infinite !important;
+}
+
+.progressStep.current span {
+  color: var(--theme-color) !important;
+  font-weight: 700 !important;
+}
+
+/* 활성화된 단계 (진행 중이거나 완료된) - 채워진 원 */
+.progressStep.active .stepDot {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+.progressStep.active span {
+  color: var(--theme-color) !important;
+  font-weight: 600 !important;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+/* 활성 단계까지 진행 바 색상 변경 */
+.progressSteps .progressStep.active ~ .progressStep .stepDot {
+  background-color: #e9ecef;
+}
+
+.statusButton {
+  background-color: var(--theme-color);
+  color: white;
+  border: none;
+}
+
+.statusButton:hover {
+  background-color: var(--theme-hover-color);
+}
+
+/* 메뉴 목록 스타일 */
+.menuList {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.menuItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.menuItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.menuInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.menuName {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.menuQuantity {
+  font-size: 12px;
+  color: #666;
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.menuPrice {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.moreMenus {
+  text-align: center;
+  padding: 8px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
 }

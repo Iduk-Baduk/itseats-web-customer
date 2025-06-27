@@ -1,6 +1,6 @@
 import useRegistForm from "../hooks/useRegistForm";
 import TextInput from "./common/basic/TextInput";
-import Checkbox from "./common/basic/Checkbox";
+import CheckBox from "./common/basic/CheckBox";
 import Button from "./common/basic/Button";
 import styles from "./RegistForm.module.css";
 
@@ -21,6 +21,13 @@ const RegistForm = ({ className = "" }) => {
         type="password"
         placeholder="비밀번호"
         value={form.password}
+        onChange={handleChange}
+      />
+      <TextInput
+        name="confirmPassword"
+        type="password"
+        placeholder="비밀번호 확인"
+        value={form.confirmPassword}
         onChange={handleChange}
       />
       <TextInput
@@ -46,7 +53,7 @@ const RegistForm = ({ className = "" }) => {
       />
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <Checkbox
+      <CheckBox
         name="terms"
         label="이용약관에 동의합니다."
         checked={form.terms}

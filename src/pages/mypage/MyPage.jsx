@@ -25,7 +25,7 @@ export default function MyPage() {
     { icon: "percent", label: "진행중인 이벤트", path: "/events" },
     { icon: "people", label: "친구 초대" },
     { icon: "credit", label: "결제관리", path: "/payments" },
-    { icon: "settings", label: "설정", path: "/settings" },
+    { icon: "settings", label: "설정", path: "/mypage/settings" },
     { icon: "megaphone", label: "공지사항" },
     { icon: "paper", label: "약관 및 정책" },
     { icon: "sheild", label: "개인정보 처리방침" },

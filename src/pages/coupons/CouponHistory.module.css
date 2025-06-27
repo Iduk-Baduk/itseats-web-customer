@@ -1,0 +1,243 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.content {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 탭 컨테이너 */
+.tabContainer {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 통계 카드 */
+.statsCard {
+  margin-bottom: 20px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.statItem {
+  text-align: center;
+  padding: 1rem;
+}
+
+.statNumber {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--theme-color, #007bff);
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* 내역 리스트 */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historyCard {
+  transition: transform 0.2s ease-in-out;
+}
+
+.historyCard:hover {
+  transform: translateY(-2px);
+}
+
+/* 카드 헤더 */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.couponInfo {
+  flex: 1;
+}
+
+.couponName {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #212529;
+  line-height: 1.4;
+}
+
+.discountInfo {
+  margin-bottom: 0.25rem;
+}
+
+.discountAmount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--theme-color, #007bff);
+  background-color: #e3f2fd;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* 카드 바디 */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* 주문 정보 */
+.orderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.orderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.value {
+  font-size: 0.875rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.discountValue {
+  font-size: 0.875rem;
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* 주문 버튼 */
+.orderButton {
+  background-color: var(--theme-color, #007bff);
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.orderButton:hover {
+  background-color: #0056b3;
+}
+
+/* 만료 정보 */
+.expiredInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.expiredRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expiredMessage {
+  margin: 0;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-align: center;
+  border-left: 3px solid #dc3545;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content {
+    padding: 12px;
+  }
+  
+  .statsGrid {
+    gap: 0.5rem;
+  }
+  
+  .statItem {
+    padding: 0.75rem;
+  }
+  
+  .statNumber {
+    font-size: 1.25rem;
+  }
+  
+  .couponName {
+    font-size: 1rem;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .orderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .value,
+  .discountValue {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statItem {
+    padding: 0.5rem;
+  }
+  
+  .historyList {
+    gap: 8px;
+  }
+  
+  .orderButton {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+} 

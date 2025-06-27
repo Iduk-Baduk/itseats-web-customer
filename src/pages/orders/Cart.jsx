@@ -293,8 +293,13 @@ export default function Cart() {
         // console.log('✅ 실제 결제 성공:', paymentResult);
       }
       
-      // 🎉 결제 성공 시 주문 상태 페이지로 이동
-      navigate("/orders/status");
+      // 🎉 결제 성공 시 결제 완료 페이지로 이동
+      const successParams = new URLSearchParams({
+        paymentId: useLocalStorage ? `payment_${Date.now()}` : paymentResult.paymentId,
+        orderId: orderResponse.data.orderId,
+        amount: paymentData.amount.toString()
+      });
+      navigate(`/payments/success?${successParams}`);
       
     } catch (error) {
       console.error("❌ 주문/결제 실패:", error);
@@ -302,8 +307,20 @@ export default function Cart() {
       // 결제 실패 상태 업데이트
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
       
+      // 결제 실패 페이지로 이동
+      const failureParams = new URLSearchParams({
+        error: 'processing_failed',
+        message: error.message || '알 수 없는 오류가 발생했습니다.',
+        orderId: orderResponse?.data?.orderId || `temp_${Date.now()}`
+      });
+      
+      // 결제 실패 페이지로 이동 (3초 후)
+      setTimeout(() => {
+        navigate(`/payments/failure?${failureParams}`);
+      }, 3000);
+      
       // 사용자에게 에러 알림
-      showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.'}`);
+      showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다.'}`);
     }
   };
 

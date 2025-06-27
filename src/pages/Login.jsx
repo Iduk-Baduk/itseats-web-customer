@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/useLogin";
 import TextInput from "../components/common/basic/TextInput";
 import Button from "../components/common/basic/Button";
@@ -7,6 +8,7 @@ import styles from "./Login.module.css";
 import CheckBox from "../components/common/basic/CheckBox";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login, loading, error } = useLogin();
   const [username, setUserId] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +20,10 @@ export default function Login() {
       // localStorage.setItem("accessToken", result.accessToken); // 토큰이 있을 경우
       alert("로그인 성공");
     }
+  };
+
+  const handleRegister = () => {
+    navigate("/register");
   };
 
   return (
@@ -64,7 +70,7 @@ export default function Login() {
           {loading ? "로그인 중..." : "로그인"}
         </Button>
         <hr />
-        <LineButton className={styles.grayButton}>회원가입</LineButton>
+        <LineButton className={styles.grayButton} onClick={handleRegister}>회원가입</LineButton>
       </div>
     </div>
   );

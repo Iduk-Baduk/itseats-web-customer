@@ -11,6 +11,10 @@
   z-index: 9999;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   animation: fadeInUp 0.3s ease-out;
+  max-width: 90%;
+  word-wrap: break-word;
+  text-align: center;
+  line-height: 1.4;
 }
 
 @keyframes fadeInUp {

@@ -32,7 +32,7 @@ const COMPLETED_ORDER_STATUSES = [
  * @param {string} orderId - 주문 ID (선택사항, URL 파라미터에서 자동 추출)
  * @returns {Object} 주문 상태 관련 데이터와 함수들
  */
-export default function useOrderStatus(orderId = null) {
+export function useOrderStatus(orderId = null) {
   const dispatch = useDispatch();
   const params = useParams();
   
