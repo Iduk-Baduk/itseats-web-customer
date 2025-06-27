@@ -78,6 +78,8 @@
 .favoritePic {
     width: 314px;
     height: 256px;
+    display: block;
+    margin: 0 auto;
 }
 
 .total {
