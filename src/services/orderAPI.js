@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
+import { generateOrderId } from '../utils/idUtils';
 import { logger } from '../utils/logger';
 
 // 주문 API 서비스
@@ -28,7 +29,7 @@ export const orderAPI = {
 
       // JSON Server용 주문 데이터
       const newOrder = {
-        id: `ORDER-${Date.now()}`, // 임시 ID 생성
+        id: generateOrderId(), // 안전한 ID 생성
         storeId: parseInt(storeId),
         storeName,
         status: "placed", // 주문 접수
@@ -75,9 +76,9 @@ export const orderAPI = {
   updateOrderStatus: async (orderId, status, message = '') => {
     try {
       // 먼저 기존 주문 정보를 가져온 후 상태만 업데이트
-      const order = await apiClient.get(`/orders/${orderId}`);
+      const response = await apiClient.get(`/orders/${orderId}`);
       const updatedOrder = {
-        ...order,
+        ...response.data,
         status,
         statusMessage: message,
         updatedAt: new Date().toISOString()
@@ -93,7 +94,7 @@ export const orderAPI = {
   // 주문 취소
   cancelOrder: async (orderId, reason = '') => {
     try {
-      return await this.updateOrderStatus(orderId, 'cancelled', reason);
+      return await orderAPI.updateOrderStatus(orderId, 'cancelled', reason);
     } catch (error) {
       logger.error(`주문 취소 실패 (ID: ${orderId}):`, error);
       throw error;
@@ -103,7 +104,7 @@ export const orderAPI = {
   // 주문 완료 처리
   completeOrder: async (orderId) => {
     try {
-      return await this.updateOrderStatus(orderId, 'completed', '주문이 완료되었습니다.');
+      return await orderAPI.updateOrderStatus(orderId, 'completed', '주문이 완료되었습니다.');
     } catch (error) {
       logger.error(`주문 완료 처리 실패 (ID: ${orderId}):`, error);
       throw error;
@@ -113,7 +114,7 @@ export const orderAPI = {
   // 실시간 주문 상태 추적 (단순히 주문 정보 조회)
   trackOrder: async (orderId) => {
     try {
-      return await this.getOrderById(orderId);
+      return await orderAPI.getOrderById(orderId);
     } catch (error) {
       logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
       throw error;

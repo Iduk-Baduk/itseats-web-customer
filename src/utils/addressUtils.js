@@ -57,6 +57,17 @@ const checkApiKey = () => {
   return true;
 };
 
+// fallback 결과를 표준 형식으로 변환하는 헬퍼 함수
+const transformFallbackResult = (addr) => ({
+  place_name: addr.address_name.split(' ').slice(-2).join(' '),
+  address_name: addr.address_name,
+  road_address_name: addr.road_address_name,
+  x: addr.x,
+  y: addr.y,
+  category_name: "주소",
+  id: Math.random().toString(36).substr(2, 9)
+});
+
 // Fallback 주소 검색 (목업 데이터)
 const fallbackAddressSearch = (query) => {
   console.info('🔄 Fallback 주소 검색 사용 중:', query);
@@ -175,15 +186,7 @@ export const searchPlacesByKeyword = async (keyword, useKakao = true) => {
     // fallback 모드인 경우
     if (apiStatus.usingFallback || !useKakao) {
       console.info('🔄 Fallback 장소 검색 사용 중:', keyword);
-      return fallbackAddressSearch(keyword).map(addr => ({
-        place_name: addr.address_name.split(' ').slice(-2).join(' '),
-        address_name: addr.address_name,
-        road_address_name: addr.road_address_name,
-        x: addr.x,
-        y: addr.y,
-        category_name: "주소",
-        id: Math.random().toString(36).substr(2, 9)
-      }));
+      return fallbackAddressSearch(keyword).map(transformFallbackResult);
     }
     
     // 카카오맵 API 사용
@@ -194,15 +197,7 @@ export const searchPlacesByKeyword = async (keyword, useKakao = true) => {
           resolve(data);
         } else {
           console.warn('카카오 장소 검색 실패, fallback 사용');
-          const fallbackResults = fallbackAddressSearch(keyword).map(addr => ({
-            place_name: addr.address_name.split(' ').slice(-2).join(' '),
-            address_name: addr.address_name,
-            road_address_name: addr.road_address_name,
-            x: addr.x,
-            y: addr.y,
-            category_name: "주소",
-            id: Math.random().toString(36).substr(2, 9)
-          }));
+          const fallbackResults = fallbackAddressSearch(keyword).map(transformFallbackResult);
           resolve(fallbackResults);
         }
       });
@@ -210,15 +205,7 @@ export const searchPlacesByKeyword = async (keyword, useKakao = true) => {
     
   } catch (error) {
     console.warn('장소 검색 오류, fallback 사용:', error.message);
-    return fallbackAddressSearch(keyword).map(addr => ({
-      place_name: addr.address_name.split(' ').slice(-2).join(' '),
-      address_name: addr.address_name,
-      road_address_name: addr.road_address_name,
-      x: addr.x,
-      y: addr.y,
-      category_name: "주소",
-      id: Math.random().toString(36).substr(2, 9)
-    }));
+    return fallbackAddressSearch(keyword).map(transformFallbackResult);
   }
 };
 

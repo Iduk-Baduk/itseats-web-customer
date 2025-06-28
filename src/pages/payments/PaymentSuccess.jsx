@@ -7,6 +7,7 @@ import Card from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { clearCart } from '../../store/cartSlice';
 import { addOrder, selectAllOrders } from '../../store/orderSlice';
+import { generateOrderId, generatePaymentId } from '../../utils/idUtils';
 import { logger } from '../../utils/logger';
 import styles from './PaymentSuccess.module.css';
 
@@ -39,7 +40,7 @@ export default function PaymentSuccess() {
         // orderId로 이미 생성된 주문 찾기
         let existingOrder = null;
         if (orderId) {
-          existingOrder = orders.find(order => order.orderId === orderId || order.id === orderId);
+          existingOrder = orders.find(order => order.id === orderId);
         }
 
         if (existingOrder) {
@@ -51,9 +52,9 @@ export default function PaymentSuccess() {
           const parsedAmount = parseInt(amount) || 0;
           
           const basicOrderData = {
-            id: orderId || `order_${Date.now()}`,
-            orderId: orderId || `order_${Date.now()}`,
-            paymentId: paymentId || `payment_${Date.now()}`,
+            id: orderId || generateOrderId(),
+            orderId: orderId || generateOrderId(),
+            paymentId: paymentId || generatePaymentId(),
             storeName: "매장",
             items: [],
             totalAmount: parsedAmount,

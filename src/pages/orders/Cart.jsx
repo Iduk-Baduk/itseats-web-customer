@@ -17,6 +17,7 @@ import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
+import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
 
 import Header from "../../components/common/Header";
@@ -412,7 +413,7 @@ export default function Cart() {
           showReviewButton: false,
           
           // Mock orderId 생성
-          orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          orderId: generateOrderId()
         };
         
         logger.log('📦 Redux에 추가할 주문 데이터:', localOrderData);

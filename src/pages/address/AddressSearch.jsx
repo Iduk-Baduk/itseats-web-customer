@@ -33,9 +33,9 @@ export default function AddressSearch() {
 
       try {
         // 카카오 API 준비 상태 확인 및 워밍업
-        const isAPIReady = await ensureKakaoAPIReady();
+        const apiStatus = await ensureKakaoAPIReady();
         
-        if (!isAPIReady) {
+        if (!apiStatus.success) {
           throw new Error("주소 검색 서비스를 초기화할 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
 

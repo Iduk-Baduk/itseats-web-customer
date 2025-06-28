@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { isValidOrderStatus } from "../utils/orderUtils";
 import { orderAPI } from "../services";
+import { generateOrderId as generateUniqueOrderId } from '../utils/idUtils';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // localStorage에 저장하는 함수
@@ -24,10 +25,8 @@ export const loadOrdersFromStorage = () => {
   }
 };
 
-// 고유 ID 생성 함수
-const generateOrderId = () => {
-  return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+// 고유 ID 생성 함수 (유틸리티에서 가져옴)
+const generateOrderId = generateUniqueOrderId;
 
 // API 기반 Thunk들
 export const createOrderAsync = createAsyncThunk(
@@ -85,9 +84,11 @@ const orderSlice = createSlice({
 
     // 새 주문 추가 (결제 완료 후)
     addOrder(state, action) {
+      const orderId = generateOrderId();
       const newOrder = {
         ...action.payload,
-        id: generateOrderId(),
+        id: orderId,
+        orderId: orderId, // id와 orderId를 동일하게 설정
         createdAt: new Date().toISOString(),
         status: ORDER_STATUS.WAITING,
         statusHistory: [
@@ -210,6 +211,8 @@ const orderSlice = createSlice({
         // 주문 생성 성공 시 주문 목록에 추가
         const newOrder = {
           ...action.payload,
+          id: action.payload.id || generateOrderId(),
+          orderId: action.payload.id || action.payload.orderId || generateOrderId(), // id와 orderId 동기화
           createdAt: new Date().toISOString(),
           statusHistory: [
             {
@@ -255,7 +258,12 @@ const orderSlice = createSlice({
         state.error = action.error.message;
       })
       // 주문 상태 업데이트
+      .addCase(updateOrderStatusAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
       .addCase(updateOrderStatusAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
         const { orderId, status, message } = action.payload;
         const orderIndex = state.orders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
@@ -270,6 +278,10 @@ const orderSlice = createSlice({
           }
           saveOrdersToStorage(state.orders);
         }
+      })
+      .addCase(updateOrderStatusAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
       })
       // 주문 추적
       .addCase(trackOrderAsync.fulfilled, (state, action) => {
