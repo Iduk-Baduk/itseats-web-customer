@@ -9,6 +9,8 @@ import { loadAndMigrateCartData } from "./utils/dataMigration"; // 실제 경로
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
+import { checkStorageSize, clearLocalStorage } from './utils/storageUtils';
+import { logger } from './utils/logger';
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
@@ -98,6 +100,52 @@ export default function App() {
   useEffect(() => {
     saveCount(count);
   }, [count]);
+
+  // 앱 시작 시 로컬스토리지 정리
+  useEffect(() => {
+    const cleanupStorage = () => {
+      try {
+        // 로컬스토리지 용량 체크
+        const { size, needsCleanup } = checkStorageSize();
+        
+        if (needsCleanup) {
+          logger.warn(`⚠️ 로컬스토리지 과부하 감지 (${size}MB), 긴급 정리 실행`);
+          
+          // 사용자에게 알림
+          if (window.confirm('앱 성능 향상을 위해 저장된 데이터를 정리하시겠습니까?')) {
+            clearLocalStorage();
+            alert('데이터 정리가 완료되었습니다. 페이지를 새로고침합니다.');
+            window.location.reload();
+          }
+        } else {
+          logger.log(`✅ 로컬스토리지 상태 양호 (${size}MB)`);
+        }
+        
+        // 주문 개수 체크 (2000개 이상이면 강제 정리)
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        if (orders.length > 100) {
+          logger.warn(`⚠️ 주문 데이터 과다 (${orders.length}개), 강제 정리 실행`);
+          localStorage.removeItem('orders');
+          alert(`성능 향상을 위해 ${orders.length}개의 이전 주문 데이터를 정리했습니다.`);
+          window.location.reload();
+        }
+        
+      } catch (error) {
+        logger.error('❌ 로컬스토리지 정리 중 오류:', error);
+        // 오류 발생 시 강제 정리
+        try {
+          localStorage.clear();
+          alert('데이터 오류가 발생하여 저장된 데이터를 모두 정리했습니다.');
+          window.location.reload();
+        } catch (clearError) {
+          logger.error('❌ 강제 정리도 실패:', clearError);
+        }
+      }
+    };
+
+    // 앱 시작 시 한 번만 실행
+    cleanupStorage();
+  }, []);
 
   return (
     <ErrorBoundary>

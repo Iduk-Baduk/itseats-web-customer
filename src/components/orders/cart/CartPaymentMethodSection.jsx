@@ -27,6 +27,20 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
   const [coupayInputValue, setCoupayInputValue] = useState(coupayAmount || 0);
   const [showCoupayDetails, setShowCoupayDetails] = useState(false);
 
+  // cartInfo.totalPrice 변경 시 쿠페이머니 사용금액 자동 조정
+  useEffect(() => {
+    if (selectedPaymentType === 'coupay' && coupayAmount > 0) {
+      const maxUsable = Math.min(coupayMoney, cartInfo.totalPrice || 0);
+      const adjustedAmount = Math.min(coupayAmount, maxUsable);
+      
+      // 현재 사용금액이 최대 사용 가능 금액보다 크면 자동 조정
+      if (coupayAmount > maxUsable) {
+        setCoupayInputValue(adjustedAmount);
+        dispatch(setCoupayAmount(adjustedAmount));
+      }
+    }
+  }, [cartInfo.totalPrice, coupayMoney, coupayAmount, selectedPaymentType, dispatch]);
+
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
     function handleClickOutside(event) {

@@ -198,26 +198,32 @@ export default function OrderStatus() {
               </div>
 
               {/* 메뉴 상세 정보 */}
-              {orderData?.items && orderData.items.length > 0 && (
+              {(orderData?.items || orderData?.orderMenus) && (orderData.items?.length > 0 || orderData.orderMenus?.length > 0) && (
                 <div className={styles.menuDetails}>
                   <p className={styles.sectionTitle}>주문 메뉴</p>
                   <div className={styles.menuList}>
-                    {orderData.items.map((item, index) => (
+                    {(orderData.items || orderData.orderMenus || []).map((item, index) => (
                       <div key={index} className={styles.menuItem}>
                         <div className={styles.menuHeader}>
                           <div className={styles.menuInfo}>
                             <span className={styles.menuName}>{item.menuName}</span>
                             <span className={styles.menuQuantity}>×{item.quantity}</span>
                           </div>
-                          <span className={styles.menuPrice}>{item.price.toLocaleString()}원</span>
+                          <span className={styles.menuPrice}>
+                            {(item.price || item.menuTotalPrice || 0).toLocaleString()}원
+                          </span>
                         </div>
-                        {item.options && item.options.length > 0 && (
+                        {(item.options || item.menuOptions) && (item.options?.length > 0 || item.menuOptions?.length > 0) && (
                           <div className={styles.menuOptions}>
-                            {item.options.map((option, optIndex) => (
+                            {(item.options || item.menuOptions || []).map((option, optIndex) => (
                               <div key={optIndex} className={styles.optionItem}>
-                                <span className={styles.optionName}>{option.name}: {option.value}</span>
-                                {option.price > 0 && (
-                                  <span className={styles.optionPrice}>+{option.price.toLocaleString()}원</span>
+                                <span className={styles.optionName}>
+                                  {option.name || option.optionName}: {option.value || option.optionValue}
+                                </span>
+                                {(option.price || option.optionPrice || 0) > 0 && (
+                                  <span className={styles.optionPrice}>
+                                    +{(option.price || option.optionPrice || 0).toLocaleString()}원
+                                  </span>
                                 )}
                               </div>
                             ))}

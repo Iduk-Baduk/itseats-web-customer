@@ -4,13 +4,34 @@ import { isValidOrderStatus } from "../utils/orderUtils";
 import { orderAPI } from "../services";
 import { generateOrderId as generateUniqueOrderId } from '../utils/idUtils';
 import { STORAGE_KEYS, logger } from '../utils/logger';
+import { cleanupOrderStorage, compressOrderForStorage, checkStorageSize } from '../utils/storageUtils';
 
-// localStorage에 저장하는 함수
+// localStorage에 저장하는 함수 (압축 및 정리)
 const saveOrdersToStorage = (orders) => {
   try {
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+    // 용량 체크
+    const { needsCleanup } = checkStorageSize();
+    if (needsCleanup) {
+      logger.warn('⚠️ 로컬스토리지 용량 초과, 정리 수행');
+    }
+
+    // 주문 데이터 정리 (최대 50개)
+    const cleanedOrders = cleanupOrderStorage(orders);
+    
+    // 압축된 주문 데이터만 저장 (핵심 정보만)
+    const compressedOrders = cleanedOrders.map(compressOrderForStorage);
+    
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(compressedOrders));
+    logger.log(`💾 주문 ${compressedOrders.length}개 로컬스토리지에 저장`);
   } catch (error) {
-    logger.error('Failed to save orders to storage:', error);
+    logger.error('❌ Failed to save orders to storage:', error);
+    // 실패 시 비상 정리
+    try {
+      localStorage.removeItem(STORAGE_KEYS.ORDERS);
+      logger.log('🚨 로컬스토리지 비상 정리 완료');
+    } catch (clearError) {
+      logger.error('❌ 비상 정리도 실패:', clearError);
+    }
   }
 };
 

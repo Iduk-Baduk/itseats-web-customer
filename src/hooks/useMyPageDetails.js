@@ -210,11 +210,11 @@ export default function useMyPageDetails() {
     window.location.href = `/stores/${storeId}`;
   };
 
-  // 주문 내역 처리 함수 추가
-  const handleOrderClick = (storeId) => {
-    logger.log('주문 내역 매장 클릭:', storeId);
-    // 매장 상세 페이지로 이동
-    window.location.href = `/stores/${storeId}`;
+  // 주문 내역 처리 함수 수정 - 주문 상세 페이지로 이동
+  const handleOrderClick = (orderId) => {
+    logger.log('주문 내역 클릭:', orderId);
+    // 주문 상태 확인 페이지로 이동
+    window.location.href = `/orders/${orderId}/status`;
   };
 
   return {

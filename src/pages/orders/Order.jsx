@@ -36,8 +36,24 @@ export default function Order() {
     }
   }, [allOrders, activeOrders, completedOrders]);
 
-  const handleWriteReview = () => {
-          navigate(`/orders/${order.id}/review`); // Review 페이지로 이동
+  const handleWriteReview = (order) => {
+    navigate(`/orders/${order.id}/review`); // Review 페이지로 이동
+  };
+
+  const handleReorder = (order) => {
+    // 주문했던 매장으로 이동
+    if (order.storeId) {
+      navigate(`/stores/${order.storeId}`);
+    } else {
+      console.warn('주문에서 매장 ID를 찾을 수 없습니다:', order);
+      // 매장명으로 검색하여 매장 찾기 (백업 로직)
+      const foundStore = allOrders.find(o => o.storeName === order.storeName);
+      if (foundStore && foundStore.storeId) {
+        navigate(`/stores/${foundStore.storeId}`);
+      } else {
+        navigate('/'); // 홈으로 이동
+      }
+    }
   };
 
   const [selectedTab, setSelectedTab] = React.useState("past"); // "past" or "preparing"
@@ -84,7 +100,8 @@ export default function Order() {
               key={order.id}
               order={order}
               className={styles.orderCard}
-              onWriteReview={handleWriteReview}
+              onWriteReview={() => handleWriteReview(order)}
+              onReorder={() => handleReorder(order)}
             />
           ))
         ) : (

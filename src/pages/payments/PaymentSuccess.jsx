@@ -186,7 +186,7 @@ export default function PaymentSuccess() {
             <span className={styles.orderId}>주문번호: {orderData.id}</span>
           </div>
           
-          <div className={styles.orderDetails}>
+                      <div className={styles.orderDetails}>
             <div className={styles.storeInfo}>
               <img 
                 src={orderData.storeImage || '/samples/food1.jpg'} 
@@ -198,6 +198,31 @@ export default function PaymentSuccess() {
                 <p>{(orderData.items?.length || orderData.orderMenus?.length || 0)}개 메뉴</p>
               </div>
             </div>
+            
+            {/* 주문 메뉴 상세 정보 */}
+            {(orderData.items || orderData.orderMenus) && (
+              <div className={styles.menuDetails}>
+                <h5>주문 메뉴</h5>
+                <div className={styles.menuList}>
+                  {(orderData.items || orderData.orderMenus || []).slice(0, 3).map((item, index) => (
+                    <div key={index} className={styles.menuItem}>
+                      <div className={styles.menuInfo}>
+                        <span className={styles.menuName}>{item.menuName}</span>
+                        <span className={styles.menuQuantity}>×{item.quantity}</span>
+                      </div>
+                      <span className={styles.menuPrice}>
+                        {(item.price || item.menuTotalPrice || 0).toLocaleString()}원
+                      </span>
+                    </div>
+                  ))}
+                  {(orderData.items || orderData.orderMenus || []).length > 3 && (
+                    <div className={styles.moreMenus}>
+                      외 {(orderData.items || orderData.orderMenus || []).length - 3}개 메뉴
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className={styles.amountInfo}>
               <div className={styles.amountRow}>
@@ -246,6 +271,14 @@ export default function PaymentSuccess() {
           </Button>
           
           <div className={styles.secondaryButtons}>
+            <Button
+              onClick={handleGoToOrderStatus}
+              variant="outline"
+              size="medium"
+            >
+              주문내용 확인
+            </Button>
+            
             <Button
               onClick={handleGoToOrders}
               variant="outline"
