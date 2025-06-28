@@ -3,7 +3,11 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
 import styles from "./AddressSearch.module.css";
-import { getIconByLabel } from "../../utils/addressUtils";
+import { 
+  getIconByLabel, 
+  ensureKakaoAPIReady, 
+  searchPlacesByKeyword 
+} from "../../utils/addressUtils";
 
 export default function AddressSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,34 +21,47 @@ export default function AddressSearch() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!keyword || !window.kakao?.maps?.services?.Places) {
+    if (!keyword) {
       setResults([]);
       setError(null);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    const performSearch = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const ps = new window.kakao.maps.services.Places();
-      ps.keywordSearch(keyword, (data, status) => {
-        setIsLoading(false);
-        if (status === window.kakao.maps.services.Status.OK) {
-          setResults(data);
-          setError(null);
-        } else {
-          console.warn('Kakao search failed:', status);
-          setResults([]);
-          setError("검색 결과를 찾을 수 없습니다. 다른 키워드로 검색해보세요.");
+      try {
+        // 카카오 API 준비 상태 확인 및 워밍업
+        const apiStatus = await ensureKakaoAPIReady();
+        
+        if (!apiStatus.success) {
+          throw new Error("주소 검색 서비스를 초기화할 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
-      });
-    } catch (error) {
-      console.error('Kakao API error:', error);
-      setIsLoading(false);
-      setResults([]);
-      setError("검색 중 오류가 발생했습니다. 다시 시도해주세요.");
-    }
+
+        // Promise 기반 검색 함수 사용
+        const data = await searchPlacesByKeyword(keyword);
+        setResults(data);
+        setError(null);
+        
+      } catch (error) {
+        console.error('주소 검색 오류:', error);
+        setResults([]);
+        
+        // 에러 메시지 개선
+        if (error.message.includes('초기화')) {
+          setError("주소 검색 서비스를 준비 중입니다. 잠시 후 다시 시도해주세요.");
+        } else if (error.message.includes('검색에 실패')) {
+          setError("검색 결과를 찾을 수 없습니다. 다른 키워드로 검색해보세요.");
+        } else {
+          setError("검색 중 오류가 발생했습니다. 네트워크 연결을 확인하고 다시 시도해주세요.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    performSearch();
   }, [keyword]);
 
   const handleSearch = () => {

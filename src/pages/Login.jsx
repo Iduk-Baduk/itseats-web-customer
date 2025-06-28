@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import useLogin from "../hooks/useLogin";
 import TextInput from "../components/common/basic/TextInput";
 import Button from "../components/common/basic/Button";
@@ -9,10 +9,26 @@ import CheckBox from "../components/common/basic/CheckBox";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading, error } = useLogin();
   const [username, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [isAutoLogin, setAutoLogin] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // 회원가입에서 전달받은 정보 처리
+  useEffect(() => {
+    if (location.state?.registeredUsername) {
+      setUserId(location.state.registeredUsername);
+    }
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // 3초 후 메시지 자동 숨김
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+    }
+  }, [location.state]);
 
   const handleLogin = async () => {
     const result = await login({ username, password });
@@ -50,6 +66,13 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
+        {/* 성공 메시지 표시 */}
+        {successMessage && (
+          <div className={styles.successMessage}>
+            {successMessage}
+          </div>
+        )}
 
         {/* 에러 메시지 표시 */}
         {error && (

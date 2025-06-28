@@ -1,94 +1,124 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
+import { generateOrderId } from '../utils/idUtils';
+import { logger } from '../utils/logger';
 
 // 주문 API 서비스
 export const orderAPI = {
   // 새 주문 생성
   createOrder: async (orderData) => {
-    // API 스펙에 맞는 데이터 구조 검증
-    const {
-      coupons = [],
-      totalCost,
-      paymentMethod,
-      paymentStatus = "PENDING",
-      storeRequest = "",
-      riderRequest = "",
-      orderDetails
-    } = orderData;
+    try {
+      // 간단한 주문 데이터 구조로 변환 (JSON Server용)
+      const {
+        storeId,
+        storeName,
+        totalPrice,
+        deliveryFee = 0,
+        paymentMethod,
+        orderMenus = [],
+        deliveryAddress,
+        storeRequest = "",
+        riderRequest = "",
+        coupons = []
+      } = orderData;
 
-    // 주문 상세 정보 검증
-    const {
-      addrId,
-      storeId,
-      orderMenus,
-      deliveryType = "DEFAULT"
-    } = orderDetails || {};
+      // 필수 필드 검증
+      if (!storeId || !storeName || !totalPrice || !paymentMethod || !orderMenus.length) {
+        throw new Error("필수 주문 정보가 누락되었습니다.");
+      }
 
-    // 필수 필드 검증
-    if (!totalCost || !paymentMethod || !addrId || !storeId || !orderMenus?.length) {
-      throw new Error("필수 주문 정보가 누락되었습니다.");
+      // JSON Server용 주문 데이터
+      const newOrder = {
+        id: generateOrderId(), // 안전한 ID 생성
+        storeId: parseInt(storeId),
+        storeName,
+        status: "placed", // 주문 접수
+        orderDate: new Date().toISOString(),
+        totalPrice,
+        deliveryFee,
+        orderMenus,
+        deliveryAddress,
+        paymentMethod,
+        storeRequest,
+        riderRequest,
+        coupons
+      };
+
+      logger.log('새 주문 생성:', newOrder);
+      return await apiClient.post('/orders', newOrder);
+    } catch (error) {
+      logger.error('주문 생성 실패:', error);
+      throw error;
     }
-
-    // 서버로 전송할 데이터 구조
-    const requestData = {
-      // 주문 기본 정보
-      orderId: null, // 서버에서 생성
-      coupons,
-      totalCost,
-      paymentMethod,
-      paymentStatus,
-      storeRequest,
-      riderRequest,
-      
-      // 주문 상세 정보
-      addrId,
-      storeId,
-      orderMenus: orderMenus.map(menu => ({
-        menuId: menu.menuId,
-        menuName: menu.menuName,
-        menuOptions: menu.menuOptions || [],
-        menuTotalPrice: menu.menuTotalPrice,
-        quantity: menu.quantity
-      })),
-      deliveryType
-    };
-
-    return await apiClient.post(API_ENDPOINTS.ORDERS, requestData);
   },
 
   // 주문 목록 조회
   getOrders: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.ORDERS, { params });
+    try {
+      return await apiClient.get('/orders', { params });
+    } catch (error) {
+      logger.error('주문 목록 조회 실패:', error);
+      throw error;
+    }
   },
 
   // 특정 주문 조회
   getOrderById: async (orderId) => {
-    return await apiClient.get(API_ENDPOINTS.ORDER_BY_ID(orderId));
+    try {
+      return await apiClient.get(`/orders/${orderId}`);
+    } catch (error) {
+      logger.error(`주문 조회 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
   },
 
   // 주문 상태 업데이트
-  updateOrderStatus: async (orderId, status, message) => {
-    return await apiClient.patch(API_ENDPOINTS.ORDER_STATUS(orderId), {
-      status,
-      message,
-    });
+  updateOrderStatus: async (orderId, status, message = '') => {
+    try {
+      // 먼저 기존 주문 정보를 가져온 후 상태만 업데이트
+      const response = await apiClient.get(`/orders/${orderId}`);
+      const updatedOrder = {
+        ...response.data,
+        status,
+        statusMessage: message,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return await apiClient.put(`/orders/${orderId}`, updatedOrder);
+    } catch (error) {
+      logger.error(`주문 상태 업데이트 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
   },
 
   // 주문 취소
-  cancelOrder: async (orderId, reason) => {
-    return await apiClient.patch(API_ENDPOINTS.ORDER_CANCEL(orderId), {
-      reason,
-    });
+  cancelOrder: async (orderId, reason = '') => {
+    try {
+      return await orderAPI.updateOrderStatus(orderId, 'cancelled', reason);
+    } catch (error) {
+      logger.error(`주문 취소 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
   },
 
   // 주문 완료 처리
   completeOrder: async (orderId) => {
-    return await apiClient.patch(API_ENDPOINTS.ORDER_COMPLETE(orderId));
+    try {
+      return await orderAPI.updateOrderStatus(orderId, 'completed', '주문이 완료되었습니다.');
+    } catch (error) {
+      logger.error(`주문 완료 처리 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
   },
 
-  // 실시간 주문 상태 추적 (WebSocket 대안으로 폴링)
+  // 실시간 주문 상태 추적 (단순히 주문 정보 조회)
   trackOrder: async (orderId) => {
-    return await apiClient.get(API_ENDPOINTS.ORDER_TRACK(orderId));
+    try {
+      return await orderAPI.getOrderById(orderId);
+    } catch (error) {
+      logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
   },
 };
 

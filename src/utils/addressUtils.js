@@ -1,149 +1,212 @@
 export const getIconByLabel = (label) => {
-  switch (label) {
-    case "집":
-      return "/icons/location/homeIcon.svg";
-    case "회사":
-      return "/icons/location/companyIcon.svg";
-    case "수정":
-      return "/icons/location/pencilIcon.svg";
-    case "GPS":
-      return "/icons/location/gpsIcon.svg";
-    case "검색":
-      return "/icons/location/searchIcon.svg";
-    default:
-      return "/icons/location/mapmarkerIcon.svg";
-  }
+  const iconMapping = {
+    집: "/icons/location/homeIcon.svg",
+    회사: "/icons/location/companyIcon.svg",
+    기타: "/icons/location/mapmarkerIcon.svg",
+    검색: "/icons/location/searchIcon.svg",
+    GPS: "/icons/location/gpsIcon.svg",
+    수정: "/icons/location/pencilIcon.svg",
+    취소: "/icons/location/cancelIcon.svg",
+  };
+  return iconMapping[label] || "/icons/location/mapmarkerIcon.svg";
 };
 
-// 카카오맵 API 로드 상태 확인
+// 카카오맵 로딩 상태 확인
 export const isKakaoMapLoaded = () => {
-  return typeof window !== 'undefined' && window.kakao && window.kakao.maps;
+  return !!(window.kakao && window.kakao.maps);
 };
 
-// GPS 권한 확인
+// GPS 권한 체크
 export const checkGPSPermission = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      reject(new Error("이 브라우저에서는 위치 정보를 지원하지 않습니다."));
+      resolve({ supported: false, permission: "denied" });
       return;
     }
 
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      resolve(result.state);
-    }).catch(() => {
-      // permissions API를 지원하지 않는 경우
-      resolve('prompt');
-    });
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((result) => {
+        resolve({ supported: true, permission: result.state });
+      })
+      .catch(() => {
+        resolve({ supported: true, permission: "unknown" });
+      });
   });
 };
 
-// 카카오맵 서비스 상태 확인
+// 카카오맵 서비스 상태 확인 (간단화)
 export const checkKakaoMapServices = () => {
-  if (!isKakaoMapLoaded()) {
-    return {
-      geocoder: false,
-      places: false,
-      message: "카카오맵을 불러올 수 없습니다."
-    };
-  }
-
-  const services = {
-    geocoder: !!window.kakao.maps.services?.Geocoder,
-    places: !!window.kakao.maps.services?.Places,
-  };
-
-  const missingServices = [];
-  if (!services.geocoder) missingServices.push("주소 검색");
-  if (!services.places) missingServices.push("장소 검색");
-
+  const hasKakao = window.kakao && window.kakao.maps;
+  const hasServices = hasKakao && window.kakao.maps.services;
+  
   return {
-    ...services,
-    message: missingServices.length > 0 
-      ? `${missingServices.join(", ")} 서비스를 사용할 수 없습니다.`
-      : null
+    geocoder: !!(hasServices && window.kakao.maps.services.Geocoder),
+    places: !!(hasServices && window.kakao.maps.services.Places),
+    loaded: hasKakao
   };
 };
 
-// 좌표로 주소 가져오기 (Promise 기반)
-export const getAddressFromCoords = (lat, lng) => {
-  return new Promise((resolve, reject) => {
-    if (!window.kakao?.maps?.services?.Geocoder) {
-      reject(new Error("카카오맵 서비스를 불러올 수 없습니다."));
-      return;
-    }
+// 카카오맵 API 키 확인
+const checkApiKey = () => {
+  const apiKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
+  if (!apiKey) {
+    console.warn('⚠️ 카카오맵 API 키가 설정되지 않았습니다.');
+    return false;
+  }
+  return true;
+};
 
+// fallback 결과를 표준 형식으로 변환하는 헬퍼 함수
+const transformFallbackResult = (addr) => ({
+  place_name: addr.address_name.split(' ').slice(-2).join(' '),
+  address_name: addr.address_name,
+  road_address_name: addr.road_address_name,
+  x: addr.x,
+  y: addr.y,
+  category_name: "주소",
+  id: Math.random().toString(36).slice(2, 11)
+});
+
+// Fallback 주소 검색 (목업 데이터)
+const fallbackAddressSearch = (query) => {
+  console.info('🔄 Fallback 주소 검색 사용 중:', query);
+  
+  const mockAddresses = [
+    {
+      address_name: "서울특별시 강남구 삼성동 159",
+      road_address_name: "서울특별시 강남구 테헤란로 521",
+      x: "127.0635735",
+      y: "37.5080644"
+    },
+    {
+      address_name: "서울특별시 종로구 종로1가 1",
+      road_address_name: "서울특별시 종로구 종로 1",
+      x: "126.9779451",
+      y: "37.5700917"
+    },
+    {
+      address_name: "서울특별시 마포구 상암동 1600",
+      road_address_name: "서울특별시 마포구 월드컵북로 400",
+      x: "126.8896035",
+      y: "37.5791035"
+    },
+    {
+      address_name: "부산광역시 해운대구 해운대동 1411-1",
+      road_address_name: "부산광역시 해운대구 해운대해변로 264",
+      x: "129.1603038",
+      y: "35.1587014"
+    },
+    {
+      address_name: "대구광역시 중구 동인동2가 146",
+      road_address_name: "대구광역시 중구 중앙대로 390",
+      x: "128.5973384",
+      y: "35.8722133"
+    }
+  ];
+  
+  // 검색어와 유사한 주소 찾기
+  const results = mockAddresses.filter(addr => 
+    addr.address_name.toLowerCase().includes(query.toLowerCase()) ||
+    addr.road_address_name.toLowerCase().includes(query.toLowerCase()) ||
+    query.split(' ').some(word => 
+      addr.address_name.toLowerCase().includes(word.toLowerCase())
+    )
+  );
+  
+  if (results.length === 0) {
+    return mockAddresses.slice(0, 3);
+  }
+  
+  return results;
+};
+
+// 간단한 카카오맵 API 준비 상태 확인
+export const ensureKakaoAPIReady = async () => {
+  // API 키가 없으면 fallback 모드
+  if (!checkApiKey()) {
+    return { success: true, usingFallback: true };
+  }
+  
+  // 카카오맵 서비스 확인
+  const services = checkKakaoMapServices();
+  if (services.geocoder && services.places) {
+    return { success: true, usingFallback: false };
+  }
+  
+  // 카카오맵이 로드되지 않은 경우 fallback
+  return { success: true, usingFallback: true };
+};
+
+// 좌표로 주소 변환 (카카오맵 API 또는 fallback)
+export const getAddressFromCoords = async (lat, lng, useKakao = true) => {
+  try {
+    const apiStatus = await ensureKakaoAPIReady();
+    
+    // fallback 모드인 경우
+    if (apiStatus.usingFallback || !useKakao) {
+      return {
+        address: `위도 ${lat.toFixed(6)}, 경도 ${lng.toFixed(6)}`,
+        roadAddress: "주소 정보를 불러올 수 없습니다."
+      };
+    }
+    
+    // 카카오맵 API 사용
     const geocoder = new window.kakao.maps.services.Geocoder();
     const coord = new window.kakao.maps.LatLng(lat, lng);
-
-    geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        const address = result[0].address.address_name;
-        const roadAddress = result[0].road_address?.address_name || "";
-        resolve({ address, roadAddress });
-      } else {
-        reject(new Error(`주소 검색에 실패했습니다: ${status}`));
-      }
-    });
-  });
-};
-
-// 키워드로 장소 검색 (Promise 기반)
-export const searchPlacesByKeyword = (keyword) => {
-  return new Promise((resolve, reject) => {
-    if (!window.kakao?.maps?.services?.Places) {
-      reject(new Error("카카오맵 서비스를 불러올 수 없습니다."));
-      return;
-    }
-
-    const ps = new window.kakao.maps.services.Places();
-    ps.keywordSearch(keyword, (data, status) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        resolve(data);
-      } else {
-        reject(new Error(`장소 검색에 실패했습니다: ${status}`));
-      }
-    });
-  });
-};
-
-// 현재 위치 가져오기 (Promise 기반)
-export const getCurrentPosition = (options = {}) => {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error("이 브라우저에서는 위치 정보를 지원하지 않습니다."));
-      return;
-    }
-
-    const defaultOptions = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000,
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-      },
-      (error) => {
-        let errorMessage = "위치 정보를 가져올 수 없습니다.";
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "위치 정보 접근 권한이 거부되었습니다.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "위치 정보를 사용할 수 없습니다.";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
-            break;
+    
+    return new Promise((resolve) => {
+      geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const address = result[0].address.address_name;
+          const roadAddress = result[0].road_address?.address_name || "";
+          resolve({ address, roadAddress });
+        } else {
+          resolve({
+            address: `위도 ${lat.toFixed(6)}, 경도 ${lng.toFixed(6)}`,
+            roadAddress: "주소 정보를 불러올 수 없습니다."
+          });
         }
-        reject(new Error(errorMessage));
-      },
-      { ...defaultOptions, ...options }
-    );
-  });
-}; 
+      });
+    });
+    
+  } catch (error) {
+    return {
+      address: `위도 ${lat.toFixed(6)}, 경도 ${lng.toFixed(6)}`,
+      roadAddress: "주소 정보를 불러올 수 없습니다."
+    };
+  }
+};
+
+// 키워드로 장소 검색 (카카오맵 API 또는 fallback)
+export const searchPlacesByKeyword = async (keyword, useKakao = true) => {
+  try {
+    const apiStatus = await ensureKakaoAPIReady();
+    
+    // fallback 모드인 경우
+    if (apiStatus.usingFallback || !useKakao) {
+      console.info('🔄 Fallback 장소 검색 사용 중:', keyword);
+      return fallbackAddressSearch(keyword).map(transformFallbackResult);
+    }
+    
+    // 카카오맵 API 사용
+    return new Promise((resolve) => {
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(keyword, (data, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          resolve(data);
+        } else {
+          console.warn('카카오 장소 검색 실패, fallback 사용');
+          const fallbackResults = fallbackAddressSearch(keyword).map(transformFallbackResult);
+          resolve(fallbackResults);
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.warn('장소 검색 오류, fallback 사용:', error.message);
+    return fallbackAddressSearch(keyword).map(transformFallbackResult);
+  }
+};
+
+ 

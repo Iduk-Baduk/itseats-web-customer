@@ -6,7 +6,9 @@ import Button from '../../components/common/basic/Button';
 import Card from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { clearCart } from '../../store/cartSlice';
-import { addOrder } from '../../store/orderSlice';
+import { addOrder, selectAllOrders } from '../../store/orderSlice';
+import { generateOrderId, generatePaymentId } from '../../utils/idUtils';
+import { logger } from '../../utils/logger';
 import styles from './PaymentSuccess.module.css';
 
 export default function PaymentSuccess() {
@@ -24,52 +26,58 @@ export default function PaymentSuccess() {
   // Redux에서 장바구니 및 주문 정보 가져오기
   const cartItems = useSelector(state => state.cart.orderMenus);
   const currentStore = useSelector(state => state.cart.currentStore);
+  const orders = useSelector(selectAllOrders);
   const selectedAddress = useSelector(state => 
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
   );
 
   useEffect(() => {
-    // 결제 성공 후 처리 로직
+    // 결제 성공 후 처리 로직 - 이미 생성된 주문 정보 조회
     const processPaymentSuccess = async () => {
       try {
         setIsLoading(true);
 
-        // 매장 정보 검증
-        if (!currentStore) {
-          throw new Error('매장 정보가 없습니다.');
+        // orderId로 이미 생성된 주문 찾기
+        let existingOrder = null;
+        if (orderId) {
+          existingOrder = orders.find(order => order.id === orderId);
         }
 
-        // 금액 계산 안전성 강화
-        const parsedAmount = parseInt(amount);
-        const calculatedAmount = cartItems.reduce((sum, item) => {
-          const price = Number(item.menuPrice) || 0;
-          const qty = Number(item.quantity) || 0;
-          return sum + (price * qty);
-        }, 0);
-        const finalAmount = !isNaN(parsedAmount) ? parsedAmount : calculatedAmount;
+        if (existingOrder) {
+          // 이미 생성된 주문이 있으면 해당 정보 사용
+          logger.log('✅ 기존 주문 정보 발견:', existingOrder);
+          setOrderData(existingOrder);
+        } else {
+          // 주문 정보가 없으면 URL 파라미터로 기본 정보 생성
+          const parsedAmount = parseInt(amount) || 0;
+          
+          const basicOrderData = {
+            id: orderId || generateOrderId(),
+            orderId: orderId || generateOrderId(),
+            paymentId: paymentId || generatePaymentId(),
+            storeName: "매장",
+            items: [],
+            totalAmount: parsedAmount,
+            price: parsedAmount,
+            orderPrice: parsedAmount,
+            deliveryAddress: selectedAddress || { address: "배송 주소" },
+            status: 'WAITING',
+            statusMessage: '주문이 접수되었습니다.',
+            createdAt: new Date().toISOString(),
+            estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+            storeImage: "/samples/food1.jpg",
+            menuSummary: "주문 메뉴"
+          };
+          
+          logger.log('📦 기본 주문 정보 생성:', basicOrderData);
+          setOrderData(basicOrderData);
+        }
 
-        // 주문 데이터 생성
-        const newOrder = {
-          id: orderId || `order_${Date.now()}`,
-          paymentId: paymentId || `payment_${Date.now()}`,
-          storeId: currentStore.storeId,
-          storeName: currentStore.storeName,
-          storeImage: currentStore.storeImage,
-          items: cartItems,
-          totalAmount: finalAmount,
-          deliveryAddress: selectedAddress,
-          status: 'WAITING',
-          statusMessage: '주문이 접수되었습니다.',
-          createdAt: new Date().toISOString(),
-          estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30분 후
-        };
-
-        // Redux에 주문 추가
-        dispatch(addOrder(newOrder));
-        setOrderData(newOrder);
-
-        // 장바구니 비우기
-        dispatch(clearCart());
+        // 주문 완료 페이지 표시 후 장바구니 비우기 (UX 개선)
+        setTimeout(() => {
+          dispatch(clearCart());
+          logger.log('🛒 장바구니 비움 완료 (결제 성공 후)');
+        }, 1000); // 1초 후 장바구니 비움
 
         // 로딩 완료
         setIsLoading(false);
@@ -77,29 +85,21 @@ export default function PaymentSuccess() {
         console.error('결제 성공 처리 중 오류:', error);
         setIsLoading(false);
         
-        // 에러 타입에 따른 구체적인 처리
-        let errorType = 'processing_failed';
-        if (error.message?.includes('매장 정보')) {
-          errorType = 'store_not_found';
-        } else if (error.message?.includes('주문 생성')) {
-          errorType = 'order_creation_failed';
-        }
-        
-        // 3초 지연 후 실패 페이지로 이동
+        // 에러 발생 시 홈으로 이동
         setTimeout(() => {
-          navigate(`/payments/failure?error=${errorType}`);
+          navigate('/', { replace: true });
         }, 3000);
       }
     };
 
-    // 파라미터 검증 로직 개선
-    if (paymentId || orderId || (cartItems.length > 0 && currentStore)) {
+    // orderId나 paymentId가 있으면 처리 시작
+    if (orderId || paymentId) {
       processPaymentSuccess();
     } else {
       // 필수 파라미터가 없으면 홈으로 리다이렉트
       navigate('/', { replace: true });
     }
-  }, [paymentId, orderId, amount, cartItems, currentStore, selectedAddress, dispatch, navigate]);
+  }, [orderId, paymentId, amount, orders, selectedAddress, navigate]);
 
   const handleGoToOrderStatus = () => {
     if (!orderData?.id) {

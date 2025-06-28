@@ -18,6 +18,9 @@ export default function AddressEdit() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAddress, setCurrentAddress] = useState(addressToEdit || null);
   const [customLabel, setCustomLabel] = useState("");
+  const [showReplaceModal, setShowReplaceModal] = useState(false);
+  const [existingAddress, setExistingAddress] = useState(null);
+  const [pendingAddress, setPendingAddress] = useState(null);
 
   useEffect(() => {
     if (addressToEdit) {
@@ -55,6 +58,7 @@ export default function AddressEdit() {
     return <div>주소를 찾을 수 없습니다.</div>;
   }
 
+  // 중복 체크 및 주소 수정 처리
   const handleSubmit = () => {
     const finalLabel = currentLabel === "기타" && customLabel ? customLabel : currentLabel;
     
@@ -67,12 +71,56 @@ export default function AddressEdit() {
       lat: currentAddress.lat,
       lng: currentAddress.lng,
     };
-    updateAddress(updatedAddress);
+
+    // 집 또는 회사 라벨로 변경하는 경우 중복 체크 (기존과 다른 라벨로 변경하는 경우만)
+    if ((finalLabel === "집" || finalLabel === "회사") && finalLabel !== addressToEdit.label) {
+      const existing = addresses.find(addr => addr.label === finalLabel && addr.id !== addressToEdit.id);
+      if (existing) {
+        // 기존 주소가 있으면 대체 확인 팝업 표시
+        setExistingAddress(existing);
+        setPendingAddress(updatedAddress);
+        setShowReplaceModal(true);
+        return;
+      }
+    }
+    
+    // 중복이 없거나 라벨을 변경하지 않는 경우 바로 저장
+    saveAddress(updatedAddress);
+  };
+
+  // 실제 주소 저장 함수
+  const saveAddress = (addressData) => {
+    updateAddress(addressData);
     if (location.state && location.state.from === 'cart') {
       navigate('/cart', { replace: true });
     } else {
       navigate('/address', { replace: true });
     }
+  };
+
+  // 주소 대체 확인
+  const handleReplaceConfirm = () => {
+    if (existingAddress && pendingAddress) {
+      // 기존 주소의 라벨을 "기타"로 변경
+      const updatedExistingAddress = {
+        ...existingAddress,
+        label: "기타"
+      };
+      updateAddress(updatedExistingAddress);
+      
+      // 현재 편집 중인 주소를 새 라벨로 저장
+      saveAddress(pendingAddress);
+    }
+    setShowReplaceModal(false);
+    setExistingAddress(null);
+    setPendingAddress(null);
+  };
+
+  // 주소 대체 취소
+  const handleReplaceCancel = () => {
+    setShowReplaceModal(false);
+    setExistingAddress(null);
+    setPendingAddress(null);
   };
 
   const handleDelete = () => {
@@ -114,6 +162,17 @@ export default function AddressEdit() {
           message="이 주소를 삭제하시겠습니까?"
           onConfirm={handleDelete}
           onCancel={() => setIsModalOpen(false)}
+        />
+      )}
+      
+      {/* 주소 대체 확인 팝업 */}
+      {showReplaceModal && existingAddress && (
+        <ConfirmModal
+          message={`기존 등록된 '${existingAddress.label}' 주소가 '기타'로 변경되고, 현재 주소가 '${pendingAddress.label}'로 변경됩니다.\n\n기존 주소: ${existingAddress.address}`}
+          confirmText="확인"
+          cancelText="취소"
+          onConfirm={handleReplaceConfirm}
+          onCancel={handleReplaceCancel}
         />
       )}
     </>

@@ -9,6 +9,14 @@
       "last4": "1234",
       "image": "/icons/logos/shinhan.png",
       "isDefault": true
+    },
+    {
+      "id": "ff13",
+      "cardNumber": "2222222222222222",
+      "expiryMonth": "12",
+      "expiryYear": "25",
+      "cvc": "123",
+      "password": "31"
     }
   ],
   "accounts": [
@@ -20,6 +28,12 @@
       "last4": "4012",
       "image": "/icons/logos/shinhan.png",
       "isDefault": true
+    },
+    {
+      "id": "4547",
+      "bankId": "kb",
+      "accountNumber": "123123123123",
+      "ownerName": "송준경"
     }
   ],
   "coupayMoney": 25000,
@@ -95,7 +109,10 @@
           "menuName": "싸이버거 세트",
           "price": 8900,
           "quantity": 2,
-          "options": ["콜라", "감자튀김"]
+          "options": [
+            "콜라",
+            "감자튀김"
+          ]
         }
       ],
       "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
@@ -141,7 +158,9 @@
           "menuName": "페퍼로니 피자 L",
           "price": 24900,
           "quantity": 1,
-          "options": ["엑스트라 치즈"]
+          "options": [
+            "엑스트라 치즈"
+          ]
         },
         {
           "menuId": 3,
@@ -153,6 +172,28 @@
       ],
       "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
       "paymentMethod": "coupay"
+    },
+    {
+      "id": "ORDER-TEST-123",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "status": "placed",
+      "orderDate": "2024-01-20T12:00:00.000Z",
+      "totalPrice": 25000,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "price": 22500,
+          "quantity": 1,
+          "options": [
+            "엑스트라 치즈"
+          ]
+        }
+      ],
+      "deliveryAddress": "테스트 주소",
+      "paymentMethod": "card"
     }
   ],
   "coupons": [
@@ -564,6 +605,50 @@
       "email": "admin@itseats.com",
       "phone": "010-9999-0000",
       "createdAt": "2024-01-01T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "test-user-123",
+      "username": "test123@example.com",
+      "password": "testpass",
+      "name": "테스트유저",
+      "email": "test123@example.com",
+      "phone": "010-1111-2222",
+      "usertype": "customer",
+      "createdAt": "2024-01-20T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751121698637",
+      "username": "testwnsrud",
+      "password": "123123",
+      "name": "테스트용",
+      "email": "test11@example.com",
+      "phone": "010-1234-1233",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T14:41:38.637Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751121956418",
+      "username": "test1111",
+      "password": "123123",
+      "name": "qqq",
+      "email": "qqq@example.com",
+      "phone": "123123123123",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T14:45:56.418Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751130406900",
+      "username": "test1",
+      "password": "test",
+      "name": "테스트1번",
+      "email": "test1@example.com",
+      "phone": "01011111111",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T17:06:46.900Z",
       "profileImage": "/icons/mypage/people.svg"
     }
   ]

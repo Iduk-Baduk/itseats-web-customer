@@ -50,6 +50,7 @@ const paymentSlice = createSlice({
     cards: [],
     accounts: [],
     coupayMoney: 0,
+    coupayAmount: 0, // 실제 사용할 쿠페이머니 금액
     isLoading: false,
     error: null,
     selectedPaymentType: 'card', // 'coupay', 'card', 'account'
@@ -129,6 +130,11 @@ const paymentSlice = createSlice({
       state.paymentError = null;
       state.lastPaymentResult = null;
     },
+    
+    // 쿠페이머니 사용 금액 설정
+    setCoupayAmount: (state, action) => {
+      state.coupayAmount = Math.max(0, Math.min(action.payload, state.coupayMoney));
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -198,6 +204,7 @@ export const {
   addAccount, 
   setSelectedPaymentMethod,
   setPaymentProcessing,
+  setCoupayAmount,
   setPaymentSuccess,
   setPaymentError,
   clearPaymentResult 

@@ -1,4 +1,4 @@
-import { Map as KakaoMap, MapMarker, Polyline, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map as KakaoMap, MapMarker, Polyline } from "react-kakao-maps-sdk";
 
 /*
  * lat: 위도
@@ -10,50 +10,13 @@ import { Map as KakaoMap, MapMarker, Polyline, useKakaoLoader } from "react-kaka
  *  target: "store" | "user" | null
  */
 export default function CommonMap({ lat, lng, markers = [], height = "300px", level = 3 }) {
-  // API 키 확인 및 디버깅 (기존 환경변수 이름 사용)
-  const apiKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
+  // 카카오맵이 App.jsx에서 전역적으로 로드되므로 직접 사용
   
-  // 개발 환경에서만 디버깅 로그 출력
-  if (import.meta.env.DEV) {
-    console.log('카카오맵 환경변수 디버깅:', {
-      apiKey: apiKey ? `설정됨 (${apiKey.substring(0, 8)}...)` : '미설정',
-      keyLength: apiKey?.length, // 키 길이로 유효성 확인
-      nodeEnv: import.meta.env.NODE_ENV,
-      mode: import.meta.env.MODE,
-      allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_'))
-    });
-  }
-  
-  // 카카오 맵 SDK 로더 사용 (항상 호출되어야 함)
-  const [loading, error] = useKakaoLoader({
-    appkey: apiKey,
-    libraries: ["services", "clusterer"],
-  });
-  
-  if (!apiKey) {
-    console.error('카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_APP_KAKAOMAP_KEY를 설정해주세요.');
-    return (
-      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
-        <p>지도 설정이 필요합니다.</p>
-      </div>
-    );
-  }
-
-  // 로딩 중이면 로딩 표시
-  if (loading) {
+  // 카카오맵 로딩 상태 확인
+  if (!window.kakao?.maps) {
     return (
       <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
         <p>지도를 불러오는 중입니다...</p>
-      </div>
-    );
-  }
-
-  // 에러가 발생하면 에러 표시
-  if (error) {
-    console.error('카카오 맵 로드 오류:', error);
-    return (
-      <div style={{ width: "100%", height, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
-        <p>지도를 불러오는 데 실패했습니다.</p>
       </div>
     );
   }

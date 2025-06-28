@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { isValidOrderStatus } from "../utils/orderUtils";
 import { orderAPI } from "../services";
+import { generateOrderId as generateUniqueOrderId } from '../utils/idUtils';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // localStorage에 저장하는 함수
@@ -24,10 +25,8 @@ export const loadOrdersFromStorage = () => {
   }
 };
 
-// 고유 ID 생성 함수
-const generateOrderId = () => {
-  return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+// 고유 ID 생성 함수 (유틸리티에서 가져옴)
+const generateOrderId = generateUniqueOrderId;
 
 // API 기반 Thunk들
 export const createOrderAsync = createAsyncThunk(
@@ -85,9 +84,11 @@ const orderSlice = createSlice({
 
     // 새 주문 추가 (결제 완료 후)
     addOrder(state, action) {
+      const orderId = generateOrderId();
       const newOrder = {
         ...action.payload,
-        id: generateOrderId(),
+        id: orderId,
+        orderId: orderId, // id와 orderId를 동일하게 설정
         createdAt: new Date().toISOString(),
         status: ORDER_STATUS.WAITING,
         statusHistory: [
@@ -197,6 +198,95 @@ const orderSlice = createSlice({
     clearCurrentOrder(state) {
       state.currentOrder = null;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      // 주문 생성
+      .addCase(createOrderAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createOrderAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // 주문 생성 성공 시 주문 목록에 추가
+        const newOrder = {
+          ...action.payload,
+          id: action.payload.id || generateOrderId(),
+          orderId: action.payload.id || action.payload.orderId || generateOrderId(), // id와 orderId 동기화
+          createdAt: new Date().toISOString(),
+          statusHistory: [
+            {
+              status: action.payload.status || ORDER_STATUS.WAITING,
+              timestamp: new Date().toISOString(),
+              message: "주문이 접수되었습니다."
+            }
+          ]
+        };
+        state.orders.unshift(newOrder);
+        state.currentOrder = newOrder;
+        saveOrdersToStorage(state.orders);
+      })
+      .addCase(createOrderAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 주문 목록 조회
+      .addCase(fetchOrdersAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrdersAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.orders = action.payload;
+        saveOrdersToStorage(state.orders);
+      })
+      .addCase(fetchOrdersAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 주문 조회
+      .addCase(fetchOrderByIdAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderByIdAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentOrder = action.payload;
+      })
+      .addCase(fetchOrderByIdAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 주문 상태 업데이트
+      .addCase(updateOrderStatusAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateOrderStatusAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const { orderId, status, message } = action.payload;
+        const orderIndex = state.orders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+          state.orders[orderIndex].status = status;
+          state.orders[orderIndex].statusHistory.push({
+            status,
+            timestamp: new Date().toISOString(),
+            message: message || `주문 상태가 ${status}로 변경되었습니다.`
+          });
+          if (state.currentOrder && state.currentOrder.id === orderId) {
+            state.currentOrder = state.orders[orderIndex];
+          }
+          saveOrdersToStorage(state.orders);
+        }
+      })
+      .addCase(updateOrderStatusAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // 주문 추적
+      .addCase(trackOrderAsync.fulfilled, (state, action) => {
+        state.currentOrder = action.payload;
+      });
   },
 });
 
