@@ -17,6 +17,7 @@ export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const [orderData, setOrderData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessed, setIsProcessed] = useState(false); // 처리 완료 상태 추가
 
   // URL 파라미터에서 결제 정보 추출
   const paymentId = searchParams.get('paymentId');
@@ -32,10 +33,19 @@ export default function PaymentSuccess() {
   );
 
   useEffect(() => {
+    // 이미 처리되었거나 필요한 파라미터가 없으면 스킵
+    if (isProcessed || (!orderId && !paymentId)) {
+      if (!orderId && !paymentId) {
+        navigate('/', { replace: true });
+      }
+      return;
+    }
+
     // 결제 성공 후 처리 로직 - 이미 생성된 주문 정보 조회
     const processPaymentSuccess = async () => {
       try {
         setIsLoading(true);
+        setIsProcessed(true); // 처리 시작 플래그 설정
 
         // orderId로 이미 생성된 주문 찾기
         let existingOrder = null;
@@ -79,7 +89,7 @@ export default function PaymentSuccess() {
             showReviewButton: false
           };
           
-          logger.log('📦 새 주문 생성 및 Redux에 추가:', newOrderData);
+          logger.log('📦 PaymentSuccess에서 새 주문 생성:', newOrderData);
           
           // Redux에 주문 추가
           dispatch(addOrder(newOrderData));
@@ -105,14 +115,8 @@ export default function PaymentSuccess() {
       }
     };
 
-    // orderId나 paymentId가 있으면 처리 시작
-    if (orderId || paymentId) {
-      processPaymentSuccess();
-    } else {
-      // 필수 파라미터가 없으면 홈으로 리다이렉트
-      navigate('/', { replace: true });
-    }
-  }, [orderId, paymentId, amount, orders, selectedAddress, navigate, dispatch, currentStore, cartItems]);
+    processPaymentSuccess();
+  }, [orderId, paymentId, amount, selectedAddress, navigate, dispatch, currentStore, isProcessed]);
 
   const handleGoToOrderStatus = () => {
     if (!orderData?.id) {

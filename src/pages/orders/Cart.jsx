@@ -184,6 +184,9 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
+    // 전역 변수로 함수 시작 시 초기화
+    let orderResponse = null;
+    
     // 중복 결제 방지 강화
     if (isProcessingPayment) {
       showToast("결제 처리 중입니다. 잠시만 기다려주세요.");
@@ -374,9 +377,8 @@ export default function Cart() {
 
       // ✅ API를 통한 주문 생성 (DB 우선 저장)
       // 로컬스토리지 과부하 방지를 위해 DB 저장 우선 적용
-      const useLocalStorage = false; // DB 저장 우선, 로컬스토리지는 캐시용
-      
-      let orderResponse = null;
+      // 현재 API 서버가 없으므로 임시로 로컬 저장소 모드로 전환
+      const useLocalStorage = true; // 임시로 로컬 저장소 모드 사용
       
       if (useLocalStorage) {
         // 백업 모드: 로컬 저장 (API 실패 시만 사용)
