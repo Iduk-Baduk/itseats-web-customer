@@ -51,6 +51,13 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
+        {/* 에러 메시지 표시 */}
+        {error && (
+          <div className={styles.errorMessage}>
+            {error}
+          </div>
+        )}
+
         <div className={styles.options}>
           <label>
             <CheckBox

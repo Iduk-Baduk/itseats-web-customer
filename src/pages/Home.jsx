@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import { fetchStores } from "../store/storeSlice";
-import { initializeTestData, initializeFavoriteTestData } from "../utils/testDataInitializer";
+import { initializeTestData } from "../utils/testDataInitializer";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import OptimizedImage from "../components/common/OptimizedImage";
@@ -74,9 +74,8 @@ export default function Home() {
   useEffect(() => {
     dispatch(fetchStores());
     
-    // 테스트 데이터 초기화
+    // 테스트 데이터 초기화 (주문 + 즐겨찾기)
     initializeTestData(dispatch);
-    initializeFavoriteTestData();
   }, [dispatch]);
 
   // 매장 데이터 초기화

@@ -51,7 +51,7 @@ const RegistForm = ({ className = "" }) => {
         value={form.phone}
         onChange={handleChange}
       />
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <div className={styles.errorMessage}>{error}</div>}
 
       <CheckBox
         name="terms"
