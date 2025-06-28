@@ -8,6 +8,7 @@ import { loadAndMigrateCartData } from "./utils/dataMigration"; // 실제 경로
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
+import { warmUpKakaoAPI } from "./utils/addressUtils";
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
@@ -39,6 +40,18 @@ export default function App() {
       }
     };
 
+    // 카카오 API 워밍업 (주소 검색 서비스 초기화)
+    const initKakaoAPI = () => {
+      const timeoutId = setTimeout(async () => {
+        try {
+          await warmUpKakaoAPI();
+        } catch (error) {
+          console.warn('카카오 API 워밍업 실패:', error);
+        }
+      }, 2000); // 2초 후 실행 (카카오 맵 로드 대기)
+      return () => clearTimeout(timeoutId);
+    };
+
     // 개발 환경에서만 성능 모니터링
     const initPerformanceMonitoring = () => {
       if (import.meta.env.DEV) {
@@ -59,11 +72,13 @@ export default function App() {
       performDataMigration();
     }, 1000);
 
-    // 성능 모니터링 정리 함수
+    // 카카오 API 및 성능 모니터링 정리 함수
+    const cleanupKakao = initKakaoAPI();
     const cleanupPerformance = initPerformanceMonitoring();
 
     return () => {
       clearTimeout(timer);
+      if (cleanupKakao) cleanupKakao();
       if (cleanupPerformance) cleanupPerformance();
     };
   }, []);

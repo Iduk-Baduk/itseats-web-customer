@@ -106,6 +106,65 @@ export const searchPlacesByKeyword = (keyword) => {
   });
 };
 
+// 카카오 API 워밍업 (첫 번째 API 호출을 미리 실행)
+export const warmUpKakaoAPI = async () => {
+  try {
+    if (!isKakaoMapLoaded()) {
+      console.warn('카카오맵이 로드되지 않았습니다.');
+      return false;
+    }
+
+    // Geocoder 서비스 워밍업
+    if (window.kakao?.maps?.services?.Geocoder) {
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      // 서울 시청 좌표로 간단한 테스트 호출
+      await new Promise((resolve) => {
+        geocoder.coord2Address(126.978, 37.5665, () => {
+          resolve();
+        });
+      });
+    }
+
+    // Places 서비스 워밍업  
+    if (window.kakao?.maps?.services?.Places) {
+      const ps = new window.kakao.maps.services.Places();
+      // 간단한 키워드로 테스트 호출
+      await new Promise((resolve) => {
+        ps.keywordSearch('서울', () => {
+          resolve();
+        });
+      });
+    }
+
+    console.log('✅ 카카오 API 워밍업 완료');
+    return true;
+  } catch (error) {
+    console.warn('카카오 API 워밍업 실패:', error);
+    return false;
+  }
+};
+
+// API 호출 전 상태 확인 및 자동 워밍업
+export const ensureKakaoAPIReady = async (retryCount = 3) => {
+  for (let i = 0; i < retryCount; i++) {
+    const serviceStatus = checkKakaoMapServices();
+    
+    if (serviceStatus.geocoder && serviceStatus.places) {
+      return true; // 이미 준비됨
+    }
+
+    console.log(`카카오 API 상태 확인 ${i + 1}/${retryCount}:`, serviceStatus);
+    
+    // 워밍업 시도
+    await warmUpKakaoAPI();
+    
+    // 잠시 대기 후 다시 확인
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  
+  return false;
+};
+
 // 현재 위치 가져오기 (Promise 기반)
 export const getCurrentPosition = (options = {}) => {
   return new Promise((resolve, reject) => {
