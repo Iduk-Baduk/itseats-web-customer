@@ -14,7 +14,7 @@ const saveOrdersToStorage = (orders) => {
 };
 
 // localStorage에서 불러오는 함수
-const loadOrdersFromStorage = () => {
+export const loadOrdersFromStorage = () => {
   try {
     const serialized = localStorage.getItem(STORAGE_KEYS.ORDERS);
     return serialized ? JSON.parse(serialized) : [];

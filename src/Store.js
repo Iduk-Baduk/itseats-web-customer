@@ -2,7 +2,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import rootReducer from "./modules";
 // import { loadCart } from "./store/localStorage"; // 현재 미사용
-import { loadOrdersFromLocalStorage } from "./store/orderSlice";
+import { loadOrdersFromStorage } from "./store/orderSlice";
 
 // ✅ localStorage에서 count 불러오기 (현재 미사용)
 // const savedCount = localStorage.getItem("count");
@@ -56,7 +56,7 @@ const loadCartWithRequests = () => {
 const preloadedState = {
   cart: loadCartWithRequests(), // ✅ localStorage에서 전체 카트 데이터 불러오기
   order: {
-    orders: loadOrdersFromLocalStorage(),
+    orders: loadOrdersFromStorage(),
     currentOrder: null,
     isLoading: false,
     error: null,
