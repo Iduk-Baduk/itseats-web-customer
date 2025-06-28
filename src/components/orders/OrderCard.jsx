@@ -99,7 +99,7 @@ export default function OrderCard({
         <div className={styles.summaryRow}>
           <p className={styles.summary}>{orderData.menuSummary}</p>
           <div className={styles.priceMeta}>
-            <span>{(orderData.price || 0).toLocaleString()}원</span>
+            <span>{(Number(orderData.price) || 0).toLocaleString()}원</span>
             <Tag variant="default" size="small" className={styles.badge}>
               영수증
             </Tag>
@@ -115,7 +115,7 @@ export default function OrderCard({
                   <span className={styles.menuName}>{item.menuName}</span>
                   <span className={styles.menuQuantity}>×{item.quantity}</span>
                 </div>
-                <span className={styles.menuPrice}>{item.price.toLocaleString()}원</span>
+                <span className={styles.menuPrice}>{(Number(item.price) || 0).toLocaleString()}원</span>
               </div>
             ))}
             {orderData.items.length > 2 && (

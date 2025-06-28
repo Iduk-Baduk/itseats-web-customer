@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeMenu, clearCart, selectRequestInfo, selectCurrentStore, updateCurrentStore } from "../../store/cartSlice";
+import { updateQuantity, removeMenu, selectRequestInfo, selectCurrentStore, updateCurrentStore } from "../../store/cartSlice";
 import { addOrder, createOrderAsync } from "../../store/orderSlice";
 import { 
   setPaymentProcessing, 
@@ -34,6 +34,7 @@ import CartPaymentSummarySection from '../../components/orders/cart/CartPaymentS
 import CartPaymentMethodSection from '../../components/orders/cart/CartPaymentMethodSection';
 import CartRequestSection from '../../components/orders/cart/CartRequestSection';
 import EmptyState from '../../components/common/EmptyState';
+import { ORDER_STATUS } from '../../constants/orderStatus';
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -376,6 +377,17 @@ export default function Cart() {
         // 로컬 개발 환경: Redux로 주문 추가 (실제 데이터 사용)
         const localOrderData = {
           ...finalOrderData,
+          // OrderCard가 기대하는 필드명으로 맞춤
+          price: finalOrderData.totalPrice, // OrderCard에서 price 필드 사용
+          orderPrice: finalOrderData.totalPrice, // 백업용
+          totalAmount: finalOrderData.totalPrice, // 백업용
+          items: finalOrderData.orderMenus.map(menu => ({
+            menuName: menu.menuName,
+            quantity: menu.quantity,
+            price: menu.menuTotalPrice || 0,
+            menuOptions: menu.menuOptions || []
+          })),
+          
           // 실제 데이터 사용
           storeName: currentStoreInfo?.name || "알 수 없는 매장",
           deliveryAddress: selectedAddress?.address || "주소 미설정",
@@ -390,12 +402,24 @@ export default function Cart() {
           deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
           storeImage: currentStoreInfo?.imageUrl || "/samples/food1.jpg",
+          
+          // OrderCard에서 사용하는 필드들
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          status: ORDER_STATUS.WAITING, // 주문 접수 중
+          orderMenuCount: orderMenus.length,
+          isCompleted: false,
+          showReviewButton: false,
+          
           // Mock orderId 생성
           orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
         
+        logger.log('📦 Redux에 추가할 주문 데이터:', localOrderData);
         dispatch(addOrder(localOrderData));
         orderResponse = { data: localOrderData };
+        
+        // 장바구니는 결제 성공 페이지에서 비움 (UX 개선)
       } else {
         // 실제 환경: API를 통한 주문 생성
         orderResponse = await dispatch(createOrderAsync(finalOrderData)).unwrap();
