@@ -46,6 +46,7 @@ export default function MyPageDetails() {
     loading, 
     error, 
     handleFavoriteClick,
+    handleOrderClick,
     refreshFavorites
   } = useMyPageDetails();
   const [activeTab, setActiveTab] = useState("review");
@@ -108,7 +109,12 @@ export default function MyPageDetails() {
       return (
         <div className={styles.cards}>
           {current.data.map((item) => (
-            <div key={item.id} className={styles.card}>
+            <div 
+              key={item.id} 
+              className={styles.card}
+              onClick={() => handleOrderClick(item.storeId || item.id)}
+              style={{ cursor: 'pointer' }}
+            >
               <img src={item.image} alt={item.title} />
               <p>{item.title}</p>
               <span>{item.date}</span>

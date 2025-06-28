@@ -206,7 +206,15 @@ export default function useMyPageDetails() {
   // 주문 내역 처리 함수 추가
   const handleFavoriteClick = (storeId) => {
     logger.log('즐겨찾기 매장 클릭:', storeId);
-    // 매장 상세 페이지로 이동하는 로직 추가 가능
+    // 매장 상세 페이지로 이동
+    window.location.href = `/stores/${storeId}`;
+  };
+
+  // 주문 내역 처리 함수 추가
+  const handleOrderClick = (storeId) => {
+    logger.log('주문 내역 매장 클릭:', storeId);
+    // 매장 상세 페이지로 이동
+    window.location.href = `/stores/${storeId}`;
   };
 
   return {
@@ -217,6 +225,7 @@ export default function useMyPageDetails() {
     loading,
     error,
     handleFavoriteClick,
+    handleOrderClick,
     refreshFavorites
   };
 }

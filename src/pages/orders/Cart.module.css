@@ -702,3 +702,21 @@ line-height: 1.5;
   color: var(--black-500);
   margin-left: 8px;
 }
+
+/* 쿠페이머니 관련 스타일 */
+.coupayRow {
+  color: var(--theme-color);
+  font-weight: 500;
+}
+
+.remainingAmount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #e67e22;
+  font-weight: 500;
+  margin-top: 4px;
+  padding: 8px 0;
+  border-top: 1px dashed #ddd;
+}

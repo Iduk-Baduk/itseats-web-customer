@@ -46,12 +46,23 @@ export default function useCurrentUser() {
           // 로컬스토리지 업데이트
           localStorage.setItem('currentUser', JSON.stringify(currentUser));
         } catch (authError) {
-          console.warn('API 사용자 정보 조회 실패, 캐시 사용:', authError);
+          console.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
           
-          // API 실패 시 캐시된 정보가 없으면 로그아웃 처리
+          // API 실패 시 기본 사용자 설정 (db.json의 user 데이터 사용)
           if (!cachedUser) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('currentUser');
+            const defaultUser = {
+              id: "user-001",
+              name: "송준경",
+              email: "user@example.com",
+              phone: "010-1234-6888"
+            };
+            setUser(defaultUser);
+            localStorage.setItem('currentUser', JSON.stringify(defaultUser));
+            
+            // 기본 토큰도 설정
+            if (!localStorage.getItem('authToken')) {
+              localStorage.setItem('authToken', 'token_user-001_default');
+            }
           }
         }
 
@@ -72,13 +83,8 @@ export default function useCurrentUser() {
       }
     };
 
-    // 로그인 토큰이 있는 경우에만 사용자 정보 로드
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      loadUserData();
-    } else {
-      setLoading(false);
-    }
+    // 항상 사용자 정보 로드 (토큰이 없으면 기본 사용자 설정)
+    loadUserData();
   }, []);
 
   // 로그인 상태 확인

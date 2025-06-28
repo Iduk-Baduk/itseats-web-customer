@@ -71,12 +71,26 @@ export default function OrderStatus() {
       orderStatus: "UNKNOWN"
     };
     
+    // deliveryAddress 안전 처리 - 객체인 경우 address 필드 추출
+    let deliveryAddressString = "주소 정보 없음";
+    if (orderData.deliveryAddress) {
+      if (typeof orderData.deliveryAddress === 'string') {
+        deliveryAddressString = orderData.deliveryAddress;
+      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.address) {
+        deliveryAddressString = orderData.deliveryAddress.address;
+      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.roadAddress) {
+        deliveryAddressString = orderData.deliveryAddress.roadAddress;
+      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.label) {
+        deliveryAddressString = orderData.deliveryAddress.label;
+      }
+    }
+
     return {
       storeName: orderData.storeName || "매장명 없음",
       orderNumber: orderData.orderNumber || "주문번호 없음",
       orderPrice: orderData.orderPrice || 0,
       orderMenuCount: orderData.orderMenuCount || 0,
-      deliveryAddress: orderData.deliveryAddress || "주소 정보 없음",
+      deliveryAddress: deliveryAddressString,
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },

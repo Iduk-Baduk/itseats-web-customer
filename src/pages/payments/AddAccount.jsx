@@ -1,8 +1,9 @@
-// src/pages/Payments/AddCard.jsx
+// src/pages/Payments/AddAccount.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addAccountAsync } from "../../store/paymentSlice";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 import Header from "../../components/common/Header";
 import styles from "./AddAccount.module.css";
@@ -19,8 +20,10 @@ const banks = [
 export default function AddAccount() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user: currentUser, loading: userLoading } = useCurrentUser();
 
-  const user = { name: "송준경" }; // 실제 프로젝트에서는 useSelector로 가져오세요
+  // 사용자 정보가 로딩 중이거나 없으면 기본값 사용
+  const user = currentUser || { name: "사용자" };
 
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
@@ -30,10 +33,19 @@ export default function AddAccount() {
   const isValid = selectedBank && accountNumberValid;
 
   const handleSubmit = async () => {
+    // 계좌번호 마스킹 처리 (앞 3자리, 뒤 4자리만 표시)
+    const maskedAccountNumber = accountNumber.length > 7 
+      ? `${accountNumber.slice(0, 3)}-***-****${accountNumber.slice(-4)}`
+      : accountNumber;
+
     const payload = {
+      bankName: selectedBank.name,
       bankId: selectedBank.id,
-      accountNumber,
-      ownerName: user.name,
+      accountNumber: maskedAccountNumber,
+      accountName: user.name,
+      last4: accountNumber.slice(-4),
+      image: selectedBank.logo,
+      isDefault: false,
     };
 
     try {
@@ -137,7 +149,13 @@ export default function AddAccount() {
             </p>
             <button
               className={styles.modalButton}
-              onClick={() => setPopup(null)}
+              onClick={() => {
+                setPopup(null);
+                if (popup === "success") {
+                  // 등록 성공 시 결제수단 페이지로 자동 이동
+                  navigate("/payments");
+                }
+              }}
             >
               확인
             </button>

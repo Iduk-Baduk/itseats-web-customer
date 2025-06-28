@@ -97,8 +97,16 @@ export default function TestOrder() {
 
   // 주문 상태 변경
   const handleStatusChange = (orderId, status) => {
+    if (!orderId) {
+      alert('주문을 먼저 선택해주세요.');
+      return;
+    }
     simulateOrderStatus(orderId, status);
-    alert(`주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
+    console.log(`🔄 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
+    // 실시간 업데이트 확인을 위한 로그
+    setTimeout(() => {
+      console.log('✅ 주문 상태 변경 완료 - 실시간 추적 시스템에서 감지될 예정');
+    }, 500);
   };
 
   // 자동 시뮬레이션 시작

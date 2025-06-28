@@ -48,29 +48,42 @@ export default function PaymentSuccess() {
           logger.log('✅ 기존 주문 정보 발견:', existingOrder);
           setOrderData(existingOrder);
         } else {
-          // 주문 정보가 없으면 URL 파라미터로 기본 정보 생성
+          // 주문 정보가 없으면 Redux에 주문 생성
           const parsedAmount = parseInt(amount) || 0;
+          const newOrderId = orderId || generateOrderId();
           
-          const basicOrderData = {
-            id: orderId || generateOrderId(),
-            orderId: orderId || generateOrderId(),
+          const newOrderData = {
+            id: newOrderId,
+            orderId: newOrderId,
             paymentId: paymentId || generatePaymentId(),
-            storeName: "매장",
-            items: [],
+            storeName: currentStore?.storeName || "매장",
+            storeId: currentStore?.storeId || 1,
+            items: cartItems || [],
+            orderMenus: cartItems || [],
             totalAmount: parsedAmount,
             price: parsedAmount,
             orderPrice: parsedAmount,
-            deliveryAddress: selectedAddress || { address: "배송 주소" },
+            totalPrice: parsedAmount,
+            deliveryAddress: typeof selectedAddress === 'string' 
+              ? selectedAddress 
+              : selectedAddress?.address || "배송 주소",
             status: 'WAITING',
             statusMessage: '주문이 접수되었습니다.',
             createdAt: new Date().toISOString(),
             estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-            storeImage: "/samples/food1.jpg",
-            menuSummary: "주문 메뉴"
+            storeImage: currentStore?.storeImage || "/samples/food1.jpg",
+            menuSummary: cartItems?.map(item => item.menuName).join(", ") || "주문 메뉴",
+            paymentMethod: "card", // 기본값
+            deliveryFee: 2500,
+            isCompleted: false,
+            showReviewButton: false
           };
           
-          logger.log('📦 기본 주문 정보 생성:', basicOrderData);
-          setOrderData(basicOrderData);
+          logger.log('📦 새 주문 생성 및 Redux에 추가:', newOrderData);
+          
+          // Redux에 주문 추가
+          dispatch(addOrder(newOrderData));
+          setOrderData(newOrderData);
         }
 
         // 주문 완료 페이지 표시 후 장바구니 비우기 (UX 개선)
@@ -99,14 +112,14 @@ export default function PaymentSuccess() {
       // 필수 파라미터가 없으면 홈으로 리다이렉트
       navigate('/', { replace: true });
     }
-  }, [orderId, paymentId, amount, orders, selectedAddress, navigate]);
+  }, [orderId, paymentId, amount, orders, selectedAddress, navigate, dispatch, currentStore, cartItems]);
 
   const handleGoToOrderStatus = () => {
     if (!orderData?.id) {
       console.error('주문 데이터가 없습니다.');
       return;
     }
-    navigate(`/orders/${orderData.id}`);
+    navigate(`/orders/${orderData.id}/status`);
   };
 
   const handleGoHome = () => {
@@ -182,7 +195,7 @@ export default function PaymentSuccess() {
               />
               <div>
                 <h4>{orderData.storeName}</h4>
-                <p>{orderData.items.length}개 메뉴</p>
+                <p>{(orderData.items?.length || orderData.orderMenus?.length || 0)}개 메뉴</p>
               </div>
             </div>
 
@@ -197,8 +210,12 @@ export default function PaymentSuccess() {
 
             <div className={styles.deliveryInfo}>
               <h5>배달 주소</h5>
-              <p>{orderData.deliveryAddress?.address || '주소 정보 없음'}</p>
-              {orderData.deliveryAddress?.detailAddress && (
+              <p>
+                {typeof orderData.deliveryAddress === 'string' 
+                  ? orderData.deliveryAddress 
+                  : orderData.deliveryAddress?.address || '주소 정보 없음'}
+              </p>
+              {typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress?.detailAddress && (
                 <p className={styles.detailAddress}>
                   {orderData.deliveryAddress.detailAddress}
                 </p>

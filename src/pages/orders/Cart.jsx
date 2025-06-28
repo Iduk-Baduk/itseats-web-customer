@@ -172,6 +172,12 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
+    // 중복 결제 방지
+    if (isProcessingPayment) {
+      showToast("결제 처리 중입니다. 잠시만 기다려주세요.");
+      return;
+    }
+
     // 현재 페이지의 storeId 추출 및 검증
     let currentStoreId = storeId || storeInfo?.id;
     let currentStoreInfo = storeInfo;
@@ -438,6 +444,9 @@ export default function Cart() {
       // 결제 실패 상태 업데이트
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
       
+      // 결제 처리 상태 해제
+      dispatch(setPaymentProcessing(false));
+      
       // 결제 실패 페이지로 이동
       const failureParams = new URLSearchParams({
         error: 'processing_failed',
@@ -452,6 +461,9 @@ export default function Cart() {
       
       // 사용자에게 에러 알림
       showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다.'}`);
+    } finally {
+      // 결제 처리 완료 후 상태 정리
+      dispatch(setPaymentProcessing(false));
     }
   };
 
@@ -504,7 +516,11 @@ export default function Cart() {
           />
           <CartMenuListSection />
           <CartCouponSection />
-          <CartPaymentSummarySection cartInfo={cartInfo} />
+          <CartPaymentSummarySection 
+            cartInfo={cartInfo} 
+            selectedPaymentType={selectedPaymentType}
+            coupayAmount={coupayAmount}
+          />
           <CartPaymentMethodSection cartInfo={cartInfo} />
           <CartRequestSection />
           <Header
