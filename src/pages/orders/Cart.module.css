@@ -275,11 +275,126 @@ max-width: 100%;
 }
 
 .coupayInfo {
-padding: 18px 2px 0 2px;
-color: #222;
-font-size: 16px;
-font-weight: 600;
-min-height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--black-600);
+  margin-top: 8px;
+}
+
+/* 쿠페이머니 컨테이너 */
+.coupayContainer {
+  margin-top: 8px;
+}
+
+.coupayBalance {
+  font-weight: 500;
+  color: var(--black-700);
+}
+
+.coupayDetailButton {
+  background: none;
+  border: none;
+  color: var(--theme-color);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.coupayDetailButton:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+}
+
+.coupayDetails {
+  margin-top: 12px;
+  padding: 16px;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.coupayInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.coupayInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.coupayInput:focus {
+  outline: none;
+  border-color: var(--theme-color);
+}
+
+.coupayInputSuffix {
+  font-size: 14px;
+  color: var(--black-600);
+  white-space: nowrap;
+}
+
+.useAllButton {
+  padding: 8px 12px;
+  background-color: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.useAllButton:hover {
+  background-color: #0056b3;
+}
+
+.additionalPaymentInfo {
+  padding: 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.additionalLabel {
+  color: var(--black-600);
+  font-weight: 500;
+}
+
+.additionalAmount {
+  color: #e67e22;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.additionalNote {
+  margin-top: 4px;
+  color: var(--black-500);
+  font-size: 12px;
+}
+
+.coupaySelectedInfo {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #e8f4fd;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--black-700);
+  font-weight: 500;
 }
 
 /* 요청사항 */

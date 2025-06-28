@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styles from '../../../pages/orders/Cart.module.css';
-import { setSelectedPaymentMethod } from '../../../store/paymentSlice';
+import { setSelectedPaymentMethod, setCoupayAmount } from '../../../store/paymentSlice';
 
-export default function CartPaymentMethodSection() {
+export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const {
@@ -14,11 +14,18 @@ export default function CartPaymentMethodSection() {
     cards,
     accounts,
     coupayMoney,
+    coupayAmount,
   } = useSelector(state => state.payment);
+  
+  // cartInfo는 props로 받아옴
 
   // 드롭다운 상태
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  
+  // 쿠페이머니 입력 상태
+  const [coupayInputValue, setCoupayInputValue] = useState(coupayAmount || 0);
+  const [showCoupayDetails, setShowCoupayDetails] = useState(false);
 
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -57,10 +64,29 @@ export default function CartPaymentMethodSection() {
     },
   ];
 
+  // 쿠페이머니 입력값 변경 처리
+  const handleCoupayAmountChange = (value) => {
+    const numValue = Math.max(0, Math.min(value, coupayMoney, cartInfo.totalPrice || 0));
+    setCoupayInputValue(numValue);
+    dispatch(setCoupayAmount(numValue));
+  };
+
+  // 전액사용 버튼
+  const handleUseAllCoupay = () => {
+    const maxUsable = Math.min(coupayMoney, cartInfo.totalPrice || 0);
+    setCoupayInputValue(maxUsable);
+    dispatch(setCoupayAmount(maxUsable));
+  };
+
   // 대표 결제수단 라벨
   let selectedLabel = '';
   if (selectedPaymentType === 'coupay') {
-    selectedLabel = `쿠페이 머니 (보유 ${coupayMoney}원)`;
+    const usedAmount = coupayAmount || 0;
+    const remainingAmount = Math.max(0, (cartInfo.totalPrice || 0) - usedAmount);
+    selectedLabel = `쿠페이 머니 ${usedAmount.toLocaleString()}원 사용`;
+    if (remainingAmount > 0) {
+      selectedLabel += ` + 추가 결제 ${remainingAmount.toLocaleString()}원`;
+    }
   } else if (selectedPaymentType === 'card') {
     const card = cards.find(c => c.id === selectedCardId) || cards[0];
     selectedLabel = card ? `${card.name} ****${card.last4}` : '카드 선택';
@@ -188,7 +214,58 @@ export default function CartPaymentMethodSection() {
         )}
         
         {(selectedPaymentType === 'coupay') && (
-          <div className={styles.coupayInfo}>{selectedLabel}</div>
+          <div className={styles.coupayContainer}>
+            <div className={styles.coupayInfo}>
+              <div className={styles.coupayBalance}>
+                보유: {coupayMoney.toLocaleString()}원
+              </div>
+              <button 
+                className={styles.coupayDetailButton}
+                onClick={() => setShowCoupayDetails(!showCoupayDetails)}
+                type="button"
+              >
+                {showCoupayDetails ? '간단히 보기' : '상세 설정'}
+              </button>
+            </div>
+            
+            {showCoupayDetails && (
+              <div className={styles.coupayDetails}>
+                <div className={styles.coupayInputGroup}>
+                  <input
+                    type="number"
+                    value={coupayInputValue}
+                    onChange={(e) => handleCoupayAmountChange(parseInt(e.target.value) || 0)}
+                    min="0"
+                    max={Math.min(coupayMoney, cartInfo.totalPrice || 0)}
+                    className={styles.coupayInput}
+                    placeholder="사용할 금액"
+                  />
+                  <span className={styles.coupayInputSuffix}>원 사용</span>
+                  <button 
+                    className={styles.useAllButton}
+                    onClick={handleUseAllCoupay}
+                    type="button"
+                  >
+                    전액사용
+                  </button>
+                </div>
+                
+                {(cartInfo.totalPrice || 0) > (coupayAmount || 0) && (
+                  <div className={styles.additionalPaymentInfo}>
+                    <span className={styles.additionalLabel}>추가 결제 필요:</span>
+                    <span className={styles.additionalAmount}>
+                      {((cartInfo.totalPrice || 0) - (coupayAmount || 0)).toLocaleString()}원
+                    </span>
+                    <div className={styles.additionalNote}>
+                      (신용카드 또는 계좌이체로 결제됩니다)
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className={styles.coupaySelectedInfo}>{selectedLabel}</div>
+          </div>
         )}
       </div>
     </section>

@@ -17,6 +17,7 @@ import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
+import { logger } from "../../utils/logger";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -43,11 +44,14 @@ export default function Cart() {
   const currentStore = useSelector(state => state.cart.currentStore);
   const allStores = useSelector(state => state.store?.stores || []);
   
+  const orderMenus = useSelector((state) => state.cart.orderMenus);
+  
   // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
   const storeInfo = currentStore || allStores.find(store => 
-    store.id === storeId || store.id === parseInt(storeId)
-  );
-  const orderMenus = useSelector((state) => state.cart.orderMenus);
+    String(store.id) === String(storeId)
+  ) || (orderMenus.length > 0 && orderMenus[0]?.storeId && allStores.find(store => 
+    String(store.id) === String(orderMenus[0].storeId)
+  ));
   const requestInfo = useSelector(selectRequestInfo);
   
   // Redux에서 쿠폰 정보 가져오기
@@ -62,6 +66,7 @@ export default function Cart() {
   const selectedPaymentType = useSelector(state => state.payment.selectedPaymentType);
   const selectedCardId = useSelector(state => state.payment.selectedCardId);
   const selectedAccountId = useSelector(state => state.payment.selectedAccountId);
+  const coupayAmount = useSelector(state => state.payment.coupayAmount);
   const isProcessingPayment = useSelector(state => state.payment.isProcessingPayment);
   const paymentError = useSelector(state => state.payment.paymentError);
 
@@ -87,17 +92,30 @@ export default function Cart() {
 
   // 컴포넌트 마운트 시 필요한 데이터 로딩
   useEffect(() => {
+    logger.log('🚀 Cart 컴포넌트 마운트:', { storeId, orderMenusCount: orderMenus.length });
+    
     dispatch(fetchCoupons());
     dispatch(fetchPaymentMethods());
-    dispatch(fetchStores());
+    dispatch(fetchStores()).then((result) => {
+      logger.log('🏪 매장 데이터 로드 결과:', result.payload);
+    });
     
     if (storeId) {
-      dispatch(fetchStoreById(storeId));
+      dispatch(fetchStoreById(storeId)).then((result) => {
+        logger.log('🏪 특정 매장 데이터 로드:', result.payload);
+      });
     }
   }, [dispatch, storeId]);
 
   // 매장 정보 검증 및 복구
   useEffect(() => {
+    logger.log('🔍 매장 정보 복구 체크:', { 
+      currentStore, 
+      orderMenusCount: orderMenus.length, 
+      allStoresCount: allStores.length,
+      firstMenu: orderMenus[0]
+    });
+    
     if (!currentStore && orderMenus.length > 0 && allStores.length > 0) {
       const firstMenu = orderMenus[0];
       
@@ -107,6 +125,7 @@ export default function Cart() {
         );
         
         if (foundStore) {
+          logger.log('✅ 매장 정보 복구 성공 (storeId):', foundStore);
           dispatch(updateCurrentStore({
             storeId: foundStore.id,
             storeName: foundStore.name,
@@ -121,12 +140,14 @@ export default function Cart() {
         );
         
         if (foundStore) {
+          logger.log('✅ 매장 정보 복구 성공 (menuId):', foundStore);
           dispatch(updateCurrentStore({
             storeId: foundStore.id,
             storeName: foundStore.name,
             storeImage: foundStore.imageUrl
           }));
         } else if (firstMenu.menuId === 1 || firstMenu.menuId === "1") {
+          logger.log('✅ 기본 매장 정보 설정');
           dispatch(updateCurrentStore({
             storeId: "1",
             storeName: "도미노피자 구름점",
@@ -149,12 +170,88 @@ export default function Cart() {
 
   const handlePayment = async () => {
     // 현재 페이지의 storeId 추출 및 검증
-    const currentStoreId = storeId || storeInfo?.id;
+    let currentStoreId = storeId || storeInfo?.id;
+    let currentStoreInfo = storeInfo;
     
-    if (!currentStoreId || !storeInfo) {
-      showToast("유효한 매장 정보가 없습니다. 매장을 선택해주세요.");
+         // 매장 정보가 없는 경우 강력한 복구 로직 적용
+     if (!currentStoreId || !currentStoreInfo) {
+       logger.log('🔧 매장 정보 복구 시작:', { 
+         orderMenusCount: orderMenus.length,
+         allStoresCount: allStores.length,
+         firstMenu: orderMenus[0]
+       });
+       
+       if (orderMenus.length > 0) {
+         const firstMenu = orderMenus[0];
+         
+         // 1. 메뉴의 storeId 사용
+         if (firstMenu.storeId) {
+           currentStoreId = String(firstMenu.storeId);
+           
+           // allStores에서 해당 매장 찾기
+           currentStoreInfo = allStores.find(store => 
+             String(store.id) === String(firstMenu.storeId)
+           );
+           
+           logger.log('🔍 storeId로 매장 찾기:', { storeId: currentStoreId, found: !!currentStoreInfo });
+         }
+         
+         // 2. 메뉴 ID로 매장 찾기 (storeId가 없거나 매장을 못 찾은 경우)
+         if (!currentStoreInfo && firstMenu.menuId) {
+           const foundByMenuId = allStores.find(store => 
+             store.menus && store.menus.some(menu => 
+               String(menu.id) === String(firstMenu.menuId)
+             )
+           );
+           
+           if (foundByMenuId) {
+             currentStoreId = String(foundByMenuId.id);
+             currentStoreInfo = foundByMenuId;
+             logger.log('🔍 menuId로 매장 찾기 성공:', foundByMenuId);
+           }
+         }
+         
+         // 3. 매장을 찾지 못한 경우 기본 매장 정보 생성
+         if (!currentStoreInfo) {
+           currentStoreId = firstMenu.storeId ? String(firstMenu.storeId) : "1";
+           currentStoreInfo = {
+             id: currentStoreId,
+             name: firstMenu.storeId ? `매장 ${currentStoreId}` : "도미노피자 구름점",
+             imageUrl: "/samples/food1.jpg",
+             location: { lat: 37.4979, lng: 127.0276 },
+             address: "매장 주소",
+             phone: "031-0000-0000",
+             rating: 4.5,
+             reviewCount: 0,
+             deliveryTime: "30-40분",
+             deliveryFee: 2500,
+             minOrderAmount: 15000,
+             isOpen: true
+           };
+           
+           logger.log('🏪 기본 매장 정보 생성:', currentStoreInfo);
+         }
+         
+         // Redux에 매장 정보 업데이트
+         dispatch(updateCurrentStore({
+           storeId: currentStoreInfo.id,
+           storeName: currentStoreInfo.name,
+           storeImage: currentStoreInfo.imageUrl
+         }));
+         
+       } else {
+         showToast("장바구니에 상품이 없습니다.");
+         return;
+       }
+     }
+    
+    // 최종 검증
+    if (!currentStoreId || !currentStoreInfo) {
+      showToast("매장 정보를 확인할 수 없습니다. 메뉴를 다시 담아주세요.");
       return;
     }
+    
+    logger.log('🏪 매장 정보:', { currentStoreId, currentStoreInfo });
     
     // 장바구니가 비어있는지 확인
     if (!orderMenus || orderMenus.length === 0) {
@@ -162,12 +259,46 @@ export default function Cart() {
       return;
     }
     
-    // 결제 수단 문자열 생성
-    let paymentMethod = 'coupay'; // 기본값
-    if (selectedPaymentType === 'card') {
-      paymentMethod = 'card';
-    } else if (selectedPaymentType === 'account') {
-      paymentMethod = 'account';
+    // 주소 유효성 검사 추가
+    if (!selectedAddress) {
+      showToast("배송 주소를 선택해주세요.");
+      return;
+    }
+    
+    // 포장 주문인 경우 차단
+    if (isDelivery === "takeout") {
+      showToast("포장 주문은 현재 구현예정입니다. 배달 주문을 이용해주세요.");
+      return;
+    }
+    
+    // 결제 수단 검증 및 설정
+    let paymentMethod = selectedPaymentType;
+    let remainingAmount = cartInfo.totalPrice;
+    let usedCoupayAmount = 0;
+    
+    // 쿠페이머니 사용 시 부분 결제 처리
+    if (selectedPaymentType === 'coupay') {
+      usedCoupayAmount = coupayAmount || 0;
+      remainingAmount = Math.max(0, cartInfo.totalPrice - usedCoupayAmount);
+      
+      if (remainingAmount > 0) {
+        // 추가 결제 수단이 필요한 경우 - 기본적으로 카드로 설정 (실제로는 사용자가 선택해야 함)
+        // 현재 목업에서는 카드로 자동 설정
+        paymentMethod = 'mixed'; // 혼합 결제
+      } else {
+        paymentMethod = 'coupay'; // 쿠페이머니 전액 결제
+      }
+    }
+    
+    // 결제 수단 유효성 검사
+    if (!selectedPaymentType) {
+      showToast("결제 수단을 선택해주세요.");
+      return;
+    }
+    
+    if (selectedPaymentType === 'coupay' && usedCoupayAmount <= 0) {
+      showToast("쿠페이머니 사용 금액을 입력해주세요.");
+      return;
     }
 
     // API 스펙에 맞는 주문 데이터 구조 생성
@@ -186,39 +317,58 @@ export default function Cart() {
       deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
     };
 
-    // 서버로 전송할 최종 주문 데이터
+    // 주문 데이터 준비 전 디버깅
+    logger.log('🔍 주문 데이터 준비:', {
+      currentStoreId,
+      currentStoreInfo,
+      cartInfo,
+      orderMenusCount: orderMenus.length,
+      paymentMethod,
+      selectedAddress
+    });
+
+    // 서버로 전송할 최종 주문 데이터 (orderAPI.js 스펙에 맞춤)
     const finalOrderData = {
-      // orderId는 서버에서 생성되어 응답으로 받음
-      coupons: orderRequestData.coupons,
-      totalCost: cartInfo.totalPrice,
+      // orderAPI.js에서 요구하는 필수 필드들
+      storeId: currentStoreId,
+      storeName: currentStoreInfo?.name || "알 수 없는 매장",
+      totalPrice: cartInfo?.totalPrice || 0,
       paymentMethod: paymentMethod,
-      paymentStatus: "PENDING", // 결제 대기 상태
-      storeRequest: requestInfo.storeRequest || "",
-      riderRequest: requestInfo.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
+      orderMenus: orderMenus.map(menu => ({
+        menuId: menu.menuId,
+        menuName: menu.menuName,
+        menuOptions: menu.menuOptions || [],
+        menuTotalPrice: calculateCartTotal(menu),
+        quantity: menu.quantity
+      })),
       
-      // 주문 상세 정보 (주문 생성 시 필요)
-      orderDetails: orderRequestData
+      // 배송 정보
+      deliveryAddress: selectedAddress?.address || "주소 미설정",
+      deliveryFee: deliveryOption?.price || 0,
+      
+      // 추가 정보
+      storeRequest: requestInfo?.storeRequest || "",
+      riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
+      coupons: selectedCouponIds?.length > 0 ? selectedCouponIds : [],
+      
+      // 결제 관련 정보
+      paymentStatus: "PENDING",
+      coupayAmount: usedCoupayAmount || 0,
+      remainingAmount: remainingAmount || 0
     };
 
-    // 유효성 검사
-    if (!selectedAddress) {
-      showToast("배송 주소를 선택해 주세요.");
-      return;
-    }
-    
-    if (!paymentMethod) {
-      showToast("결제 수단을 선택해 주세요.");
-      return;
-    }
+    logger.log('📦 최종 주문 데이터:', finalOrderData);
+
+    // 주문 데이터 최종 검증 완료
 
     try {
       // 🔄 결제 처리 시작
       dispatch(setPaymentProcessing(true));
       dispatch(clearPaymentResult());
 
-      // ✅ API를 통한 주문 생성 (서버 연동 준비)
-      // 환경 변수에 따라 목 모드 결정
-      const useLocalStorage = import.meta.env.VITE_MOCK_MODE === 'true';
+      // ✅ API를 통한 주문 생성 (JSON Server 목업 모드)
+      // JSON Server 사용 중이므로 로컬 스토리지 모드 사용
+      const useLocalStorage = true; // JSON Server 목업 환경
       
       let orderResponse;
       
@@ -227,19 +377,19 @@ export default function Cart() {
         const localOrderData = {
           ...finalOrderData,
           // 실제 데이터 사용
-          storeName: storeInfo?.name || "알 수 없는 매장",
+          storeName: currentStoreInfo?.name || "알 수 없는 매장",
           deliveryAddress: selectedAddress?.address || "주소 미설정",
           destinationLocation: { 
             lat: selectedAddress?.lat || 37.501887, 
             lng: selectedAddress?.lng || 127.039252 
           },
           storeLocation: { 
-            lat: storeInfo?.location?.lat || 37.4979, 
-            lng: storeInfo?.location?.lng || 127.0276 
+            lat: currentStoreInfo?.location?.lat || 37.4979, 
+            lng: currentStoreInfo?.location?.lng || 127.0276 
           },
           deliveryEta: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-          storeImage: storeInfo?.imageUrl || "/samples/food1.jpg",
+          storeImage: currentStoreInfo?.imageUrl || "/samples/food1.jpg",
           // Mock orderId 생성
           orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
@@ -257,8 +407,10 @@ export default function Cart() {
         orderId: orderResponse.data.orderId,
         paymentMethod: paymentMethod,
         amount: cartInfo.totalPrice,
-        cardId: selectedPaymentType === 'card' ? selectedCardId : null,
-        accountId: selectedPaymentType === 'account' ? selectedAccountId : null,
+        coupayAmount: usedCoupayAmount,
+        remainingAmount: remainingAmount,
+        cardId: (selectedPaymentType === 'card' || paymentMethod === 'mixed') ? selectedCardId : null,
+        accountId: (selectedPaymentType === 'account') ? selectedAccountId : null,
         customerInfo: {
           address: selectedAddress
         }
@@ -271,26 +423,31 @@ export default function Cart() {
         // Mock 결제 처리 (2초 지연)
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 90% 확률로 성공
-        if (Math.random() > 0.1) {
-          const mockPaymentResult = {
-            paymentId: `payment_${Date.now()}`,
-            status: 'SUCCESS',
-            amount: paymentData.amount,
-            method: paymentData.paymentMethod,
-            timestamp: new Date().toISOString()
-          };
-          
-          dispatch(setPaymentSuccess(mockPaymentResult));
-          // console.log('✅ Mock 결제 성공:', mockPaymentResult);
-        } else {
-          throw new Error('결제가 거절되었습니다. (Mock 테스트)');
+        // 목업에서는 항상 성공 (신용카드/계좌이체 무조건 성공)
+        const mockPaymentResult = {
+          paymentId: `payment_${Date.now()}`,
+          status: 'SUCCESS',
+          amount: paymentData.amount,
+          method: paymentData.paymentMethod,
+          coupayAmount: usedCoupayAmount,
+          remainingAmount: remainingAmount,
+          additionalPaymentMethod: remainingAmount > 0 ? 'card' : null,
+          timestamp: new Date().toISOString()
+        };
+        
+        dispatch(setPaymentSuccess(mockPaymentResult));
+        logger.log('✅ Mock 결제 성공:', mockPaymentResult);
+        
+        // 쿠페이머니 사용 시 잔액 업데이트 (목업)
+        if (usedCoupayAmount > 0) {
+          // 실제로는 서버에서 처리되어야 함
+          logger.log(`쿠페이머니 ${usedCoupayAmount}원 사용됨`);
         }
       } else {
         // 실제 결제 API 호출
         const paymentResult = await paymentAPI.processPayment(paymentData);
         dispatch(setPaymentSuccess(paymentResult));
-        // console.log('✅ 실제 결제 성공:', paymentResult);
+        logger.log('✅ 실제 결제 성공:', paymentResult);
       }
       
       // 🎉 결제 성공 시 결제 완료 페이지로 이동
@@ -356,6 +513,14 @@ export default function Cart() {
           actionText="메뉴 둘러보기"
           onAction={() => navigate('/')}
         />
+      ) : isDelivery === "takeout" ? (
+        <EmptyState
+          variant="cart"
+          title="포장 주문 서비스 구현예정"
+          description="현재 배달 주문만 이용 가능합니다"
+          actionText="배달로 주문하기"
+          onAction={() => setIsDelivery("delivery")}
+        />
       ) : (
         <>
           <CartAddressSection />
@@ -366,7 +531,7 @@ export default function Cart() {
           <CartMenuListSection />
           <CartCouponSection />
           <CartPaymentSummarySection cartInfo={cartInfo} />
-          <CartPaymentMethodSection />
+          <CartPaymentMethodSection cartInfo={cartInfo} />
           <CartRequestSection />
           <Header
             title=""
