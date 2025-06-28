@@ -19,6 +19,7 @@ import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
 import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
+import { findOrCreateStoreInfo } from "../../utils/storeUtils";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -175,77 +176,25 @@ export default function Cart() {
     let currentStoreId = storeId || storeInfo?.id;
     let currentStoreInfo = storeInfo;
     
-         // 매장 정보가 없는 경우 강력한 복구 로직 적용
-     if (!currentStoreId || !currentStoreInfo) {
-       logger.log('🔧 매장 정보 복구 시작:', { 
-         orderMenusCount: orderMenus.length,
-         allStoresCount: allStores.length,
-         firstMenu: orderMenus[0]
-       });
-       
-       if (orderMenus.length > 0) {
-         const firstMenu = orderMenus[0];
-         
-         // 1. 메뉴의 storeId 사용
-         if (firstMenu.storeId) {
-           currentStoreId = String(firstMenu.storeId);
-           
-           // allStores에서 해당 매장 찾기
-           currentStoreInfo = allStores.find(store => 
-             String(store.id) === String(firstMenu.storeId)
-           );
-           
-           logger.log('🔍 storeId로 매장 찾기:', { storeId: currentStoreId, found: !!currentStoreInfo });
-         }
-         
-         // 2. 메뉴 ID로 매장 찾기 (storeId가 없거나 매장을 못 찾은 경우)
-         if (!currentStoreInfo && firstMenu.menuId) {
-           const foundByMenuId = allStores.find(store => 
-             store.menus && store.menus.some(menu => 
-               String(menu.id) === String(firstMenu.menuId)
-             )
-           );
-           
-           if (foundByMenuId) {
-             currentStoreId = String(foundByMenuId.id);
-             currentStoreInfo = foundByMenuId;
-             logger.log('🔍 menuId로 매장 찾기 성공:', foundByMenuId);
-           }
-         }
-         
-         // 3. 매장을 찾지 못한 경우 기본 매장 정보 생성
-         if (!currentStoreInfo) {
-           currentStoreId = firstMenu.storeId ? String(firstMenu.storeId) : "1";
-           currentStoreInfo = {
-             id: currentStoreId,
-             name: firstMenu.storeId ? `매장 ${currentStoreId}` : "도미노피자 구름점",
-             imageUrl: "/samples/food1.jpg",
-             location: { lat: 37.4979, lng: 127.0276 },
-             address: "매장 주소",
-             phone: "031-0000-0000",
-             rating: 4.5,
-             reviewCount: 0,
-             deliveryTime: "30-40분",
-             deliveryFee: 2500,
-             minOrderAmount: 15000,
-             isOpen: true
-           };
-           
-           logger.log('🏪 기본 매장 정보 생성:', currentStoreInfo);
-         }
-         
-         // Redux에 매장 정보 업데이트
-         dispatch(updateCurrentStore({
-           storeId: currentStoreInfo.id,
-           storeName: currentStoreInfo.name,
-           storeImage: currentStoreInfo.imageUrl
-         }));
-         
-       } else {
-         showToast("장바구니에 상품이 없습니다.");
-         return;
-       }
-     }
+    // 매장 정보가 없는 경우 복구 로직 적용
+    if (!currentStoreId || !currentStoreInfo) {
+      const recoveryResult = findOrCreateStoreInfo(orderMenus, allStores, logger);
+      
+      if (!recoveryResult) {
+        showToast("장바구니에 상품이 없습니다.");
+        return;
+      }
+      
+      currentStoreId = recoveryResult.storeId;
+      currentStoreInfo = recoveryResult.storeInfo;
+      
+      // Redux에 매장 정보 업데이트
+      dispatch(updateCurrentStore({
+        storeId: currentStoreInfo.id,
+        storeName: currentStoreInfo.name,
+        storeImage: currentStoreInfo.imageUrl
+      }));
+    }
     
     // 최종 검증
     if (!currentStoreId || !currentStoreInfo) {

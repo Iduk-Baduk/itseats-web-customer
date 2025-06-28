@@ -1,7 +1,7 @@
 // 안전한 ID 생성 유틸리티
 export const generateUniqueId = (prefix = 'id') => {
   const timestamp = Date.now();
-  const randomStr = Math.random().toString(36).substr(2, 9);
+  const randomStr = Math.random().toString(36).slice(2, 11);
   return `${prefix}_${timestamp}_${randomStr}`;
 };
 

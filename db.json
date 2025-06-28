@@ -9,6 +9,14 @@
       "last4": "1234",
       "image": "/icons/logos/shinhan.png",
       "isDefault": true
+    },
+    {
+      "id": "ff13",
+      "cardNumber": "2222222222222222",
+      "expiryMonth": "12",
+      "expiryYear": "25",
+      "cvc": "123",
+      "password": "31"
     }
   ],
   "accounts": [
@@ -20,6 +28,12 @@
       "last4": "4012",
       "image": "/icons/logos/shinhan.png",
       "isDefault": true
+    },
+    {
+      "id": "4547",
+      "bankId": "kb",
+      "accountNumber": "123123123123",
+      "ownerName": "송준경"
     }
   ],
   "coupayMoney": 25000,
@@ -624,6 +638,17 @@
       "phone": "123123123123",
       "usertype": "CUSTOMER",
       "createdAt": "2025-06-28T14:45:56.418Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751130406900",
+      "username": "test1",
+      "password": "test",
+      "name": "테스트1번",
+      "email": "test1@example.com",
+      "phone": "01011111111",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T17:06:46.900Z",
       "profileImage": "/icons/mypage/people.svg"
     }
   ]
