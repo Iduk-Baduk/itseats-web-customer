@@ -98,7 +98,7 @@ export const getCurrentUser = async () => {
     const response = await apiClient.get('/users');
     const users = response || [];
     
-    const user = users.find(u => u.id === userId);
+    const user = users.find(u => u.id == userId || u.id === parseInt(userId));
     if (!user) {
       throw new Error('사용자를 찾을 수 없습니다.');
     }
