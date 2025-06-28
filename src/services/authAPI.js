@@ -23,21 +23,51 @@ const extractUserIdFromToken = (token) => {
 };
 
 export const regist = async (form) => {
-  const { username, password, nickname, email, phone, usertype } = form;
-  
-  const requestData = {
-    username,
-    password,
-    nickname,
-    email,
-    phone,
-    usertype
-  };
-  
-  logger.log("📡 API 요청 URL:", API_ENDPOINTS.AUTH_REGISTER);
-  logger.log("📡 API 요청 데이터:", requestData);
-  
-  return await apiClient.post(API_ENDPOINTS.AUTH_REGISTER, requestData);
+  try {
+    const { username, password, nickname, email, phone, usertype } = form;
+    
+    // 먼저 기존 사용자 확인
+    const existingUsers = await apiClient.get('/users');
+    const userExists = existingUsers.some(user => 
+      user.username === username || user.email === email
+    );
+    
+    if (userExists) {
+      throw new Error('이미 존재하는 사용자입니다.');
+    }
+    
+    // 새 사용자 데이터 생성
+    const newUser = {
+      id: `user-${Date.now()}`,
+      username,
+      password, // 실제 환경에서는 해시화 필요
+      name: nickname,
+      email,
+      phone,
+      usertype: usertype || 'customer',
+      createdAt: new Date().toISOString(),
+      profileImage: "/icons/mypage/people.svg"
+    };
+    
+    logger.log("📡 회원가입 요청 데이터:", newUser);
+    
+    const response = await apiClient.post('/users', newUser);
+    
+    return {
+      success: true,
+      user: {
+        id: response.id,
+        username: response.username,
+        name: response.name,
+        email: response.email,
+        phone: response.phone,
+      },
+      message: '회원가입이 완료되었습니다.'
+    };
+  } catch (error) {
+    logger.error('회원가입 실패:', error);
+    throw error;
+  }
 };
 
 // 로그인 API

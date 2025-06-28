@@ -26,10 +26,19 @@ export const userAPI = {
   // 사용자 프로필 조회
   getProfile: async () => {
     try {
-      const response = await apiClient.get('/user/profile');
-      return response.data;
+      // 현재 사용자 ID 가져오기
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userId = extractUserIdFromToken(token);
+      
+      if (!userId) {
+        throw new Error('사용자 인증 정보가 없습니다.');
+      }
+
+      // JSON Server에서 현재 사용자 정보 조회
+      const response = await apiClient.get(`/users/${userId}`);
+      return response;
     } catch (error) {
-      console.error('사용자 프로필 조회 실패:', error);
+      logger.error('사용자 프로필 조회 실패:', error);
       throw error;
     }
   },
