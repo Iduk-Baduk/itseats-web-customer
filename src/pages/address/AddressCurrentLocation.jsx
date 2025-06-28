@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useKakaoLoader } from "react-kakao-maps-sdk";
 import Header from "../../components/common/Header";
 import styles from "./AddressCurrentLocation.module.css";
 
@@ -9,11 +8,7 @@ export default function AddressCurrentLocation() {
   const location = useLocation();
   const addType = location.state?.addType || "home";
 
-  // 카카오 맵 SDK 로더 사용
-  const [loading, mapError] = useKakaoLoader({
-    appkey: import.meta.env.VITE_APP_KAKAOMAP_KEY,
-    libraries: ["services", "clusterer"],
-  });
+  // 카카오맵이 이미 App.jsx에서 전역적으로 로드되므로 별도 로더 불필요
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -75,24 +70,13 @@ export default function AddressCurrentLocation() {
 
   // 카카오맵 초기화
   const initializeMap = (position) => {
-    // 카카오 맵 SDK 로딩 상태 확인
-    if (loading) {
-      setError("카카오맵을 로딩 중입니다...");
-      return;
-    }
-
-    if (mapError) {
-      setError("카카오맵 로딩에 실패했습니다: " + mapError.message);
-      return;
-    }
-
-    // 카카오맵 API 로딩 대기
-    const waitForKakao = (retries = 10) => {
-      if (window.kakao?.maps) {
+    // 카카오맵 API 로딩 대기 (App.jsx에서 전역 로딩 완료 후)
+    const waitForKakao = (retries = 30) => {
+      if (window.kakao?.maps?.services?.Geocoder) {
         setError(null);
         createMap(position);
       } else if (retries > 0) {
-        setTimeout(() => waitForKakao(retries - 1), 100);
+        setTimeout(() => waitForKakao(retries - 1), 200);
       } else {
         setError("카카오맵을 불러올 수 없습니다. 페이지를 새로고침해주세요.");
       }
@@ -216,10 +200,17 @@ export default function AddressCurrentLocation() {
   };
 
   useEffect(() => {
-    // 카카오 맵 SDK가 로드되면 현재 위치 가져오기
-    if (!loading && !mapError && window.kakao?.maps) {
-      getCurrentLocation();
-    }
+    // 카카오맵이 전역적으로 로드된 후 현재 위치 가져오기
+    const initializeWhenReady = () => {
+      if (window.kakao?.maps?.services?.Geocoder) {
+        getCurrentLocation();
+      } else {
+        // 카카오맵이 아직 로드되지 않았으면 잠시 후 재시도
+        setTimeout(initializeWhenReady, 500);
+      }
+    };
+    
+    initializeWhenReady();
     
     return () => {
       if (mapInstanceRef.current) {
@@ -241,7 +232,7 @@ export default function AddressCurrentLocation() {
         mapInstanceRef.current = null;
       }
     };
-  }, [loading, mapError]); // loading과 mapError 상태 변화 감지
+  }, []); // 컴포넌트 마운트 시에만 실행
 
   return (
     <>
