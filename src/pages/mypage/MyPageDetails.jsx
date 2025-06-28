@@ -1,20 +1,62 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchStores } from "../../store/storeSlice";
 import useMyPageDetails from "../../hooks/useMyPageDetails";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import Header from "../../components/common/Header";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorState from "../../components/common/ErrorState";
+import { logger } from "../../utils/logger";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { user } = location.state || {
+  // Redux에서 stores 상태 직접 확인
+  const stores = useSelector(state => state.store?.stores || []);
+  const storeLoading = useSelector(state => state.store?.loading || false);
+  
+  logger.log('🏪 MyPageDetails - Redux stores 상태:', {
+    storesCount: stores.length,
+    storeLoading,
+    firstStore: stores[0]
+  });
+
+  // stores 데이터가 없으면 직접 로드
+  useEffect(() => {
+    if (stores.length === 0 && !storeLoading) {
+      logger.log('🔄 MyPageDetails에서 fetchStores 호출');
+      dispatch(fetchStores());
+    }
+  }, [stores.length, storeLoading, dispatch]);
+
+  // 기본 사용자 정보 (MyPage에서 전달받음)
+  const { user: defaultUser } = location.state || {
     user: { reviewCount: 0, helpCount: 0, favoriteCount: 0, name: "이름없음" },
   };
 
-  const { reviewData, orderData, favoriteData } = useMyPageDetails();
+  const { 
+    reviewData, 
+    orderData, 
+    favoriteData, 
+    userStats, 
+    loading, 
+    error, 
+    handleFavoriteClick,
+    refreshFavorites
+  } = useMyPageDetails();
   const [activeTab, setActiveTab] = useState("review");
+
+  // 실제 통계 데이터가 있으면 사용, 없으면 기본값 사용
+  const user = {
+    name: defaultUser.name,
+    reviewCount: userStats.reviewCount || defaultUser.reviewCount,
+    helpCount: userStats.helpCount || defaultUser.helpCount,
+    favoriteCount: userStats.favoriteCount || defaultUser.favoriteCount,
+  };
 
   const tabContentMap = {
     review: {
@@ -37,6 +79,22 @@ export default function MyPageDetails() {
   const current = tabContentMap[activeTab];
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className={styles.loading}>
+          <LoadingSpinner />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className={styles.error}>
+          <ErrorState message={error} />
+        </div>
+      );
+    }
+
     if (current.data.length === 0) {
       return (
         <div className={styles.empty}>
@@ -54,6 +112,38 @@ export default function MyPageDetails() {
               <img src={item.image} alt={item.title} />
               <p>{item.title}</p>
               <span>{item.date}</span>
+              {item.totalPrice && (
+                <span className={styles.price}>
+                  {item.totalPrice.toLocaleString()}원
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (activeTab === "favorites") {
+      return (
+        <div className={styles.favoriteList}>
+          {current.data.map((item) => (
+            <div 
+              key={item.id} 
+              className={styles.favoriteItem}
+              onClick={() => handleFavoriteClick(item.id)}
+            >
+              <img src={item.image} alt={item.title} />
+              <div className={styles.favoriteInfo}>
+                <h3>{item.title}</h3>
+                <div className={styles.favoriteDetails}>
+                  <span className={styles.rating}>⭐ {item.rating}</span>
+                  <span className={styles.category}>{item.category}</span>
+                </div>
+                <div className={styles.deliveryInfo}>
+                  <span>{item.deliveryTime}</span>
+                  <span>배달비 {item.deliveryFee?.toLocaleString()}원</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -68,6 +158,17 @@ export default function MyPageDetails() {
       </ul>
     );
   };
+
+  // 개발 환경에서 상태 디버그 출력
+  logger.log('🔍 MyPageDetails 상태:', {
+    loading,
+    error,
+    reviewDataCount: reviewData.length,
+    orderDataCount: orderData.length,
+    favoriteDataCount: favoriteData.length,
+    userStats,
+    favoriteData: favoriteData.slice(0, 2) // 처음 2개만 출력
+  });
 
   return (
     <SlideInFromRight>
@@ -96,15 +197,13 @@ export default function MyPageDetails() {
           </div>
         </div>
         <div className={styles.tabs}>
-          {Object.entries(tabContentMap).map(([key, tab]) => (
+          {Object.entries(tabContentMap).map(([key, { label }]) => (
             <button
               key={key}
-              className={`${styles.tab} ${
-                activeTab === key ? styles.active : ""
-              }`}
+              className={activeTab === key ? styles.active : ""}
               onClick={() => setActiveTab(key)}
             >
-              {tab.label}
+              {label}
             </button>
           ))}
         </div>

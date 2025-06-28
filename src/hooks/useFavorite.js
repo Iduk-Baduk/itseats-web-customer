@@ -1,18 +1,43 @@
 // useFavorite.js
 import { useState, useMemo, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchStores } from "../store/storeSlice";
+import { useNavigate } from "react-router-dom";
+import { STORAGE_KEYS, logger } from '../utils/logger';
 
 function useFavorite() {
-  // Redux에서 매장 데이터 가져오기
-  const stores = useSelector((state) => state.store?.stores || []);
+  const dispatch = useDispatch();
   
-  // 즐겨찾기 상태 관리 (실제 서비스에서는 API나 LocalStorage 연동)
+  // Redux에서 stores 상태 직접 확인
+  const stores = useSelector(state => state.store?.stores || []);
+  const storeLoading = useSelector(state => state.store?.loading || false);
+  
+  logger.log('🏪 useFavorite - Redux stores 상태:', {
+    storesCount: stores.length,
+    storeLoading,
+    firstStore: stores[0]
+  });
+
+  // stores 데이터가 없으면 직접 로드
+  useEffect(() => {
+    if (stores.length === 0 && !storeLoading) {
+      logger.log('🔄 useFavorite에서 fetchStores 호출');
+      dispatch(fetchStores()).catch(error => {
+        logger.error('매장 데이터 로드 실패:', error);
+      });
+    }
+  }, [stores.length, storeLoading, dispatch]);
+  
+  // localStorage에서 즐겨찾기 ID 목록 불러오기
   const [favoriteStoreIds, setFavoriteStoreIds] = useState(() => {
     // LocalStorage에서 즐겨찾기 목록 복원
     try {
-      const saved = localStorage.getItem('itseats-favorites');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
+      const saved = localStorage.getItem(STORAGE_KEYS.FAVORITES);
+      const ids = saved ? JSON.parse(saved) : [];
+      logger.log('💾 useFavorite - 로컬스토리지에서 즐겨찾기 로드:', ids);
+      return ids;
+    } catch (error) {
+      logger.warn('💾 useFavorite - 로컬스토리지 로드 실패, 빈 배열 반환');
       return [];
     }
   });
@@ -21,36 +46,50 @@ function useFavorite() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [sortOption, setSortOption] = useState("recent");
 
-  // 즐겨찾기 변경 시 LocalStorage에 저장
+  // favoriteStoreIds가 변경될 때 localStorage에 저장
   useEffect(() => {
     try {
-      localStorage.setItem('itseats-favorites', JSON.stringify(favoriteStoreIds));
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favoriteStoreIds));
+      logger.log('💾 useFavorite - 즐겨찾기 로컬스토리지 저장:', favoriteStoreIds);
     } catch (error) {
-      console.warn('즐겨찾기 저장 실패:', error);
+      logger.warn('즐겨찾기 저장 실패:', error);
     }
   }, [favoriteStoreIds]);
 
-  // 실제 즐겨찾기 매장 목록 생성
+  // stores와 favoriteStoreIds를 조합하여 즐겨찾기 목록 생성
   const favorites = useMemo(() => {
-    return favoriteStoreIds.map(storeId => {
-      const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
-      if (!store) return null;
+    logger.log('🔄 useFavorite - 즐겨찾기 목록 생성:', {
+      favoriteStoreIds,
+      storesCount: stores.length
+    });
+    
+    if (stores.length === 0) {
+      logger.log('⚠️ useFavorite - stores 데이터가 없어서 빈 배열 반환');
+      return [];
+    }
+    
+    const favoriteStores = favoriteStoreIds.map(storeId => {
+      const store = stores.find(s => String(s.id) === String(storeId));
+      if (!store) {
+        logger.warn(`⚠️ useFavorite - 매장을 찾을 수 없음: ${storeId}`);
+        return null;
+      }
       
+      logger.log(`✅ useFavorite - 즐겨찾기 매장 매칭: ${store.name}`);
       return {
         id: store.id,
-        storeId: store.id,
-        name: store.name,
+        title: store.name,
+        image: store.imageUrl || "/samples/food1.jpg",
         rating: store.rating,
-        reviewCount: store.reviewCount,
-        distance: 0.5, // 기본값 - 실제로는 위치 기반 계산 필요
-        eta: parseInt(store.deliveryTime?.split('-')[0]) || 30,
-        deliveryType: store.deliveryFee === 0 ? "무료배달" : "유료배달",
-        coupon: store.coupon || "할인 정보 없음",
-        imageUrl: store.imageUrl || "/samples/food1.jpg",
-        addedAt: new Date(), // 실제로는 즐겨찾기 추가 시점 저장 필요
+        category: store.category,
+        deliveryTime: store.deliveryTime,
+        deliveryFee: store.deliveryFee,
       };
     }).filter(Boolean);
-  }, [favoriteStoreIds, stores]);
+    
+    logger.log('✅ useFavorite - 최종 즐겨찾기 목록:', favoriteStores);
+    return favoriteStores;
+  }, [stores, favoriteStoreIds]);
 
   const toggleEditMode = () => {
     setIsEditing((prev) => !prev);

@@ -2,23 +2,24 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { isValidOrderStatus } from "../utils/orderUtils";
 import { orderAPI } from "../services";
+import { STORAGE_KEYS, logger } from '../utils/logger';
 
-// localStorage 저장 함수
-const saveOrdersToLocalStorage = (orders) => {
+// localStorage에 저장하는 함수
+const saveOrdersToStorage = (orders) => {
   try {
-    localStorage.setItem("itseats-orders", JSON.stringify(orders));
-  } catch (e) {
-    console.warn("Could not save orders to localStorage", e);
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+  } catch (error) {
+    logger.error('Failed to save orders to storage:', error);
   }
 };
 
-// localStorage에서 주문 데이터 로드
-export const loadOrdersFromLocalStorage = () => {
+// localStorage에서 불러오는 함수
+const loadOrdersFromStorage = () => {
   try {
-    const serialized = localStorage.getItem("itseats-orders");
+    const serialized = localStorage.getItem(STORAGE_KEYS.ORDERS);
     return serialized ? JSON.parse(serialized) : [];
-  } catch (e) {
-    console.warn("Could not load orders from localStorage", e);
+  } catch (error) {
+    logger.error('Failed to load orders from storage:', error);
     return [];
   }
 };
@@ -66,7 +67,7 @@ export const trackOrderAsync = createAsyncThunk(
 );
 
 const initialState = {
-  orders: loadOrdersFromLocalStorage(), // 주문 목록
+  orders: loadOrdersFromStorage(), // 주문 목록
   currentOrder: null, // 현재 주문 (주문 상태 페이지에서 사용)
   isLoading: false,
   error: null,
@@ -79,7 +80,7 @@ const orderSlice = createSlice({
     // 주문 목록 초기화
     initializeOrders(state, action) {
       state.orders = action.payload;
-      saveOrdersToLocalStorage(state.orders);
+      saveOrdersToStorage(state.orders);
     },
 
     // 새 주문 추가 (결제 완료 후)
@@ -100,7 +101,7 @@ const orderSlice = createSlice({
       
       state.orders.unshift(newOrder); // 최신 주문을 맨 앞에 추가
       state.currentOrder = newOrder;
-      saveOrdersToLocalStorage(state.orders);
+      saveOrdersToStorage(state.orders);
     },
 
     // 주문 상태 업데이트
@@ -109,7 +110,7 @@ const orderSlice = createSlice({
       
       // 상태 유효성 검증
       if (!isValidOrderStatus(status)) {
-        console.error(`Invalid order status: ${status}`);
+        logger.error(`Invalid order status: ${status}`);
         return;
       }
       
@@ -128,9 +129,9 @@ const orderSlice = createSlice({
           state.currentOrder = order;
         }
 
-        saveOrdersToLocalStorage(state.orders);
+        saveOrdersToStorage(state.orders);
       } else {
-        console.error(`Order not found: ${orderId}`);
+        logger.error(`Order not found: ${orderId}`);
       }
     },
 
@@ -160,7 +161,7 @@ const orderSlice = createSlice({
           state.currentOrder = { ...state.currentOrder, ...details };
         }
 
-        saveOrdersToLocalStorage(state.orders);
+        saveOrdersToStorage(state.orders);
       }
     },
 
@@ -174,7 +175,7 @@ const orderSlice = createSlice({
         state.currentOrder = null;
       }
 
-      saveOrdersToLocalStorage(state.orders);
+      saveOrdersToStorage(state.orders);
     },
 
     // 로딩 상태 설정

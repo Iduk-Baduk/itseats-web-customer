@@ -1,14 +1,19 @@
 // Favorite.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Header from "../components/common/Header";
 import SlideInFromRight from "../components/animation/SlideInFromRight";
 import useFavorite from "../hooks/useFavorite";
 import BottomButton from "../components/common/BottomButton";
 import styles from "./Favorite.module.css";
+import { STORAGE_KEYS, logger } from '../utils/logger';
 
 export default function Favorite() {
   const navigate = useNavigate();
+  const stores = useSelector(state => state.store?.stores || []);
+  const storeLoading = useSelector(state => state.store?.loading || false);
+  
   const {
     favorites,
     isEditing,
@@ -21,6 +26,15 @@ export default function Favorite() {
     setSortOption,
     navigateToHome,
   } = useFavorite();
+
+  // 개발 환경에서 상태 디버그 출력
+  logger.log('🔍 Favorite 페이지 상태:', {
+    storesCount: stores.length,
+    storeLoading,
+    favoritesCount: favorites.length,
+    favorites: favorites.slice(0, 2), // 처음 2개만 출력
+    localStorage: localStorage.getItem(STORAGE_KEYS.FAVORITES)
+  });
 
   return (
     <SlideInFromRight>
@@ -88,16 +102,12 @@ export default function Favorite() {
                     }
                   }}
                 >
-                  <img src={store.imageUrl} alt={store.name} />
+                  <img src={store.image} alt={store.title} />
                   <div className={styles.details}>
-                    <p className={styles.name}>{store.name}</p>
+                    <p className={styles.name}>{store.title}</p>
                     <p className={styles.subinfo}>
-                      ⭐ {store.rating} ({store.reviewCount.toLocaleString()}) ·{" "}
-                      {store.distance}km · {store.eta}분 · {store.deliveryType}
+                      ⭐ {store.rating} · {store.category} · {store.deliveryTime} · 배달비 {store.deliveryFee?.toLocaleString()}원
                     </p>
-                    {store.coupon && (
-                      <span className={styles.coupon}>{store.coupon}</span>
-                    )}
                   </div>
                   {isEditing && (
                     <span
