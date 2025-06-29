@@ -183,159 +183,79 @@ export const useOrderTracking = (orderId, options = {}) => {
  * @returns {Object} 추적 상태와 제어 함수들
  */
 export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
+  const {
+    pollingInterval = 10000,
+    onStatusChange = null,
+  } = options;
+
   const dispatch = useDispatch();
-  const [trackingStates, setTrackingStates] = useState({});
   const intervalRefs = useRef({});
+  const lastStatusesRef = useRef({});
   
-  // orderIds 배열을 문자열로 변환하여 의존성 체크
-  const orderIdsString = orderIds.join(',');
-  
-  // 각 주문에 대한 추적 상태 초기화
+  // 주문 상태 추적 함수
+  const trackOrders = useCallback(async () => {
+    for (const orderId of orderIds) {
+      try {
+        const response = await dispatch(trackOrderAsync(orderId)).unwrap();
+        const orderData = response.data;
+        
+        // 상태가 변경된 경우에만 업데이트
+        if (lastStatusesRef.current[orderId] !== orderData.status) {
+          const previousStatus = lastStatusesRef.current[orderId];
+          lastStatusesRef.current[orderId] = orderData.status;
+          
+          // 상태 메시지 가져오기
+          const statusMessage = orderData.statusHistory?.length > 0
+            ? orderData.statusHistory[orderData.statusHistory.length - 1].message
+            : `주문 상태가 ${orderData.status}로 변경되었습니다.`;
+          
+          // Redux 상태 업데이트
+          dispatch(updateOrderStatus({
+            orderId,
+            status: orderData.status,
+            message: statusMessage
+          }));
+          
+          // 콜백 실행
+          if (onStatusChange) {
+            onStatusChange({
+              orderId,
+              previousStatus,
+              currentStatus: orderData.status,
+              orderData
+            });
+          }
+        }
+      } catch (error) {
+        logger.error(`주문 추적 실패 (${orderId}):`, error);
+      }
+    }
+  }, [orderIds, dispatch, onStatusChange]);
+
+  // 추적 시작/중지 처리
   useEffect(() => {
-    const newStates = {};
+    // 초기 상태 설정
     orderIds.forEach(orderId => {
-      if (!trackingStates[orderId]) {
-        newStates[orderId] = {
-          isTracking: false,
-          lastStatus: null,
-          errorCount: 0
-        };
+      if (!lastStatusesRef.current[orderId]) {
+        lastStatusesRef.current[orderId] = null;
       }
     });
-    
-    if (Object.keys(newStates).length > 0) {
-      setTrackingStates(prev => ({ ...prev, ...newStates }));
-    }
-  }, [orderIdsString, trackingStates]);
-  
-  // 개별 주문 추적 중단 (trackOrder보다 먼저 정의)
-  const stopTracking = useCallback((orderId) => {
-    try {
-      if (intervalRefs.current[orderId]) {
-        clearInterval(intervalRefs.current[orderId]);
-        delete intervalRefs.current[orderId];
-      }
-    } catch (error) {
-      console.error(`주문 ${orderId} interval 정리 실패:`, error);
-    }
-    
-    setTrackingStates(prev => ({
-      ...prev,
-      [orderId]: { ...prev[orderId], isTracking: false }
-    }));
-    
-    console.log(`⏹️ 주문 ${orderId} 추적 중단`);
-  }, []);
-  
-  // 개별 주문 추적 함수
-  const trackOrder = useCallback(async (orderId) => {
-    try {
-      const response = await dispatch(trackOrderAsync(orderId)).unwrap();
-      const orderData = response.data; // API 응답에서 data 추출
-      
-      setTrackingStates(prev => ({
-        ...prev,
-        [orderId]: {
-          ...prev[orderId],
-          errorCount: 0,
-          lastStatus: orderData.status
-        }
-      }));
-      
-      // 상태 변경 콜백 실행
-      if (options.onStatusChange) {
-        options.onStatusChange({
-          orderId,
-          currentStatus: orderData.status,
-          orderData
-        });
-      }
-      
-      // 완료 상태 확인
-      if (COMPLETED_STATUSES.includes(orderData.status)) {
-        stopTracking(orderId);
-      }
-      
-    } catch (error) {
-      console.error(`주문 ${orderId} 추적 실패:`, error);
-      
-      setTrackingStates(prev => {
-        const currentState = prev[orderId] || {};
-        const newErrorCount = (currentState.errorCount || 0) + 1;
-        
-        if (newErrorCount >= 3) {
-          console.error(`주문 ${orderId} 추적 중단: 3번 연속 실패`);
-          stopTracking(orderId);
-        }
-        
-        return {
-          ...prev,
-          [orderId]: {
-            ...currentState,
-            errorCount: newErrorCount
-          }
-        };
-      });
-    }
-  }, [dispatch, options, stopTracking]);
 
-  // 개별 주문 추적 시작
-  const startTracking = useCallback((orderId) => {
-    if (intervalRefs.current[orderId]) return;
+    // 즉시 한 번 실행
+    trackOrders();
     
-    console.log(`🚀 주문 ${orderId} 추적 시작`);
+    // 주기적 실행 설정
+    const intervalId = setInterval(trackOrders, pollingInterval);
     
-    setTrackingStates(prev => ({
-      ...prev,
-      [orderId]: { ...prev[orderId], isTracking: true }
-    }));
-    
-    // 즉시 실행
-    trackOrder(orderId);
-    
-    // 주기적 실행
-    intervalRefs.current[orderId] = setInterval(() => {
-      trackOrder(orderId);
-    }, options.pollingInterval || 10000);
-  }, [trackOrder, options.pollingInterval]);
-
-  // 모든 주문 추적 시작
-  const startAllTracking = useCallback(() => {
-    orderIds.forEach(orderId => startTracking(orderId));
-  }, [orderIds, startTracking]);
-
-  // 모든 주문 추적 중단
-  const stopAllTracking = useCallback(() => {
-    orderIds.forEach(orderId => stopTracking(orderId));
-  }, [orderIds, stopTracking]);
-
-  // 모든 주문 상태 새로고침
-  const refreshAllStatus = useCallback(() => {
-    orderIds.forEach(orderId => trackOrder(orderId));
-  }, [orderIds, trackOrder]);
-
-  // 자동 시작
-  useEffect(() => {
-    if (options.autoStart !== false) {
-      startAllTracking();
-    }
-
+    // 클린업
     return () => {
-      try {
-        stopAllTracking();
-      } catch (error) {
-        console.error('다중 주문 추적 정리 실패:', error);
-      }
+      clearInterval(intervalId);
     };
-  }, [orderIdsString, options.autoStart]); // 콜백 함수는 제외
+  }, [orderIds, trackOrders, pollingInterval]);
 
   return {
-    trackingStates,
-    startAllTracking,
-    stopAllTracking,
-    refreshAllStatus,
-    startTracking,
-    stopTracking,
+    isTracking: orderIds.length > 0,
+    trackingIds: orderIds,
   };
 };
 
