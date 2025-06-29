@@ -73,7 +73,11 @@ export const userAPI = {
 
       // 현재 사용자 ID 가져오기 (기본값: user-001)
       const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-      const userId = extractUserIdFromToken(token) || 'user-001';
+      const userId = extractUserIdFromToken(token);
+      if (!userId) {
+        logger.warn('사용자 ID를 추출할 수 없어 익명 통계를 반환합니다.');
+        return this.getAnonymousStats();
+      }
 
       logger.log('🔍 사용자 ID:', userId);
 

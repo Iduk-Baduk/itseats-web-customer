@@ -112,7 +112,7 @@ export default function MyPageDetails() {
             <div 
               key={item.id} 
               className={styles.card}
-              onClick={() => handleOrderClick(item.storeId || item.id)}
+              onClick={() => handleOrderClick(item.id)}
               style={{ cursor: 'pointer' }}
             >
               <img src={item.image} alt={item.title} />
