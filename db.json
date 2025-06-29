@@ -22,8 +22,9 @@
   "accounts": [
     {
       "id": "1",
-      "accountNumber": "110-***-****12",
       "bankName": "신한은행",
+      "bankId": "shinhan",
+      "accountNumber": "110-***-****12",
       "accountName": "홍길동",
       "last4": "4012",
       "image": "/icons/logos/shinhan.png",
@@ -31,9 +32,13 @@
     },
     {
       "id": "4547",
+      "bankName": "국민은행",
       "bankId": "kb",
-      "accountNumber": "123123123123",
-      "ownerName": "송준경"
+      "accountNumber": "123-***-****123",
+      "accountName": "송준경",
+      "last4": "4123",
+      "image": "/icons/logos/kbbank.jpg",
+      "isDefault": false
     }
   ],
   "coupayMoney": 25000,
@@ -194,6 +199,215 @@
       ],
       "deliveryAddress": "테스트 주소",
       "paymentMethod": "card"
+    },
+    {
+      "id": "order_1751136657501_t56inkqhl",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "status": "placed",
+      "orderDate": "2025-06-28T18:50:57.501Z",
+      "totalPrice": 21200,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "coupay",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": [
+        "3"
+      ]
+    },
+    {
+      "id": "order_1751136892638_36la6n6qy",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "status": "placed",
+      "orderDate": "2025-06-28T18:54:52.638Z",
+      "totalPrice": 24900,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "card",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": []
+    },
+    {
+      "id": "order_1751136906055_kez7z2fnu",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "status": "placed",
+      "orderDate": "2025-06-28T18:55:06.055Z",
+      "totalPrice": 24900,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "card",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": []
     }
   ],
   "coupons": [

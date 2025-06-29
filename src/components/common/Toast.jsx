@@ -1,18 +1,26 @@
 // src/components/common/Toast.jsx
-import React, { useEffect } from "react";
-import styles from "./Toast.module.css";
+import { useEffect, useState } from 'react';
+import styles from './Toast.module.css';
 
-export default function Toast({ message, onClose, duration = 3000 }) {
+export default function Toast({ message, duration = 3000, onClose }) {
+  const [isVisible, setIsVisible] = useState(true);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose();
+      setIsVisible(false);
+      if (onClose) onClose();
     }, duration);
+
     return () => clearTimeout(timer);
-  }, [onClose, duration]);
+  }, [duration, onClose]);
+
+  if (!isVisible) return null;
 
   return (
-    <div className={styles.toast}>
-      {message}
+    <div className={styles.toastContainer}>
+      <div className={styles.toast}>
+        {message}
+      </div>
     </div>
   );
 }

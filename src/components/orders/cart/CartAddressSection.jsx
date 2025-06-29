@@ -18,14 +18,30 @@ export default function CartAddressSection() {
             <div>{selectedAddress.address}</div>
           </>
         ) : (
-          <div className={styles.addressText}>
-            배달받을 주소를 추가해주세요.
-          </div>
+          <>
+            <div className={styles.addressText} style={{ color: '#ff4444', fontWeight: 'bold' }}>
+              ⚠️ 배달받을 주소를 먼저 설정해주세요!
+            </div>
+            <div style={{ color: '#666', fontSize: '14px', marginTop: '4px' }}>
+              주소를 설정해야 주문이 가능합니다.
+            </div>
+          </>
         )}
       </div>
       <div className={styles.addressEdit}>
-        <a href="#" onClick={e => {e.preventDefault(); navigate('/address', { state: { from: 'cart' } });}}>
-          {selectedAddress ? '수정' : '주소 추가'}
+        <a 
+          href="#" 
+          onClick={e => {e.preventDefault(); navigate('/address', { state: { from: 'cart' } });}}
+          style={!selectedAddress ? { 
+            backgroundColor: '#ff4444', 
+            color: 'white', 
+            padding: '8px 16px', 
+            borderRadius: '4px',
+            textDecoration: 'none',
+            fontWeight: 'bold'
+          } : {}}
+        >
+          {selectedAddress ? '수정' : '주소 설정'}
         </a>
       </div>
     </div>

@@ -4,13 +4,34 @@ import { isValidOrderStatus } from "../utils/orderUtils";
 import { orderAPI } from "../services";
 import { generateOrderId as generateUniqueOrderId } from '../utils/idUtils';
 import { STORAGE_KEYS, logger } from '../utils/logger';
+import { cleanupOrderStorage, compressOrderForStorage, checkStorageSize } from '../utils/storageUtils';
 
-// localStorage에 저장하는 함수
+// localStorage에 저장하는 함수 (압축 및 정리)
 const saveOrdersToStorage = (orders) => {
   try {
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+    // 용량 체크
+    const { needsCleanup } = checkStorageSize();
+    if (needsCleanup) {
+      logger.warn('⚠️ 로컬스토리지 용량 초과, 정리 수행');
+    }
+
+    // 주문 데이터 정리 (최대 50개)
+    const cleanedOrders = cleanupOrderStorage(orders);
+    
+    // 압축된 주문 데이터만 저장 (핵심 정보만)
+    const compressedOrders = cleanedOrders.map(compressOrderForStorage);
+    
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(compressedOrders));
+    logger.log(`💾 주문 ${compressedOrders.length}개 로컬스토리지에 저장`);
   } catch (error) {
-    logger.error('Failed to save orders to storage:', error);
+    logger.error('❌ Failed to save orders to storage:', error);
+    // 실패 시 비상 정리
+    try {
+      localStorage.removeItem(STORAGE_KEYS.ORDERS);
+      logger.log('🚨 로컬스토리지 비상 정리 완료');
+    } catch (clearError) {
+      logger.error('❌ 비상 정리도 실패:', clearError);
+    }
   }
 };
 
@@ -82,30 +103,68 @@ const orderSlice = createSlice({
       saveOrdersToStorage(state.orders);
     },
 
-    // 새 주문 추가 (결제 완료 후)
+    // 새 주문 추가 (결제 완료 후) - 중복 방지 로직 추가
     addOrder(state, action) {
-      const orderId = generateOrderId();
+      const payloadOrderId = action.payload.id || action.payload.orderId;
+      
+      // 이미 같은 orderId를 가진 주문이 있는지 확인
+      if (payloadOrderId) {
+        const existingOrder = state.orders.find(order => 
+          order.id === payloadOrderId || order.orderId === payloadOrderId
+        );
+        if (existingOrder) {
+          logger.log('🔄 중복 주문 생성 방지:', payloadOrderId);
+          state.currentOrder = existingOrder;
+          return; // 중복 생성 방지
+        }
+      }
+      
+      // 새로운 orderId 생성 (payload에 없는 경우만)
+      const orderId = payloadOrderId || generateOrderId();
       const newOrder = {
         ...action.payload,
         id: orderId,
         orderId: orderId, // id와 orderId를 동일하게 설정
-        createdAt: new Date().toISOString(),
-        status: ORDER_STATUS.WAITING,
-        statusHistory: [
+        createdAt: action.payload.createdAt || new Date().toISOString(),
+        status: action.payload.status || ORDER_STATUS.WAITING,
+        statusHistory: action.payload.statusHistory || [
           {
-            status: ORDER_STATUS.WAITING,
+            status: action.payload.status || ORDER_STATUS.WAITING,
             timestamp: new Date().toISOString(),
             message: "주문이 접수되었습니다."
           }
         ]
       };
       
+      logger.log('📦 새 주문 Redux에 추가:', { id: newOrder.id, orderId: newOrder.orderId });
       state.orders.unshift(newOrder); // 최신 주문을 맨 앞에 추가
       state.currentOrder = newOrder;
       saveOrdersToStorage(state.orders);
     },
 
-    // 주문 상태 업데이트
+    // 주문 전체 업데이트 (상태 포함)
+    updateOrder(state, action) {
+      const updatedOrder = action.payload;
+      const orderIndex = state.orders.findIndex(order => order.id === updatedOrder.id);
+      
+      if (orderIndex !== -1) {
+        // 기존 주문을 새로운 주문으로 교체
+        state.orders[orderIndex] = updatedOrder;
+        
+        // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
+        if (state.currentOrder && state.currentOrder.id === updatedOrder.id) {
+          state.currentOrder = updatedOrder;
+        }
+
+        // 로컬스토리지 업데이트
+        saveOrdersToStorage(state.orders);
+        logger.log(`📝 주문 ${updatedOrder.id} 전체 업데이트 완료`);
+      } else {
+        logger.error(`주문을 찾을 수 없음: ${updatedOrder.id}`);
+      }
+    },
+
+    // 주문 상태만 업데이트 (이전 버전과의 호환성을 위해 유지)
     updateOrderStatus(state, action) {
       const { orderId, status, message } = action.payload;
       
@@ -118,19 +177,31 @@ const orderSlice = createSlice({
       const orderIndex = state.orders.findIndex(order => order.id === orderId);
       if (orderIndex !== -1) {
         const order = state.orders[orderIndex];
-        order.status = status;
-        order.statusHistory.push({
-          status,
-          timestamp: new Date().toISOString(),
-          message: message || `주문 상태가 ${status}로 변경되었습니다.`
-        });
+        
+        // 상태가 실제로 변경된 경우에만 업데이트
+        if (order.status !== status) {
+          order.status = status;
+          
+          // statusHistory가 없으면 초기화
+          if (!order.statusHistory) {
+            order.statusHistory = [];
+          }
+          
+          order.statusHistory.push({
+            status,
+            timestamp: new Date().toISOString(),
+            message: message || `주문 상태가 ${status}로 변경되었습니다.`
+          });
 
-        // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
-        if (state.currentOrder && state.currentOrder.id === orderId) {
-          state.currentOrder = order;
+          // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
+          if (state.currentOrder && state.currentOrder.id === orderId) {
+            state.currentOrder = { ...order }; // 새로운 객체로 복사하여 리렌더링 트리거
+          }
+
+          // 상태가 변경되었을 때만 저장
+          saveOrdersToStorage(state.orders);
+          logger.log(`🔄 주문 ${orderId} 상태 업데이트: ${status}`);
         }
-
-        saveOrdersToStorage(state.orders);
       } else {
         logger.error(`Order not found: ${orderId}`);
       }
@@ -268,6 +339,12 @@ const orderSlice = createSlice({
         const orderIndex = state.orders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
           state.orders[orderIndex].status = status;
+          
+          // statusHistory가 없으면 초기화
+          if (!state.orders[orderIndex].statusHistory) {
+            state.orders[orderIndex].statusHistory = [];
+          }
+          
           state.orders[orderIndex].statusHistory.push({
             status,
             timestamp: new Date().toISOString(),
@@ -293,6 +370,7 @@ const orderSlice = createSlice({
 export const {
   initializeOrders,
   addOrder,
+  updateOrder,
   updateOrderStatus,
   setCurrentOrder,
   updateOrderDetails,

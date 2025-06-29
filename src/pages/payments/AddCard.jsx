@@ -3,13 +3,26 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addCardAsync } from "../../store/paymentSlice";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 import Header from "../../components/common/Header";
 import styles from "./AddCard.module.css";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 export default function AddCard() {
+  const { currentUser, loading: userLoading } = useCurrentUser();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // 사용자 정보 로딩 중이면 로딩 표시, 없으면 로그인 페이지로 리다이렉트
+  if (userLoading) {
+    return <LoadingSpinner />;
+  }
+  if (!currentUser) {
+    navigate('/login');
+    return null;
+  }
+  const user = currentUser;
 
   const [cardNumber, setCardNumber] = useState(["", "", "", ""]);
   const [expiry, setExpiry] = useState({ mm: "", yy: "" });
@@ -93,7 +106,7 @@ export default function AddCard() {
         </div>
       </div>
 
-      <p className={styles.notice}>송준경님의 신용/체크카드만 이용 가능합니다.</p>
+      <p className={styles.notice}>{user.name}님의 신용/체크카드만 이용 가능합니다.</p>
 
       {/* 유효기간 */}
       {isCardValid && (
@@ -183,7 +196,16 @@ export default function AddCard() {
                 ? "등록이 완료되었습니다."
                 : "등록에 실패했습니다."}
             </p>
-            <button className={styles.modalButton} onClick={() => setPopup(null)}>
+            <button 
+              className={styles.modalButton} 
+              onClick={() => {
+                setPopup(null);
+                if (popup === "success") {
+                  // 등록 성공 시 결제수단 페이지로 자동 이동
+                  navigate("/payments");
+                }
+              }}
+            >
               확인
             </button>
           </div>

@@ -105,7 +105,7 @@
   transform: translateY(-1px);
 }
 
-.button.disabled {
+.button:disabled {
   background: #6c757d;
   cursor: not-allowed;
   transform: none;
@@ -154,8 +154,9 @@
 .simulationControls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .simulationControls label {

@@ -4,6 +4,7 @@ import { userAPI } from "../services/userAPI";
 import { orderAPI } from "../services/orderAPI";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { STORAGE_KEYS, logger } from "../utils/logger";
+import { useNavigate } from "react-router-dom";
 
 export default function useMyPageDetails() {
   const [reviewData, setReviewData] = useState([]);
@@ -21,6 +22,14 @@ export default function useMyPageDetails() {
   // Redux에서 주문 데이터 가져오기
   const orders = useSelector(state => state.order?.orders || []);
   const stores = useSelector(state => state.store?.stores || []);
+
+  const navigate = useNavigate();
+
+  // 매장 이미지 가져오기 헬퍼 함수
+  const getStoreImage = (storeId) => {
+    const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
+    return store?.imageUrl;
+  };
 
   // 주문 데이터를 마이페이지 형식으로 변환
   const orderData = useMemo(() => {
@@ -58,12 +67,6 @@ export default function useMyPageDetails() {
         };
       });
   }, [orders, stores]);
-
-  // 매장 이미지 가져오기 헬퍼 함수
-  const getStoreImage = (storeId) => {
-    const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
-    return store?.imageUrl;
-  };
 
   // API 호출로 데이터 로딩
   useEffect(() => {
@@ -198,15 +201,28 @@ export default function useMyPageDetails() {
 
   // 즐겨찾기 새로고침 함수
   const refreshFavorites = async () => {
-    if (stores.length > 0) {
-      await loadFavoriteData();
-    }
+    await loadFavoriteData();
   };
 
-  // 주문 내역 처리 함수 추가
   const handleFavoriteClick = (storeId) => {
-    logger.log('즐겨찾기 매장 클릭:', storeId);
-    // 매장 상세 페이지로 이동하는 로직 추가 가능
+    navigate(`/stores/${storeId}`);
+  };
+
+  const handleOrderClick = (orderId) => {
+    // 주문 ID로 주문 정보 찾기
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+      logger.warn('주문 정보를 찾을 수 없습니다:', orderId);
+      return;
+    }
+
+    // 가게 ID로 이동
+    const storeId = order.storeId;
+    if (storeId) {
+      navigate(`/stores/${storeId}`);
+    } else {
+      logger.warn('가게 정보를 찾을 수 없습니다:', order);
+    }
   };
 
   return {
@@ -217,6 +233,7 @@ export default function useMyPageDetails() {
     loading,
     error,
     handleFavoriteClick,
+    handleOrderClick,
     refreshFavorites
   };
 }

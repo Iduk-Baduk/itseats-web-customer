@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStoreById } from "../../store/storeSlice";
+import { selectCartItemCount } from "../../store/cartSlice";
+import calculateCartTotal from "../../utils/calculateCartTotal";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderStoreDetail from "../../components/stores/HeaderStoreDetail";
 import { useShare } from "../../hooks/useShare";
@@ -12,6 +14,7 @@ import AutoScrollTabs from "../../components/stores/AutoScrollTabs";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorState from "../../components/common/ErrorState";
 import Toast from "../../components/common/Toast";
+import BottomButton from "../../components/common/BottomButton";
 import { useUIState, getErrorVariant } from "../../hooks/useUIState";
 
 import styles from "./StoreDetail.module.css";
@@ -27,6 +30,11 @@ export default function StoreDetail() {
   const [isTransparent, setTransparent] = useState(true);
   const [menuTabFixed, setMenuTabFixed] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+
+  // Redux에서 장바구니 정보 가져오기
+  const cartItemCount = useSelector(selectCartItemCount);
+  const cartItems = useSelector(state => state.cart.orderMenus);
+  const cartTotalPrice = cartItems.reduce((total, item) => total + calculateCartTotal(item), 0);
 
   // 토스트 메시지 타이머 정리를 위한 useEffect
   useEffect(() => {
@@ -98,6 +106,11 @@ export default function StoreDetail() {
 
   const handleGoHome = () => {
     navigate("/");
+  };
+
+  // 장바구니 페이지로 이동
+  const handleCartClick = () => {
+    navigate("/cart");
   };
 
   // UI 상태별 렌더링
@@ -216,6 +229,16 @@ export default function StoreDetail() {
     <SlideInFromRight>
       {renderContent()}
       {toastMessage && <Toast message={toastMessage} />}
+      {cartItemCount > 0 && (
+        <BottomButton
+          onClick={handleCartClick}
+          cartInfo={{
+            itemCount: cartItemCount,
+            totalPrice: cartTotalPrice,
+            orderPrice: cartTotalPrice
+          }}
+        />
+      )}
     </SlideInFromRight>
   );
 }

@@ -112,7 +112,7 @@ export default function Favorite() {
                   {isEditing && (
                     <span
                       className={`${styles.checkCircle} ${
-                        selectedIds.includes(store.id) ? styles.checked : ""
+                        selectedIds.includes(String(store.id)) ? styles.checked : ""
                       }`}
                     >
                       <div

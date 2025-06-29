@@ -1,14 +1,14 @@
 import { getOrderStep } from "../../utils/orderUtils";
 import styles from "./OrderProgress.module.css";
 
-const steps = ["주문수락", "조리중", "배달중", "배달완료"];
+const steps = ["주문접수", "주문수락", "조리중", "배달중", "배달완료"];
 
 export default function OrderProgress({ currentStep = 1, orderStatus = null }) {
   // orderStatus가 제공되면 자동으로 단계 계산, 없으면 currentStep 사용
   const actualStep = orderStatus ? getOrderStep(orderStatus) : currentStep;
   
-  // 안전한 단계 값 보장 (0-4 범위)
-  const safeStep = Math.max(0, Math.min(4, actualStep || 0));
+  // 안전한 단계 값 보장 (0-5 범위)
+  const safeStep = Math.max(0, Math.min(5, actualStep || 0));
   
   return (
     <div className={styles.container}>
@@ -27,14 +27,17 @@ export default function OrderProgress({ currentStep = 1, orderStatus = null }) {
           const isCurrent = index === safeStep;
 
           return (
-            <div key={index} className={styles.step}>
+            <div 
+              key={index} 
+              className={`${styles.step} ${isCurrent ? styles.currentStep : ''}`}
+            >
               <div
                 className={`${styles.circle} ${
                   isCompleted
                     ? styles.completed
                     : isCurrent
                     ? styles.current
-                    : styles.pending
+                    : ""
                 }`}
               >
                 {isCompleted ? (

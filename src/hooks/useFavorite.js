@@ -97,13 +97,14 @@ function useFavorite() {
   };
 
   const toggleSelect = (id) => {
+    const normalizedId = String(id);
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(normalizedId) ? prev.filter((i) => i !== normalizedId) : [...prev, normalizedId]
     );
   };
 
   const handleUnfavorite = () => {
-    setFavoriteStoreIds((prev) => prev.filter((storeId) => !selectedIds.includes(storeId)));
+    setFavoriteStoreIds((prev) => prev.filter((storeId) => !selectedIds.includes(String(storeId))));
     setSelectedIds([]);
     setIsEditing(false);
   };

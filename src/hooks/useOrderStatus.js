@@ -114,16 +114,19 @@ export function useOrderStatus(orderId = null) {
 
   // 주문 상태 업데이트 함수
   const updateStatus = (status, message = null) => {
-    if (actualOrderId) {
+    if (actualOrderId && isValidOrderStatus(status)) {
       try {
-        dispatch(updateOrderStatus({
-          orderId: actualOrderId,
-          status,
-          message
-        }));
+        // 상태가 실제로 변경되었는지 확인
+        if (orderData?.orderStatus !== status) {
+          dispatch(updateOrderStatus({
+            orderId: actualOrderId,
+            status,
+            message: message || ORDER_STATUS_CONFIG[status]?.message || `주문 상태가 ${status}로 변경되었습니다.`
+          }));
+        }
       } catch (error) {
         console.error('주문 상태 업데이트 실패:', error);
-        throw error; // 호출자가 에러를 처리할 수 있도록 재던짐
+        throw error;
       }
     }
   };
