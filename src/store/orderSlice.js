@@ -103,24 +103,40 @@ const orderSlice = createSlice({
       saveOrdersToStorage(state.orders);
     },
 
-    // 새 주문 추가 (결제 완료 후)
+    // 새 주문 추가 (결제 완료 후) - 중복 방지 로직 추가
     addOrder(state, action) {
-      const orderId = generateOrderId();
+      const payloadOrderId = action.payload.id || action.payload.orderId;
+      
+      // 이미 같은 orderId를 가진 주문이 있는지 확인
+      if (payloadOrderId) {
+        const existingOrder = state.orders.find(order => 
+          order.id === payloadOrderId || order.orderId === payloadOrderId
+        );
+        if (existingOrder) {
+          logger.log('🔄 중복 주문 생성 방지:', payloadOrderId);
+          state.currentOrder = existingOrder;
+          return; // 중복 생성 방지
+        }
+      }
+      
+      // 새로운 orderId 생성 (payload에 없는 경우만)
+      const orderId = payloadOrderId || generateOrderId();
       const newOrder = {
         ...action.payload,
         id: orderId,
         orderId: orderId, // id와 orderId를 동일하게 설정
-        createdAt: new Date().toISOString(),
-        status: ORDER_STATUS.WAITING,
-        statusHistory: [
+        createdAt: action.payload.createdAt || new Date().toISOString(),
+        status: action.payload.status || ORDER_STATUS.WAITING,
+        statusHistory: action.payload.statusHistory || [
           {
-            status: ORDER_STATUS.WAITING,
+            status: action.payload.status || ORDER_STATUS.WAITING,
             timestamp: new Date().toISOString(),
             message: "주문이 접수되었습니다."
           }
         ]
       };
       
+      logger.log('📦 새 주문 Redux에 추가:', { id: newOrder.id, orderId: newOrder.orderId });
       state.orders.unshift(newOrder); // 최신 주문을 맨 앞에 추가
       state.currentOrder = newOrder;
       saveOrdersToStorage(state.orders);
@@ -140,6 +156,12 @@ const orderSlice = createSlice({
       if (orderIndex !== -1) {
         const order = state.orders[orderIndex];
         order.status = status;
+        
+        // statusHistory가 없으면 초기화
+        if (!order.statusHistory) {
+          order.statusHistory = [];
+        }
+        
         order.statusHistory.push({
           status,
           timestamp: new Date().toISOString(),
@@ -289,6 +311,12 @@ const orderSlice = createSlice({
         const orderIndex = state.orders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
           state.orders[orderIndex].status = status;
+          
+          // statusHistory가 없으면 초기화
+          if (!state.orders[orderIndex].statusHistory) {
+            state.orders[orderIndex].statusHistory = [];
+          }
+          
           state.orders[orderIndex].statusHistory.push({
             status,
             timestamp: new Date().toISOString(),

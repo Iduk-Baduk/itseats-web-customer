@@ -31,7 +31,7 @@ export const calculateETA = (deliveryEta) => {
 /**
  * 주문 상태에 따른 진행률 단계를 반환
  * @param {string} orderStatus - 주문 상태
- * @returns {number} 진행률 단계 (0-4, -1은 취소)
+ * @returns {number} 진행률 단계 (0-5, -1은 취소)
  */
 export const getOrderStep = (orderStatus) => {
   // null이나 undefined 체크
@@ -41,14 +41,15 @@ export const getOrderStep = (orderStatus) => {
   }
   
   const stepMapping = {
-    'WAITING': 0,
-    'COOKING': 1,
-    'COOKED': 2,
-    'RIDER_READY': 2,
-    'DELIVERING': 3,
-    'DELIVERED': 4,
-    'COMPLETED': 4,
-    'CANCELED': -1
+    'WAITING': 0,      // 주문접수
+    'ACCEPTED': 1,     // 주문수락
+    'COOKING': 2,      // 조리중
+    'COOKED': 2,       // 조리완료 (여전히 조리중 단계)
+    'RIDER_READY': 3,  // 배달중
+    'DELIVERING': 3,   // 배달중
+    'DELIVERED': 4,    // 배달완료
+    'COMPLETED': 4,    // 주문완료
+    'CANCELED': -1     // 주문취소
   };
   
   const step = stepMapping[orderStatus];
@@ -69,8 +70,15 @@ export const isValidOrderStatus = (orderStatus) => {
   if (!orderStatus) return false;
   
   const validStatuses = [
-    'CANCELED', 'WAITING', 'COOKING', 'COOKED', 
-    'RIDER_READY', 'DELIVERING', 'DELIVERED', 'COMPLETED'
+    'CANCELED',    // 주문취소
+    'WAITING',     // 주문접수
+    'ACCEPTED',    // 주문수락
+    'COOKING',     // 조리중
+    'COOKED',      // 조리완료
+    'RIDER_READY', // 라이더 대기
+    'DELIVERING',  // 배달중
+    'DELIVERED',   // 배달완료
+    'COMPLETED'    // 주문완료
   ];
   return validStatuses.includes(orderStatus);
 }; 

@@ -50,7 +50,8 @@ export const useOrderTracking = (orderId, options = {}) => {
     if (!orderId) return;
 
     try {
-      const orderData = await dispatch(trackOrderAsync(orderId)).unwrap();
+      const response = await dispatch(trackOrderAsync(orderId)).unwrap();
+      const orderData = response.data; // API 응답에서 data 추출
       errorCountRef.current = 0;
       
       // 상태가 변경된 경우
@@ -58,11 +59,16 @@ export const useOrderTracking = (orderId, options = {}) => {
         const previousStatus = lastStatusRef.current;
         lastStatusRef.current = orderData.status;
         
+        // 상태 메시지 가져오기
+        const statusMessage = orderData.statusHistory?.length > 0
+          ? orderData.statusHistory[orderData.statusHistory.length - 1].message
+          : `주문 상태가 ${orderData.status}로 변경되었습니다.`;
+        
         // Redux 상태 업데이트
         dispatch(updateOrderStatus({
           orderId,
           status: orderData.status,
-          message: orderData.statusMessage
+          message: statusMessage
         }));
         
         // 콜백 실행
@@ -224,7 +230,8 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
   // 개별 주문 추적 함수
   const trackOrder = useCallback(async (orderId) => {
     try {
-      const orderData = await dispatch(trackOrderAsync(orderId)).unwrap();
+      const response = await dispatch(trackOrderAsync(orderId)).unwrap();
+      const orderData = response.data; // API 응답에서 data 추출
       
       setTrackingStates(prev => ({
         ...prev,
@@ -270,7 +277,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
         };
       });
     }
-     }, [dispatch, options, stopTracking]);
+  }, [dispatch, options, stopTracking]);
 
   // 개별 주문 추적 시작
   const startTracking = useCallback((orderId) => {
