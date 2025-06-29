@@ -490,7 +490,7 @@
       "deliveryFee": 2500,
       "minOrderAmount": 15000,
       "isOpen": true,
-      "imageUrl": "/samples/food1.jpg",
+      "images": ["/samples/food1.jpg"],
       "menus": [
         {
           "id": 1,
@@ -583,7 +583,7 @@
       "deliveryFee": 2000,
       "minOrderAmount": 12000,
       "isOpen": true,
-      "imageUrl": "/samples/food2.jpg",
+      "images": ["/samples/food2.jpg"],
       "menus": [
         {
           "id": 5,
@@ -640,7 +640,7 @@
       "deliveryFee": 3000,
       "minOrderAmount": 18000,
       "isOpen": false,
-      "imageUrl": "/samples/food1.jpg",
+      "images": ["/samples/food1.jpg"],
       "menus": [
         {
           "id": 7,
@@ -668,7 +668,7 @@
       "deliveryFee": 2500,
       "minOrderAmount": 16000,
       "isOpen": true,
-      "imageUrl": "/samples/food2.jpg"
+      "images": ["/samples/food2.jpg"]
     },
     {
       "id": "5",
@@ -686,7 +686,7 @@
       "deliveryFee": 3000,
       "minOrderAmount": 20000,
       "isOpen": true,
-      "imageUrl": "/samples/food3.jpg"
+      "images": ["/samples/food3.jpg"]
     }
   ],
   "addresses": [

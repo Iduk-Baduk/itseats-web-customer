@@ -172,6 +172,9 @@ export default function Home() {
           name: store.name,
           review: store.rating,
           reviewCount: store.reviewCount,
+          image: store.images[0],
+          menuImage1: store.images[1],
+          menuImage2: store.images[2],
           minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
         }}
         onClick={() => handleStoreClick(store.id)}
