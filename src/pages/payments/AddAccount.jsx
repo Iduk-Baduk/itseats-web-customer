@@ -41,8 +41,8 @@ export default function AddAccount() {
   const validateAccountNumber = (number) => {
     // 숫자만 추출
     const digitsOnly = number.replace(/\D/g, '');
-    // 10-14자리 숫자만 허용
-    return /^\d{10,14}$/.test(digitsOnly);
+    // 10-20자리 숫자만 허용
+    return /^\d{10,20}$/.test(digitsOnly);
   };
 
   // 계좌번호 마스킹 처리
@@ -56,7 +56,7 @@ export default function AddAccount() {
   // 계좌번호 입력 처리
   const handleAccountNumberChange = (e) => {
     const value = e.target.value;
-    if (value.length > 14) return; // 최대 14자리로 제한
+    if (value.length > 20) return; // 최대 20자리로 제한
     setAccountNumber(value);
   };
 
@@ -141,7 +141,7 @@ export default function AddAccount() {
             />
             {!accountNumberValid && accountNumber && (
               <p className={styles.warningText}>
-                하이픈(-)을 제외한 숫자만 입력해주세요. (10~14자리)
+                하이픈(-)을 제외한 숫자만 입력해주세요. (10~20자리)
               </p>
             )}
           </div>
