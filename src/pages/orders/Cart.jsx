@@ -20,6 +20,7 @@ import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../..
 import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
 import { findOrCreateStoreInfo } from "../../utils/storeUtils";
+import { ENV_CONFIG } from '../../config/api';
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -48,6 +49,7 @@ export default function Cart() {
   const allStores = useSelector(state => state.store?.stores || []);
   
   const orderMenus = useSelector((state) => state.cart.orderMenus);
+  const orders = useSelector(state => state.order?.orders || []); // 주문 목록 추가
   
   // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
   const storeInfo = currentStore || allStores.find(store => 
@@ -368,81 +370,36 @@ export default function Cart() {
 
     logger.log('📦 최종 주문 데이터:', finalOrderData);
 
-    // 주문 데이터 최종 검증 완료
-
     try {
       // 🔄 결제 처리 시작
       dispatch(setPaymentProcessing(true));
       dispatch(clearPaymentResult());
 
-      // ✅ API를 통한 주문 생성 (DB 우선 저장)
-      // 로컬스토리지 과부하 방지를 위해 DB 저장 우선 적용
-      // 현재 API 서버가 없으므로 임시로 로컬 저장소 모드로 전환
-      const useLocalStorage = true; // 임시로 로컬 저장소 모드 사용
+      // 한 번의 결제 요청에 대해 고유한 orderId 생성 (중복 방지)
+      const uniqueOrderId = generateOrderId();
+      logger.log('🆔 고유 주문 ID 생성:', uniqueOrderId);
+
+      // 이미 동일한 orderId로 생성된 주문이 있는지 체크
+      const existingOrderCheck = orders.find(order => 
+        order.orderId === uniqueOrderId || order.id === uniqueOrderId
+      );
       
-      if (useLocalStorage) {
-        // 백업 모드: 로컬 저장 (API 실패 시만 사용)
-        logger.warn('⚠️ 백업 모드: 로컬 저장 사용 (API 실패 시)');
-        
-        const localOrderData = {
-          ...finalOrderData,
-          price: finalOrderData.totalPrice,
-          orderPrice: finalOrderData.totalPrice,
-          totalAmount: finalOrderData.totalPrice,
-          items: finalOrderData.orderMenus.map(menu => ({
-            menuName: menu.menuName,
-            quantity: menu.quantity,
-            price: menu.menuTotalPrice || 0,
-            menuOptions: menu.menuOptions || []
-          })),
-          storeName: currentStoreInfo?.name || "알 수 없는 매장",
-          deliveryAddress: selectedAddress?.address || "주소 미설정",
-          menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-          storeImage: currentStoreInfo?.imageUrl || "/samples/food1.jpg",
-          date: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          status: ORDER_STATUS.WAITING,
-          orderMenuCount: orderMenus.length,
-          orderId: generateOrderId()
-        };
-        
-        // 로컬스토리지 과부하 방지를 위해 압축된 데이터만 Redux에 추가
-        dispatch(addOrder(localOrderData));
-        orderResponse = { data: localOrderData };
+      if (existingOrderCheck) {
+        logger.log('🔄 이미 존재하는 주문 발견, 기존 주문 사용:', existingOrderCheck);
+        orderResponse = { data: existingOrderCheck };
       } else {
-        // 🎯 메인 모드: DB에 주문 저장
-        try {
-          logger.log('📡 API를 통한 주문 생성 시도...');
-          const apiResult = await dispatch(createOrderAsync(finalOrderData)).unwrap();
+        // ✅ 새로운 주문 생성
+        const useLocalStorage = true; // 임시로 로컬 저장소 모드 사용
+        
+        if (useLocalStorage) {
+          // 백업 모드: 로컬 저장
+          logger.warn('⚠️ 백업 모드: 로컬 저장 사용');
           
-          if (apiResult && apiResult.data) {
-            orderResponse = apiResult;
-            logger.log('✅ DB 주문 생성 성공:', orderResponse);
-            
-            // DB 저장 성공 시 Redux에도 캐시용으로 압축 저장
-            const cacheOrderData = {
-              ...orderResponse.data,
-              items: finalOrderData.orderMenus.map(menu => ({
-                menuName: menu.menuName,
-                quantity: menu.quantity,
-                price: menu.menuTotalPrice || 0,
-                menuOptions: menu.menuOptions || []
-              })),
-              menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-            };
-            dispatch(addOrder(cacheOrderData));
-          } else {
-            throw new Error('API 응답 데이터가 잘못되었습니다.');
-          }
-          
-        } catch (apiError) {
-          logger.error('❌ API 주문 생성 실패, 백업 모드로 전환:', apiError);
-          
-          // API 실패 시 백업으로 로컬 저장
-          const backupOrderData = {
+          const localOrderData = {
             ...finalOrderData,
             price: finalOrderData.totalPrice,
             orderPrice: finalOrderData.totalPrice,
+            totalAmount: finalOrderData.totalPrice,
             items: finalOrderData.orderMenus.map(menu => ({
               menuName: menu.menuName,
               quantity: menu.quantity,
@@ -452,18 +409,75 @@ export default function Cart() {
             storeName: currentStoreInfo?.name || "알 수 없는 매장",
             deliveryAddress: selectedAddress?.address || "주소 미설정",
             menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
+            storeImage: currentStoreInfo?.imageUrl || "/samples/food1.jpg",
             date: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             status: ORDER_STATUS.WAITING,
-            orderId: generateOrderId(),
-            isBackup: true // 백업 주문 표시
+            orderMenuCount: orderMenus.length,
+            orderId: uniqueOrderId // 고유 orderId 사용
           };
           
-          dispatch(addOrder(backupOrderData));
-          orderResponse = { data: backupOrderData };
-          
-          // 사용자에게 알림
-          showToast('주문이 임시 저장되었습니다. 네트워크 연결을 확인해주세요.');
+          // 로컬스토리지 과부하 방지를 위해 압축된 데이터만 Redux에 추가
+          dispatch(addOrder(localOrderData));
+          orderResponse = { data: localOrderData };
+        } else {
+          // 🎯 메인 모드: DB에 주문 저장
+          try {
+            logger.log('📡 API를 통한 주문 생성 시도...');
+            const apiResult = await dispatch(createOrderAsync({
+              ...finalOrderData,
+              orderId: uniqueOrderId
+            })).unwrap();
+            
+            if (apiResult && apiResult.data) {
+              orderResponse = apiResult;
+              logger.log('✅ DB 주문 생성 성공:', orderResponse);
+              
+              // DB 저장 성공 시 Redux에도 캐시용으로 압축 저장
+              const cacheOrderData = {
+                ...orderResponse.data,
+                items: finalOrderData.orderMenus.map(menu => ({
+                  menuName: menu.menuName,
+                  quantity: menu.quantity,
+                  price: menu.menuTotalPrice || 0,
+                  menuOptions: menu.menuOptions || []
+                })),
+                menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
+              };
+              dispatch(addOrder(cacheOrderData));
+            } else {
+              throw new Error('API 응답 데이터가 잘못되었습니다.');
+            }
+          } catch (apiError) {
+            logger.error('❌ API 주문 생성 실패, 백업 모드로 전환:', apiError);
+            
+            // API 실패 시 백업으로 로컬 저장
+            const backupOrderData = {
+              ...finalOrderData,
+              price: finalOrderData.totalPrice,
+              orderPrice: finalOrderData.totalPrice,
+              items: finalOrderData.orderMenus.map(menu => ({
+                menuName: menu.menuName,
+                quantity: menu.quantity,
+                price: menu.menuTotalPrice || 0,
+                menuOptions: menu.menuOptions || []
+              })),
+              storeName: currentStoreInfo?.name || "알 수 없는 매장",
+              deliveryAddress: selectedAddress?.address || "주소 미설정",
+              menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
+              date: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              status: ORDER_STATUS.WAITING,
+              orderId: uniqueOrderId,
+              isBackup: true // 백업 주문 표시
+            };
+            
+            dispatch(addOrder(backupOrderData));
+            orderResponse = { data: backupOrderData };
+            
+            // 사용자에게 알림
+            showToast('주문이 임시 저장되었습니다. 네트워크 연결을 확인해주세요.');
+          }
         }
       }
 
@@ -493,12 +507,10 @@ export default function Cart() {
         }
       };
 
-      // console.log('💳 결제 처리 시작:', paymentData);
-      
       let paymentResult = null; // 결제 결과 초기화
       
       // 결제 API 호출 (Mock 모드에서는 시뮬레이션)
-      if (useLocalStorage) {
+      if (ENV_CONFIG.isDevelopment) {
         // Mock 결제 처리 (2초 지연)
         await new Promise(resolve => setTimeout(resolve, 2000));
         

@@ -5,10 +5,12 @@ import Header from '../../components/common/Header';
 import Button from '../../components/common/basic/Button';
 import Card from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import OrderProgress from '../../components/orders/OrderProgress';
 import { clearCart } from '../../store/cartSlice';
 import { addOrder, selectAllOrders } from '../../store/orderSlice';
 import { generateOrderId, generatePaymentId } from '../../utils/idUtils';
 import { logger } from '../../utils/logger';
+import { useOrderTracking } from '../../hooks/useOrderTracking';
 import styles from './PaymentSuccess.module.css';
 
 export default function PaymentSuccess() {
@@ -32,6 +34,22 @@ export default function PaymentSuccess() {
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
   );
 
+  // 실시간 주문 상태 추적
+  const { startTracking } = useOrderTracking(orderData?.id, {
+    autoStart: true,
+    onStatusChange: ({ currentStatus }) => {
+      logger.log(`🔄 주문 상태 업데이트: ${currentStatus}`);
+      // orderData 상태 업데이트
+      if (orderData) {
+        setOrderData(prev => ({
+          ...prev,
+          status: currentStatus
+        }));
+      }
+    },
+    pollingInterval: 5000 // 5초마다 갱신
+  });
+
   useEffect(() => {
     // 이미 처리되었거나 필요한 파라미터가 없으면 스킵
     if (isProcessed || (!orderId && !paymentId)) {
@@ -47,10 +65,19 @@ export default function PaymentSuccess() {
         setIsLoading(true);
         setIsProcessed(true); // 처리 시작 플래그 설정
 
-        // orderId로 이미 생성된 주문 찾기
+        // orderId 또는 paymentId로 이미 생성된 주문 찾기
         let existingOrder = null;
         if (orderId) {
-          existingOrder = orders.find(order => order.id === orderId);
+          existingOrder = orders.find(order => 
+            order.id === orderId || 
+            order.orderId === orderId ||
+            order.paymentId === paymentId
+          );
+        }
+        
+        // paymentId만 있는 경우도 체크
+        if (!existingOrder && paymentId) {
+          existingOrder = orders.find(order => order.paymentId === paymentId);
         }
 
         if (existingOrder) {
@@ -170,7 +197,10 @@ export default function PaymentSuccess() {
 
   return (
     <div className={styles.container}>
-      <Header title="결제 완료" />
+      <Header 
+        title="결제 완료" 
+        leftButtonAction={handleGoHome}
+      />
       
       <div className={styles.content}>
         {/* 성공 아이콘 및 메시지 */}
@@ -183,129 +213,55 @@ export default function PaymentSuccess() {
           </p>
         </div>
 
+        {/* 주문 진행 상태 */}
+        <div className={styles.progressSection}>
+          <OrderProgress orderStatus={orderData.status} />
+        </div>
+
         {/* 주문 정보 카드 */}
         <Card className={styles.orderInfoCard}>
           <div className={styles.cardHeader}>
             <h3>주문 정보</h3>
-            <span className={styles.orderId}>주문번호: {orderData.id}</span>
+            <span className={styles.orderNumber}>주문번호: {orderData.orderId}</span>
           </div>
-          
-                      <div className={styles.orderDetails}>
-            <div className={styles.storeInfo}>
-              <img 
-                src={orderData.storeImage || '/samples/food1.jpg'} 
-                alt={orderData.storeName}
-                className={styles.storeImage}
-              />
-              <div>
-                <h4>{orderData.storeName}</h4>
-                <p>{(orderData.items?.length || orderData.orderMenus?.length || 0)}개 메뉴</p>
-              </div>
+          <div className={styles.orderDetails}>
+            <div className={styles.detailRow}>
+              <span>매장</span>
+              <strong>{orderData.storeName}</strong>
             </div>
-            
-            {/* 주문 메뉴 상세 정보 */}
-            {(orderData.items || orderData.orderMenus) && (
-              <div className={styles.menuDetails}>
-                <h5>주문 메뉴</h5>
-                <div className={styles.menuList}>
-                  {(orderData.items || orderData.orderMenus || []).slice(0, 3).map((item, index) => (
-                    <div key={index} className={styles.menuItem}>
-                      <div className={styles.menuInfo}>
-                        <span className={styles.menuName}>{item.menuName}</span>
-                        <span className={styles.menuQuantity}>×{item.quantity}</span>
-                      </div>
-                      <span className={styles.menuPrice}>
-                        {(item.price || item.menuTotalPrice || 0).toLocaleString()}원
-                      </span>
-                    </div>
-                  ))}
-                  {(orderData.items || orderData.orderMenus || []).length > 3 && (
-                    <div className={styles.moreMenus}>
-                      외 {(orderData.items || orderData.orderMenus || []).length - 3}개 메뉴
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className={styles.amountInfo}>
-              <div className={styles.amountRow}>
-                <span>결제 금액</span>
-                <span className={styles.amount}>
-                  {Number(orderData.totalAmount || 0).toLocaleString()}원
-                </span>
-              </div>
+            <div className={styles.detailRow}>
+              <span>주문 시간</span>
+              <strong>{new Date(orderData.createdAt).toLocaleString()}</strong>
             </div>
-
-            <div className={styles.deliveryInfo}>
-              <h5>배달 주소</h5>
-              <p>
-                {typeof orderData.deliveryAddress === 'string' 
-                  ? orderData.deliveryAddress 
-                  : orderData.deliveryAddress?.address || '주소 정보 없음'}
-              </p>
-              {typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress?.detailAddress && (
-                <p className={styles.detailAddress}>
-                  {orderData.deliveryAddress.detailAddress}
-                </p>
-              )}
+            <div className={styles.detailRow}>
+              <span>결제 금액</span>
+              <strong>{orderData.totalPrice?.toLocaleString()}원</strong>
             </div>
-
-            <div className={styles.timeInfo}>
-              <h5>예상 도착 시간</h5>
-              <p className={styles.estimatedTime}>
-                {new Date(orderData.estimatedDeliveryTime).toLocaleTimeString('ko-KR', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })} 예정
-              </p>
+            <div className={styles.detailRow}>
+              <span>배달 주소</span>
+              <strong>{orderData.deliveryAddress}</strong>
             </div>
           </div>
         </Card>
 
-        {/* 액션 버튼들 */}
-        <div className={styles.actionButtons}>
-          <Button
+        {/* 버튼 영역 */}
+        <div className={styles.buttonGroup}>
+          <Button 
             onClick={handleGoToOrderStatus}
             variant="primary"
             size="large"
-            className={styles.primaryButton}
+            className={styles.statusButton}
           >
             주문 상태 확인
           </Button>
-          
-          <div className={styles.secondaryButtons}>
-            <Button
-              onClick={handleGoToOrderStatus}
-              variant="outline"
-              size="medium"
-            >
-              주문내용 확인
-            </Button>
-            
-            <Button
-              onClick={handleGoToOrders}
-              variant="outline"
-              size="medium"
-            >
-              주문 내역
-            </Button>
-            
-            <Button
-              onClick={handleGoHome}
-              variant="text"
-              size="medium"
-            >
-              홈으로
-            </Button>
-          </div>
-        </div>
-
-        {/* 추가 정보 */}
-        <div className={styles.additionalInfo}>
-          <p>• 주문 상태는 실시간으로 업데이트됩니다</p>
-          <p>• 문의사항이 있으시면 고객센터로 연락해 주세요</p>
-          <p>• 리뷰 작성 시 적립금이 지급됩니다</p>
+          <Button 
+            onClick={handleGoHome}
+            variant="line"
+            size="large"
+            className={styles.homeButton}
+          >
+            홈으로 가기
+          </Button>
         </div>
       </div>
     </div>

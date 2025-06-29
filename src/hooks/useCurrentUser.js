@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '../services/authAPI';
 import { userAPI } from '../services/userAPI';
+import { ENV_CONFIG } from '../config/api';
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -48,8 +49,8 @@ export default function useCurrentUser() {
         } catch (authError) {
           console.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
           
-          // API 실패 시 기본 사용자 설정 (db.json의 user 데이터 사용)
-          if (!cachedUser) {
+          // 개발 환경이거나 캐시된 사용자가 없는 경우 기본 사용자 설정
+          if (ENV_CONFIG.isDevelopment || !cachedUser) {
             const defaultUser = {
               id: "user-001",
               name: "송준경",
@@ -61,7 +62,8 @@ export default function useCurrentUser() {
             
             // 기본 토큰도 설정
             if (!localStorage.getItem('authToken')) {
-              localStorage.setItem('authToken', 'token_user-001_default');
+              const defaultToken = 'token_user-001_default';
+              localStorage.setItem('authToken', defaultToken);
             }
           }
         }
