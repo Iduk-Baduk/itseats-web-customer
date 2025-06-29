@@ -149,25 +149,25 @@ export const orderAPI = {
       }
 
       if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: 기존 주문 찾기
-        const existingOrder = mockOrders.get(orderId);
-        if (!existingOrder) {
+        // 개발 환경: 주문 찾기 (mockOrders 또는 Redux store)
+        let order = mockOrders.get(orderId);
+        
+        if (!order) {
           // mockOrders에 없으면 Redux store에서 찾기
           const state = store.getState();
-          const order = state.order?.orders?.find(order => order.id === orderId);
+          order = state.order?.orders?.find(order => order.id === orderId);
+          
           if (!order) {
             throw new Error('주문을 찾을 수 없습니다.');
           }
-          // 찾은 주문을 mockOrders에 추가
-          mockOrders.set(orderId, order);
         }
 
         // 주문 업데이트
         const updatedOrder = {
-          ...existingOrder,
+          ...order,
           status,
           statusHistory: [
-            ...(existingOrder.statusHistory || []),
+            ...(order.statusHistory || []),
             {
               status,
               timestamp: new Date().toISOString(),
