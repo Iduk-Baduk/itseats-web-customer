@@ -166,9 +166,9 @@ export default function Home() {
     // 성공 상태: 매장 목록 표시
     return filteredStores.map((store) => (
       <StoreListItem
-        key={store.id}
+        key={store.storeId}
         store={{
-          storeId: store.id,
+          storeId: store.storeId,
           name: store.name,
           review: store.rating,
           reviewCount: store.reviewCount,
@@ -177,7 +177,7 @@ export default function Home() {
           menuImage2: store.images[2],
           minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
         }}
-        onClick={() => handleStoreClick(store.id)}
+        onClick={() => handleStoreClick(store.storeId)}
       />
     ));
   };

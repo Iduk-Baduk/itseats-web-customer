@@ -11,6 +11,16 @@ export const fetchStores = createAsyncThunk(
   }
 );
 
+// 카테고리별 매장 목록 조회 API 연동
+export const fetchStoresByCategory = createAsyncThunk(
+  'store/fetchStoresByCategory',
+  async (category) => {
+    const data = await apiClient.get(`/stores/list/${category}`);
+    // console.log('🏪 fetchStoresByCategory API 응답:', data.data.stores);
+    return data.data.stores;
+  }
+);
+
 // 특정 매장 정보 조회 API 연동
 export const fetchStoreById = createAsyncThunk(
   'store/fetchStoreById',
@@ -51,6 +61,19 @@ const storeSlice = createSlice({
         state.stores = action.payload;
       })
       .addCase(fetchStores.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 카테고리별 매장 목록 조회
+      .addCase(fetchStoresByCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStoresByCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.stores = action.payload;
+      })
+      .addCase(fetchStoresByCategory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })

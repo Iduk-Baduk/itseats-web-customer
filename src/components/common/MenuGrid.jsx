@@ -152,7 +152,7 @@ const items = [
 
 export default function MenuGrid() {
   const navigate = useNavigate();
-  const LIST_URL = "/stores/list?category=";
+  const LIST_URL = "/stores?category=";
 
   const [expanded, setExpanded] = useState(false);
   const defaultVisibleCount = 10;

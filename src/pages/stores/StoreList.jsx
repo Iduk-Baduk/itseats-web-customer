@@ -9,7 +9,7 @@ import SortBottomSheet, {
 } from "../../components/stores/SortBottomSheet";
 import Tabs from "../../components/stores/Tabs";
 import { getCategoryName } from "../../utils/categoryUtils";
-import { fetchStores } from "../../store/storeSlice";
+import { fetchStoresByCategory } from "../../store/storeSlice";
 
 import styles from "./StoreList.module.css";
 
@@ -29,10 +29,10 @@ export default function StoreList() {
 
   // 매장 데이터 로딩
   useEffect(() => {
-    if (stores.length === 0 && !storeLoading) {
-      dispatch(fetchStores());
+    if (!storeLoading) {
+      dispatch(fetchStoresByCategory(category));
     }
-  }, [dispatch, stores.length, storeLoading]);
+  }, [dispatch, category]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleBackClick = useCallback(() => {
@@ -63,16 +63,8 @@ export default function StoreList() {
 
   // useMemo로 카테고리 필터링 및 정렬된 매장 목록 최적화
   const sortedStores = useMemo(() => {
-    // 카테고리 필터링
-    let filteredStores = stores;
-    if (category && category !== 'all') {
-      filteredStores = stores.filter(store => 
-        store.category?.toLowerCase() === category.toLowerCase()
-      );
-    }
-    
     // 정렬 적용
-    return [...filteredStores].sort((a, b) => {
+    return [...stores].sort((a, b) => {
       switch(sort) {
         case 'rating':
           return (b.rating || 0) - (a.rating || 0);
@@ -127,15 +119,18 @@ export default function StoreList() {
           ) : sortedStores.length > 0 ? (
             sortedStores.map((store) => (
               <StoreListItem
-                key={store.id}
+                key={store.storeId}
                 store={{
-                  storeId: store.id,
+                  storeId: store.storeId,
                   name: store.name,
                   review: store.rating,
                   reviewCount: store.reviewCount,
+                  image: store.images[0],
+                  menuImage1: store.images[1],
+                  menuImage2: store.images[2],
                   minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
                 }}
-                onClick={() => handleStoreClick(store.id)}
+                onClick={() => handleStoreClick(store.storeId)}
               />
             ))
           ) : (
