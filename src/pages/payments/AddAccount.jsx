@@ -7,6 +7,7 @@ import useCurrentUser from "../../hooks/useCurrentUser";
 
 import Header from "../../components/common/Header";
 import styles from "./AddAccount.module.css";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 const banks = [
   { id: "kb", name: "국민은행", logo: "/icons/logos/kbbank.jpg" },
@@ -18,25 +19,53 @@ const banks = [
 ];
 
 export default function AddAccount() {
+  const { currentUser, loading: userLoading } = useCurrentUser();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user: currentUser, loading: userLoading } = useCurrentUser();
 
-  // 사용자 정보가 로딩 중이거나 없으면 기본값 사용
-  const user = currentUser || { name: "사용자" };
+  // 사용자 정보 로딩 중이면 로딩 표시, 없으면 로그인 페이지로 리다이렉트
+  if (userLoading) {
+    return <LoadingSpinner />;
+  }
+  if (!currentUser) {
+    navigate('/login');
+    return null;
+  }
+  const user = currentUser;
 
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [popup, setPopup] = useState(null);
 
-  const accountNumberValid = /^[0-9]{10,20}$/.test(accountNumber);
+  // 계좌번호 유효성 검사
+  const validateAccountNumber = (number) => {
+    // 숫자만 추출
+    const digitsOnly = number.replace(/\D/g, '');
+    // 10-14자리 숫자만 허용
+    return /^\d{10,14}$/.test(digitsOnly);
+  };
+
+  // 계좌번호 마스킹 처리
+  const maskAccountNumber = (number) => {
+    if (!number) return '';
+    const digitsOnly = number.replace(/\D/g, '');
+    if (!validateAccountNumber(digitsOnly)) return number;
+    return `${digitsOnly.slice(0, 3)}-***-${digitsOnly.slice(-4)}`;
+  };
+
+  // 계좌번호 입력 처리
+  const handleAccountNumberChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 14) return; // 최대 14자리로 제한
+    setAccountNumber(value);
+  };
+
+  const accountNumberValid = validateAccountNumber(accountNumber);
   const isValid = selectedBank && accountNumberValid;
 
   const handleSubmit = async () => {
     // 계좌번호 마스킹 처리 (앞 3자리, 뒤 4자리만 표시)
-    const maskedAccountNumber = accountNumber.length > 7 
-      ? `${accountNumber.slice(0, 3)}-***-****${accountNumber.slice(-4)}`
-      : accountNumber;
+    const maskedAccountNumber = maskAccountNumber(accountNumber);
 
     const payload = {
       bankName: selectedBank.name,
@@ -107,14 +136,12 @@ export default function AddAccount() {
             <input
               type="text"
               value={accountNumber}
-              onChange={(e) =>
-                setAccountNumber(e.target.value.replace(/[^0-9]/g, ""))
-              }
+              onChange={handleAccountNumberChange}
               className={styles.input}
             />
             {!accountNumberValid && accountNumber && (
               <p className={styles.warningText}>
-                하이픈(-)을 제외한 숫자만 입력해주세요. (10~20자리)
+                하이픈(-)을 제외한 숫자만 입력해주세요. (10~14자리)
               </p>
             )}
           </div>

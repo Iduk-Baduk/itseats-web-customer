@@ -3,6 +3,7 @@ import { getCurrentUser } from '../services/authAPI';
 import { userAPI } from '../services/userAPI';
 import { ENV_CONFIG } from '../config/api';
 import { DEFAULT_USER, generateDevToken } from '../config/development';
+import { logger } from '../utils/logger';
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -40,27 +41,33 @@ export default function useCurrentUser() {
           setUser(cachedUser);
         }
 
+        // 토큰이 없으면 개발 환경에서만 기본 사용자 설정
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          if (ENV_CONFIG.isDevelopment) {
+            const defaultUser = DEFAULT_USER;
+            setUser(defaultUser);
+            const defaultToken = generateDevToken(defaultUser.id);
+            localStorage.setItem('authToken', defaultToken);
+            localStorage.setItem('currentUser', JSON.stringify(defaultUser));
+          }
+          return;
+        }
+
         // API에서 최신 사용자 정보 가져오기
         try {
           const currentUser = await getCurrentUser();
           setUser(currentUser);
-          
-          // 로컬스토리지 업데이트
           localStorage.setItem('currentUser', JSON.stringify(currentUser));
         } catch (authError) {
-          console.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
-          
-          // 개발 환경이거나 캐시된 사용자가 없는 경우 기본 사용자 설정
-          if (ENV_CONFIG.isDevelopment || !cachedUser) {
+          if (ENV_CONFIG.isDevelopment) {
+            logger.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
+            // 개발 환경에서만 기본 사용자 설정
             const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
             localStorage.setItem('currentUser', JSON.stringify(defaultUser));
-            
-            // 기본 토큰도 설정
-            if (!localStorage.getItem('authToken')) {
-              const defaultToken = generateDevToken(defaultUser.id);
-              localStorage.setItem('authToken', defaultToken);
-            }
+          } else {
+            throw authError;
           }
         }
 
@@ -69,19 +76,23 @@ export default function useCurrentUser() {
           const stats = await userAPI.getStats();
           setUserStats(stats);
         } catch (statsError) {
-          console.warn('사용자 통계 로딩 실패:', statsError);
+          if (ENV_CONFIG.isDevelopment) {
+            logger.warn('사용자 통계 로딩 실패:', statsError);
+          }
           // 통계 로딩 실패는 치명적이지 않으므로 기본값 유지
         }
 
       } catch (error) {
-        console.error('사용자 데이터 로딩 실패:', error);
+        if (ENV_CONFIG.isDevelopment) {
+          logger.error('사용자 데이터 로딩 실패:', error);
+        }
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    // 항상 사용자 정보 로드 (토큰이 없으면 기본 사용자 설정)
+    // 컴포넌트 마운트 시 사용자 정보 로드 (토큰 없거나 조회 실패 시 개발 환경에서만 기본 사용자로 설정)
     loadUserData();
   }, []);
 

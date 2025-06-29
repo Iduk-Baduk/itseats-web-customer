@@ -96,10 +96,6 @@ export default function PaymentSuccess() {
             storeName: currentStore?.storeName || "매장",
             storeId: currentStore?.storeId || 1,
             items: cartItems || [],
-            orderMenus: cartItems || [],
-            totalAmount: parsedAmount,
-            price: parsedAmount,
-            orderPrice: parsedAmount,
             totalPrice: parsedAmount,
             deliveryAddress: typeof selectedAddress === 'string' 
               ? selectedAddress 
@@ -110,7 +106,7 @@ export default function PaymentSuccess() {
             estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
             storeImage: currentStore?.storeImage || "/samples/food1.jpg",
             menuSummary: cartItems?.map(item => item.menuName).join(", ") || "주문 메뉴",
-            paymentMethod: "card", // 기본값
+            paymentMethod: "card",
             deliveryFee: 2500,
             isCompleted: false,
             showReviewButton: false

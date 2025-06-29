@@ -7,14 +7,22 @@ import useCurrentUser from "../../hooks/useCurrentUser";
 
 import Header from "../../components/common/Header";
 import styles from "./AddCard.module.css";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 export default function AddCard() {
+  const { currentUser, loading: userLoading } = useCurrentUser();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user: currentUser, loading: userLoading } = useCurrentUser();
 
-  // 사용자 정보가 로딩 중이거나 없으면 기본값 사용
-  const user = currentUser || { name: "사용자" };
+  // 사용자 정보 로딩 중이면 로딩 표시, 없으면 로그인 페이지로 리다이렉트
+  if (userLoading) {
+    return <LoadingSpinner />;
+  }
+  if (!currentUser) {
+    navigate('/login');
+    return null;
+  }
+  const user = currentUser;
 
   const [cardNumber, setCardNumber] = useState(["", "", "", ""]);
   const [expiry, setExpiry] = useState({ mm: "", yy: "" });
