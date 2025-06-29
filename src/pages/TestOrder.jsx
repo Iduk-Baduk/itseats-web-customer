@@ -248,40 +248,42 @@ export default function TestOrder() {
           )}
         </section>
 
-        {/* 시뮬레이션 설정 */}
+        {/* 자동 시뮬레이션 */}
         <section className={styles.section}>
           <h3>3. 자동 시뮬레이션</h3>
           <div className={styles.simulationControls}>
-            <label>
-              간격 (ms):
+            <div className={styles.intervalInput}>
+              <label>시뮬레이션 간격 (ms):</label>
               <input
                 type="number"
                 value={simulationInterval}
                 onChange={handleIntervalChange}
                 className={styles.input}
                 disabled={isSimulating}
-                min="0"
+                min="1000"
+                max="10000"
                 step="100"
               />
-            </label>
-            <button
-              className={`${styles.button} ${isSimulating ? styles.disabled : ''}`}
-              onClick={handleStartSimulation}
-              disabled={!selectedOrderId || isSimulating}
-            >
-              {isSimulating ? '시뮬레이션 중...' : '시뮬레이션 시작'}
-            </button>
-            {isSimulating && (
+            </div>
+            {!isSimulating ? (
               <button
-                className={`${styles.button} ${styles.stopButton}`}
+                onClick={handleStartSimulation}
+                className={styles.button}
+                disabled={!selectedOrderId}
+              >
+                시뮬레이션 시작
+              </button>
+            ) : (
+              <button
                 onClick={handleStopSimulation}
+                className={`${styles.button} ${styles.stopButton}`}
               >
                 시뮬레이션 중단
               </button>
             )}
           </div>
-          <p className={styles.description}>
-            선택한 주문의 상태가 자동으로 변경됩니다. (30초 후 자동 중단)
+          <p className={styles.note}>
+            * 시뮬레이션은 1초(1000ms)에서 10초(10000ms) 사이의 간격으로 설정할 수 있습니다.
           </p>
         </section>
 

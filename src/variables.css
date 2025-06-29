@@ -12,21 +12,36 @@
 
     /* Background Colors */
     --background-color: #ffffff;
-    --background-color-secondary: #ffffff;
-    --background-hover-color: rgba(0, 0, 0, 0.03); /* 더 연한 호버 효과 */
+    --background-color-secondary: #f8f9fa;
+    --background-hover-color: rgba(0, 0, 0, 0.03);
     --background-selected-color: #CCEDFE;
     --background-disabled-color: #D9D9D9;
+    --background-light-blue: #e3f1ff;
+    --background-warning: #fff3cd;
+    --background-info: #e8f4fd;
+    --background-light-gray: #f0f0f0;
 
     /* Border Colors */
     --border-color-light: #EEE;
     --border-color: #B2B2B2;
     --border-color-dark: #ddd;
+    --border-color-warning: #ffeaa7;
+    --border-color-gray: #e0e0e0;
+
+    /* Text Colors */
+    --text-primary: #1a1a2e;
+    --text-secondary: #4A4A4A;
+    --text-tertiary: #6c757d;
+    --text-warning: #856404;
+    --text-error: #e53935;
+    --text-link: #007aff;
 
     /* State Colors */
     --success-color: #4CAF50;
     --warning-color: #FF9800;
     --error-color: #FF4D4F;
     --info-color: #2196F3;
+    --info-hover: #0056b3;
 
     /* Icon Colors */
     --unchecked-icon-color: #D9D9D9;
