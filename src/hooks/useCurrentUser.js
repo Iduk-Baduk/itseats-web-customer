@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser } from '../services/authAPI';
 import { userAPI } from '../services/userAPI';
 import { ENV_CONFIG } from '../config/api';
+import { DEFAULT_USER, generateDevToken } from '../config/development';
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -51,18 +52,13 @@ export default function useCurrentUser() {
           
           // 개발 환경이거나 캐시된 사용자가 없는 경우 기본 사용자 설정
           if (ENV_CONFIG.isDevelopment || !cachedUser) {
-            const defaultUser = {
-              id: "user-001",
-              name: "송준경",
-              email: "user@example.com",
-              phone: "010-1234-6888"
-            };
+            const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
             localStorage.setItem('currentUser', JSON.stringify(defaultUser));
             
             // 기본 토큰도 설정
             if (!localStorage.getItem('authToken')) {
-              const defaultToken = 'token_user-001_default';
+              const defaultToken = generateDevToken(defaultUser.id);
               localStorage.setItem('authToken', defaultToken);
             }
           }

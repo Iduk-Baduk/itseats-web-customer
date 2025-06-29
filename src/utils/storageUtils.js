@@ -1,19 +1,29 @@
 import { logger } from './logger';
+import { ENV_CONFIG } from '../config/development';
 
 // 로컬스토리지 최대 주문 보관 개수
-const MAX_ORDERS_IN_STORAGE = 50;
+const MAX_ORDERS_IN_STORAGE = ENV_CONFIG.maxOrderHistory || 50;
+const CLEANUP_THRESHOLD = ENV_CONFIG.cleanupThreshold || 100;
 
-// 로컬스토리지 비우기
+// 로컬스토리지 비우기 (선택적)
 export const clearLocalStorage = () => {
   try {
     // 주문 데이터만 선택적으로 삭제
-    localStorage.removeItem('orders');
-    localStorage.removeItem('cart');
-    
-    logger.log('✅ 로컬스토리지 정리 완료');
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    if (orders.length > CLEANUP_THRESHOLD) {
+      logger.warn(`⚠️ 주문 데이터 과다 (${orders.length}개), 정리 실행`);
+      const recentOrders = orders
+        .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
+        .slice(0, MAX_ORDERS_IN_STORAGE);
+      localStorage.setItem('orders', JSON.stringify(recentOrders));
+      logger.log(`✅ 주문 데이터 정리 완료: ${orders.length}개 → ${recentOrders.length}개`);
+    }
     return true;
   } catch (error) {
     logger.error('❌ 로컬스토리지 정리 실패:', error);
+    // 오류 시에도 전체 삭제 대신 필수 데이터만 삭제
+    localStorage.removeItem('orders');
+    localStorage.removeItem('cart');
     return false;
   }
 };
