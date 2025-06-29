@@ -1,19 +1,16 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../services/apiClient';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import apiClient from "../services/apiClient";
 
 // 매장 목록 조회 API 연동
-export const fetchStores = createAsyncThunk(
-  'store/fetchStores',
-  async () => {
-    const data = await apiClient.get('/stores/list');
-    // console.log('🏪 fetchStores API 응답:', data.data.stores);
-    return data.data.stores;
-  }
-);
+export const fetchStores = createAsyncThunk("store/fetchStores", async () => {
+  const data = await apiClient.get("/stores/list");
+  // console.log('🏪 fetchStores API 응답:', data.data.stores);
+  return data.data.stores;
+});
 
 // 카테고리별 매장 목록 조회 API 연동
 export const fetchStoresByCategory = createAsyncThunk(
-  'store/fetchStoresByCategory',
+  "store/fetchStoresByCategory",
   async (category) => {
     const data = await apiClient.get(`/stores/list/${category}`);
     // console.log('🏪 fetchStoresByCategory API 응답:', data.data.stores);
@@ -23,11 +20,11 @@ export const fetchStoresByCategory = createAsyncThunk(
 
 // 특정 매장 정보 조회 API 연동
 export const fetchStoreById = createAsyncThunk(
-  'store/fetchStoreById',
+  "store/fetchStoreById",
   async (storeId) => {
     const data = await apiClient.get(`/stores/${storeId}`);
     // console.log('🏪 fetchStoreById API 응답:', data);
-    return data;
+    return data.data;
   }
 );
 
@@ -39,7 +36,7 @@ const initialState = {
 };
 
 const storeSlice = createSlice({
-  name: 'store',
+  name: "store",
   initialState,
   reducers: {
     setCurrentStore(state, action) {
@@ -94,4 +91,4 @@ const storeSlice = createSlice({
 });
 
 export const { setCurrentStore, clearCurrentStore } = storeSlice.actions;
-export default storeSlice.reducer; 
+export default storeSlice.reducer;

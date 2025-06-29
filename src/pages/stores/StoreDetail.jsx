@@ -182,11 +182,7 @@ export default function StoreDetail() {
           }}
         />
         <div id="intro" className={styles.intro}>
-          <PhotoSlider images={[
-            currentStore.imageUrl || "/samples/food1.jpg",
-            "/samples/food2.jpg",
-            "/samples/food3.jpg"
-          ]} />
+          <PhotoSlider images={currentStore.images} />
           <div className={styles.introContent}>
             <h1>{currentStore.name}</h1>
             <div className={styles.storeInfoButton}>
@@ -212,8 +208,8 @@ export default function StoreDetail() {
           defaultTime={parseInt(currentStore.deliveryTime?.split('-')[0]) || 30}
           takeoutTime={15} // 기본값
           minimumOrderPrice={currentStore.minOrderAmount}
-          deliveryFeeMin={currentStore.deliveryFee}
-          deliveryFeeMax={currentStore.deliveryFee}
+          deliveryFeeMin={currentStore.defaultDeliveryFee}
+          deliveryFeeMax={currentStore.onlyOneDeliveryFee}
           address={currentStore.address}
         />
         <AutoScrollTabs
