@@ -24,7 +24,9 @@ export default function Order() {
 
   // 주문 상태 업데이트 핸들러
   const handleStatusChange = useCallback((orderId, currentStatus) => {
-    logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${currentStatus}`);
+    if (process.env.NODE_ENV === 'development') {
+      logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${currentStatus}`);
+    }
     dispatch(updateOrderStatus({ 
       orderId, 
       status: currentStatus,
@@ -57,7 +59,9 @@ export default function Order() {
             handleStatusChange(orderId, updatedOrder.status);
           }
         } catch (error) {
-          logger.error(`주문 상태 추적 실패 (${orderId}):`, error);
+          if (process.env.NODE_ENV === 'development') {
+            logger.error(`주문 상태 추적 실패 (${orderId}):`, error);
+          }
         }
       };
 
@@ -72,23 +76,27 @@ export default function Order() {
     return () => {
       Object.entries(intervals).forEach(([orderId, interval]) => {
         clearInterval(interval);
-        logger.log(`⏹️ 주문 ${orderId} 추적 중단`);
+        if (process.env.NODE_ENV === 'development') {
+          logger.log(`⏹️ 주문 ${orderId} 추적 중단`);
+        }
       });
     };
   }, [activeOrders, handleStatusChange]);
 
   // 디버깅을 위한 로그
   useEffect(() => {
-    logger.log('📊 주문 목록 업데이트:', {
-      전체: allOrders.length,
-      진행중: activeOrders.length,
-      완료: completedOrders.length,
-      주문목록: allOrders.map(order => ({
-        id: order.id,
-        storeName: order.storeName,
-        status: order.status
-      }))
-    });
+    if (process.env.NODE_ENV === 'development') {
+      logger.log('📊 주문 목록 업데이트:', {
+        전체: allOrders.length,
+        진행중: activeOrders.length,
+        완료: completedOrders.length,
+        주문목록: allOrders.map(order => ({
+          id: order.id,
+          storeName: order.storeName,
+          status: order.status
+        }))
+      });
+    }
   }, [allOrders, activeOrders, completedOrders]);
 
   const handleWriteReview = useCallback((order) => {
@@ -99,7 +107,9 @@ export default function Order() {
     if (order.storeId) {
       navigate(`/stores/${order.storeId}`);
     } else {
-      logger.warn('주문에서 매장 ID를 찾을 수 없습니다:', order);
+      if (process.env.NODE_ENV === 'development') {
+        logger.warn('주문에서 매장 ID를 찾을 수 없습니다:', order);
+      }
       const foundStore = allOrders.find(o => o.storeName === order.storeName);
       if (foundStore && foundStore.storeId) {
         navigate(`/stores/${foundStore.storeId}`);
