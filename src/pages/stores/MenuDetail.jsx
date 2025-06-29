@@ -145,14 +145,14 @@ export default function MenuDetail() {
     // 같은 가게이거나 장바구니가 비어있으면 바로 추가
     dispatch(addMenu(menuData));
     alert("장바구니에 담겼습니다!");
-    navigate("/cart");
+    navigate(-1);  // 이전 페이지(가게 상세)로 돌아가기
   }
 
   function handleReplaceCart() {
     if (pendingMenuData) {
       dispatch(replaceCartWithNewStore(pendingMenuData));
       alert("장바구니에 담겼습니다!");
-      navigate("/cart");
+      navigate(-1);  // 이전 페이지(가게 상세)로 돌아가기
     }
     setShowStoreChangeModal(false);
     setPendingMenuData(null);
