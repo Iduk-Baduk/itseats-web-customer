@@ -42,9 +42,10 @@ export default function Order() {
     activeOrders.forEach(order => {
       const pollOrderStatus = async () => {
         try {
-          const status = await orderAPI.trackOrder(order.id);
-          if (status && status.currentStatus !== order.status) {
-            handleStatusChange(order.id, status.currentStatus);
+          const response = await orderAPI.trackOrder(order.id);
+          const updatedOrder = response.data;
+          if (updatedOrder && updatedOrder.status !== order.status) {
+            handleStatusChange(order.id, updatedOrder.status);
           }
         } catch (error) {
           logger.error(`주문 상태 추적 실패 (${order.id}):`, error);
