@@ -1,17 +1,60 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useCallback } from "react";
+import { useOrderTracking } from "../../hooks/useOrderTracking";
 import Button from "../common/basic/Button";
 import Card from "../common/Card";
 import Tag, { StatusTag } from "../common/Tag";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderStatus";
 import styles from "./OrderCard.module.css";
+import { logger } from "../../utils/logger";
+import OrderProgress from "./OrderProgress";
+import React from "react";
 
-export default function OrderCard({
+function OrderCard({
   order,
   className,
   onReorder,
   onWriteReview,
   onOpenStatus,
 }) {
+  // 상태 변경 콜백 메모이제이션
+  const handleStatusChange = useCallback(({ currentStatus, orderData }) => {
+    logger.log(`🔄 주문 ${order.id} 상태 변경: ${currentStatus}`);
+  }, [order.id]);
+
+  // 실시간 주문 상태 추적
+  const { startTracking, stopTracking } = useOrderTracking(order.id, {
+    autoStart: false,
+    onStatusChange: handleStatusChange,
+    pollingInterval: 5000 // 5초마다 갱신
+  });
+
+  // 활성 주문인 경우 자동으로 추적 시작 (초기 렌더링 시에만)
+  useEffect(() => {
+    const ACTIVE_STATUSES = [
+      ORDER_STATUS.WAITING,
+      ORDER_STATUS.COOKING,
+      ORDER_STATUS.COOKED,
+      ORDER_STATUS.RIDER_READY,
+      ORDER_STATUS.DELIVERING
+    ];
+
+    // 초기 활성 상태 체크
+    const initialStatus = order.status;
+    const isInitiallyActive = ACTIVE_STATUSES.includes(initialStatus);
+
+    if (isInitiallyActive) {
+      logger.log(`🔄 주문 ${order.id} 추적 시작 (초기 상태: ${initialStatus})`);
+      startTracking();
+    }
+
+    return () => {
+      if (isInitiallyActive) {
+        logger.log(`⏹️ 주문 ${order.id} 추적 중단`);
+        stopTracking();
+      }
+    };
+  }, [order.id, startTracking, stopTracking]); // order.status 제거
+
   // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑 - useMemo로 최적화
   const orderData = useMemo(() => {
     const statusConfig = ORDER_STATUS_CONFIG[order.status] || {};
@@ -129,55 +172,7 @@ export default function OrderCard({
         {/* 진행 중인 주문의 경우 진행 단계 표시 */}
         {orderData.isActive && (
           <div className={styles.progressContainer}>
-            <div className={styles.progressSteps}>
-              {(() => {
-                const steps = [
-                  { key: 'order', label: '주문접수', statuses: [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
-                  { key: 'cooking', label: '조리중', statuses: [ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
-                  { key: 'cooked', label: '조리완료', statuses: [ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING] },
-                  { key: 'delivering', label: '배달중', statuses: [ORDER_STATUS.DELIVERING] }
-                ];
-
-                // 현재 진행 단계 인덱스 계산
-                const getCurrentStepIndex = () => {
-                  switch(orderData.status) {
-                    case ORDER_STATUS.WAITING: return 0;
-                    case ORDER_STATUS.COOKING: return 1;
-                    case ORDER_STATUS.COOKED:
-                    case ORDER_STATUS.RIDER_READY: return 2;
-                    case ORDER_STATUS.DELIVERING: return 3;
-                    default: return 0;
-                  }
-                };
-
-                const currentStepIndex = getCurrentStepIndex();
-
-                return steps.map((step, index) => {
-                  const isActive = step.statuses.includes(orderData.status);
-                  const isCurrent = index === currentStepIndex;
-                  const isCompleted = index < currentStepIndex;
-
-                  // 디버깅용 로그
-                  console.log(`단계 ${index} (${step.label}):`, {
-                    status: orderData.status,
-                    currentStepIndex,
-                    isActive,
-                    isCurrent,
-                    isCompleted
-                  });
-
-                  return (
-                    <div 
-                      key={step.key}
-                      className={`${styles.progressStep} ${isActive ? styles.active : ''} ${isCurrent ? styles.current : ''} ${isCompleted ? styles.completed : ''}`}
-                    >
-                      <div className={styles.stepDot}></div>
-                      <span>{step.label}</span>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
+            <OrderProgress orderStatus={orderData.status} />
           </div>
         )}
 
@@ -225,3 +220,10 @@ export default function OrderCard({
     </div>
   );
 }
+
+// 주문 데이터가 변경된 경우에만 리렌더링
+export default React.memo(OrderCard, (prevProps, nextProps) => {
+  // id와 status가 같으면 리렌더링하지 않음
+  return prevProps.order.id === nextProps.order.id && 
+         prevProps.order.status === nextProps.order.status;
+});
