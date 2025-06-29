@@ -96,23 +96,44 @@ export default function TestOrder() {
   };
 
   // 주문 상태 변경
-  const handleStatusChange = (orderId, status) => {
+  const handleStatusChange = async (orderId, status) => {
     if (!orderId) {
       alert('주문을 먼저 선택해주세요.');
       return;
     }
-    simulateOrderStatus(orderId, status);
-    console.log(`🔄 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
-    // 실시간 업데이트 확인을 위한 로그
-    setTimeout(() => {
-      console.log('✅ 주문 상태 변경 완료 - 실시간 추적 시스템에서 감지될 예정');
-    }, 500);
+    try {
+      await simulateOrderStatus(orderId, status);
+      console.log(`🔄 주문 ${orderId}의 상태가 ${status}로 변경되었습니다.`);
+      // 실시간 업데이트 확인을 위한 로그
+      setTimeout(() => {
+        console.log('✅ 주문 상태 변경 완료 - 실시간 추적 시스템에서 감지될 예정');
+      }, 500);
+    } catch (error) {
+      console.error('주문 상태 변경 실패:', error);
+      alert(`주문 상태 변경 실패: ${error.message}`);
+    }
+  };
+
+  // 시뮬레이션 간격 변경 핸들러
+  const handleIntervalChange = (e) => {
+    const value = Number(e.target.value);
+    setSimulationInterval(value);
   };
 
   // 자동 시뮬레이션 시작
   const handleStartSimulation = () => {
     if (!selectedOrderId) {
       alert("시뮬레이션할 주문을 선택해주세요.");
+      return;
+    }
+
+    // 시뮬레이션 시작 전 간격 검증
+    if (simulationInterval < 1000) {
+      alert("시뮬레이션 간격은 최소 1초(1000ms) 이상이어야 합니다.");
+      return;
+    }
+    if (simulationInterval > 10000) {
+      alert("시뮬레이션 간격은 최대 10초(10000ms) 이하여야 합니다.");
       return;
     }
 
@@ -128,18 +149,17 @@ export default function TestOrder() {
     }, 30000);
   };
 
-  // 시뮬레이션 간격 변경 핸들러
-  const handleIntervalChange = (e) => {
-    const value = Number(e.target.value);
-    if (value < 1000) {
-      alert("간격은 최소 1000ms 이상이어야 합니다.");
-      return;
+  // 시뮬레이션 중단
+  const handleStopSimulation = () => {
+    if (stopSimulationRef.current) {
+      stopSimulationRef.current();
+      stopSimulationRef.current = null;
     }
-    if (value > 10000) {
-      alert("간격은 최대 10000ms 이하여야 합니다.");
-      return;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    setSimulationInterval(value);
+    setIsSimulating(false);
   };
 
   return (
@@ -228,7 +248,7 @@ export default function TestOrder() {
           )}
         </section>
 
-        {/* 자동 시뮬레이션 */}
+        {/* 시뮬레이션 설정 */}
         <section className={styles.section}>
           <h3>3. 자동 시뮬레이션</h3>
           <div className={styles.simulationControls}>
@@ -238,19 +258,31 @@ export default function TestOrder() {
                 type="number"
                 value={simulationInterval}
                 onChange={handleIntervalChange}
-                min="1000"
-                max="10000"
                 className={styles.input}
+                disabled={isSimulating}
+                min="0"
+                step="100"
               />
             </label>
-            <button 
+            <button
               className={`${styles.button} ${isSimulating ? styles.disabled : ''}`}
               onClick={handleStartSimulation}
-              disabled={isSimulating}
+              disabled={!selectedOrderId || isSimulating}
             >
               {isSimulating ? '시뮬레이션 중...' : '시뮬레이션 시작'}
             </button>
+            {isSimulating && (
+              <button
+                className={`${styles.button} ${styles.stopButton}`}
+                onClick={handleStopSimulation}
+              >
+                시뮬레이션 중단
+              </button>
+            )}
           </div>
+          <p className={styles.description}>
+            선택한 주문의 상태가 자동으로 변경됩니다. (30초 후 자동 중단)
+          </p>
         </section>
 
         {/* 주문 목록 */}

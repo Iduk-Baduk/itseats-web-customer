@@ -4,6 +4,7 @@ import { generateOrderId } from '../utils/idUtils';
 import { logger } from '../utils/logger';
 import store from '../store';
 import { ORDER_STATUS } from '../constants/orderStatus';
+import { updateOrder, addOrder } from '../store/orderSlice';
 
 // Mock 데이터
 const mockOrders = new Map();
@@ -57,6 +58,10 @@ export const orderAPI = {
       if (ENV_CONFIG.isDevelopment) {
         // 개발 환경: 목업 데이터 사용
         mockOrders.set(newOrder.id, newOrder);
+        
+        // Redux store 업데이트
+        store.dispatch(addOrder(newOrder));
+        
         logger.log('Mock: 새 주문 생성:', newOrder);
         return { data: newOrder };
       } else {
@@ -107,6 +112,35 @@ export const orderAPI = {
     }
   },
 
+  // 실시간 주문 상태 추적
+  trackOrder: async (orderId) => {
+    try {
+      if (ENV_CONFIG.isDevelopment) {
+        // 개발 환경: mockOrders에서 주문 데이터 사용
+        const order = mockOrders.get(orderId) || store.getState().order?.orders?.find(order => order.id === orderId);
+        
+        if (!order) {
+          throw new Error('주문을 찾을 수 없습니다.');
+        }
+
+        // 테스트 주문의 상태 변화를 감지하기 위해 새로운 객체 생성
+        const trackedOrder = {
+          ...order,
+          lastChecked: new Date().toISOString()
+        };
+
+        logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.status})`);
+        return { data: trackedOrder };
+      } else {
+        const response = await apiClient.get(`/orders/${orderId}/track`);
+        return response;
+      }
+    } catch (error) {
+      logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
+      throw error;
+    }
+  },
+
   // 주문 상태 업데이트
   updateOrderStatus: async (orderId, status, message = '') => {
     try {
@@ -115,17 +149,25 @@ export const orderAPI = {
       }
 
       if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: Redux store의 주문 데이터 사용
-        const state = store.getState();
-        const order = state.order?.orders?.find(order => order.id === orderId);
-        if (!order) {
-          throw new Error('주문을 찾을 수 없습니다.');
+        // 개발 환경: 기존 주문 찾기
+        const existingOrder = mockOrders.get(orderId);
+        if (!existingOrder) {
+          // mockOrders에 없으면 Redux store에서 찾기
+          const state = store.getState();
+          const order = state.order?.orders?.find(order => order.id === orderId);
+          if (!order) {
+            throw new Error('주문을 찾을 수 없습니다.');
+          }
+          // 찾은 주문을 mockOrders에 추가
+          mockOrders.set(orderId, order);
         }
+
+        // 주문 업데이트
         const updatedOrder = {
-          ...order,
+          ...existingOrder,
           status,
           statusHistory: [
-            ...order.statusHistory || [],
+            ...(existingOrder.statusHistory || []),
             {
               status,
               timestamp: new Date().toISOString(),
@@ -133,23 +175,21 @@ export const orderAPI = {
             }
           ]
         };
-        // Redux store 업데이트는 orderSlice를 통해 처리됨
+
+        // mockOrders 업데이트
+        mockOrders.set(orderId, updatedOrder);
+
+        // Redux store 업데이트
+        store.dispatch(updateOrder(updatedOrder));
+
+        logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${status}`);
         return { data: updatedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}`);
-        const updatedOrder = {
-          ...response.data,
+        const response = await apiClient.put(`/orders/${orderId}/status`, {
           status,
-          statusHistory: [
-            ...response.data.statusHistory || [],
-            {
-              status,
-              timestamp: new Date().toISOString(),
-              message: message || `주문 상태가 ${status}로 변경되었습니다.`
-            }
-          ]
-        };
-        return await apiClient.put(`/orders/${orderId}`, updatedOrder);
+          message
+        });
+        return response;
       }
     } catch (error) {
       logger.error(`주문 상태 업데이트 실패 (ID: ${orderId}):`, error);
@@ -173,16 +213,6 @@ export const orderAPI = {
       return await orderAPI.updateOrderStatus(orderId, ORDER_STATUS.COMPLETED, '주문이 완료되었습니다.');
     } catch (error) {
       logger.error(`주문 완료 처리 실패 (ID: ${orderId}):`, error);
-      throw error;
-    }
-  },
-
-  // 실시간 주문 상태 추적
-  trackOrder: async (orderId) => {
-    try {
-      return await orderAPI.getOrderById(orderId);
-    } catch (error) {
-      logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
       throw error;
     }
   },

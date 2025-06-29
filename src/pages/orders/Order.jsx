@@ -9,7 +9,6 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import EmptyState from "../../components/common/EmptyState";
 import { orderAPI } from "../../services/orderAPI";
 import { logger } from "../../utils/logger";
-import { useMultipleOrderTracking } from "../../hooks/useOrderTracking";
 import styles from "./Order.module.css";
 
 export default function Order() {
@@ -23,17 +22,6 @@ export default function Order() {
   const completedOrders = useSelector(selectCompletedOrders);
   const isLoading = useSelector(state => state.order?.loading || false);
 
-  // 활성 주문들의 ID 배열
-  const activeOrderIds = activeOrders.map(order => order.id);
-
-  // 여러 주문 동시 추적
-  useMultipleOrderTracking(activeOrderIds, {
-    pollingInterval: 5000, // 5초마다 폴링
-    onStatusChange: (change) => {
-      logger.log(`🔄 주문 상태 변경 감지 - 주문 ID: ${change.orderId}, 이전 상태: ${change.previousStatus}, 현재 상태: ${change.currentStatus}`);
-    }
-  });
-
   // 주문 상태 업데이트 핸들러
   const handleStatusChange = useCallback((orderId, currentStatus) => {
     logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${currentStatus}`);
@@ -43,6 +31,65 @@ export default function Order() {
       message: `주문 상태가 ${currentStatus}로 변경되었습니다.`
     }));
   }, [dispatch]);
+
+  // 활성 주문들에 대한 상태 추적
+  useEffect(() => {
+    if (!activeOrders.length) return;
+
+    const intervals = {};
+    const orderIds = {}; // 주문 ID를 저장할 객체
+
+    // 각 활성 주문에 대한 폴링 설정
+    activeOrders.forEach(order => {
+      const orderId = order.id; // 주문 ID를 저장
+      orderIds[orderId] = true;
+
+      const pollOrderStatus = async () => {
+        try {
+          const response = await orderAPI.trackOrder(orderId);
+          const updatedOrder = response.data;
+          
+          // 상태가 변경되었거나 마지막 체크 시간이 다른 경우 업데이트
+          if (updatedOrder && (
+            updatedOrder.status !== order.status || 
+            updatedOrder.lastChecked !== order.lastChecked
+          )) {
+            handleStatusChange(orderId, updatedOrder.status);
+          }
+        } catch (error) {
+          logger.error(`주문 상태 추적 실패 (${orderId}):`, error);
+        }
+      };
+
+      // 초기 상태 확인
+      pollOrderStatus();
+
+      // 5초마다 상태 확인
+      intervals[orderId] = setInterval(pollOrderStatus, 5000);
+    });
+
+    // 클린업: 모든 인터벌 제거
+    return () => {
+      Object.entries(intervals).forEach(([orderId, interval]) => {
+        clearInterval(interval);
+        logger.log(`⏹️ 주문 ${orderId} 추적 중단`);
+      });
+    };
+  }, [activeOrders, handleStatusChange]);
+
+  // 디버깅을 위한 로그
+  useEffect(() => {
+    logger.log('📊 주문 목록 업데이트:', {
+      전체: allOrders.length,
+      진행중: activeOrders.length,
+      완료: completedOrders.length,
+      주문목록: allOrders.map(order => ({
+        id: order.id,
+        storeName: order.storeName,
+        status: order.status
+      }))
+    });
+  }, [allOrders, activeOrders, completedOrders]);
 
   const handleWriteReview = useCallback((order) => {
     navigate(`/orders/${order.id}/review`);

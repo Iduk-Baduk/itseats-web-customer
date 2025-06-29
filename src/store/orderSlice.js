@@ -142,7 +142,29 @@ const orderSlice = createSlice({
       saveOrdersToStorage(state.orders);
     },
 
-    // 주문 상태 업데이트
+    // 주문 전체 업데이트 (상태 포함)
+    updateOrder(state, action) {
+      const updatedOrder = action.payload;
+      const orderIndex = state.orders.findIndex(order => order.id === updatedOrder.id);
+      
+      if (orderIndex !== -1) {
+        // 기존 주문을 새로운 주문으로 교체
+        state.orders[orderIndex] = updatedOrder;
+        
+        // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
+        if (state.currentOrder && state.currentOrder.id === updatedOrder.id) {
+          state.currentOrder = updatedOrder;
+        }
+
+        // 로컬스토리지 업데이트
+        saveOrdersToStorage(state.orders);
+        logger.log(`📝 주문 ${updatedOrder.id} 전체 업데이트 완료`);
+      } else {
+        logger.error(`주문을 찾을 수 없음: ${updatedOrder.id}`);
+      }
+    },
+
+    // 주문 상태만 업데이트 (이전 버전과의 호환성을 위해 유지)
     updateOrderStatus(state, action) {
       const { orderId, status, message } = action.payload;
       
@@ -155,25 +177,31 @@ const orderSlice = createSlice({
       const orderIndex = state.orders.findIndex(order => order.id === orderId);
       if (orderIndex !== -1) {
         const order = state.orders[orderIndex];
-        order.status = status;
         
-        // statusHistory가 없으면 초기화
-        if (!order.statusHistory) {
-          order.statusHistory = [];
-        }
-        
-        order.statusHistory.push({
-          status,
-          timestamp: new Date().toISOString(),
-          message: message || `주문 상태가 ${status}로 변경되었습니다.`
-        });
+        // 상태가 실제로 변경된 경우에만 업데이트
+        if (order.status !== status) {
+          order.status = status;
+          
+          // statusHistory가 없으면 초기화
+          if (!order.statusHistory) {
+            order.statusHistory = [];
+          }
+          
+          order.statusHistory.push({
+            status,
+            timestamp: new Date().toISOString(),
+            message: message || `주문 상태가 ${status}로 변경되었습니다.`
+          });
 
-        // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
-        if (state.currentOrder && state.currentOrder.id === orderId) {
-          state.currentOrder = order;
-        }
+          // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
+          if (state.currentOrder && state.currentOrder.id === orderId) {
+            state.currentOrder = { ...order }; // 새로운 객체로 복사하여 리렌더링 트리거
+          }
 
-        saveOrdersToStorage(state.orders);
+          // 상태가 변경되었을 때만 저장
+          saveOrdersToStorage(state.orders);
+          logger.log(`🔄 주문 ${orderId} 상태 업데이트: ${status}`);
+        }
       } else {
         logger.error(`Order not found: ${orderId}`);
       }
@@ -342,6 +370,7 @@ const orderSlice = createSlice({
 export const {
   initializeOrders,
   addOrder,
+  updateOrder,
   updateOrderStatus,
   setCurrentOrder,
   updateOrderDetails,

@@ -1,8 +1,9 @@
 import { useDispatch } from "react-redux";
-import { addOrder, updateOrderStatus } from "../store/orderSlice";
+import { addOrder, updateOrder, updateOrderStatus } from "../store/orderSlice";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
 import { getCurrentUser } from "../services/authAPI";
 import { STORAGE_KEYS, logger } from "../utils/logger";
+import { orderAPI } from "../services/orderAPI";
 
 // 기본 테스트 주문 데이터 템플릿
 const BASE_TEST_ORDER_DATA = {
@@ -102,10 +103,15 @@ export const useOrderTestData = () => {
   const addTestOrder = async () => {
     try {
       const testOrder = await generateTestOrderData();
-      dispatch(addOrder(testOrder));
       
-      logger.log('✅ 테스트 주문이 추가되었습니다:', testOrder);
-      return testOrder;
+      // orderAPI를 통해 주문 생성
+      const { data: createdOrder } = await orderAPI.createOrder(testOrder);
+      
+      // Redux store 업데이트
+      dispatch(addOrder(createdOrder));
+      
+      logger.log('✅ 테스트 주문이 추가되었습니다:', createdOrder);
+      return createdOrder;
     } catch (error) {
       logger.error('❌ 테스트 주문 추가 실패:', error);
       throw error;
@@ -113,14 +119,16 @@ export const useOrderTestData = () => {
   };
 
   // 주문 상태 시뮬레이션
-  const simulateOrderStatus = (orderId, status) => {
-    const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
-
-    dispatch(updateOrderStatus({
-      orderId,
-      status,
-      message
-    }));
+  const simulateOrderStatus = async (orderId, status) => {
+    try {
+      const message = ORDER_STATUS_CONFIG[status]?.message || "상태가 업데이트되었습니다.";
+      // orderAPI를 통해 상태 업데이트 (Redux store는 orderAPI 내부에서 업데이트됨)
+      await orderAPI.updateOrderStatus(orderId, status, message);
+      logger.log(`🔄 주문 ${orderId} 상태 시뮬레이션: ${status}`);
+    } catch (error) {
+      logger.error('주문 상태 시뮬레이션 실패:', error);
+      throw error;
+    }
   };
 
   // 전체 주문 상태 시뮬레이션 (자동 진행)
@@ -137,10 +145,15 @@ export const useOrderTestData = () => {
 
     let currentIndex = 0;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       if (currentIndex < statuses.length) {
-        simulateOrderStatus(orderId, statuses[currentIndex]);
-        currentIndex++;
+        try {
+          await simulateOrderStatus(orderId, statuses[currentIndex]);
+          currentIndex++;
+        } catch (error) {
+          logger.error('주문 상태 시뮬레이션 실패:', error);
+          clearInterval(interval);
+        }
       } else {
         clearInterval(interval);
       }

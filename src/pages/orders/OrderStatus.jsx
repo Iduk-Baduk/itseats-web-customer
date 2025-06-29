@@ -47,12 +47,13 @@ export default function OrderStatus() {
   // 주문 진행 상태는 훅에서 제공하는 값 사용
   const isActiveOrder = isActiveOrderFromHook;
 
-  // 실시간 주문 추적
+  // 실시간 주문 추적 - 폴링 간격을 5초로 줄임
   const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
     autoStart: isActiveOrder,
-    pollingInterval: 8000, // 8초마다 폴링
+    pollingInterval: 5000, // 5초마다 폴링
     onStatusChange: (change) => {
-      setStatusChange(change);
+      // 상태 변경 시 자동으로 orderData와 orderStatusInfo가 업데이트됨
+      updateStatus(change.currentStatus);
     }
   });
 
