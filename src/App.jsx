@@ -9,8 +9,8 @@ import { loadAndMigrateCartData } from "./utils/dataMigration"; // 실제 경로
 import DataMigrationNotice from "./components/common/DataMigrationNotice";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
-import { checkStorageSize, clearLocalStorage } from './utils/storageUtils';
-import { logger } from './utils/logger';
+import { checkStorageSize, clearLocalStorage } from "./utils/storageUtils";
+import { logger } from "./utils/logger";
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
@@ -29,11 +29,11 @@ export default function App() {
   useEffect(() => {
     if (import.meta.env.DEV) {
       if (kakaoLoading) {
-        console.log('🔄 카카오맵 전역 로딩 중...');
+        console.log("🔄 카카오맵 전역 로딩 중...");
       } else if (kakaoError) {
-        console.error('❌ 카카오맵 로딩 오류:', kakaoError);
+        console.error("❌ 카카오맵 로딩 오류:", kakaoError);
       } else {
-        console.log('✅ 카카오맵 전역 로딩 완료');
+        console.log("✅ 카카오맵 전역 로딩 완료");
       }
     }
   }, [kakaoLoading, kakaoError]);
@@ -43,12 +43,12 @@ export default function App() {
     // 초기 로딩 스피너 제거
     const removeSpinner = () => {
       try {
-        const spinner = document.getElementById('initial-loading-spinner');
+        const spinner = document.getElementById("initial-loading-spinner");
         if (spinner) {
           spinner.remove();
         }
       } catch (error) {
-        console.warn('초기 스피너 제거 중 오류:', error);
+        console.warn("초기 스피너 제거 중 오류:", error);
       }
     };
 
@@ -57,7 +57,7 @@ export default function App() {
       try {
         loadAndMigrateCartData();
       } catch (error) {
-        console.warn('데이터 마이그레이션 중 오류:', error);
+        console.warn("데이터 마이그레이션 중 오류:", error);
       }
     };
 
@@ -70,7 +70,7 @@ export default function App() {
           try {
             await generatePerformanceReport();
           } catch (error) {
-            console.warn('성능 리포트 생성 실패:', error);
+            console.warn("성능 리포트 생성 실패:", error);
           }
         }, 1000);
         return () => clearTimeout(timeoutId);
@@ -107,38 +107,48 @@ export default function App() {
       try {
         // 로컬스토리지 용량 체크
         const { size, needsCleanup } = checkStorageSize();
-        
+
         if (needsCleanup) {
-          logger.warn(`⚠️ 로컬스토리지 과부하 감지 (${size}MB), 긴급 정리 실행`);
-          
+          logger.warn(
+            `⚠️ 로컬스토리지 과부하 감지 (${size}MB), 긴급 정리 실행`
+          );
+
           // 사용자에게 알림
-          if (window.confirm('앱 성능 향상을 위해 저장된 데이터를 정리하시겠습니까?')) {
+          if (
+            window.confirm(
+              "앱 성능 향상을 위해 저장된 데이터를 정리하시겠습니까?"
+            )
+          ) {
             clearLocalStorage();
-            alert('데이터 정리가 완료되었습니다. 페이지를 새로고침합니다.');
+            alert("데이터 정리가 완료되었습니다. 페이지를 새로고침합니다.");
             window.location.reload();
           }
         } else {
           logger.log(`✅ 로컬스토리지 상태 양호 (${size}MB)`);
         }
-        
-        // 주문 개수 체크 (2000개 이상이면 강제 정리)
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+
+        // 주문 개수 체크 (100개 이상이면 강제 정리)
+        const orders = JSON.parse(localStorage.getItem("orders") || "[]");
         if (orders.length > 100) {
-          logger.warn(`⚠️ 주문 데이터 과다 (${orders.length}개), 강제 정리 실행`);
-          localStorage.removeItem('orders');
-          alert(`성능 향상을 위해 ${orders.length}개의 이전 주문 데이터를 정리했습니다.`);
-          window.location.reload();
+          logger.warn(
+            `⚠️ 주문 데이터 과다 (${orders.length}개), 강제 정리 실행`
+          );
+          // 선택적 정리 (최근 50개만 유지)
+          const recentOrders = orders.slice(-50);
+          localStorage.setItem("orders", JSON.stringify(recentOrders));
+          logger.log(
+            `✅ 주문 데이터 정리 완료: ${orders.length}개 → ${recentOrders.length}개`
+          );
         }
-        
       } catch (error) {
-        logger.error('❌ 로컬스토리지 정리 중 오류:', error);
+        logger.error("❌ 로컬스토리지 정리 중 오류:", error);
         // 오류 발생 시 강제 정리
         try {
           localStorage.clear();
-          alert('데이터 오류가 발생하여 저장된 데이터를 모두 정리했습니다.');
+          alert("데이터 오류가 발생하여 저장된 데이터를 모두 정리했습니다.");
           window.location.reload();
         } catch (clearError) {
-          logger.error('❌ 강제 정리도 실패:', clearError);
+          logger.error("❌ 강제 정리도 실패:", clearError);
         }
       }
     };
