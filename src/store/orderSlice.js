@@ -121,10 +121,21 @@ const orderSlice = createSlice({
       
       // 새로운 orderId 생성 (payload에 없는 경우만)
       const orderId = payloadOrderId || generateOrderId();
+      
+      // store 정보 처리
+      const storeInfo = action.payload.store || {
+        id: action.payload.storeId,
+        name: action.payload.storeName,
+        image: action.payload.storeImage
+      };
+
       const newOrder = {
         ...action.payload,
         id: orderId,
         orderId: orderId, // id와 orderId를 동일하게 설정
+        storeId: storeInfo.id || action.payload.storeId,
+        storeName: storeInfo.name || action.payload.storeName,
+        storeImage: storeInfo.image || action.payload.storeImage,
         createdAt: action.payload.createdAt || new Date().toISOString(),
         status: action.payload.status || ORDER_STATUS.WAITING,
         statusHistory: action.payload.statusHistory || [
