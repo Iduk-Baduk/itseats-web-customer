@@ -348,7 +348,7 @@ export default function Cart() {
       orderMenus: orderMenus.map(menu => ({
         menuId: menu.menuId,
         menuName: menu.menuName,
-        menuOptions: menu.menuOptions || [],
+        menuOption: menu.menuOptions || [],
         menuTotalPrice: calculateCartTotal(menu),
         quantity: menu.quantity
       })),
@@ -356,6 +356,7 @@ export default function Cart() {
       // 배송 정보
       deliveryAddress: selectedAddress?.address || "주소 미설정",
       deliveryFee: deliveryOption?.price || 0,
+      deliveryType: deliveryOption?.label === "한집배달" ? "ONLY_ONE" : "DEFAULT",
       
       // 추가 정보
       storeRequest: requestInfo?.storeRequest || "",
@@ -389,7 +390,7 @@ export default function Cart() {
         orderResponse = { data: existingOrderCheck };
       } else {
         // ✅ 새로운 주문 생성
-        const useLocalStorage = true; // 임시로 로컬 저장소 모드 사용
+        const useLocalStorage = false; // 임시로 로컬 저장소 모드 사용
         
         if (useLocalStorage) {
           // 백업 모드: 로컬 저장
@@ -664,7 +665,7 @@ export default function Cart() {
             <DeliveryToggle onChange={(value) => setIsDelivery(value)} />
           </span>
           <BottomButton
-                        onClick={handlePayment}
+            onClick={handlePayment}
             disabled={
               orderMenus.length === 0 || 
               isProcessingPayment ||

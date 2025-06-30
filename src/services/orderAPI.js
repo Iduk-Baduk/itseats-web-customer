@@ -25,11 +25,12 @@ export const orderAPI = {
         deliveryAddress,
         storeRequest = "",
         riderRequest = "",
+        deliveryType = "",
         coupons = []
       } = orderData;
 
       // 필수 필드 검증
-      if (!storeId || !storeName || !totalPrice || !paymentMethod || !orderMenus.length) {
+      if (!storeId || !storeName || !totalPrice || !paymentMethod || !orderMenus.length || !deliveryType) {
         throw new Error("필수 주문 정보가 누락되었습니다.");
       }
 
@@ -47,6 +48,7 @@ export const orderAPI = {
         paymentMethod,
         storeRequest,
         riderRequest,
+        deliveryType,
         coupons,
         statusHistory: [{
           status: ORDER_STATUS.WAITING,
@@ -55,7 +57,7 @@ export const orderAPI = {
         }]
       };
 
-      if (ENV_CONFIG.isDevelopment) {
+      if (false /*ENV_CONFIG.isDevelopment*/) { // TODO: 임시로 false 설정함
         // 개발 환경: 목업 데이터 사용
         mockOrders.set(newOrder.id, newOrder);
         
@@ -67,7 +69,7 @@ export const orderAPI = {
       } else {
         // 운영 환경: 실제 API 호출
         logger.log('새 주문 생성:', newOrder);
-        return await apiClient.post('/orders', newOrder);
+        return await apiClient.post('/orders/new', newOrder);
       }
     } catch (error) {
       logger.error('주문 생성 실패:', error);
