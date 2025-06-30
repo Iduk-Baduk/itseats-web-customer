@@ -109,9 +109,9 @@ export default function OrderStatus() {
   }
 
   // 필수 데이터 검증
-  if (!orderData || !orderStatusInfo) {
-    return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
-  }
+  // if (!orderData) {
+  //   return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
+  // }
 
   // 주문 상태 변경 감지
   useEffect(() => {
@@ -247,7 +247,6 @@ export default function OrderStatus() {
                 </div>
               </div>
             </div>
-            <p>{JSON.stringify(safeOrderData)}</p>
 
             {/* 도움말 버튼 - 진행 중인 주문에만 표시 */}
             {isActiveOrder && (

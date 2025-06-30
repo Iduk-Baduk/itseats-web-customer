@@ -9,6 +9,7 @@ import {
   selectError,
   updateOrderStatus,
   clearCurrentOrder,
+  trackOrderAsync,
 } from "../store/orderSlice";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
 import { calculateETA, getOrderStep, isValidOrderStatus } from "../utils/orderUtils";
@@ -47,9 +48,7 @@ export function useOrderStatus(orderId = null) {
 
   // 현재 주문 설정
   useEffect(() => {
-    if (actualOrderId) {
-      dispatch(setCurrentOrder(actualOrderId));
-    }
+    dispatch(trackOrderAsync(actualOrderId));
 
     // 컴포넌트 언마운트 시 현재 주문 초기화
     return () => {
@@ -57,35 +56,37 @@ export function useOrderStatus(orderId = null) {
     };
   }, [actualOrderId, dispatch]);
 
-  // 주문 데이터 (Redux에서 가져온 데이터만 사용)
+  // 주문 데이터
   const orderData = useMemo(() => {
-    if (orderFromStore) {
+    if (currentOrder) {
       // Redux 데이터를 OrderStatus 컴포넌트에서 기대하는 형식으로 변환
       return {
-        id: orderFromStore.id,
-        orderStatus: orderFromStore.status || orderFromStore.orderStatus,
-        deliveryEta: orderFromStore.deliveryEta || null,
-        storeName: orderFromStore.storeName,
-        orderNumber: orderFromStore.orderNumber || `ORDER${orderFromStore.id}`,
-        orderPrice: orderFromStore.orderPrice || orderFromStore.totalPrice || 0,
-        orderMenuCount: orderFromStore.orderMenuCount || orderFromStore.menuCount || 1,
-        deliveryAddress: orderFromStore.deliveryAddress,
-        destinationLocation: orderFromStore.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-        storeLocation: orderFromStore.storeLocation || { lat: 37.4979, lng: 127.0276 },
-        riderRequest: orderFromStore.riderRequest || orderFromStore.deliveryRequest,
-        statusHistory: orderFromStore.statusHistory || [],
-        createdAt: orderFromStore.createdAt,
-        ...orderFromStore // 나머지 필드들도 포함
+        id: currentOrder.id,
+        orderStatus: currentOrder.status || currentOrder.orderStatus,
+        deliveryEta: currentOrder.deliveryEta || null,
+        storeName: currentOrder.storeName,
+        orderNumber: currentOrder.orderNumber || `ORDER${currentOrder.id}`,
+        orderPrice: currentOrder.orderPrice || currentOrder.totalPrice || 0,
+        orderMenuCount: currentOrder.orderMenuCount || currentOrder.menuCount || 1,
+        deliveryAddress: currentOrder.deliveryAddress,
+        destinationLocation: currentOrder.destinationLocation || { lat: 37.501887, lng: 127.039252 },
+        storeLocation: currentOrder.storeLocation || { lat: 37.4979, lng: 127.0276 },
+        riderRequest: currentOrder.riderRequest || currentOrder.deliveryRequest,
+        statusHistory: currentOrder.statusHistory || [],
+        createdAt: currentOrder.createdAt,
+        ...currentOrder // 나머지 필드들도 포함
       };
     }
     
     // Redux에 데이터가 없는 경우 null 반환
     return null;
-  }, [orderFromStore]);
+  }, [currentOrder]);
 
   // 주문 상태 정보 계산
   const orderStatusInfo = useMemo(() => {
     const status = orderData?.orderStatus;
+
+    console.log(`주문 상태: ${orderData?.orderStatus}`);
     
     if (!isValidOrderStatus(status)) {
       console.warn(`Unknown order status: ${status}`);

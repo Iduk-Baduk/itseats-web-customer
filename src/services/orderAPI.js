@@ -80,7 +80,7 @@ export const orderAPI = {
   // 주문 목록 조회
   getOrders: async (params = {}) => {
     try {
-      if (ENV_CONFIG.isDevelopment) {
+      if (false /*ENV_CONFIG.isDevelopment*/) { // TODO: 임시로 false 설정함
         // 개발 환경: Redux store의 주문 데이터 사용
         const state = store.getState();
         const orders = state.order?.orders || [];
@@ -117,7 +117,7 @@ export const orderAPI = {
   // 실시간 주문 상태 추적
   trackOrder: async (orderId) => {
     try {
-      if (ENV_CONFIG.isDevelopment) {
+      if (false /*ENV_CONFIG.isDevelopment*/) { // TODO: 임시로 false 설정함
         // 개발 환경: mockOrders에서 주문 데이터 사용
         const order = mockOrders.get(orderId) || store.getState().order?.orders?.find(order => order.id === orderId);
         
@@ -134,8 +134,9 @@ export const orderAPI = {
         logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.status})`);
         return { data: trackedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}/track`);
-        return response;
+        const data = await apiClient.get(`/orders/${orderId}/status`);
+        console.log("📦 주문 상태 추적 응답:", data.data);
+        return data.data;
       }
     } catch (error) {
       logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
