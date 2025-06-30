@@ -38,6 +38,16 @@ export const fetchMenusByStoreId = createAsyncThunk(
   }
 );
 
+// 메뉴 옵션 조회 API 연동
+export const fetchMenuOptionsById = createAsyncThunk(
+  "store/fetchMenuOptionsById",
+  async ({ storeId, menuId }) => {
+    const data = await apiClient.get(`/stores/${storeId}/${menuId}/options`);
+    // console.log('🏪 fetchMenuOptionsById API 응답:', data.data);
+    return data.data;
+  }
+);
+
 const initialState = {
   stores: [],
   currentStore: null,
@@ -109,6 +119,19 @@ const storeSlice = createSlice({
         state.currentMenuGroups = action.payload;
       })
       .addCase(fetchMenusByStoreId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 메뉴 옵션 조회
+      .addCase(fetchMenuOptionsById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMenuOptionsById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentMenuOptions = action.payload;
+      })
+      .addCase(fetchMenuOptionsById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

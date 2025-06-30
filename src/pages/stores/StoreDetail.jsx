@@ -215,7 +215,7 @@ export default function StoreDetail() {
           address={currentStore.address}
         />
         <AutoScrollTabs
-          storeId={currentStore.storeId}
+          storeId={storeId}
           menus={menuGroups || []}
           fixed={menuTabFixed}
         />

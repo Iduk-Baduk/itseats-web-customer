@@ -12,7 +12,7 @@
 }
 .headerTransparent button > svg {
   color: #fff;
-  stroke: var(--border-color-light);
+  stroke: var(--border-color);
   stroke-width: 1;
   transition: all 0.3s ease-in-out;
 }
