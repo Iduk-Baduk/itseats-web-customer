@@ -23,14 +23,26 @@ export const fetchStoreById = createAsyncThunk(
   "store/fetchStoreById",
   async (storeId) => {
     const data = await apiClient.get(`/stores/${storeId}`);
-    // console.log('🏪 fetchStoreById API 응답:', data);
+    // console.log('🏪 fetchStoreById API 응답:', data.data);
     return data.data;
+  }
+);
+
+// 메뉴 목록 조회 API 연동
+export const fetchMenusByStoreId = createAsyncThunk(
+  "store/fetchMenusByStoreId",
+  async (storeId) => {
+    const data = await apiClient.get(`/stores/${storeId}/menus`);
+    // console.log('🏪 fetchMenusByStoreId API 응답:', data.data);
+    return data.data.menuGroups;
   }
 );
 
 const initialState = {
   stores: [],
   currentStore: null,
+  currentMenuGroups: null,
+  currentMenuOptions: null,
   loading: false,
   error: null,
 };
@@ -84,6 +96,19 @@ const storeSlice = createSlice({
         state.currentStore = action.payload;
       })
       .addCase(fetchStoreById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 메뉴 목록 조회
+      .addCase(fetchMenusByStoreId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMenusByStoreId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentMenuGroups = action.payload;
+      })
+      .addCase(fetchMenusByStoreId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

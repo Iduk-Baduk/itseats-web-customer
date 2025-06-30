@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchStoreById } from "../../store/storeSlice";
+import { fetchStoreById, fetchMenusByStoreId } from "../../store/storeSlice";
 import { selectCartItemCount } from "../../store/cartSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -47,6 +47,7 @@ export default function StoreDetail() {
   // Redux에서 매장 데이터 가져오기
   const store = useSelector(state => state.store?.currentStore);
   const stores = useSelector(state => state.store?.stores || []);
+  const menuGroups = useSelector(state => state.store?.currentMenuGroups || []);
   const storeLoading = useSelector(state => state.store?.loading || false);
   const storeError = useSelector(state => state.store?.error || null);
   
@@ -66,6 +67,7 @@ export default function StoreDetail() {
   useEffect(() => {
     if (storeId) {
       dispatch(fetchStoreById(storeId));
+      dispatch(fetchMenusByStoreId(storeId));
     }
   }, [dispatch, storeId]);
 
@@ -171,11 +173,11 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={currentStore?.id ? isFavorite(currentStore.id) : false}
+          isFavorite={currentStore?.storeId ? isFavorite(currentStore.storeId) : false}
           favoriteButtonAction={() => {
-            if (!currentStore?.id) return;
-            const wasAlreadyFavorite = isFavorite(currentStore.id);
-            toggleFavorite(currentStore.id);
+            if (!currentStore?.storeId) return;
+            const wasAlreadyFavorite = isFavorite(currentStore.storeId);
+            toggleFavorite(currentStore.storeId);
             // 토스트 메시지 표시
             const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
             setToastMessage(message);
@@ -213,8 +215,8 @@ export default function StoreDetail() {
           address={currentStore.address}
         />
         <AutoScrollTabs
-          storeId={currentStore.id}
-          menus={currentStore.menus || []}
+          storeId={currentStore.storeId}
+          menus={menuGroups || []}
           fixed={menuTabFixed}
         />
       </div>
