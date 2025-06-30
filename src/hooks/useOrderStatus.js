@@ -18,7 +18,7 @@ const ACTIVE_ORDER_STATUSES = [
   ORDER_STATUS.WAITING, 
   ORDER_STATUS.COOKING, 
   ORDER_STATUS.COOKED, 
-  ORDER_STATUS.RIDER_READY, 
+  ORDER_STATUS.RIDER_READY,
   ORDER_STATUS.DELIVERING
 ];
 
@@ -50,7 +50,7 @@ export function useOrderStatus(orderId = null) {
     if (actualOrderId) {
       dispatch(setCurrentOrder(actualOrderId));
     }
-    
+
     // 컴포넌트 언마운트 시 현재 주문 초기화
     return () => {
       dispatch(clearCurrentOrder());

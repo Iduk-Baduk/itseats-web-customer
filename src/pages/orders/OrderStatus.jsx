@@ -247,6 +247,7 @@ export default function OrderStatus() {
                 </div>
               </div>
             </div>
+            <p>{JSON.stringify(safeOrderData)}</p>
 
             {/* 도움말 버튼 - 진행 중인 주문에만 표시 */}
             {isActiveOrder && (

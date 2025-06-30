@@ -150,7 +150,7 @@ export const orderAPI = {
         throw new Error(`유효하지 않은 주문 상태: ${status}`);
       }
 
-      if (ENV_CONFIG.isDevelopment) {
+      if (false /*ENV_CONFIG.isDevelopment*/) { // TODO: 임시로 false 설정함
         // 개발 환경: 주문 찾기 (mockOrders 또는 Redux store)
         let order = mockOrders.get(orderId);
         
