@@ -25,6 +25,7 @@ export default function MenuDetail() {
   const currentStore = useSelector(selectCurrentStore);
 
   // Redux에서 메뉴 정보 가져오기
+  const store = useSelector(state => state.store?.currentStore);
   const currentMenu = useSelector((state) => state.store.currentMenuOptions);
   const storeLoading = useSelector((state) => state.store.loading);
 
@@ -94,24 +95,49 @@ export default function MenuDetail() {
     );
   }
 
+  function createMenuData() {
+    if (!currentMenu || !store) return null;
+    
+    // API 스펙에 맞는 menuOptions 구조로 변환
+    const menuOptions = selectedOptions.map((group, index) => ({
+      optionGroupName: currentMenu.options?.[index]?.name || group.optionGroupName,
+      options: group.options.map(option => ({
+        optionName: option.optionName,
+        optionPrice: option.optionPrice
+      }))
+    })).filter(group => group.options.length > 0);
+
+    return {
+      menuId: currentMenu.id || currentMenu.menuId,
+      menuName: currentMenu.name || currentMenu.menuName,
+      menuPrice: currentMenu.price || currentMenu.menuPrice,
+      menuOptions: menuOptions,
+      menuOption: selectedOptions,
+      quantity,
+      storeId: String(storeId),
+      storeName: store.name,
+      storeImage: store.imageUrl
+    };
+  }
+
   function addToCart() {
-    // const menuData = createMenuData();
-    // if (!menuData) {
-    //   alert("메뉴 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-    //   return;
-    // }
-    // // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
-    // const isDifferentStore = currentStore && String(currentStore.storeId) !== String(menuData.storeId);
-    // if (isDifferentStore) {
-    //   // 다른 가게 메뉴가 있으면 확인 모달 표시
-    //   setPendingMenuData(menuData);
-    //   setShowStoreChangeModal(true);
-    //   return;
-    // }
-    // // 같은 가게이거나 장바구니가 비어있으면 바로 추가
-    // dispatch(addMenu(menuData));
-    // alert("장바구니에 담겼습니다!");
-    // navigate(-1);  // 이전 페이지(가게 상세)로 돌아가기
+    const menuData = createMenuData();
+    if (!menuData) {
+      alert("메뉴 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    // 현재 장바구니에 다른 가게의 메뉴가 있는지 확인
+    const isDifferentStore = currentStore && String(currentStore.storeId) !== String(menuData.storeId);
+    if (isDifferentStore) {
+      // 다른 가게 메뉴가 있으면 확인 모달 표시
+      setPendingMenuData(menuData);
+      setShowStoreChangeModal(true);
+      return;
+    }
+    // 같은 가게이거나 장바구니가 비어있으면 바로 추가
+    dispatch(addMenu(menuData));
+    alert("장바구니에 담겼습니다!");
+    navigate(-1);  // 이전 페이지(가게 상세)로 돌아가기
   }
 
   function handleReplaceCart() {
