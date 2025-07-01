@@ -11,7 +11,7 @@ const StoreListItem = React.memo(({ store, onClick }) => {
           alt={`${store.name} 가맹점 이미지`}
           className={styles.storeImage}
           width={120}
-          height={80}
+          height={160}
           priority={false}
         />
         <div className={styles.menuImageContainer}>
@@ -19,16 +19,16 @@ const StoreListItem = React.memo(({ store, onClick }) => {
             src={store.menuImage1 || "/samples/food1.jpg"}
             alt={`${store.name} 메뉴 이미지`}
             className={styles.menuImage}
-            width={40}
-            height={40}
+            width={80}
+            height={80}
             priority={false}
           />
           <OptimizedImage
             src={store.menuImage2 || "/samples/food2.jpg"}
             alt={`${store.name} 메뉴 이미지`}
             className={styles.menuImage}
-            width={40}
-            height={40}
+            width={80}
+            height={80}
             priority={false}
           />
         </div>
