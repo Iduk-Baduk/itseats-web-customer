@@ -11,7 +11,6 @@ export default function useRegistForm() {
     nickname: "",
     email: "",
     phone: "",
-    usertype: "CUSTOMER", // 기본값을 CUSTOMER로 지정
   });
   const [error, setError] = useState("");
 

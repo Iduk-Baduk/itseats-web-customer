@@ -31,6 +31,13 @@ const RegistForm = ({ className = "" }) => {
         onChange={handleChange}
       />
       <TextInput
+        name="name"
+        type="text"
+        placeholder="이름"
+        value={form.name}
+        onChange={handleChange}
+      />
+      <TextInput
         name="nickname"
         type="text"
         placeholder="닉네임"
