@@ -8,6 +8,7 @@ export default function useRegistForm() {
     username: "",
     password: "",
     confirmPassword: "",
+    name: "",
     nickname: "",
     email: "",
     phone: "",

@@ -24,7 +24,8 @@ const extractUserIdFromToken = (token) => {
 
 export const regist = async (form) => {
   try {
-    logger.log("📡 회원가입 요청 데이터:", form);
+    const sanitizedForm = { ...form, password: "[REDACTED]" };
+    logger.log("📡 회원가입 요청 데이터:", sanitizedForm);
 
     const response = await apiClient.post('/members/sign-up', form);
 
