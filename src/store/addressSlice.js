@@ -5,7 +5,7 @@ export const addAddressAsync = createAsyncThunk(
   'address/addAddressAsync',
   async (addressData) => {
     const addressId = await AddressAPI.createAddress(addressData);
-    return { ...addressData, id: addressId };
+    return { ...addressData, id: String(addressId) };
   }
 );
 
@@ -66,16 +66,16 @@ const addressSlice = createSlice({
     },
     removeAddress: (state, action) => {
       state.addresses = state.addresses.filter(
-        (addr) => addr.id !== parseInt(action.payload)
+        (addr) => addr.id !== action.payload
       );
-      if (state.selectedAddressId === parseInt(action.payload)) {
+      if (state.selectedAddressId === action.payload) {
         state.selectedAddressId =
           state.addresses.length > 0 ? state.addresses[0].id : null;
       }
       saveToLocalStorage(state);
     },
     selectAddress: (state, action) => {
-      state.selectedAddressId = parseInt(action.payload);
+      state.selectedAddressId = action.payload;
       saveToLocalStorage(state);
     },
   },
