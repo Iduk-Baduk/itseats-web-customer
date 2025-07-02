@@ -10,7 +10,7 @@ export default function AddressEdit() {
   const navigate = useNavigate();
   const location = useLocation();
   const { addresses, updateAddress, removeAddress } = useAddressRedux();
-  const addressToEdit = addresses.find((addr) => addr.id === id);
+  const addressToEdit = addresses.find((addr) => addr.id === parseInt(id));
 
   const [currentLabel, setCurrentLabel] = useState("");
   const [detailAddress, setDetailAddress] = useState("");

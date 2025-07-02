@@ -1,9 +1,9 @@
 import { useSelector, useDispatch } from "react-redux";
 import {
-  addAddress,
   updateAddress,
   removeAddress,
   selectAddress,
+  addAddressAsync,
 } from "../store/addressSlice";
 
 export default function useAddressRedux() {
@@ -17,7 +17,7 @@ export default function useAddressRedux() {
     addresses,
     selectedAddressId,
     selectedAddress,
-    addAddress: (address) => dispatch(addAddress(address)),
+    addAddress: (address) => dispatch(addAddressAsync(address)),
     updateAddress: (address) => dispatch(updateAddress(address)),
     removeAddress: (id) => dispatch(removeAddress(id)),
     selectAddress: (id) => dispatch(selectAddress(id)),

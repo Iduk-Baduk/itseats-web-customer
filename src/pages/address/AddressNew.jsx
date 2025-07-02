@@ -43,6 +43,7 @@ export default function AddressNew() {
       label: finalLabel,
       address: fullAddress,
       roadAddress: currentAddress.roadAddress,
+      detailAddress: detailAddress,
       guide: guideMessage,
       lat: currentAddress.lat,
       lng: currentAddress.lng,
