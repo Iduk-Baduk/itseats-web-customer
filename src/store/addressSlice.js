@@ -49,7 +49,13 @@ const saveToLocalStorage = (state) => {
   }
 };
 
-const initialState = loadFromLocalStorage();
+const initialState = {
+  addresses: [],
+  selectedAddressId: null,
+  isLoading: false,
+  error: null,
+  ...loadFromLocalStorage(), // 로컬 스토리지에서 초기 상태 로드
+};
 
 const addressSlice = createSlice({
   name: "address",
@@ -80,7 +86,12 @@ const addressSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(addAddressAsync.fulfilled, (state, action) => {
+    builder
+    .addCase(addAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(addAddressAsync.fulfilled, (state, action) => {
       const newAddress = action.payload;
       state.addresses.push(newAddress);
 
@@ -89,6 +100,10 @@ const addressSlice = createSlice({
       }
 
       saveToLocalStorage(state);
+    })
+    .addCase(addAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
     });
   }
 });
