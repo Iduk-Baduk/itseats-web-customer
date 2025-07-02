@@ -169,8 +169,10 @@ export default function AddressForm({
             className={styles.labelIcon}
           />
           <div className={styles.addressTextGroup}>
-            <p className={styles.primaryAddress}>{currentAddress.address}</p>
-            <p className={styles.secondaryAddress}>{currentAddress.roadAddress}</p>
+            <p className={styles.primaryAddress}>{currentAddress.roadAddress || currentAddress.address}</p>
+            {(currentAddress.roadAddress) && (
+              <p className={styles.secondaryAddress}>{currentAddress.address}</p>
+            )}
             {currentAddress.wowZone && (
               <div className={styles.wowArea}>
                 <span className={styles.wow}>WOW</span>

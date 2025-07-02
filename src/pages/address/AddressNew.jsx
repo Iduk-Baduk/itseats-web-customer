@@ -36,7 +36,8 @@ export default function AddressNew() {
 
   // 중복 체크 및 주소 저장 처리
   const handleSubmit = () => {
-    const fullAddress = [currentAddress.address, detailAddress].filter(Boolean).join(' ');
+    const roadAddressOrAddress = currentAddress.roadAddress || currentAddress.address;
+    const fullAddress = [roadAddressOrAddress, detailAddress].filter(Boolean).join(' ');
     const finalLabel = currentLabel === "기타" && customLabel ? customLabel : currentLabel;
     
     const newAddress = {
