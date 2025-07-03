@@ -29,7 +29,7 @@ const AddressAPI = {
         detailAddress: detailAddress || "",
         lat,
         lng,
-        addressCategory: getAddressLabel(label),
+        addressCategory: getCategoryFromLabel(label),
       }
 
       const response = await apiClient.post("/addresses", newAddress);
@@ -56,7 +56,7 @@ const AddressAPI = {
         detailAddress: detailAddress || "",
         lat,
         lng,
-        addressCategory: getAddressLabel(label),
+        addressCategory: getCategoryFromLabel(label),
       }
 
       const response = await apiClient.put(`/addresses/${addressId}`, updatedAddress);
@@ -82,7 +82,7 @@ const AddressAPI = {
   },
 };
 
-function getAddressLabel(label) {
+function getCategoryFromLabel(label) {
   switch (label) {
     case "집":
       return "HOUSE";

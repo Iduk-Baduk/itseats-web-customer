@@ -125,6 +125,13 @@ const addressSlice = createSlice({
     .addCase(fetchAddressListAsync.fulfilled, (state, action) => {
       state.isLoading = false;
       state.addresses = action.payload;
+
+      // 기존에 선택된 ID가 새 목록에 있으면 유지, 없으면 첫 번째 주소로 설정
+      if (state.selectedAddressId && state.addresses.some(a => a.id === state.selectedAddressId)) {
+        // 유지
+      } else {
+        state.selectedAddressId = state.addresses[0]?.id || null;
+      }
       saveToLocalStorage(state);
     })
     .addCase(fetchAddressListAsync.rejected, (state, action) => {
