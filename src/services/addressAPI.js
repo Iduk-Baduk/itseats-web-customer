@@ -2,6 +2,18 @@ import apiClient from "./apiClient";
 import { logger } from "../utils/logger";
 
 const AddressAPI = {
+  // 주소 목록 조회 API
+  getAddressList: async () => {
+    try {
+      const response = await apiClient.get("/addresses");
+      // logger.log("✅ 주소 목록 조회 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      logger.error("📡 주소 목록 조회 요청 실패:", error);
+      throw error;
+    }
+  },
+
   // 주소 추가 API
   createAddress: async (addressData) => {
     const { label, roadAddress, detailAddress, lat, lng } = addressData;
@@ -21,7 +33,7 @@ const AddressAPI = {
       }
 
       const response = await apiClient.post("/addresses", newAddress);
-      logger.log("✅ 주소 추가 성공:", response.data);
+      // logger.log("✅ 주소 추가 성공:", response.data);
       return response.data.addressId; // 성공적으로 추가된 주소 ID 반환
 
     } catch (error) {

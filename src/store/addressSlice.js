@@ -9,6 +9,21 @@ export const addAddressAsync = createAsyncThunk(
   }
 );
 
+export const fetchAddressListAsync = createAsyncThunk(
+  'address/fetchAddressListAsync',
+  async () => {
+    const addresses = await AddressAPI.getAddressList();
+    return addresses.map(addr => ({
+      id: String(addr.addressId),
+      label: getAddressLabel(addr.addressCategory),
+      address: addr.mainAddress,
+      detailAddress: addr.detailAddress,
+      lat: addr.lat,
+      lng: addr.lng,
+    }));
+  }
+);
+
 const loadFromLocalStorage = () => {
   try {
     const serializedState = localStorage.getItem("itseats-address");
@@ -104,9 +119,33 @@ const addressSlice = createSlice({
     .addCase(addAddressAsync.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.error.message;
+    })
+    .addCase(fetchAddressListAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(fetchAddressListAsync.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.addresses = action.payload;
+      saveToLocalStorage(state);
+    })
+    .addCase(fetchAddressListAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
     });
   }
 });
+
+const getAddressLabel = (category) => {
+  switch (category) {
+    case "HOUSE":
+      return "집";
+    case "COMPANY":
+      return "회사";
+    default:
+      return "기타";
+  }
+};
 
 export const { updateAddress, removeAddress, selectAddress } = addressSlice.actions;
 
