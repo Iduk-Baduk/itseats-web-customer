@@ -288,9 +288,9 @@ export default function AddressCurrentLocation() {
         <div className={styles.addressInfo}>
           <div className={styles.addressText}>
             <h3>선택된 위치</h3>
-            <p className={styles.primaryAddress}>{addressInfo.address}</p>
-            {addressInfo.roadAddress && (
-              <p className={styles.secondaryAddress}>{addressInfo.roadAddress}</p>
+            <p className={styles.primaryAddress}>{addressInfo.roadAddress || addressInfo.address}</p>
+            {(addressInfo.roadAddress) && (
+              <p className={styles.secondaryAddress}>{addressInfo.address}</p>
             )}
           </div>
           

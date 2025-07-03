@@ -1,4 +1,13 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import AddressAPI from "../services/addressAPI";
+
+export const addAddressAsync = createAsyncThunk(
+  'address/addAddressAsync',
+  async (addressData) => {
+    const addressId = await AddressAPI.createAddress(addressData);
+    return { ...addressData, id: String(addressId) };
+  }
+);
 
 const loadFromLocalStorage = () => {
   try {
@@ -40,23 +49,18 @@ const saveToLocalStorage = (state) => {
   }
 };
 
-const initialState = loadFromLocalStorage();
+const initialState = {
+  addresses: [],
+  selectedAddressId: null,
+  isLoading: false,
+  error: null,
+  ...loadFromLocalStorage(), // 로컬 스토리지에서 초기 상태 로드
+};
 
 const addressSlice = createSlice({
   name: "address",
   initialState,
   reducers: {
-    addAddress: (state, action) => {
-      const newAddress = { ...action.payload, id: new Date().toISOString() };
-      state.addresses.push(newAddress);
-      
-      // 첫 번째 주소이거나 선택된 주소가 없는 경우 자동 선택
-      if (state.addresses.length === 1 || !state.selectedAddressId) {
-        state.selectedAddressId = newAddress.id;
-      }
-      
-      saveToLocalStorage(state);
-    },
     updateAddress: (state, action) => {
       const index = state.addresses.findIndex(
         (addr) => addr.id === action.payload.id
@@ -81,9 +85,29 @@ const addressSlice = createSlice({
       saveToLocalStorage(state);
     },
   },
+  extraReducers: (builder) => {
+    builder
+    .addCase(addAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(addAddressAsync.fulfilled, (state, action) => {
+      const newAddress = action.payload;
+      state.addresses.push(newAddress);
+
+      if (state.addresses.length === 1 || !state.selectedAddressId) {
+        state.selectedAddressId = newAddress.id;
+      }
+
+      saveToLocalStorage(state);
+    })
+    .addCase(addAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
+    });
+  }
 });
 
-export const { addAddress, updateAddress, removeAddress, selectAddress } =
-  addressSlice.actions;
+export const { updateAddress, removeAddress, selectAddress } = addressSlice.actions;
 
 export default addressSlice.reducer; 
