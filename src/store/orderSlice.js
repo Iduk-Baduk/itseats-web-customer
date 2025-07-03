@@ -312,7 +312,7 @@ const orderSlice = createSlice({
         state.isLoading = false;
         state.orders = action.payload.orders || [];
         state.hasNext = action.payload.hasNext || false;
-        state.currentPage = action.payload.currentPage || 0;
+        state.currentPage = action.payload.currentPage ?? 0;
         saveOrdersToStorage(state.orders);
       })
       .addCase(fetchOrdersAsync.rejected, (state, action) => {

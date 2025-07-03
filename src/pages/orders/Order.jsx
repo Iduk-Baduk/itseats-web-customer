@@ -20,7 +20,7 @@ export default function Order() {
   const allOrders = useSelector(selectAllOrders);
   const activeOrders = useSelector(selectActiveOrders);
   const completedOrders = useSelector(selectCompletedOrders);
-  const isLoading = useSelector(state => state.order?.loading || false);
+  const isLoading = useSelector(state => state.order?.isLoading || false);
 
   useEffect(() => {
     dispatch(fetchOrdersAsync({ page: 0, keyword: keyword }));
