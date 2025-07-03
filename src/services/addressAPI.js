@@ -60,11 +60,23 @@ const AddressAPI = {
       }
 
       const response = await apiClient.put(`/addresses/${addressId}`, updatedAddress);
-      logger.log("✅ 주소 수정 성공:", response.data);
+      // logger.log("✅ 주소 수정 성공:", response.data);
       return response.data;
 
     } catch (error) {
       logger.error("📡 주소 수정 요청 실패:", error);
+      throw error;
+    }
+  },
+
+  // 주소 삭제 API
+  deleteAddress: async (addressId) => {
+    try {
+      const response = await apiClient.delete(`/addresses/${addressId}`);
+      // logger.log("✅ 주소 삭제 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      logger.error("📡 주소 삭제 요청 실패:", error);
       throw error;
     }
   },

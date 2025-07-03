@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  removeAddress,
   selectAddress,
   addAddressAsync,
   fetchAddressListAsync,
   updateAddressAsync,
+  removeAddressAsync,
 } from "../store/addressSlice";
 
 export default function useAddressRedux() {
@@ -28,7 +28,7 @@ export default function useAddressRedux() {
     addAddress: (address) => dispatch(addAddressAsync(address)),
     updateAddress: (id, address) =>
       dispatch(updateAddressAsync({ id, ...address })),
-    removeAddress: (id) => dispatch(removeAddress(id)),
+    removeAddress: (id) => dispatch(removeAddressAsync(id)),
     selectAddress: (id) => dispatch(selectAddress(id)),
   };
 }

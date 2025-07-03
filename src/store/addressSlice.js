@@ -33,6 +33,14 @@ export const updateAddressAsync = createAsyncThunk(
   }
 );
 
+export const removeAddressAsync = createAsyncThunk(
+  'address/removeAddressAsync',
+  async (addressId) => {
+    await AddressAPI.deleteAddress(addressId);
+    return addressId;
+  }
+);
+
 const loadFromLocalStorage = () => {
   try {
     const serializedState = localStorage.getItem("itseats-address");
@@ -85,16 +93,6 @@ const addressSlice = createSlice({
   name: "address",
   initialState,
   reducers: {
-    removeAddress: (state, action) => {
-      state.addresses = state.addresses.filter(
-        (addr) => addr.id !== action.payload
-      );
-      if (state.selectedAddressId === action.payload) {
-        state.selectedAddressId =
-          state.addresses.length > 0 ? state.addresses[0].id : null;
-      }
-      saveToLocalStorage(state);
-    },
     selectAddress: (state, action) => {
       state.selectedAddressId = action.payload;
       saveToLocalStorage(state);
@@ -151,6 +149,24 @@ const addressSlice = createSlice({
     .addCase(updateAddressAsync.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.error.message;
+    })
+    .addCase(removeAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(removeAddressAsync.fulfilled, (state, action) => {
+      const addressId = action.payload;
+      state.addresses = state.addresses.filter((addr) => addr.id !== addressId);
+      if (state.selectedAddressId === addressId) {
+        state.selectedAddressId =
+          state.addresses.length > 0 ? state.addresses[0].id : null;
+      }
+      saveToLocalStorage(state);
+      state.isLoading = false;
+    })
+    .addCase(removeAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
     });
   }
 });
@@ -166,6 +182,6 @@ const getAddressLabel = (category) => {
   }
 };
 
-export const { removeAddress, selectAddress } = addressSlice.actions;
+export const { selectAddress } = addressSlice.actions;
 
 export default addressSlice.reducer; 
