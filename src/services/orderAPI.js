@@ -148,7 +148,7 @@ export const orderAPI = {
   updateOrderStatus: async (orderId, orderStatus, message = '') => {
     try {
       if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
-        throw new Error(`유효하지 않은 주문 상태: ${statorderStatusus}`);
+        throw new Error(`유효하지 않은 주문 상태: ${orderStatus}`);
       }
 
       if (ENV_CONFIG.isDevelopment) {

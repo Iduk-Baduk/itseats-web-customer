@@ -43,7 +43,7 @@ export default function PaymentSuccess() {
       if (orderData) {
         setOrderData(prev => ({
           ...prev,
-          status: currentStatus
+          orderStatus: currentStatus
         }));
       }
     },
@@ -100,7 +100,7 @@ export default function PaymentSuccess() {
             deliveryAddress: typeof selectedAddress === 'string' 
               ? selectedAddress 
               : selectedAddress?.address || "배송 주소",
-            status: 'WAITING',
+            orderStatus: 'WAITING',
             statusMessage: '주문이 접수되었습니다.',
             createdAt: new Date().toISOString(),
             estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
@@ -211,7 +211,7 @@ export default function PaymentSuccess() {
 
         {/* 주문 진행 상태 */}
         <div className={styles.progressSection}>
-          <OrderProgress orderStatus={orderData.status} />
+          <OrderProgress orderStatus={orderData.orderStatus} />
         </div>
 
         {/* 주문 정보 카드 */}
