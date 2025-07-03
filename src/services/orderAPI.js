@@ -76,15 +76,16 @@ export const orderAPI = {
   },
 
   // 주문 목록 조회
-  getOrders: async (params = {}) => {
+  getOrders: async (params = { page: 0 }) => {
     try {
       if (ENV_CONFIG.isDevelopment) {
         // 개발 환경: Redux store의 주문 데이터 사용
         const state = store.getState();
         const orders = state.order?.orders || [];
-        return { data: orders };
+        return { data: { orders, hasNext: false, currentPage: 0 }};
       } else {
-        return await apiClient.get('/orders', { params });
+        const response = await apiClient.get('/orders?size=100', { params });
+        return response.data;
       }
     } catch (error) {
       logger.error('주문 목록 조회 실패:', error);
