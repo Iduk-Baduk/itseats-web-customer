@@ -76,7 +76,9 @@ export const orderAPI = {
   },
 
   // 주문 목록 조회
-  getOrders: async (params = { page: 0 }) => {
+  getOrders: async (params = {}) => {
+    const { page = 0, size = 100, ...rest } = params;
+
     try {
       if (ENV_CONFIG.isDevelopment) {
         // 개발 환경: Redux store의 주문 데이터 사용
@@ -84,7 +86,7 @@ export const orderAPI = {
         const orders = state.order?.orders || [];
         return { data: { orders, hasNext: false, currentPage: 0 }};
       } else {
-        const response = await apiClient.get('/orders?size=100', { params });
+        const response = await apiClient.get('/orders', { params: { page, size, ...rest } });
         return response.data;
       }
     } catch (error) {

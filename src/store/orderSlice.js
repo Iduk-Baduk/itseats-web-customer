@@ -59,7 +59,7 @@ export const createOrderAsync = createAsyncThunk(
 
 export const fetchOrdersAsync = createAsyncThunk(
   'order/fetchOrders',
-  async (params = { page: 0 }) => {
+  async (params) => {
     return await orderAPI.getOrders(params);
   }
 );
