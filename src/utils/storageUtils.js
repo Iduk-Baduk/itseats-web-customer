@@ -93,7 +93,7 @@ export const compressOrderForStorage = (order) => {
     orderId: order.orderId,
     storeId: order.storeId,
     storeName: order.storeName,
-    status: order.status,
+    orderStatus: order.orderStatus,
     totalPrice: order.totalPrice,
     createdAt: order.createdAt,
     menuSummary: order.menuSummary,

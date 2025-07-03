@@ -216,7 +216,7 @@ export default function TestOrder() {
             <option value="">주문을 선택하세요</option>
             {allOrders.map(order => (
               <option key={order.id} value={order.id}>
-                {order.storeName} - {order.status} - {order.userName || '사용자 정보 없음'}
+                {order.storeName} - {order.orderStatus} - {order.userName || '사용자 정보 없음'}
               </option>
             ))}
           </select>
@@ -301,7 +301,7 @@ export default function TestOrder() {
               <div key={order.id} className={styles.orderItem}>
                 <div className={styles.orderInfo}>
                   <strong>{order.storeName}</strong>
-                  <span>상태: {order.status}</span>
+                  <span>상태: {order.orderStatus}</span>
                   <span>사용자: {order.userName || '정보 없음'}</span>
                   <span>ID: {order.id}</span>
                 </div>

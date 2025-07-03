@@ -52,8 +52,8 @@ export default function Order() {
       ...order,
       price: order.orderPrice || order.price || 0,
       date: order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : order.date,
-      isCompleted: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus || order.status),
-      showReviewButton: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus || order.status),
+      isCompleted: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus),
+      showReviewButton: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus),
       rating: order.rating || 5,
     };
   }, []);

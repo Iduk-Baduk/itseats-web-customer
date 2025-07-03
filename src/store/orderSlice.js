@@ -88,7 +88,7 @@ export const trackOrderAsync = createAsyncThunk(
 
 const initialState = {
   orders: loadOrdersFromStorage(), // 주문 목록
-  currentPage: 1, // 현재 페이지 (페이징 처리)
+  currentPage: 0, // 현재 페이지 (페이징 처리)
   hasNext: false, // 다음 페이지 여부 (페이징 처리)
   currentOrder: null, // 현재 주문 (주문 상태 페이지에서 사용)
   isLoading: false,

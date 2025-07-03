@@ -37,8 +37,8 @@ export default function useMyPageDetails() {
     
     // 완료된 주문만 필터링 (배달 완료 + 주문 완료)
     const completedOrders = orders.filter(order => 
-      order.status === ORDER_STATUS.DELIVERED || 
-      order.status === ORDER_STATUS.COMPLETED
+      order.orderStatus === ORDER_STATUS.DELIVERED || 
+      order.orderStatus === ORDER_STATUS.COMPLETED
     );
     
     logger.log('✅ 완료된 주문:', completedOrders);
@@ -62,7 +62,7 @@ export default function useMyPageDetails() {
           date: formattedDate,
           image: order.storeImage || getStoreImage(order.storeId) || "/samples/food1.jpg",
           totalPrice: order.totalPrice || order.orderPrice || 0,
-          status: order.status,
+          orderStatus: order.orderStatus,
           menuSummary: order.menuSummary || "메뉴 정보 없음",
         };
       });

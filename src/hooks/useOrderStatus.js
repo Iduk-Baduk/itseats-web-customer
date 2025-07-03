@@ -63,7 +63,7 @@ export function useOrderStatus(orderId = null) {
       // Redux 데이터를 OrderStatus 컴포넌트에서 기대하는 형식으로 변환
       return {
         id: orderFromStore.id,
-        orderStatus: orderFromStore.status || orderFromStore.orderStatus,
+        orderStatus: orderFromStore.orderStatus,
         deliveryEta: orderFromStore.deliveryEta || null,
         storeName: orderFromStore.storeName,
         orderNumber: orderFromStore.orderNumber || `ORDER${orderFromStore.id}`,
@@ -85,10 +85,10 @@ export function useOrderStatus(orderId = null) {
 
   // 주문 상태 정보 계산
   const orderStatusInfo = useMemo(() => {
-    const status = orderData?.orderStatus;
+    const orderStatus = orderData?.orderStatus;
     
-    if (!isValidOrderStatus(status)) {
-      console.warn(`Unknown order status: ${status}`);
+    if (!isValidOrderStatus(orderStatus)) {
+      console.warn(`Unknown order status: ${orderStatus}`);
       return {
         step: -1,
         person: "잇츠잇츠",
@@ -99,7 +99,7 @@ export function useOrderStatus(orderId = null) {
       };
     }
     
-    return ORDER_STATUS_CONFIG[status];
+    return ORDER_STATUS_CONFIG[orderStatus];
   }, [orderData?.orderStatus]);
 
   // 도착 예정시간 계산
@@ -113,15 +113,15 @@ export function useOrderStatus(orderId = null) {
   }, [orderData?.orderStatus]);
 
   // 주문 상태 업데이트 함수
-  const updateStatus = (status, message = null) => {
-    if (actualOrderId && isValidOrderStatus(status)) {
+  const updateStatus = (orderStatus, message = null) => {
+    if (actualOrderId && isValidOrderStatus(orderStatus)) {
       try {
         // 상태가 실제로 변경되었는지 확인
-        if (orderData?.orderStatus !== status) {
+        if (orderData?.orderStatus !== orderStatus) {
           dispatch(updateOrderStatus({
             orderId: actualOrderId,
-            status,
-            message: message || ORDER_STATUS_CONFIG[status]?.message || `주문 상태가 ${status}로 변경되었습니다.`
+            orderStatus,
+            message: message || ORDER_STATUS_CONFIG[orderStatus]?.message || `주문 상태가 ${orderStatus}로 변경되었습니다.`
           }));
         }
       } catch (error) {
