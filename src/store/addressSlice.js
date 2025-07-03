@@ -16,11 +16,20 @@ export const fetchAddressListAsync = createAsyncThunk(
     return addresses.map(addr => ({
       id: String(addr.addressId),
       label: getAddressLabel(addr.addressCategory),
-      address: addr.mainAddress,
+      address: [addr.mainAddress, addr.detailAddress].filter(Boolean).join(' '),
+      roadAddress: addr.mainAddress,
       detailAddress: addr.detailAddress,
       lat: addr.lat,
       lng: addr.lng,
     }));
+  }
+);
+
+export const updateAddressAsync = createAsyncThunk(
+  'address/updateAddressAsync',
+  async ({ id, ...addressData }) => {
+    await AddressAPI.updateAddress(id, addressData);
+    return { id, ...addressData };
   }
 );
 
@@ -76,15 +85,6 @@ const addressSlice = createSlice({
   name: "address",
   initialState,
   reducers: {
-    updateAddress: (state, action) => {
-      const index = state.addresses.findIndex(
-        (addr) => addr.id === action.payload.id
-      );
-      if (index !== -1) {
-        state.addresses[index] = action.payload;
-        saveToLocalStorage(state);
-      }
-    },
     removeAddress: (state, action) => {
       state.addresses = state.addresses.filter(
         (addr) => addr.id !== action.payload
@@ -132,6 +132,25 @@ const addressSlice = createSlice({
     .addCase(fetchAddressListAsync.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.error.message;
+    })
+    .addCase(updateAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(updateAddressAsync.fulfilled, (state, action) => {
+      const updatedAddress = action.payload;
+      const index = state.addresses.findIndex(
+        (addr) => addr.id === updatedAddress.id
+      );
+      if (index !== -1) {
+        state.addresses[index] = updatedAddress;
+        saveToLocalStorage(state);
+      }
+      state.isLoading = false;
+    })
+    .addCase(updateAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
     });
   }
 });
@@ -147,6 +166,6 @@ const getAddressLabel = (category) => {
   }
 };
 
-export const { updateAddress, removeAddress, selectAddress } = addressSlice.actions;
+export const { removeAddress, selectAddress } = addressSlice.actions;
 
 export default addressSlice.reducer; 

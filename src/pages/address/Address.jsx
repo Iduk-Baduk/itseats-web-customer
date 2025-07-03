@@ -1,22 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAddressRedux from "../../hooks/useAddressRedux";
 import { getIconByLabel } from "../../utils/addressUtils";
 import Header from "../../components/common/Header";
 import styles from "./Address.module.css";
-import { useDispatch } from "react-redux";
-import { fetchAddressListAsync } from "../../store/addressSlice";
+
 
 export default function Address() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const location = useLocation();
   const { addresses, selectedAddressId, selectAddress } = useAddressRedux();
   const [keyword, setKeyword] = useState("");
-
-  useEffect(() => {
-    dispatch(fetchAddressListAsync());
-  }, [dispatch]);
 
   const handleSearch = () => {
     if (keyword.trim() === "") return;

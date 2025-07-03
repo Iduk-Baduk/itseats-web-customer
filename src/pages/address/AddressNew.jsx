@@ -81,7 +81,7 @@ export default function AddressNew() {
         ...existingAddress,
         label: "기타"
       };
-      updateAddress(updatedExistingAddress);
+      updateAddress(existingAddress.id, updatedExistingAddress);
       
       // 새 주소 추가
       saveAddress(pendingAddress);

@@ -41,6 +41,33 @@ const AddressAPI = {
       throw error;
     }
   },
+
+  // 주소 수정 API
+  updateAddress: async (addressId, addressData) => {
+    const { label, roadAddress, detailAddress, lat, lng } = addressData;
+
+    if (!label || !roadAddress || lat === undefined || lng === undefined) {
+      throw new Error("필수 주소 정보가 누락되었습니다.");
+    }
+
+    try {
+      const updatedAddress = {
+        mainAddress: roadAddress,
+        detailAddress: detailAddress || "",
+        lat,
+        lng,
+        addressCategory: getAddressLabel(label),
+      }
+
+      const response = await apiClient.put(`/addresses/${addressId}`, updatedAddress);
+      logger.log("✅ 주소 수정 성공:", response.data);
+      return response.data;
+
+    } catch (error) {
+      logger.error("📡 주소 수정 요청 실패:", error);
+      throw error;
+    }
+  },
 };
 
 function getAddressLabel(label) {
