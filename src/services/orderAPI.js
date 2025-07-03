@@ -135,8 +135,8 @@ export const orderAPI = {
         logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.orderStatus})`);
         return { data: trackedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}/track`);
-        return response;
+        const response = await apiClient.get(`/orders/${orderId}/status`);
+        return response.data;
       }
     } catch (error) {
       logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);

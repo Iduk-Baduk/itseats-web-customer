@@ -6,7 +6,6 @@ import CommonMap from "../../components/common/CommonMap";
 import OrderProgress from "../../components/orders/OrderProgress";
 import LineButton from "../../components/common/basic/LineButton";
 import { useOrderStatus } from "../../hooks/useOrderStatus";
-import useOrderTracking from "../../hooks/useOrderTracking";
 import styles from "./OrderStatus.module.css";
 
 // 공통 레이아웃 컴포넌트
@@ -39,23 +38,10 @@ export default function OrderStatus() {
     etaInfo,
     progressStep,
     updateStatus,
-    isActiveOrder: isActiveOrderFromHook,
+    isActiveOrder,
     isCompletedOrder,
     isCanceledOrder
   } = useOrderStatus(orderId);
-
-  // 주문 진행 상태는 훅에서 제공하는 값 사용
-  const isActiveOrder = isActiveOrderFromHook;
-
-  // 실시간 주문 추적 - 폴링 간격을 5초로 줄임
-  const { isTracking, refreshStatus } = useOrderTracking(orderData?.id, {
-    autoStart: isActiveOrder,
-    pollingInterval: 5000, // 5초마다 폴링
-    onStatusChange: (change) => {
-      // 상태 변경 시 자동으로 orderData와 orderStatusInfo가 업데이트됨
-      updateStatus(change.currentStatus);
-    }
-  });
 
   // 안전한 데이터 접근을 위한 기본값 설정 - useMemo로 최적화
   const safeOrderData = useMemo(() => {
@@ -70,33 +56,27 @@ export default function OrderStatus() {
       destinationLocation: { lat: 37.501887, lng: 127.039252 },
       orderStatus: "UNKNOWN"
     };
-    
-    // deliveryAddress 안전 처리 - 객체인 경우 address 필드 추출
-    let deliveryAddressString = "주소 정보 없음";
-    if (orderData.deliveryAddress) {
-      if (typeof orderData.deliveryAddress === 'string') {
-        deliveryAddressString = orderData.deliveryAddress;
-      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.address) {
-        deliveryAddressString = orderData.deliveryAddress.address;
-      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.roadAddress) {
-        deliveryAddressString = orderData.deliveryAddress.roadAddress;
-      } else if (typeof orderData.deliveryAddress === 'object' && orderData.deliveryAddress.label) {
-        deliveryAddressString = orderData.deliveryAddress.label;
-      }
-    }
 
     return {
       storeName: orderData.storeName || "매장명 없음",
       orderNumber: orderData.orderNumber || "주문번호 없음",
       orderPrice: orderData.orderPrice || 0,
       orderMenuCount: orderData.orderMenuCount || 0,
-      deliveryAddress: deliveryAddressString,
+      deliveryAddress: orderData.deliveryAddress || "주소 정보 없음",
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
       orderStatus: orderData.orderStatus || "UNKNOWN"
     };
   }, [orderData]);
+
+  // 주문 상태 변경 감지
+  useEffect(() => {
+    if (statusChange) {
+      // 상태 변경 알림 처리 로직은 향후 구현
+      // 예: 토스트 메시지, 푸시 알림 등
+    }
+  }, [statusChange]);
 
   // 로딩 상태 처리
   if (isLoading) {
@@ -112,14 +92,6 @@ export default function OrderStatus() {
   if (!orderData || !orderStatusInfo) {
     return <StatusLayout message="주문 정보를 찾을 수 없습니다." navigate={navigate} />;
   }
-
-  // 주문 상태 변경 감지
-  useEffect(() => {
-    if (statusChange) {
-      // 상태 변경 알림 처리 로직은 향후 구현
-      // 예: 토스트 메시지, 푸시 알림 등
-    }
-  }, [statusChange]);
 
   return (
     <SlideInFromRight>

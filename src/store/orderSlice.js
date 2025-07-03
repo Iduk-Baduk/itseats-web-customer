@@ -90,7 +90,8 @@ const initialState = {
   orders: loadOrdersFromStorage(), // 주문 목록
   currentPage: 0, // 현재 페이지 (페이징 처리)
   hasNext: false, // 다음 페이지 여부 (페이징 처리)
-  currentOrder: null, // 현재 주문 (주문 상태 페이지에서 사용)
+  currentOrder: null, // 현재 주문 (삭제 예정)
+  currentOrderStatus: null, // 현재 주문 상태 (주문 상태 페이지에서 사용)
   isLoading: false,
   error: null,
 };
@@ -271,6 +272,11 @@ const orderSlice = createSlice({
     clearCurrentOrder(state) {
       state.currentOrder = null;
     },
+
+    // 현재 주문 상태 초기화
+    clearCurrentOrderStatus(state) {
+      state.currentOrderStatus = null;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -365,8 +371,17 @@ const orderSlice = createSlice({
         state.error = action.error.message;
       })
       // 주문 추적
+      .addCase(trackOrderAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
       .addCase(trackOrderAsync.fulfilled, (state, action) => {
-        state.currentOrder = action.payload;
+        state.isLoading = false;
+        state.currentOrderStatus = action.payload;
+      })
+      .addCase(trackOrderAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
       });
   },
 });
@@ -383,13 +398,12 @@ export const {
   setError,
   clearError,
   clearCurrentOrder,
+  clearCurrentOrderStatus,
 } = orderSlice.actions;
 
 // Selectors
 export const selectAllOrders = (state) => state.order?.orders || [];
 export const selectCurrentOrder = (state) => state.order?.currentOrder || null;
-export const selectOrderById = (state, orderId) => 
-  state.order?.orders?.find(order => order.id === orderId) || null;
 export const selectOrdersByStatus = (state, orderStatus) => 
   state.order?.orders?.filter(order => order.orderStatus === orderStatus) || [];
 export const selectActiveOrders = (state) => 
