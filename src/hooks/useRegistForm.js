@@ -8,10 +8,10 @@ export default function useRegistForm() {
     username: "",
     password: "",
     confirmPassword: "",
+    name: "",
     nickname: "",
     email: "",
     phone: "",
-    usertype: "CUSTOMER", // 기본값을 CUSTOMER로 지정
   });
   const [error, setError] = useState("");
 
