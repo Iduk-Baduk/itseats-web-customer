@@ -9,7 +9,8 @@ import SortBottomSheet, {
 } from "../../components/stores/SortBottomSheet";
 import Tabs from "../../components/stores/Tabs";
 import { getCategoryName } from "../../utils/categoryUtils";
-import { fetchStores } from "../../store/storeSlice";
+import { fetchStoresByCategory } from "../../store/storeSlice";
+import useAddressRedux from "../../hooks/useAddressRedux";
 
 import styles from "./StoreList.module.css";
 
@@ -26,13 +27,12 @@ export default function StoreList() {
   // Redux에서 매장 데이터 가져오기
   const stores = useSelector((state) => state.store?.stores || []);
   const storeLoading = useSelector((state) => state.store?.loading || false);
+  const { selectedAddressId } = useAddressRedux();
 
   // 매장 데이터 로딩
   useEffect(() => {
-    if (stores.length === 0 && !storeLoading) {
-      dispatch(fetchStores({ page: 0 }));
-    }
-  }, [dispatch, stores.length, storeLoading]);
+    dispatch(fetchStoresByCategory({ category, sort, page: 0, addressId: selectedAddressId }));
+  }, [dispatch, category, sort, selectedAddressId]);
 
   // useCallback으로 이벤트 핸들러 최적화
   const handleBackClick = useCallback(() => {
