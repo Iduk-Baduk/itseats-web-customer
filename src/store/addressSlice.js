@@ -9,6 +9,38 @@ export const addAddressAsync = createAsyncThunk(
   }
 );
 
+export const fetchAddressListAsync = createAsyncThunk(
+  'address/fetchAddressListAsync',
+  async () => {
+    const addresses = await AddressAPI.getAddressList();
+    return addresses.map(addr => ({
+      id: String(addr.addressId),
+      label: getAddressLabel(addr.addressCategory),
+      address: [addr.mainAddress, addr.detailAddress].filter(Boolean).join(' '),
+      roadAddress: addr.mainAddress,
+      detailAddress: addr.detailAddress,
+      lat: addr.lat,
+      lng: addr.lng,
+    }));
+  }
+);
+
+export const updateAddressAsync = createAsyncThunk(
+  'address/updateAddressAsync',
+  async ({ id, ...addressData }) => {
+    await AddressAPI.updateAddress(id, addressData);
+    return { id, ...addressData };
+  }
+);
+
+export const removeAddressAsync = createAsyncThunk(
+  'address/removeAddressAsync',
+  async (addressId) => {
+    await AddressAPI.deleteAddress(addressId);
+    return addressId;
+  }
+);
+
 const loadFromLocalStorage = () => {
   try {
     const serializedState = localStorage.getItem("itseats-address");
@@ -61,25 +93,6 @@ const addressSlice = createSlice({
   name: "address",
   initialState,
   reducers: {
-    updateAddress: (state, action) => {
-      const index = state.addresses.findIndex(
-        (addr) => addr.id === action.payload.id
-      );
-      if (index !== -1) {
-        state.addresses[index] = action.payload;
-        saveToLocalStorage(state);
-      }
-    },
-    removeAddress: (state, action) => {
-      state.addresses = state.addresses.filter(
-        (addr) => addr.id !== action.payload
-      );
-      if (state.selectedAddressId === action.payload) {
-        state.selectedAddressId =
-          state.addresses.length > 0 ? state.addresses[0].id : null;
-      }
-      saveToLocalStorage(state);
-    },
     selectAddress: (state, action) => {
       state.selectedAddressId = action.payload;
       saveToLocalStorage(state);
@@ -104,10 +117,78 @@ const addressSlice = createSlice({
     .addCase(addAddressAsync.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.error.message;
+    })
+    .addCase(fetchAddressListAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(fetchAddressListAsync.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.addresses = action.payload;
+
+      // 기존에 선택된 ID가 새 목록에 있으면 유지, 없으면 첫 번째 주소로 설정
+      if (state.selectedAddressId && state.addresses.some(a => a.id === state.selectedAddressId)) {
+        // 유지
+      } else {
+        state.selectedAddressId = state.addresses[0]?.id || null;
+      }
+      saveToLocalStorage(state);
+    })
+    .addCase(fetchAddressListAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
+    })
+    .addCase(updateAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(updateAddressAsync.fulfilled, (state, action) => {
+      const updatedAddress = action.payload;
+      const index = state.addresses.findIndex(
+        (addr) => addr.id === updatedAddress.id
+      );
+      if (index !== -1) {
+        state.addresses[index] = updatedAddress;
+        saveToLocalStorage(state);
+      }
+      state.isLoading = false;
+    })
+    .addCase(updateAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
+    })
+    .addCase(removeAddressAsync.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(removeAddressAsync.fulfilled, (state, action) => {
+      const addressId = action.payload;
+      state.addresses = state.addresses.filter((addr) => addr.id !== addressId);
+      if (state.selectedAddressId === addressId) {
+        state.selectedAddressId =
+          state.addresses.length > 0 ? state.addresses[0].id : null;
+      }
+      saveToLocalStorage(state);
+      state.isLoading = false;
+    })
+    .addCase(removeAddressAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
     });
   }
 });
 
-export const { updateAddress, removeAddress, selectAddress } = addressSlice.actions;
+const getAddressLabel = (category) => {
+  switch (category) {
+    case "HOUSE":
+      return "집";
+    case "COMPANY":
+      return "회사";
+    default:
+      return "기타";
+  }
+};
+
+export const { selectAddress } = addressSlice.actions;
 
 export default addressSlice.reducer; 

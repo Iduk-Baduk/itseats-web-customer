@@ -67,6 +67,7 @@ export default function AddressEdit() {
       label: finalLabel,
       address: `${currentAddress.roadAddress} ${detailAddress}`.trim(),
       roadAddress: currentAddress.roadAddress,
+      detailAddress,
       guide: guideMessage,
       lat: currentAddress.lat,
       lng: currentAddress.lng,
@@ -90,7 +91,7 @@ export default function AddressEdit() {
 
   // 실제 주소 저장 함수
   const saveAddress = (addressData) => {
-    updateAddress(addressData);
+    updateAddress(id, addressData);
     if (location.state && location.state.from === 'cart') {
       navigate('/cart', { replace: true });
     } else {
@@ -106,8 +107,8 @@ export default function AddressEdit() {
         ...existingAddress,
         label: "기타"
       };
-      updateAddress(updatedExistingAddress);
-      
+      updateAddress(existingAddress.id, updatedExistingAddress);
+
       // 현재 편집 중인 주소를 새 라벨로 저장
       saveAddress(pendingAddress);
     }
