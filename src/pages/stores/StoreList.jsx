@@ -20,7 +20,7 @@ export default function StoreList() {
   const category = searchParams.get("category");
 
   const sortParam = searchParams.get("sort");
-  const [sort, setSort] = useState(sortParam || "order");
+  const [sort, setSort] = useState(sortParam || "ORDER_COUNT");
   const [isSortSheetOpen, setSortSheetOpen] = useState(false);
 
   // Redux에서 매장 데이터 가져오기
@@ -30,7 +30,7 @@ export default function StoreList() {
   // 매장 데이터 로딩
   useEffect(() => {
     if (stores.length === 0 && !storeLoading) {
-      dispatch(fetchStores());
+      dispatch(fetchStores({ page: 0 }));
     }
   }, [dispatch, stores.length, storeLoading]);
 
@@ -60,34 +60,6 @@ export default function StoreList() {
   const handleStoreClick = useCallback((storeId) => {
     navigate(`/stores/${storeId}`);
   }, [navigate]);
-
-  // useMemo로 카테고리 필터링 및 정렬된 매장 목록 최적화
-  const sortedStores = useMemo(() => {
-    // 카테고리 필터링
-    let filteredStores = stores;
-    if (category && category !== 'all') {
-      filteredStores = stores.filter(store => 
-        store.category?.toLowerCase() === category.toLowerCase()
-      );
-    }
-    
-    // 정렬 적용
-    return [...filteredStores].sort((a, b) => {
-      switch(sort) {
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'delivery': {
-          const aTime = parseInt(a.deliveryTime?.split('-')[0]) || 30;
-          const bTime = parseInt(b.deliveryTime?.split('-')[0]) || 30;
-          return aTime - bTime;
-        }
-        case 'reviewCount':
-          return (b.reviewCount || 0) - (a.reviewCount || 0);
-        default:
-          return 0; // 기본 순서 유지
-      }
-    });
-  }, [stores, category, sort]);
 
   return (
     <SlideInFromRight>
@@ -124,8 +96,8 @@ export default function StoreList() {
             <div style={{ padding: '20px', textAlign: 'center' }}>
               매장 정보를 불러오는 중...
             </div>
-          ) : sortedStores.length > 0 ? (
-            sortedStores.map((store) => (
+          ) : stores.length > 0 ? (
+            stores.map((store) => (
               <StoreListItem
                 key={store.storeId}
                 store={{
@@ -133,6 +105,9 @@ export default function StoreList() {
                   name: store.name,
                   review: store.review,
                   reviewCount: store.reviewCount,
+                  images: store.images || ["/samples/food1.jpg"],
+                  distance: store.distance || 1,
+                  minOrderPrice: store.minOrderPrice || 10000,
                   minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
                 }}
                 onClick={() => handleStoreClick(store.storeId)}

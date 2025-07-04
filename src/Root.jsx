@@ -109,7 +109,7 @@ export default function Root() {
 
           {/* 지연 로딩 - 매장 관련 */}
           <Route 
-            path="/stores" 
+            path="/stores/list" 
             element={
               <Layout>
                 <LazyPageWrapper>

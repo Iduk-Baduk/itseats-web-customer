@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "./SortBottomSheet.module.css";
 
 const OPTIONS = [
-  { key: "order", label: "주문많은순" },
-  { key: "distance", label: "가까운순" },
-  { key: "rating", label: "별점높은순" },
+  { key: "ORDER_COUNT", label: "주문많은순" },
+  { key: "DISTANCE", label: "가까운순" },
+  { key: "RATING", label: "별점높은순" },
+  { key: "RECENT", label: "최근추가순" },
 ];
 
 export function getSortLabel(sortKey) {
