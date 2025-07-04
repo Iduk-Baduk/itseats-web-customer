@@ -38,7 +38,7 @@ export const orderAPI = {
         id: generateOrderId(),
         storeId: parseInt(storeId),
         storeName,
-        status: ORDER_STATUS.WAITING,
+        orderStatus: ORDER_STATUS.WAITING,
         orderDate: new Date().toISOString(),
         totalPrice,
         deliveryFee,
@@ -49,7 +49,7 @@ export const orderAPI = {
         riderRequest,
         coupons,
         statusHistory: [{
-          status: ORDER_STATUS.WAITING,
+          orderStatus: ORDER_STATUS.WAITING,
           timestamp: new Date().toISOString(),
           message: "주문이 접수되었습니다."
         }]
@@ -77,14 +77,17 @@ export const orderAPI = {
 
   // 주문 목록 조회
   getOrders: async (params = {}) => {
+    const { page = 0, size = 100, ...rest } = params;
+
     try {
       if (ENV_CONFIG.isDevelopment) {
         // 개발 환경: Redux store의 주문 데이터 사용
         const state = store.getState();
         const orders = state.order?.orders || [];
-        return { data: orders };
+        return { data: { orders, hasNext: false, currentPage: 0 }};
       } else {
-        return await apiClient.get('/orders', { params });
+        const response = await apiClient.get('/orders', { params: { page, size, ...rest } });
+        return response.data;
       }
     } catch (error) {
       logger.error('주문 목록 조회 실패:', error);
@@ -129,11 +132,11 @@ export const orderAPI = {
           lastChecked: new Date().toISOString()
         };
 
-        logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.status})`);
+        logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.orderStatus})`);
         return { data: trackedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}/track`);
-        return response;
+        const response = await apiClient.get(`/orders/${orderId}/status`);
+        return response.data;
       }
     } catch (error) {
       logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
@@ -142,10 +145,10 @@ export const orderAPI = {
   },
 
   // 주문 상태 업데이트
-  updateOrderStatus: async (orderId, status, message = '') => {
+  updateOrderStatus: async (orderId, orderStatus, message = '') => {
     try {
-      if (!Object.values(ORDER_STATUS).includes(status)) {
-        throw new Error(`유효하지 않은 주문 상태: ${status}`);
+      if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
+        throw new Error(`유효하지 않은 주문 상태: ${orderStatus}`);
       }
 
       if (ENV_CONFIG.isDevelopment) {
@@ -165,13 +168,13 @@ export const orderAPI = {
         // 주문 업데이트
         const updatedOrder = {
           ...order,
-          status,
+          orderStatus,
           statusHistory: [
             ...(order.statusHistory || []),
             {
-              status,
+              orderStatus,
               timestamp: new Date().toISOString(),
-              message: message || `주문 상태가 ${status}로 변경되었습니다.`
+              message: message || `주문 상태가 ${orderStatus}로 변경되었습니다.`
             }
           ]
         };
@@ -182,11 +185,11 @@ export const orderAPI = {
         // Redux store 업데이트
         store.dispatch(updateOrder(updatedOrder));
 
-        logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${status}`);
+        logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${orderStatus}`);
         return { data: updatedOrder };
       } else {
         const response = await apiClient.put(`/orders/${orderId}/status`, {
-          status,
+          orderStatus,
           message
         });
         return response;

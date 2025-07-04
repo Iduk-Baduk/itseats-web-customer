@@ -83,7 +83,7 @@ export const userAPI = {
 
       // 사용자별 주문 필터링 (배달 완료된 주문만)
       const userOrders = orders.filter(order => 
-        order.status === 'delivered' || order.status === 'completed'
+        order.orderStatus === 'delivered' || order.orderStatus === 'completed'
       );
 
       // 사용자별 즐겨찾기 필터링
@@ -131,7 +131,7 @@ export const userAPI = {
 
       // 배달 완료된 주문만 필터링
       const completedOrders = orders.filter(order => 
-        order.status === 'delivered' || order.status === 'completed'
+        order.orderStatus === 'delivered' || order.orderStatus === 'completed'
       );
 
       // 총 주문 금액 계산

@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./OrderSearch.module.css";
 
 const SearchIcon = ({ className }) => {
@@ -12,14 +13,19 @@ const SearchIcon = ({ className }) => {
 };
 
 export default function OrderSearch({ className, onClick }) {
+  const [inputText, setInputText] = React.useState("");
+
   return (
     <div className={`${styles.searchContainer} ${className || ""}`}>
       <input
         className={styles.searchInput}
         type="text"
         placeholder="주문한 메뉴/매장을 찾아보세요"
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && onClick(inputText)}
       />
-      <button className={styles.iconButton} onClick={onClick}>
+      <button className={styles.iconButton} onClick={() => onClick(inputText)}>
         <SearchIcon className={styles.icon} />
       </button>
     </div>

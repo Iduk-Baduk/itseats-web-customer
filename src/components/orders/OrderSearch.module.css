@@ -23,17 +23,17 @@
   padding: 4px;
   cursor: pointer;
 }
+.iconButton:hover {
+  background-color: var(--background-hover-color);
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
 
 .icon {
-  width: 20px;
-  height: 20px;
-  padding: 8px;
-  margin-top: 5px;
+  width: 24px;
+  height: 24px;
 }
 
 .icon:hover {
   color: #333;
-  background-color: var(--background-hover-color);
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
 }

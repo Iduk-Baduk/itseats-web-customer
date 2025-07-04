@@ -59,7 +59,7 @@ export const createOrderAsync = createAsyncThunk(
 
 export const fetchOrdersAsync = createAsyncThunk(
   'order/fetchOrders',
-  async (params = {}) => {
+  async (params) => {
     return await orderAPI.getOrders(params);
   }
 );
@@ -73,9 +73,9 @@ export const fetchOrderByIdAsync = createAsyncThunk(
 
 export const updateOrderStatusAsync = createAsyncThunk(
   'order/updateOrderStatus',
-  async ({ orderId, status, message }) => {
-    await orderAPI.updateOrderStatus(orderId, status, message);
-    return { orderId, status, message };
+  async ({ orderId, orderStatus, message }) => {
+    await orderAPI.updateOrderStatus(orderId, orderStatus, message);
+    return { orderId, orderStatus, message };
   }
 );
 
@@ -88,7 +88,10 @@ export const trackOrderAsync = createAsyncThunk(
 
 const initialState = {
   orders: loadOrdersFromStorage(), // 주문 목록
-  currentOrder: null, // 현재 주문 (주문 상태 페이지에서 사용)
+  currentPage: 0, // 현재 페이지 (페이징 처리)
+  hasNext: false, // 다음 페이지 여부 (페이징 처리)
+  currentOrder: null, // 현재 주문 (삭제 예정)
+  currentOrderStatus: null, // 현재 주문 상태 (주문 상태 페이지에서 사용)
   isLoading: false,
   error: null,
 };
@@ -126,10 +129,10 @@ const orderSlice = createSlice({
         id: orderId,
         orderId: orderId, // id와 orderId를 동일하게 설정
         createdAt: action.payload.createdAt || new Date().toISOString(),
-        status: action.payload.status || ORDER_STATUS.WAITING,
+        orderStatus: action.payload.orderStatus || ORDER_STATUS.WAITING,
         statusHistory: action.payload.statusHistory || [
           {
-            status: action.payload.status || ORDER_STATUS.WAITING,
+            orderStatus: action.payload.orderStatus || ORDER_STATUS.WAITING,
             timestamp: new Date().toISOString(),
             message: "주문이 접수되었습니다."
           }
@@ -166,11 +169,11 @@ const orderSlice = createSlice({
 
     // 주문 상태만 업데이트 (이전 버전과의 호환성을 위해 유지)
     updateOrderStatus(state, action) {
-      const { orderId, status, message } = action.payload;
+      const { orderId, orderStatus, message } = action.payload;
       
       // 상태 유효성 검증
-      if (!isValidOrderStatus(status)) {
-        logger.error(`Invalid order status: ${status}`);
+      if (!isValidOrderStatus(orderStatus)) {
+        logger.error(`Invalid order status: ${orderStatus}`);
         return;
       }
       
@@ -179,8 +182,8 @@ const orderSlice = createSlice({
         const order = state.orders[orderIndex];
         
         // 상태가 실제로 변경된 경우에만 업데이트
-        if (order.status !== status) {
-          order.status = status;
+        if (order.orderStatus !== orderStatus) {
+          order.orderStatus = orderStatus;
           
           // statusHistory가 없으면 초기화
           if (!order.statusHistory) {
@@ -188,9 +191,9 @@ const orderSlice = createSlice({
           }
           
           order.statusHistory.push({
-            status,
+            orderStatus,
             timestamp: new Date().toISOString(),
-            message: message || `주문 상태가 ${status}로 변경되었습니다.`
+            message: message || `주문 상태가 ${orderStatus}로 변경되었습니다.`
           });
 
           // 현재 주문이 업데이트된 주문이라면 currentOrder도 업데이트
@@ -200,7 +203,7 @@ const orderSlice = createSlice({
 
           // 상태가 변경되었을 때만 저장
           saveOrdersToStorage(state.orders);
-          logger.log(`🔄 주문 ${orderId} 상태 업데이트: ${status}`);
+          logger.log(`🔄 주문 ${orderId} 상태 업데이트: ${orderStatus}`);
         }
       } else {
         logger.error(`Order not found: ${orderId}`);
@@ -269,6 +272,11 @@ const orderSlice = createSlice({
     clearCurrentOrder(state) {
       state.currentOrder = null;
     },
+
+    // 현재 주문 상태 초기화
+    clearCurrentOrderStatus(state) {
+      state.currentOrderStatus = null;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -287,7 +295,7 @@ const orderSlice = createSlice({
           createdAt: new Date().toISOString(),
           statusHistory: [
             {
-              status: action.payload.status || ORDER_STATUS.WAITING,
+              orderStatus: action.payload.orderStatus || ORDER_STATUS.WAITING,
               timestamp: new Date().toISOString(),
               message: "주문이 접수되었습니다."
             }
@@ -308,7 +316,9 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrdersAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orders = action.payload;
+        state.orders = action.payload.orders || [];
+        state.hasNext = action.payload.hasNext || false;
+        state.currentPage = action.payload.currentPage ?? 0;
         saveOrdersToStorage(state.orders);
       })
       .addCase(fetchOrdersAsync.rejected, (state, action) => {
@@ -335,10 +345,10 @@ const orderSlice = createSlice({
       })
       .addCase(updateOrderStatusAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        const { orderId, status, message } = action.payload;
+        const { orderId, orderStatus, message } = action.payload;
         const orderIndex = state.orders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
-          state.orders[orderIndex].status = status;
+          state.orders[orderIndex].orderStatus = orderStatus;
           
           // statusHistory가 없으면 초기화
           if (!state.orders[orderIndex].statusHistory) {
@@ -346,9 +356,9 @@ const orderSlice = createSlice({
           }
           
           state.orders[orderIndex].statusHistory.push({
-            status,
+            orderStatus,
             timestamp: new Date().toISOString(),
-            message: message || `주문 상태가 ${status}로 변경되었습니다.`
+            message: message || `주문 상태가 ${orderStatus}로 변경되었습니다.`
           });
           if (state.currentOrder && state.currentOrder.id === orderId) {
             state.currentOrder = state.orders[orderIndex];
@@ -361,8 +371,17 @@ const orderSlice = createSlice({
         state.error = action.error.message;
       })
       // 주문 추적
+      .addCase(trackOrderAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
       .addCase(trackOrderAsync.fulfilled, (state, action) => {
-        state.currentOrder = action.payload;
+        state.isLoading = false;
+        state.currentOrderStatus = action.payload;
+      })
+      .addCase(trackOrderAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
       });
   },
 });
@@ -379,23 +398,22 @@ export const {
   setError,
   clearError,
   clearCurrentOrder,
+  clearCurrentOrderStatus,
 } = orderSlice.actions;
 
 // Selectors
 export const selectAllOrders = (state) => state.order?.orders || [];
 export const selectCurrentOrder = (state) => state.order?.currentOrder || null;
-export const selectOrderById = (state, orderId) => 
-  state.order?.orders?.find(order => order.id === orderId) || null;
-export const selectOrdersByStatus = (state, status) => 
-  state.order?.orders?.filter(order => order.status === status) || [];
+export const selectOrdersByStatus = (state, orderStatus) => 
+  state.order?.orders?.filter(order => order.orderStatus === orderStatus) || [];
 export const selectActiveOrders = (state) => 
   state.order?.orders?.filter(order => 
     [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, 
-     ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.status)
+     ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.orderStatus)
   ) || [];
 export const selectCompletedOrders = (state) => 
   state.order?.orders?.filter(order => 
-    [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status)
+    [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELED].includes(order.orderStatus)
   ) || [];
 export const selectIsLoading = (state) => state.order?.isLoading || false;
 export const selectError = (state) => state.order?.error || null;

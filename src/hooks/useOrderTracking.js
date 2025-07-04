@@ -55,19 +55,19 @@ export const useOrderTracking = (orderId, options = {}) => {
       errorCountRef.current = 0;
       
       // 상태가 변경된 경우
-      if (lastStatusRef.current !== orderData.status) {
+      if (lastStatusRef.current !== orderData.orderStatus) {
         const previousStatus = lastStatusRef.current;
-        lastStatusRef.current = orderData.status;
+        lastStatusRef.current = orderData.orderStatus;
         
         // 상태 메시지 가져오기
         const statusMessage = orderData.statusHistory?.length > 0
           ? orderData.statusHistory[orderData.statusHistory.length - 1].message
-          : `주문 상태가 ${orderData.status}로 변경되었습니다.`;
+          : `주문 상태가 ${orderData.orderStatus}로 변경되었습니다.`;
         
         // Redux 상태 업데이트
         dispatch(updateOrderStatus({
           orderId,
-          status: orderData.status,
+          orderStatus: orderData.orderStatus,
           message: statusMessage
         }));
         
@@ -76,14 +76,14 @@ export const useOrderTracking = (orderId, options = {}) => {
           onStatusChange({
             orderId,
             previousStatus,
-            currentStatus: orderData.status,
+            currentStatus: orderData.orderStatus,
             orderData
           });
         }
       }
       
       // 완료 상태에 도달하면 추적 중단
-      if (COMPLETED_STATUSES.includes(orderData.status)) {
+      if (COMPLETED_STATUSES.includes(orderData.orderStatus)) {
         internalStopTracking('완료 상태');
       }
       
@@ -238,7 +238,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
         [orderId]: {
           ...prev[orderId],
           errorCount: 0,
-          lastStatus: orderData.status
+          lastStatus: orderData.orderStatus
         }
       }));
       
@@ -246,13 +246,13 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
       if (options.onStatusChange) {
         options.onStatusChange({
           orderId,
-          currentStatus: orderData.status,
+          currentStatus: orderData.orderStatus,
           orderData
         });
       }
       
       // 완료 상태 확인
-      if (COMPLETED_STATUSES.includes(orderData.status)) {
+      if (COMPLETED_STATUSES.includes(orderData.orderStatus)) {
         stopTracking(orderId);
       }
       

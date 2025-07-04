@@ -90,6 +90,7 @@
   height: 64px;
   background-color: #ddd;
   margin-left: 12px;
+  object-fit: cover;
 }
 
 .badge {
