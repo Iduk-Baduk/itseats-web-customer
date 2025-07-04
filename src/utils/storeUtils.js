@@ -57,7 +57,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
     currentStoreInfo = {
       id: currentStoreId,
       name: firstMenu.storeId ? `매장 ${currentStoreId}` : "도미노피자 구름점",
-      imageUrl: "/samples/food1.jpg",
+      images: ["/samples/food1.jpg"],
       location: { lat: 37.4979, lng: 127.0276 },
       address: "매장 주소",
       phone: "031-0000-0000",

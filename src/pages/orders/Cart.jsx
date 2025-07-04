@@ -146,7 +146,7 @@ export default function Cart() {
           dispatch(updateCurrentStore({
             storeId: foundStore.storeId,
             storeName: foundStore.name,
-            storeImage: foundStore.imageUrl
+            storeImage: foundStore?.images[0] || "/samples/food1.jpg"
           }));
         }
       } else if (firstMenu?.menuId) {
@@ -161,7 +161,7 @@ export default function Cart() {
           dispatch(updateCurrentStore({
             storeId: foundStore.storeId,
             storeName: foundStore.name,
-            storeImage: foundStore.imageUrl
+            storeImage: foundStore?.images[0] || "/samples/food1.jpg"
           }));
         } else if (firstMenu.menuId === 1 || firstMenu.menuId === "1") {
           logger.log('✅ 기본 매장 정보 설정');

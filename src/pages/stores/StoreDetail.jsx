@@ -171,7 +171,7 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={currentStore?.id ? isFavorite(currentStore.storeId) : false}
+          isFavorite={currentStore?.storeId ? isFavorite(currentStore.storeId) : false}
           favoriteButtonAction={() => {
             if (!currentStore?.storeId) return;
             const wasAlreadyFavorite = isFavorite(currentStore.storeId);
@@ -182,7 +182,7 @@ export default function StoreDetail() {
           }}
         />
         <div id="intro" className={styles.intro}>
-          <PhotoSlider images={currentStore.images || ['/sample/food1.jpg']} />
+          <PhotoSlider images={currentStore.images || ['/samples/food1.jpg']} />
           <div className={styles.introContent}>
             <h1>{currentStore.name}</h1>
             <div className={styles.storeInfoButton}>

@@ -28,7 +28,7 @@ export default function useMyPageDetails() {
   // 매장 이미지 가져오기 헬퍼 함수
   const getStoreImage = (storeId) => {
     const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
-    return store?.imageUrl;
+    return store?.images?.[0] || "/samples/food1.jpg";
   };
 
   // 주문 데이터를 마이페이지 형식으로 변환

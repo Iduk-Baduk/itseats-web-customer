@@ -21,39 +21,13 @@ export default function SearchResult() {
   const [keyword, setKeyword] = useState(initialKeyword);
 
   const sortParam = searchParams.get("sort");
-  const [sort, setSort] = useState(sortParam || "order");
+  const [sort, setSort] = useState(sortParam || "DISTANCE");
   const [isSortSheetOpen, setSortSheetOpen] = useState(false);
   
   // Redux에서 매장 데이터 가져오기
   const stores = useSelector((state) => state.store?.stores || []);
   const storeLoading = useSelector((state) => state.store?.loading || false);
   const storeError = useSelector((state) => state.store?.error || null);
-  
-  // 키워드 기반 매장 필터링 및 정렬
-  const filteredAndSortedStores = useMemo(() => {
-    // 검색 키워드로 필터링
-    const filteredStores = stores.filter(store => 
-      store.name?.toLowerCase().includes(keyword.toLowerCase()) ||
-      store.category?.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
-    // 정렬 적용
-    return [...filteredStores].sort((a, b) => {
-      switch(sort) {
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'delivery': {
-          const aTime = parseInt(a.deliveryTime?.split('-')[0]) || 30;
-          const bTime = parseInt(b.deliveryTime?.split('-')[0]) || 30;
-          return aTime - bTime;
-        }
-        case 'reviewCount':
-          return (b.reviewCount || 0) - (a.reviewCount || 0);
-        default:
-          return 0; // 기본 순서 유지
-      }
-    });
-  }, [stores, keyword, sort]);
 
   // UI 상태 관리
   const uiState = useListUIState({
@@ -129,7 +103,7 @@ export default function SearchResult() {
           </span>
         </div>
         
-        {filteredAndSortedStores.map((store) => (
+        {stores.map((store) => (
           <StoreListItem
             key={store.storeId}
             store={{
@@ -137,6 +111,9 @@ export default function SearchResult() {
               name: store.name,
               review: store.review,
               reviewCount: store.reviewCount,
+              images: store.images || ["/samples/food1.jpg"],
+              distance: store.distance || 1,
+              minOrderPrice: store.minOrderPrice || 10000,
               minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
             }}
             onClick={() => navigate(`/stores/${store.storeId}`)}
