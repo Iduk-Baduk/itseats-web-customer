@@ -4,10 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
 import OrderTab from "../../components/orders/OrderTab";
-import { selectActiveOrders, selectCompletedOrders, selectAllOrders, updateOrderStatus } from "../../store/orderSlice";
+import { selectActiveOrders, selectCompletedOrders, selectAllOrders, fetchOrdersAsync } from "../../store/orderSlice";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import EmptyState from "../../components/common/EmptyState";
-import { orderAPI } from "../../services/orderAPI";
 import { logger } from "../../utils/logger";
 import styles from "./Order.module.css";
 
@@ -15,89 +14,17 @@ export default function Order() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [selectedTab, setSelectedTab] = React.useState("past");
+  const [keyword, setKeyword] = React.useState("");
 
   // Redux에서 주문 데이터 가져오기
   const allOrders = useSelector(selectAllOrders);
   const activeOrders = useSelector(selectActiveOrders);
   const completedOrders = useSelector(selectCompletedOrders);
-  const isLoading = useSelector(state => state.order?.loading || false);
+  const isLoading = useSelector(state => state.order?.isLoading || false);
 
-  // 주문 상태 업데이트 핸들러
-  const handleStatusChange = useCallback((orderId, currentStatus) => {
-    if (process.env.NODE_ENV === 'development') {
-      logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${currentStatus}`);
-    }
-    dispatch(updateOrderStatus({ 
-      orderId, 
-      status: currentStatus,
-      message: `주문 상태가 ${currentStatus}로 변경되었습니다.`
-    }));
-  }, [dispatch]);
-
-  // 활성 주문들에 대한 상태 추적
   useEffect(() => {
-    if (!activeOrders.length) return;
-
-    const intervals = {};
-    const orderIds = {}; // 주문 ID를 저장할 객체
-
-    // 각 활성 주문에 대한 폴링 설정
-    activeOrders.forEach(order => {
-      const orderId = order.id; // 주문 ID를 저장
-      orderIds[orderId] = true;
-
-      const pollOrderStatus = async () => {
-        try {
-          const response = await orderAPI.trackOrder(orderId);
-          const updatedOrder = response.data;
-          
-          // 상태가 변경되었거나 마지막 체크 시간이 다른 경우 업데이트
-          if (updatedOrder && (
-            updatedOrder.status !== order.status || 
-            updatedOrder.lastChecked !== order.lastChecked
-          )) {
-            handleStatusChange(orderId, updatedOrder.status);
-          }
-        } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
-            logger.error(`주문 상태 추적 실패 (${orderId}):`, error);
-          }
-        }
-      };
-
-      // 초기 상태 확인
-      pollOrderStatus();
-
-      // 5초마다 상태 확인
-      intervals[orderId] = setInterval(pollOrderStatus, 5000);
-    });
-
-    // 클린업: 모든 인터벌 제거
-    return () => {
-      Object.entries(intervals).forEach(([orderId, interval]) => {
-        clearInterval(interval);
-        if (process.env.NODE_ENV === 'development') {
-          logger.log(`⏹️ 주문 ${orderId} 추적 중단`);
-        }
-      });
-    };
-  }, [activeOrders, handleStatusChange]);
-
-  // 디버깅을 위한 로그
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      logger.log('📊 주문 목록 업데이트:', {
-        전체: allOrders.length,
-        진행중: activeOrders.length,
-        완료: completedOrders.length,
-        주문목록: allOrders.map(order => ({
-          id: order.id,
-          storeName: order.storeName,
-          status: order.status
-        }))
-      });
-    }
-  }, [allOrders, activeOrders, completedOrders]);
+    dispatch(fetchOrdersAsync({ page: 0, keyword: keyword }));
+  }, [dispatch, keyword]);
 
   const handleWriteReview = useCallback((order) => {
     navigate(`/orders/${order.id}/review`);
@@ -125,8 +52,8 @@ export default function Order() {
       ...order,
       price: order.orderPrice || order.price || 0,
       date: order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : order.date,
-      isCompleted: ['DELIVERED', 'COMPLETED'].includes(order.status),
-      showReviewButton: ['DELIVERED', 'COMPLETED'].includes(order.status),
+      isCompleted: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus),
+      showReviewButton: ['DELIVERED', 'COMPLETED'].includes(order.orderStatus),
       rating: order.rating || 5,
     };
   }, []);
@@ -150,7 +77,7 @@ export default function Order() {
   return (
     <div>
       <OrderTab onTabChange={setSelectedTab} />
-      <OrderSearch className={styles.orderSearch} />
+      <OrderSearch className={styles.orderSearch} onClick={setKeyword} />
       
       {selectedTab === "past" && (
         displayCompletedOrders.length > 0 ? (

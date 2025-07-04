@@ -94,7 +94,7 @@ export default function OrderStatus() {
       riderRequest: orderData.riderRequest || "요청사항 없음",
       storeLocation: orderData.storeLocation || { lat: 37.4979, lng: 127.0276 },
       destinationLocation: orderData.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-      orderStatus: orderData.orderStatus || orderData.status || "UNKNOWN"
+      orderStatus: orderData.orderStatus || "UNKNOWN"
     };
   }, [orderData]);
 

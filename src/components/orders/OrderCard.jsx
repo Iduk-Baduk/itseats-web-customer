@@ -39,7 +39,7 @@ function OrderCard({
     ];
 
     // 초기 활성 상태 체크
-    const initialStatus = order.status;
+    const initialStatus = order.orderStatus;
     const isInitiallyActive = ACTIVE_STATUSES.includes(initialStatus);
 
     if (isInitiallyActive) {
@@ -57,11 +57,11 @@ function OrderCard({
 
   // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑 - useMemo로 최적화
   const orderData = useMemo(() => {
-    const statusConfig = ORDER_STATUS_CONFIG[order.status] || {};
-    
+    const statusConfig = ORDER_STATUS_CONFIG[order.orderStatus] || {};
+
     // 상태별 한국어 표시명 매핑
-    const getStatusDisplayName = (status) => {
-      switch(status) {
+    const getStatusDisplayName = (orderStatus) => {
+      switch(orderStatus) {
         case ORDER_STATUS.WAITING: return "주문 접수 중";
         case ORDER_STATUS.COOKING: return "조리 중";
         case ORDER_STATUS.COOKED: return "조리 완료";
@@ -75,8 +75,8 @@ function OrderCard({
     };
 
     // 상태별 태그 타입 결정
-    const getStatusTagType = (status) => {
-      switch(status) {
+    const getStatusTagType = (orderStatus) => {
+      switch(orderStatus) {
         case ORDER_STATUS.WAITING:
         case ORDER_STATUS.COOKING:
         case ORDER_STATUS.COOKED:
@@ -96,10 +96,10 @@ function OrderCard({
     return {
       storeName: order.storeName || "알 수 없는 매장",
       date: order.date || (order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : new Date().toLocaleString('ko-KR')),
-      status: order.status || "주문 확인 중",
-      statusDisplayName: getStatusDisplayName(order.status),
+      orderStatus: order.orderStatus || "주문 확인 중",
+      statusDisplayName: getStatusDisplayName(order.orderStatus),
       statusMessage: statusConfig.message || "상태 확인 중",
-      statusTagType: getStatusTagType(order.status),
+      statusTagType: getStatusTagType(order.orderStatus),
       person: statusConfig.person || "잇츠잇츠",
       price: Number(order.price || order.orderPrice || order.totalAmount || 0),
       menuSummary: order.menuSummary || order.items?.map(item => item.menuName).join(", ") || "메뉴 정보 없음",
@@ -107,11 +107,11 @@ function OrderCard({
       orderMenuCount: order.orderMenuCount || order.items?.length || 0,
       storeImage: order.storeImage || "/samples/food1.jpg",
       isCompleted: order.isCompleted !== undefined ? order.isCompleted : 
-        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
+        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.orderStatus),
       showReviewButton: order.showReviewButton !== undefined ? order.showReviewButton : 
-        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.status),
+        [ORDER_STATUS.DELIVERED, ORDER_STATUS.COMPLETED].includes(order.orderStatus),
       remainingDays: order.remainingDays,
-      isActive: [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.status)
+      isActive: [ORDER_STATUS.WAITING, ORDER_STATUS.COOKING, ORDER_STATUS.COOKED, ORDER_STATUS.RIDER_READY, ORDER_STATUS.DELIVERING].includes(order.orderStatus)
     };
   }, [order]);
 
@@ -172,7 +172,7 @@ function OrderCard({
         {/* 진행 중인 주문의 경우 진행 단계 표시 */}
         {orderData.isActive && (
           <div className={styles.progressContainer}>
-            <OrderProgress orderStatus={orderData.status} />
+            <OrderProgress orderStatus={orderData.orderStatus} />
           </div>
         )}
 
@@ -225,5 +225,5 @@ function OrderCard({
 export default React.memo(OrderCard, (prevProps, nextProps) => {
   // id와 status가 같으면 리렌더링하지 않음
   return prevProps.order.id === nextProps.order.id && 
-         prevProps.order.status === nextProps.order.status;
+         prevProps.order.orderStatus === nextProps.order.orderStatus;
 });
