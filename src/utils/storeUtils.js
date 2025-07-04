@@ -27,7 +27,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
     
     // allStores에서 해당 매장 찾기
     currentStoreInfo = allStores.find(store => 
-      String(store.id) === String(firstMenu.storeId)
+      String(store.storeId) === String(firstMenu.storeId)
     );
     
     logger?.log('🔍 storeId로 매장 찾기:', { 

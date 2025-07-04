@@ -136,10 +136,10 @@ export default function useMyPageDetails() {
             return null;
           }
           return {
-            id: store.id,
+            id: store.storeId,
             title: store.name,
-            image: store.imageUrl || "/samples/food1.jpg",
-            rating: store.rating,
+            image: store.images[0] || "/samples/food1.jpg",
+            rating: store.review,
             category: store.category,
             deliveryTime: store.deliveryTime,
             deliveryFee: store.deliveryFee,
@@ -165,10 +165,10 @@ export default function useMyPageDetails() {
             return null;
           }
           return {
-            id: store.id,
+            id: store.storeId,
             title: store.name,
-            image: store.imageUrl || "/samples/food1.jpg",
-            rating: store.rating,
+            image: store.images[0] || "/samples/food1.jpg",
+            rating: store.review,
             category: store.category,
             deliveryTime: store.deliveryTime,
             deliveryFee: store.deliveryFee,
@@ -182,7 +182,7 @@ export default function useMyPageDetails() {
         
         // API 데이터를 로컬스토리지에도 동기화
         if (favoriteStores.length > 0) {
-          const storeIds = favoriteStores.map(store => store.id);
+          const storeIds = favoriteStores.map(store => store.storeId);
           localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(storeIds));
           logger.log('💾 API 데이터를 로컬스토리지에 동기화:', storeIds);
         }

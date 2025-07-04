@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import useAddressRedux from "../hooks/useAddressRedux";
 import calculateCartTotal from "../utils/calculateCartTotal";
 import { fetchStores } from "../store/storeSlice";
-import { initializeTestData } from "../utils/testDataInitializer";
 import SearchInput from "../components/common/SearchInput";
 import MenuGrid from "../components/common/MenuGrid";
 import OptimizedImage from "../components/common/OptimizedImage";
@@ -72,10 +71,7 @@ export default function Home() {
   
   // 컴포넌트 마운트 시 데이터 로딩 및 초기화
   useEffect(() => {
-    dispatch(fetchStores());
-    
-    // 테스트 데이터 초기화 (주문 + 즐겨찾기)
-    initializeTestData(dispatch);
+    dispatch(fetchStores({ page: 0 }));
   }, [dispatch]);
 
   // 매장 데이터 초기화
@@ -166,15 +162,18 @@ export default function Home() {
     // 성공 상태: 매장 목록 표시
     return filteredStores.map((store) => (
       <StoreListItem
-        key={store.id}
+        key={store.storeId}
         store={{
-          storeId: store.id,
+          storeId: store.storeId,
           name: store.name,
-          review: store.rating,
+          review: store.review || 0,
           reviewCount: store.reviewCount,
+          images: store.images || ["/samples/food1.jpg"],
+          distance: store.distance || 1,
+          minOrderPrice: store.minOrderPrice || 10000,
           minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
         }}
-        onClick={() => handleStoreClick(store.id)}
+        onClick={() => handleStoreClick(store.storeId)}
       />
     ));
   };

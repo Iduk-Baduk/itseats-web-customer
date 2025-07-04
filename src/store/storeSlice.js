@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import apiClient from '../services/apiClient';
+import StoreAPI from '../services/storeAPI';
 
-// 매장 목록 조회 API 연동
+// 전체 매장 목록 조회 API 연동
 export const fetchStores = createAsyncThunk(
   'store/fetchStores',
-  async () => {
-    const data = await apiClient.get('/stores');
-    // console.log('🏪 fetchStores API 응답:', data);
+  async ({ page }) => {
+    const data = await StoreAPI.getStores({ page });
     return data;
   }
 );
@@ -23,6 +23,8 @@ export const fetchStoreById = createAsyncThunk(
 
 const initialState = {
   stores: [],
+  currentPage: 0,
+  hasNext: false,
   currentStore: null,
   loading: false,
   error: null,
@@ -47,8 +49,10 @@ const storeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStores.fulfilled, (state, action) => {
+        state.stores = action.payload.stores || [];
+        state.currentPage = action.payload.page || 0;
+        state.hasNext = action.payload.hasNext || false;
         state.loading = false;
-        state.stores = action.payload;
       })
       .addCase(fetchStores.rejected, (state, action) => {
         state.loading = false;

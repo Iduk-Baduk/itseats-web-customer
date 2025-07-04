@@ -77,10 +77,10 @@ function useFavorite() {
       
       logger.log(`✅ useFavorite - 즐겨찾기 매장 매칭: ${store.name}`);
       return {
-        id: store.id,
+        id: store.storeId,
         title: store.name,
-        image: store.imageUrl || "/samples/food1.jpg",
-        rating: store.rating,
+        image: store.images[0] || "/samples/food1.jpg",
+        review: store.review,
         category: store.category,
         deliveryTime: store.deliveryTime,
         deliveryFee: store.deliveryFee,

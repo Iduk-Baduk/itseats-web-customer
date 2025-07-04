@@ -131,15 +131,15 @@ export default function SearchResult() {
         
         {filteredAndSortedStores.map((store) => (
           <StoreListItem
-            key={store.id}
+            key={store.storeId}
             store={{
-              storeId: store.id,
+              storeId: store.storeId,
               name: store.name,
-              review: store.rating,
+              review: store.review,
               reviewCount: store.reviewCount,
               minutesToDelivery: parseInt(store.deliveryTime?.split('-')[0]) || 30
             }}
-            onClick={() => navigate(`/stores/${store.id}`)}
+            onClick={() => navigate(`/stores/${store.storeId}`)}
           />
         ))}
       </>

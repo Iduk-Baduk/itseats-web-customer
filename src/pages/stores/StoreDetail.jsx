@@ -171,27 +171,23 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={currentStore?.id ? isFavorite(currentStore.id) : false}
+          isFavorite={currentStore?.id ? isFavorite(currentStore.storeId) : false}
           favoriteButtonAction={() => {
-            if (!currentStore?.id) return;
-            const wasAlreadyFavorite = isFavorite(currentStore.id);
-            toggleFavorite(currentStore.id);
+            if (!currentStore?.storeId) return;
+            const wasAlreadyFavorite = isFavorite(currentStore.storeId);
+            toggleFavorite(currentStore.storeId);
             // 토스트 메시지 표시
             const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
             setToastMessage(message);
           }}
         />
         <div id="intro" className={styles.intro}>
-          <PhotoSlider images={[
-            currentStore.imageUrl || "/samples/food1.jpg",
-            "/samples/food2.jpg",
-            "/samples/food3.jpg"
-          ]} />
+          <PhotoSlider images={currentStore.images || ['/sample/food1.jpg']} />
           <div className={styles.introContent}>
             <h1>{currentStore.name}</h1>
             <div className={styles.storeInfoButton}>
               <span>
-                ⭐ {currentStore.rating}({currentStore.reviewCount})
+                ⭐ {currentStore.review}({currentStore.reviewCount})
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -217,7 +213,7 @@ export default function StoreDetail() {
           address={currentStore.address}
         />
         <AutoScrollTabs
-          storeId={currentStore.id}
+          storeId={currentStore.storeId}
           menus={currentStore.menus || []}
           fixed={menuTabFixed}
         />

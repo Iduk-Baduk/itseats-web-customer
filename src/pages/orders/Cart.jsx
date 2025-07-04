@@ -53,9 +53,9 @@ export default function Cart() {
   
   // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
   const storeInfo = currentStore || allStores.find(store => 
-    String(store.id) === String(storeId)
+    String(store.storeId) === String(storeId)
   ) || (orderMenus.length > 0 && orderMenus[0]?.storeId && allStores.find(store => 
-    String(store.id) === String(orderMenus[0].storeId)
+    String(store.storeId) === String(orderMenus[0].storeId)
   ));
   const requestInfo = useSelector(selectRequestInfo);
   
@@ -138,13 +138,13 @@ export default function Cart() {
       
       if (firstMenu?.storeId) {
         const foundStore = allStores.find(store => 
-          String(store.id) === String(firstMenu.storeId)
+          String(store.storeId) === String(firstMenu.storeId)
         );
         
         if (foundStore) {
           logger.log('✅ 매장 정보 복구 성공 (storeId):', foundStore);
           dispatch(updateCurrentStore({
-            storeId: foundStore.id,
+            storeId: foundStore.storeId,
             storeName: foundStore.name,
             storeImage: foundStore.imageUrl
           }));
@@ -159,7 +159,7 @@ export default function Cart() {
         if (foundStore) {
           logger.log('✅ 매장 정보 복구 성공 (menuId):', foundStore);
           dispatch(updateCurrentStore({
-            storeId: foundStore.id,
+            storeId: foundStore.storeId,
             storeName: foundStore.name,
             storeImage: foundStore.imageUrl
           }));
