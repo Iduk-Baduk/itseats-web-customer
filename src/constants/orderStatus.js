@@ -37,8 +37,8 @@ export const ORDER_STATUS_CONFIG = {
     person: "사장님",
     message: "음식을 맛있게 조리하고 있어요",
     image: "/icons/order/owner.jpg",
-    showMap: true,
-    showETA: false
+    showMap: false,
+    showETA: true
   },
   [ORDER_STATUS.COOKED]: {
     step: 2,

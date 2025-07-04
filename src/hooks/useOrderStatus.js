@@ -4,11 +4,12 @@ import { useParams } from "react-router-dom";
 import {
   setCurrentOrder,
   selectCurrentOrder,
-  selectOrderById,
   selectIsLoading,
   selectError,
   updateOrderStatus,
   clearCurrentOrder,
+  clearCurrentOrderStatus,
+  trackOrderAsync,
 } from "../store/orderSlice";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../constants/orderStatus";
 import { calculateETA, getOrderStep, isValidOrderStatus } from "../utils/orderUtils";
@@ -41,47 +42,44 @@ export function useOrderStatus(orderId = null) {
   
   // Redux 상태
   const currentOrder = useSelector(selectCurrentOrder);
-  const orderFromStore = useSelector(state => selectOrderById(state, actualOrderId));
+  const currentOrderStatus = useSelector(state => state.order.currentOrderStatus);
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
 
   // 현재 주문 설정
   useEffect(() => {
     if (actualOrderId) {
-      dispatch(setCurrentOrder(actualOrderId));
+      dispatch(trackOrderAsync(actualOrderId));
     }
     
     // 컴포넌트 언마운트 시 현재 주문 초기화
     return () => {
-      dispatch(clearCurrentOrder());
+      dispatch(clearCurrentOrderStatus());
     };
   }, [actualOrderId, dispatch]);
 
   // 주문 데이터 (Redux에서 가져온 데이터만 사용)
   const orderData = useMemo(() => {
-    if (orderFromStore) {
+    if (currentOrderStatus) {
       // Redux 데이터를 OrderStatus 컴포넌트에서 기대하는 형식으로 변환
       return {
-        id: orderFromStore.id,
-        orderStatus: orderFromStore.orderStatus,
-        deliveryEta: orderFromStore.deliveryEta || null,
-        storeName: orderFromStore.storeName,
-        orderNumber: orderFromStore.orderNumber || `ORDER${orderFromStore.id}`,
-        orderPrice: orderFromStore.orderPrice || orderFromStore.totalPrice || 0,
-        orderMenuCount: orderFromStore.orderMenuCount || orderFromStore.menuCount || 1,
-        deliveryAddress: orderFromStore.deliveryAddress,
-        destinationLocation: orderFromStore.destinationLocation || { lat: 37.501887, lng: 127.039252 },
-        storeLocation: orderFromStore.storeLocation || { lat: 37.4979, lng: 127.0276 },
-        riderRequest: orderFromStore.riderRequest || orderFromStore.deliveryRequest,
-        statusHistory: orderFromStore.statusHistory || [],
-        createdAt: orderFromStore.createdAt,
-        ...orderFromStore // 나머지 필드들도 포함
+        id: currentOrderStatus.orderId,
+        orderStatus: currentOrderStatus.orderStatus,
+        deliveryEta: currentOrderStatus.deliveryEta || null,
+        storeName: currentOrderStatus.storeName,
+        orderNumber: currentOrderStatus.orderNumber,
+        orderPrice: currentOrderStatus.orderPrice || 0,
+        orderMenuCount: currentOrderStatus.orderMenuCount || 1,
+        deliveryAddress: currentOrderStatus.deliveryAddress,
+        destinationLocation: currentOrderStatus.destinationLocation || { lat: 37.501887, lng: 127.039252 },
+        storeLocation: currentOrderStatus.storeLocation || { lat: 37.4979, lng: 127.0276 },
+        riderRequest: currentOrderStatus.riderRequest,
+        ...currentOrderStatus // 나머지 필드들도 포함
       };
     }
     
-    // Redux에 데이터가 없는 경우 null 반환
     return null;
-  }, [orderFromStore]);
+  }, [currentOrderStatus]);
 
   // 주문 상태 정보 계산
   const orderStatusInfo = useMemo(() => {

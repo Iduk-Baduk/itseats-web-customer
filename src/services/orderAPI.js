@@ -135,8 +135,8 @@ export const orderAPI = {
         logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.orderStatus})`);
         return { data: trackedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}/track`);
-        return response;
+        const response = await apiClient.get(`/orders/${orderId}/status`);
+        return response.data;
       }
     } catch (error) {
       logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
@@ -148,7 +148,7 @@ export const orderAPI = {
   updateOrderStatus: async (orderId, orderStatus, message = '') => {
     try {
       if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
-        throw new Error(`유효하지 않은 주문 상태: ${statorderStatusus}`);
+        throw new Error(`유효하지 않은 주문 상태: ${orderStatus}`);
       }
 
       if (ENV_CONFIG.isDevelopment) {

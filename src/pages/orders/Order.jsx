@@ -27,7 +27,7 @@ export default function Order() {
   }, [dispatch, keyword]);
 
   const handleWriteReview = useCallback((order) => {
-    navigate(`/orders/${order.id}/review`);
+    navigate(`/orders/${order.orderId}/review`);
   }, [navigate]);
 
   const handleReorder = useCallback((order) => {
@@ -83,7 +83,7 @@ export default function Order() {
         displayCompletedOrders.length > 0 ? (
           displayCompletedOrders.map((order) => (
             <OrderCard
-              key={order.id}
+              key={order.orderId}
               order={order}
               className={styles.orderCard}
               onWriteReview={() => handleWriteReview(order)}
@@ -105,10 +105,10 @@ export default function Order() {
         displayActiveOrders.length > 0 ? (
           displayActiveOrders.map((order) => (
             <OrderCard
-              key={order.id}
+              key={order.orderId}
               order={order}
               className={styles.orderCard}
-              onOpenStatus={() => navigate(`/orders/${order.id}/status`)}
+              onOpenStatus={() => navigate(`/orders/${order.orderId}/status`)}
             />
           ))
         ) : (
