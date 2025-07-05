@@ -475,7 +475,7 @@
   ],
   "stores": [
     {
-      "id": "1",
+      "storeId": "1",
       "name": "도미노피자 구름점",
       "category": "피자",
       "location": {
@@ -490,7 +490,7 @@
       "deliveryFee": 2500,
       "minOrderAmount": 15000,
       "isOpen": true,
-      "imageUrl": "/samples/food1.jpg",
+      "images": ["/samples/food1.jpg"],
       "menus": [
         {
           "id": 1,
@@ -568,7 +568,7 @@
       ]
     },
     {
-      "id": "2",
+      "storeId": "2",
       "name": "맘스터치 판교점",
       "category": "햄버거",
       "location": {
@@ -583,7 +583,7 @@
       "deliveryFee": 2000,
       "minOrderAmount": 12000,
       "isOpen": true,
-      "imageUrl": "/samples/food2.jpg",
+      "images": ["/samples/food2.jpg"],
       "menus": [
         {
           "id": 5,
@@ -625,7 +625,7 @@
       ]
     },
     {
-      "id": "3",
+      "storeId": "3",
       "name": "굽네치킨 판교점",
       "category": "치킨",
       "location": {
@@ -640,7 +640,7 @@
       "deliveryFee": 3000,
       "minOrderAmount": 18000,
       "isOpen": false,
-      "imageUrl": "/samples/food1.jpg",
+      "images": ["/samples/food1.jpg"],
       "menus": [
         {
           "id": 7,
@@ -653,7 +653,7 @@
       ]
     },
     {
-      "id": "4",
+      "storeId": "4",
       "name": "교촌치킨 구름점",
       "category": "치킨",
       "location": {
@@ -668,10 +668,10 @@
       "deliveryFee": 2500,
       "minOrderAmount": 16000,
       "isOpen": true,
-      "imageUrl": "/samples/food2.jpg"
+      "images": ["/samples/food2.jpg"]
     },
     {
-      "id": "5",
+      "storeId": "5",
       "name": "미스터피자 판교점",
       "category": "피자",
       "location": {
@@ -686,7 +686,7 @@
       "deliveryFee": 3000,
       "minOrderAmount": 20000,
       "isOpen": true,
-      "imageUrl": "/samples/food3.jpg"
+      "images": ["/samples/food3.jpg"]
     }
   ],
   "addresses": [

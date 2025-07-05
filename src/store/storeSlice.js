@@ -1,19 +1,33 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../services/apiClient';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import apiClient from "../services/apiClient";
+import StoreAPI from "../services/storeAPI";
 
-// 매장 목록 조회 API 연동
+// 전체 매장 목록 조회 API 연동
 export const fetchStores = createAsyncThunk(
-  'store/fetchStores',
-  async () => {
-    const data = await apiClient.get('/stores');
-    // console.log('🏪 fetchStores API 응답:', data);
+  "store/fetchStores",
+  async ({ page }) => {
+    const data = await StoreAPI.getStores({ page });
+    return data;
+  }
+);
+
+// 카테고리별 매장 목록 조회 API 연동
+export const fetchStoresByCategory = createAsyncThunk(
+  "store/fetchStoresByCategory",
+  async ({ category, sort, page, addressId }) => {
+    const data = await StoreAPI.getStoresByCategory({
+      category,
+      sort,
+      page,
+      addressId,
+    });
     return data;
   }
 );
 
 // 특정 매장 정보 조회 API 연동
 export const fetchStoreById = createAsyncThunk(
-  'store/fetchStoreById',
+  "store/fetchStoreById",
   async (storeId) => {
     const data = await apiClient.get(`/stores/${storeId}`);
     // console.log('🏪 fetchStoreById API 응답:', data);
@@ -23,13 +37,15 @@ export const fetchStoreById = createAsyncThunk(
 
 const initialState = {
   stores: [],
+  currentPage: 0,
+  hasNext: false,
   currentStore: null,
   loading: false,
   error: null,
 };
 
 const storeSlice = createSlice({
-  name: 'store',
+  name: "store",
   initialState,
   reducers: {
     setCurrentStore(state, action) {
@@ -47,10 +63,27 @@ const storeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStores.fulfilled, (state, action) => {
+        state.stores = action.payload.stores || [];
+        state.currentPage = action.payload.page || 0;
+        state.hasNext = action.payload.hasNext || false;
         state.loading = false;
-        state.stores = action.payload;
       })
       .addCase(fetchStores.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 카테고리별 매장 목록 조회
+      .addCase(fetchStoresByCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStoresByCategory.fulfilled, (state, action) => {
+        state.stores = action.payload.stores || [];
+        state.currentPage = action.payload.page || 0;
+        state.hasNext = action.payload.hasNext || false;
+        state.loading = false;
+      })
+      .addCase(fetchStoresByCategory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
@@ -71,4 +104,4 @@ const storeSlice = createSlice({
 });
 
 export const { setCurrentStore, clearCurrentStore } = storeSlice.actions;
-export default storeSlice.reducer; 
+export default storeSlice.reducer;

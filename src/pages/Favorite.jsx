@@ -90,15 +90,15 @@ export default function Favorite() {
             <ul className={styles.list}>
               {sortedFavorites.map((store) => (
                 <li
-                  key={store.id}
+                  key={store.storeId}
                   className={`${styles.item} ${
                     !isEditing ? styles.notEditing : ""
                   }`}
                   onClick={() => {
                     if (isEditing) {
-                      toggleSelect(store.id);
+                      toggleSelect(store.storeId);
                     } else {
-                      navigate(`/stores/${store.id}`);
+                      navigate(`/stores/${store.storeId}`);
                     }
                   }}
                 >
@@ -106,13 +106,13 @@ export default function Favorite() {
                   <div className={styles.details}>
                     <p className={styles.name}>{store.title}</p>
                     <p className={styles.subinfo}>
-                      ⭐ {store.rating} · {store.category} · {store.deliveryTime} · 배달비 {store.deliveryFee?.toLocaleString()}원
+                      ⭐ {store.review} · {store.category} · {store.deliveryTime} · 배달비 {store.deliveryFee?.toLocaleString()}원
                     </p>
                   </div>
                   {isEditing && (
                     <span
                       className={`${styles.checkCircle} ${
-                        selectedIds.includes(String(store.id)) ? styles.checked : ""
+                        selectedIds.includes(String(store.storeId)) ? styles.checked : ""
                       }`}
                     >
                       <div

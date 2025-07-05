@@ -27,7 +27,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
     
     // allStores에서 해당 매장 찾기
     currentStoreInfo = allStores.find(store => 
-      String(store.id) === String(firstMenu.storeId)
+      String(store.storeId) === String(firstMenu.storeId)
     );
     
     logger?.log('🔍 storeId로 매장 찾기:', { 
@@ -57,7 +57,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
     currentStoreInfo = {
       id: currentStoreId,
       name: firstMenu.storeId ? `매장 ${currentStoreId}` : "도미노피자 구름점",
-      imageUrl: "/samples/food1.jpg",
+      images: ["/samples/food1.jpg"],
       location: { lat: 37.4979, lng: 127.0276 },
       address: "매장 주소",
       phone: "031-0000-0000",
