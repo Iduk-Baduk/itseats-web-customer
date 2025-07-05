@@ -3,10 +3,10 @@ import MenuItem from "./MenuItem";
 import styles from "./AutoScrollTabs.module.css";
 
 export default function AutoScrollTabs({ storeId, menus, fixed = false }) {
-   const menuGroups = menus
-    .map((menu) => menu.menuGroupName)
+  const menuGroups = menus
+    .map((menu) => menu.groupName)
     .filter((group, index, self) => self.indexOf(group) === index);
-  
+
   const [activeTab, setActiveTab] = useState(menuGroups[0]);
   const sectionRefs = useRef({});
   const tabRefs = useRef({});
@@ -51,7 +51,7 @@ export default function AutoScrollTabs({ storeId, menus, fixed = false }) {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [menus]);
 
   return (
     <div className={styles.wrapper}>
@@ -85,7 +85,7 @@ export default function AutoScrollTabs({ storeId, menus, fixed = false }) {
           >
             <h2 className={styles.subHeader}>{group}</h2>
             {menus
-              .filter((menu) => menu.menuGroupName === group)
+              .filter((menu) => menu.groupName === group)
               .map((menu) => (
                 <MenuItem key={menu.menuId} storeId={storeId} menu={menu} />
               ))}

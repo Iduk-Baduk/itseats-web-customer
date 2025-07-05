@@ -25,13 +25,21 @@ export const fetchStoresByCategory = createAsyncThunk(
   }
 );
 
-// 특정 매장 정보 조회 API 연동
+// 매장 상세 정보 조회 API 연동
 export const fetchStoreById = createAsyncThunk(
   "store/fetchStoreById",
   async (storeId) => {
-    const data = await apiClient.get(`/stores/${storeId}`);
-    // console.log('🏪 fetchStoreById API 응답:', data);
-    return data;
+    const data = await StoreAPI.getStoreById(storeId);
+    return { ...data, storeId };
+  }
+);
+
+// 메뉴 조회 API 연동
+export const fetchMenusByStoreId = createAsyncThunk(
+  "store/fetchMenusByStoreId",
+  async (storeId) => {
+    const data = await StoreAPI.getMenusByStoreId(storeId);
+    return { ...data, storeId };
   }
 );
 
@@ -39,7 +47,7 @@ const initialState = {
   stores: [],
   currentPage: 0,
   hasNext: false,
-  currentStore: null,
+  currentStore: {},
   loading: false,
   error: null,
 };
@@ -87,16 +95,54 @@ const storeSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-      // 특정 매장 조회
+      // 매장 상세 정보 조회
       .addCase(fetchStoreById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchStoreById.fulfilled, (state, action) => {
+        // 현재 매장이 설정되어 있지 않거나, 다른 매장이라면 업데이트
+        if (!state.currentStore || state.currentStore.storeId !== action.payload.storeId) {
+          state.currentStore = action.payload;
+        }
+        else if (state.currentStore.storeId === action.payload.storeId) {
+          // 이미 같은 매장이라면 기존 메뉴를 유지
+          state.currentStore = {
+            ...state.currentStore,
+            ...action.payload,
+          };
+        }
         state.loading = false;
-        state.currentStore = action.payload;
       })
       .addCase(fetchStoreById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 메뉴 조회
+      .addCase(fetchMenusByStoreId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMenusByStoreId.fulfilled, (state, action) => {
+        // 현재 매장이 설정되어 있지 않거나, 다른 매장이라면 업데이트
+        if (!state.currentStore || state.currentStore.storeId !== action.payload.storeId) {
+          state.currentStore = state.stores.find(store => store.storeId === action.payload.storeId) || {};
+        }
+
+        // 메뉴 그룹별로 나눠진 메뉴를 평탄화
+        const allMenus = action.payload.menuGroups.flatMap(group =>
+          group.menus.map(menu => ({
+            ...menu,
+            groupName: group.groupName
+          }))
+        );
+        state.currentStore = {
+          ...state.currentStore,
+          menus: allMenus,
+        };
+        state.loading = false;
+      })
+      .addCase(fetchMenusByStoreId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

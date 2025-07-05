@@ -29,8 +29,8 @@ const MenuItem = React.memo(({ storeId, menu }) => {
             src={menu.image || menu.imageUrl}
             alt={menu.menuName || menu.name}
             className={`${styles.menuImage} ${isSoldOut ? styles.dimmed : ""}`}
-            width={80}
-            height={80}
+            width={100}
+            height={100}
             priority={false}
             placeholder="/samples/favoriteDefault.png"
           />
@@ -42,8 +42,8 @@ const MenuItem = React.memo(({ storeId, menu }) => {
             src="/samples/favoriteDefault.png"
             alt="기본 메뉴 이미지"
             className={styles.menuImage}
-            width={80}
-            height={80}
+            width={100}
+            height={100}
             priority={false}
           />
         </div>

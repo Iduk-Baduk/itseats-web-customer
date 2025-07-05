@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchStoreById } from "../../store/storeSlice";
+import { fetchStoreById, fetchMenusByStoreId } from "../../store/storeSlice";
 import { selectCartItemCount } from "../../store/cartSlice";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
@@ -23,7 +23,7 @@ export default function StoreDetail() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { copyToClipboard, shareViaWebAPI } = useShare();
-  const { toggleFavorite, isFavorite } = useFavorite();
+  const { toggleFavorite } = useFavorite();
 
   const { storeId } = useParams();
 
@@ -66,8 +66,15 @@ export default function StoreDetail() {
   useEffect(() => {
     if (storeId) {
       dispatch(fetchStoreById(storeId));
+      dispatch(fetchMenusByStoreId(storeId));
     }
   }, [dispatch, storeId]);
+
+  useEffect(() => {
+    if (store && store.liked) {
+      setIsFavorite(store.storeId, store.liked);
+    }
+  }, [store])
 
   // 아래로 스크롤 되었을 때 헤더 배경을 흰색으로 변경
   useEffect(() => {
@@ -98,6 +105,7 @@ export default function StoreDetail() {
   // 에러 핸들러
   const handleRetry = () => {
     dispatch(fetchStoreById(storeId));
+    dispatch(fetchMenusByStoreId(storeId));
   };
 
   const handleGoBack = () => {
@@ -171,10 +179,10 @@ export default function StoreDetail() {
               alert(result.message);
             }
           }}
-          isFavorite={currentStore?.storeId ? isFavorite(currentStore.storeId) : false}
+          isFavorite={currentStore?.liked || false}
           favoriteButtonAction={() => {
             if (!currentStore?.storeId) return;
-            const wasAlreadyFavorite = isFavorite(currentStore.storeId);
+            const wasAlreadyFavorite = currentStore.liked || false;
             toggleFavorite(currentStore.storeId);
             // 토스트 메시지 표시
             const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
@@ -207,9 +215,9 @@ export default function StoreDetail() {
           storeId={storeId}
           defaultTime={parseInt(currentStore.deliveryTime?.split('-')[0]) || 30}
           takeoutTime={15} // 기본값
-          minimumOrderPrice={currentStore.minOrderAmount}
-          deliveryFeeMin={currentStore.deliveryFee}
-          deliveryFeeMax={currentStore.deliveryFee}
+          minimumOrderPrice={currentStore.minOrderAmount || 10000}
+          deliveryFeeMin={currentStore.defaultDeliveryFee}
+          deliveryFeeMax={currentStore.onlyOneDeliveryFee}
           address={currentStore.address}
         />
         <AutoScrollTabs
