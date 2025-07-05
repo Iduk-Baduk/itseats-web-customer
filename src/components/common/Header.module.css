@@ -43,6 +43,7 @@
     justify-content: center;
     color: var(--black-700);
     cursor: pointer;
+    z-index: 1002;
 }
 .iconButton:hover {
     background-color: var(--background-hover-color);

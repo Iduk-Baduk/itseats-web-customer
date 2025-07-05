@@ -195,7 +195,7 @@ export default function StoreDetail() {
             <h1>{currentStore.name}</h1>
             <div className={styles.storeInfoButton}>
               <span>
-                ⭐ {currentStore.review}({currentStore.reviewCount})
+                ⭐ {currentStore.review?.toFixed(1)} ({currentStore.reviewCount})
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
