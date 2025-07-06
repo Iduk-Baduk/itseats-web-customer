@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addMenu, replaceCartWithNewStore, selectCurrentStore } from "../../store/cartSlice";
-import { fetchStoreById } from "../../store/storeSlice";
+import { fetchStoreById, fetchMenuOptionsByMenuId } from "../../store/storeSlice";
 import { useShare } from "../../hooks/useShare";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import HeaderMenuDetail from "../../components/stores/HeaderMenuDetail";
@@ -21,18 +21,11 @@ export default function MenuDetail() {
   const currentStore = useSelector(selectCurrentStore);
   
   // Redux에서 매장 정보 가져오기
-  const store = useSelector((state) => state.store.currentStore);
+  const store = useSelector((state) => state.store.currentStore || {});
   const storeLoading = useSelector((state) => state.store.loading);
   
   // 현재 메뉴 찾기
-  const currentMenu = store?.menus?.find(menu => menu.id == menuId);
-  
-  // console.log("MenuDetail Debug:", {
-  //   storeId,
-  //   menuId,
-  //   store,
-  //   currentMenu
-  // });
+  const currentMenu = useSelector((state) => state.store.currentMenu || {});
 
   const [isTransparent, setTransparent] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -44,16 +37,17 @@ export default function MenuDetail() {
   // 초기화 및 설정
   useEffect(() => {
     // 매장 정보 로딩
-    if (storeId) {
+    if (storeId && menuId) {
       dispatch(fetchStoreById(storeId));
+      dispatch(fetchMenuOptionsByMenuId({ storeId, menuId }));
     }
-  }, [dispatch, storeId]);
+  }, [dispatch, storeId, menuId]);
 
   // 메뉴 옵션 초기화 - 별도 useEffect로 분리
   useEffect(() => {
-    if (currentMenu?.options && Array.isArray(currentMenu.options)) {
+    if (currentMenu?.optionGroups && Array.isArray(currentMenu.optionGroups)) {
       setSelectedOptions(
-        currentMenu.options.map((group) => ({ 
+        currentMenu.optionGroups.map((group) => ({ 
           ...group, 
           options: [] 
         }))
@@ -103,20 +97,11 @@ export default function MenuDetail() {
   function createMenuData() {
     if (!currentMenu || !store) return null;
     
-    // API 스펙에 맞는 menuOptions 구조로 변환
-    const menuOptions = selectedOptions.map((group, index) => ({
-      optionGroupName: currentMenu.options?.[index]?.name || group.optionGroupName,
-      options: group.options.map(option => ({
-        optionName: option.optionName,
-        optionPrice: option.optionPrice
-      }))
-    })).filter(group => group.options.length > 0);
-
     return {
-      menuId: currentMenu.id || currentMenu.menuId,
+      menuId: currentMenu.menuId,
       menuName: currentMenu.name || currentMenu.menuName,
       menuPrice: currentMenu.price || currentMenu.menuPrice,
-      menuOptions: menuOptions,
+      optionGroups: currentMenu.optionGroups || [],
       menuOption: selectedOptions,
       quantity,
       storeId: String(storeId),
@@ -234,7 +219,7 @@ export default function MenuDetail() {
           </div>
         </div>
 
-        {currentMenu?.options?.map((group, index) => {
+        {currentMenu?.optionGroups?.map((group, index) => {
           const inputType =
             group.minSelect === 1 && group.maxSelect === 1
               ? "radio"
@@ -262,13 +247,13 @@ export default function MenuDetail() {
               </div>
 
               <div className={styles.options}>
-                {group.choices?.map((option, idx) => {
+                {group.options?.map((option, idx) => {
                   return (
                     <div key={idx} className={styles.option}>
                       <OptionInput
                         type={inputType}
                         checked={Boolean(selectedOptions[index]?.options?.some(
-                          (opt) => opt.optionName === option.name
+                          (opt) => opt.optionName === option.optionName
                         ))}
                         onChange={() => {
                           setSelectedOptions((prev) =>
@@ -277,7 +262,7 @@ export default function MenuDetail() {
 
                               const newOptions = [...(g.options || [])];
                               const alreadySelected = newOptions.some(
-                                (opt) => opt.optionName === option.name
+                                (opt) => opt.optionName === option.optionName
                               );
 
                               if (inputType === "radio") {
@@ -285,8 +270,8 @@ export default function MenuDetail() {
                                   ...g,
                                   options: [
                                     {
-                                      optionName: option.name,
-                                      optionPrice: option.price,
+                                      optionName: option.optionName,
+                                      optionPrice: option.optionPrice,
                                     },
                                   ],
                                 };
@@ -297,7 +282,7 @@ export default function MenuDetail() {
                                   ...g,
                                   options: newOptions.filter(
                                     (opt) =>
-                                      opt.optionName !== option.name
+                                      opt.optionName !== option.optionName
                                   ),
                                 };
                               } else {
@@ -316,8 +301,8 @@ export default function MenuDetail() {
                                   options: [
                                     ...newOptions,
                                     {
-                                      optionName: option.name,
-                                      optionPrice: option.price,
+                                      optionName: option.optionName,
+                                      optionPrice: option.optionPrice,
                                     },
                                   ],
                                 };
@@ -325,8 +310,8 @@ export default function MenuDetail() {
                             })
                           );
                         }}
-                        label={option.name}
-                        price={option.price}
+                        label={option.optionName}
+                        price={option.optionPrice}
                         id={`option-${index}-${idx}`}
                         disabled={false}
                       />

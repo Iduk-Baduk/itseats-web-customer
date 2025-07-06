@@ -43,11 +43,21 @@ export const fetchMenusByStoreId = createAsyncThunk(
   }
 );
 
+// 메뉴 옵션 조회 API 연동
+export const fetchMenuOptionsByMenuId = createAsyncThunk(
+  "store/fetchMenuOptionsByMenuId",
+  async ({ storeId, menuId }) => {
+    const data = await StoreAPI.getMenuOptionsByMenuId(storeId, menuId);
+    return { ...data, storeId };
+  }
+);
+
 const initialState = {
   stores: [],
   currentPage: 0,
   hasNext: false,
   currentStore: {},
+  currentMenu: {},
   loading: false,
   error: null,
 };
@@ -102,10 +112,12 @@ const storeSlice = createSlice({
       })
       .addCase(fetchStoreById.fulfilled, (state, action) => {
         // 현재 매장이 설정되어 있지 않거나, 다른 매장이라면 업데이트
-        if (!state.currentStore || state.currentStore.storeId !== action.payload.storeId) {
+        if (
+          !state.currentStore ||
+          state.currentStore.storeId !== action.payload.storeId
+        ) {
           state.currentStore = action.payload;
-        }
-        else if (state.currentStore.storeId === action.payload.storeId) {
+        } else if (state.currentStore.storeId === action.payload.storeId) {
           // 이미 같은 매장이라면 기존 메뉴를 유지
           state.currentStore = {
             ...state.currentStore,
@@ -125,15 +137,21 @@ const storeSlice = createSlice({
       })
       .addCase(fetchMenusByStoreId.fulfilled, (state, action) => {
         // 현재 매장이 설정되어 있지 않거나, 다른 매장이라면 업데이트
-        if (!state.currentStore || state.currentStore.storeId !== action.payload.storeId) {
-          state.currentStore = state.stores.find(store => store.storeId === action.payload.storeId) || {};
+        if (
+          !state.currentStore ||
+          state.currentStore.storeId !== action.payload.storeId
+        ) {
+          state.currentStore =
+            state.stores.find(
+              (store) => store.storeId === action.payload.storeId
+            ) || {};
         }
 
         // 메뉴 그룹별로 나눠진 메뉴를 평탄화
-        const allMenus = action.payload.menuGroups.flatMap(group =>
-          group.menus.map(menu => ({
+        const allMenus = action.payload.menuGroups.flatMap((group) =>
+          group.menus.map((menu) => ({
             ...menu,
-            groupName: group.groupName
+            groupName: group.groupName,
           }))
         );
         state.currentStore = {
@@ -143,6 +161,20 @@ const storeSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchMenusByStoreId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 메뉴 옵션 조회
+      .addCase(fetchMenuOptionsByMenuId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMenuOptionsByMenuId.fulfilled, (state, action) => {
+        // 메뉴 옵션을 현재 매장에 추가
+        state.currentMenu = action.payload || {};
+        state.loading = false;
+      })
+      .addCase(fetchMenuOptionsByMenuId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

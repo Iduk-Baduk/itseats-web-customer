@@ -50,6 +50,17 @@ const StoreAPI = {
       throw error;
     }
   },
+  // 메뉴 옵션 조회 API
+  getMenuOptionsByMenuId: async (storeId, menuId) => {
+    try {
+      const response = await apiClient.get(`/stores/${storeId}/${menuId}/options`);
+      logger.log("✅ 매장 메뉴 옵션 조회 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      logger.error("📡 매장 메뉴 옵션 조회 요청 실패:", error);
+      throw error;
+    }
+  },
 };
 
 export default StoreAPI;

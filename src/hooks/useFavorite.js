@@ -11,12 +11,6 @@ function useFavorite() {
   const stores = useSelector(state => state.store?.stores || []);
   const storeLoading = useSelector(state => state.store?.loading || false);
   
-  logger.log('🏪 useFavorite - Redux stores 상태:', {
-    storesCount: stores.length,
-    storeLoading,
-    firstStore: stores[0]
-  });
-  
   // localStorage에서 즐겨찾기 ID 목록 불러오기
   const [favoriteStoreIds, setFavoriteStoreIds] = useState(() => {
     // LocalStorage에서 즐겨찾기 목록 복원
