@@ -152,7 +152,7 @@ export default function Cart() {
       } else if (firstMenu?.menuId) {
         const foundStore = allStores.find(store => 
           store.menus && store.menus.some(menu => 
-            String(menu.id) === String(firstMenu.menuId)
+            String(menu.menuId) === String(firstMenu.menuId)
           )
         );
         

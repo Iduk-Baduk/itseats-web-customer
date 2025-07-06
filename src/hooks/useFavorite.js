@@ -1,7 +1,6 @@
 // useFavorite.js
 import { useState, useMemo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchStores } from "../store/storeSlice";
 import { useNavigate } from "react-router-dom";
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
@@ -11,22 +10,6 @@ function useFavorite() {
   // Redux에서 stores 상태 직접 확인
   const stores = useSelector(state => state.store?.stores || []);
   const storeLoading = useSelector(state => state.store?.loading || false);
-  
-  logger.log('🏪 useFavorite - Redux stores 상태:', {
-    storesCount: stores.length,
-    storeLoading,
-    firstStore: stores[0]
-  });
-
-  // stores 데이터가 없으면 직접 로드
-  useEffect(() => {
-    if (stores.length === 0 && !storeLoading) {
-      logger.log('🔄 useFavorite에서 fetchStores 호출');
-      dispatch(fetchStores()).catch(error => {
-        logger.error('매장 데이터 로드 실패:', error);
-      });
-    }
-  }, [stores.length, storeLoading, dispatch]);
   
   // localStorage에서 즐겨찾기 ID 목록 불러오기
   const [favoriteStoreIds, setFavoriteStoreIds] = useState(() => {
@@ -126,6 +109,22 @@ function useFavorite() {
     return favoriteStoreIds.some(id => String(id) === String(storeId));
   };
 
+  // 즐겨찾기 여부 설정
+  const setIsFavorite = (storeId, isFav) => {
+    setFavoriteStoreIds((prev) => {
+      const normalizedStoreId = String(storeId);
+      const normalizedPrev = prev.map(String);
+      
+      if (isFav) {
+        return normalizedPrev.includes(normalizedStoreId)
+          ? prev
+          : [...prev, storeId];
+      } else {
+        return prev.filter((id) => String(id) !== normalizedStoreId);
+      }
+    });
+  };
+
   const sortedFavorites = useMemo(() => {
     const sorted = [...favorites];
     if (sortOption === "recent") {
@@ -153,6 +152,7 @@ function useFavorite() {
     navigateToHome,
     toggleFavorite,
     isFavorite,
+    setIsFavorite,
   };
 }
 

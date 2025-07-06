@@ -493,7 +493,7 @@
       "images": ["/samples/food1.jpg"],
       "menus": [
         {
-          "id": 1,
+          "menuId": 1,
           "name": "페퍼로니 피자 L",
           "price": 24900,
           "originalPrice": 27900,
@@ -542,7 +542,7 @@
           ]
         },
         {
-          "id": 2,
+          "menuId": 2,
           "name": "불고기 피자 L",
           "price": 26900,
           "description": "한국인이 사랑하는 불고기 피자",
@@ -550,7 +550,7 @@
           "category": "피자"
         },
         {
-          "id": 3,
+          "menuId": 3,
           "name": "콜라 1.25L",
           "price": 2500,
           "description": "시원한 콜라",
@@ -558,7 +558,7 @@
           "category": "음료"
         },
         {
-          "id": 4,
+          "menuId": 4,
           "name": "테스트 메뉴",
           "price": 6000,
           "description": "테스트용 간단한 메뉴",
@@ -586,7 +586,7 @@
       "images": ["/samples/food2.jpg"],
       "menus": [
         {
-          "id": 5,
+          "menuId": 5,
           "name": "싸이버거 세트",
           "price": 8900,
           "description": "대표 메뉴 싸이버거 세트",
@@ -615,7 +615,7 @@
           ]
         },
         {
-          "id": 6,
+          "menuId": 6,
           "name": "치킨버거",
           "price": 6600,
           "description": "바삭한 치킨 패티 버거",
@@ -643,7 +643,7 @@
       "images": ["/samples/food1.jpg"],
       "menus": [
         {
-          "id": 7,
+          "menuId": 7,
           "name": "굽네 볼케이노",
           "price": 19900,
           "description": "매콤한 볼케이노 치킨",
