@@ -9,7 +9,7 @@ const MenuItem = React.memo(({ storeId, menu }) => {
   const isSoldOut = menu.menuStatus === "OUT_OF_STOCK";
 
   const handleClick = useCallback(() => {
-    const menuId = menu.menuId || menu.id;
+    const menuId = menu.menuId;
     navigate(`/stores/${storeId}/menus/${menuId}`);
   }, [navigate, storeId, menu.menuId, menu.id]);
 

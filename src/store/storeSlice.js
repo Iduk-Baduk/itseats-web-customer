@@ -70,7 +70,8 @@ const storeSlice = createSlice({
       state.currentStore = action.payload;
     },
     clearCurrentStore(state) {
-      state.currentStore = null;
+      state.currentStore = {};
+      state.currentMenu = {};
     },
   },
   extraReducers: (builder) => {
@@ -141,10 +142,9 @@ const storeSlice = createSlice({
           !state.currentStore ||
           state.currentStore.storeId !== action.payload.storeId
         ) {
-          state.currentStore =
-            state.stores.find(
-              (store) => store.storeId === action.payload.storeId
-            ) || {};
+          state.currentStore = state.stores.find(
+            (store) => store.storeId === action.payload.storeId
+          ) || { storeId: action.payload.storeId };
         }
 
         // 메뉴 그룹별로 나눠진 메뉴를 평탄화

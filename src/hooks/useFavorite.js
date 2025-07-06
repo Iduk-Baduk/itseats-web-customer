@@ -152,6 +152,7 @@ function useFavorite() {
     navigateToHome,
     toggleFavorite,
     isFavorite,
+    setIsFavorite,
   };
 }
 

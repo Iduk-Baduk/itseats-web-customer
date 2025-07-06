@@ -23,7 +23,7 @@ export default function StoreDetail() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { copyToClipboard, shareViaWebAPI } = useShare();
-  const { toggleFavorite } = useFavorite();
+  const { toggleFavorite, setIsFavorite } = useFavorite();
 
   const { storeId } = useParams();
 

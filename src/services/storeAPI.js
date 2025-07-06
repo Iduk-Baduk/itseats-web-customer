@@ -53,7 +53,7 @@ const StoreAPI = {
   // 메뉴 옵션 조회 API
   getMenuOptionsByMenuId: async (storeId, menuId) => {
     try {
-      const response = await apiClient.get(`/stores/${storeId}/${menuId}/options`);
+      const response = await apiClient.get(`/stores/${storeId}/menus/${menuId}/options`);
       logger.log("✅ 매장 메뉴 옵션 조회 성공:", response.data);
       return response.data;
     } catch (error) {

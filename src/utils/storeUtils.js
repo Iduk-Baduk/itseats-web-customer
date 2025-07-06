@@ -40,7 +40,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
   if (!currentStoreInfo && firstMenu.menuId) {
     const foundByMenuId = allStores.find(store => 
       store.menus && store.menus.some(menu => 
-        String(menu.id) === String(firstMenu.menuId)
+        String(menu.menuId) === String(firstMenu.menuId)
       )
     );
     
