@@ -44,7 +44,7 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      <img src="/logo.svg" alt="logo" className="logo" />
+      <img className={styles.logo} src="/logos/logo.png" alt="logo" />
 
       <div
         style={{
@@ -56,7 +56,7 @@ export default function Login() {
       >
         <TextInput
           type="text"
-          placeholder="email@example.com"
+          placeholder="아이디(이메일)"
           value={username}
           onChange={(e) => setUserId(e.target.value)}
         />
