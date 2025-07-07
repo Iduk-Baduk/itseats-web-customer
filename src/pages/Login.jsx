@@ -43,7 +43,7 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      <img className={styles.logo} src="/logos/logo.png" alt="logo" />
+      <img className={styles.logo} src="/logos/logo.png" alt="잇츠잇츠 로고" />
 
       <div
         style={{
