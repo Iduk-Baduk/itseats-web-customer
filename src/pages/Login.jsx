@@ -13,7 +13,7 @@ export default function Login() {
   const { login, loading, error } = useLogin();
   const [username, setUserId] = useState("");
   const [password, setPassword] = useState("");
-  const [isAutoLogin, setAutoLogin] = useState(false);
+  const [isAutoLogin, setAutoLogin] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
 
   // 회원가입에서 전달받은 정보 처리
@@ -31,9 +31,8 @@ export default function Login() {
   }, [location.state]);
 
   const handleLogin = async () => {
-    const result = await login({ username, password });
+    const result = await login({ username, password, isAutoLogin });
     if (result) {
-      alert(`${result.user.name}님, 환영합니다!`);
       navigate("/"); // 홈으로 이동
     }
   };

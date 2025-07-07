@@ -5,9 +5,8 @@ import { STORAGE_KEYS } from "../utils/logger";
 export default function useLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
 
-  const login = async ({ username, password }) => {
+  const login = async ({ username, password, isAutoLogin }) => {
     if (!username || !password) {
       setError("아이디와 비밀번호를 모두 입력해주세요.");
       return null;
@@ -17,14 +16,13 @@ export default function useLogin() {
     setError(null);
 
     try {
-      const result = await loginAPI({ username, password });
-      
+      const result = await loginAPI({ username, password, isAutoLogin });
+
       if (result.success) {
         // 토큰과 사용자 정보 저장
         localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, result.accessToken);
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(result.user));
         
-        setData(result);
         return result;
       } else {
         throw new Error(result.message || '로그인에 실패했습니다.');
@@ -64,6 +62,5 @@ export default function useLogin() {
     isLoggedIn, 
     loading, 
     error, 
-    data 
   };
 }
