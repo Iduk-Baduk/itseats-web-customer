@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 import { logger } from '../utils/logger';
 
-const TOSS_API_BASE_URL = process.env.REACT_APP_TOSS_API_URL || '/api/toss';
+const TOSS_API_BASE_URL = import.meta.env.VITE_TOSS_API_URL || '/api/toss';
 
 export const tossPaymentAPI = {
   // 결제 확인
