@@ -103,16 +103,6 @@ export function TossPaymentWidget({
         customerEmail: customerEmail,
         customerName: customerName,
         customerMobilePhone: customerMobilePhone,
-        // 추가 정보
-        amount: amount.value,
-        currency: amount.currency,
-        // 결제 수단별 추가 설정
-        useInternationalCardOnly: false,
-        useAppFreeInstallment: true,
-        useCardPoint: true,
-        useEscrow: false,
-        // 고객 정보 추가
-        customerId: customerKey,
       });
     } catch (error) {
       // 에러 처리하기
