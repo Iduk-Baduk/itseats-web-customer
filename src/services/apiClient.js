@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/api';
 import { processError } from '../utils/errorHandler';
+import { STORAGE_KEYS } from '../utils/logger';
 
 // API 클라이언트 생성
 const apiClient = axios.create({
@@ -9,12 +10,17 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    // 로그인 요청은 토큰 제외
+    if (config.url?.includes('/login'))
+      return config;
+
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,6 +34,11 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터 - 에러 처리
 apiClient.interceptors.response.use(
   (response) => {
+    // login 요청일 때는 전체 응답 반환
+    if (response.config.url?.includes('/login')) {
+      return response;
+    }
+
     return response.data; // 자동으로 .data 반환
   },
   (error) => {
@@ -35,8 +46,8 @@ apiClient.interceptors.response.use(
     const processedError = processError(error);
     
     // 인증 에러 처리
-    if (processedError.statusCode === 401) {
-      localStorage.removeItem('authToken');
+    if (processedError.statusCode === 401 || processedError.statusCode === 403) {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       window.location.href = '/login';
     }
     

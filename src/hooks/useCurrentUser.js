@@ -3,7 +3,7 @@ import { getCurrentUser } from '../services/authAPI';
 import { userAPI } from '../services/userAPI';
 import { ENV_CONFIG } from '../config/api';
 import { DEFAULT_USER, generateDevToken } from '../config/development';
-import { logger } from '../utils/logger';
+import { STORAGE_KEYS, logger } from '../utils/logger';
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -20,7 +20,7 @@ export default function useCurrentUser() {
   // 로컬스토리지에서 사용자 정보 가져오기
   const getCachedUser = () => {
     try {
-      const cachedUser = localStorage.getItem('currentUser');
+      const cachedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
       return cachedUser ? JSON.parse(cachedUser) : null;
     } catch (error) {
       console.warn('캐시된 사용자 정보 파싱 실패:', error);
@@ -42,14 +42,14 @@ export default function useCurrentUser() {
         }
 
         // 토큰이 없으면 개발 환경에서만 기본 사용자 설정
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
         if (!token) {
           if (ENV_CONFIG.isDevelopment) {
             const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
             const defaultToken = generateDevToken(defaultUser.id);
-            localStorage.setItem('authToken', defaultToken);
-            localStorage.setItem('currentUser', JSON.stringify(defaultUser));
+            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, defaultToken);
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
           }
           return;
         }
@@ -58,28 +58,25 @@ export default function useCurrentUser() {
         try {
           const currentUser = await getCurrentUser();
           setUser(currentUser);
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          setUserStats({
+            reviewCount: currentUser.reviewCount || 0,
+            helpCount: currentUser.helpCount || 0,
+            favoriteCount: currentUser.favoriteCount || 0,
+            orderCount: currentUser.orderCount || 0,
+            totalSpent: currentUser.totalSpent || 0
+          });
+
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         } catch (authError) {
           if (ENV_CONFIG.isDevelopment) {
             logger.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
             // 개발 환경에서만 기본 사용자 설정
             const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
-            localStorage.setItem('currentUser', JSON.stringify(defaultUser));
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
           } else {
             throw authError;
           }
-        }
-
-        // 사용자 통계 정보 로드
-        try {
-          const stats = await userAPI.getStats();
-          setUserStats(stats);
-        } catch (statsError) {
-          if (ENV_CONFIG.isDevelopment) {
-            logger.warn('사용자 통계 로딩 실패:', statsError);
-          }
-          // 통계 로딩 실패는 치명적이지 않으므로 기본값 유지
         }
 
       } catch (error) {
@@ -98,25 +95,29 @@ export default function useCurrentUser() {
 
   // 로그인 상태 확인
   const isLoggedIn = () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     return !!(token && user);
   };
 
   // 사용자 정보 새로고침
   const refreshUserData = async () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (!token) return;
 
     try {
       setLoading(true);
-      const [currentUser, stats] = await Promise.all([
-        getCurrentUser(),
-        userAPI.getStats()
-      ]);
+      const currentUser = await getCurrentUser();
       
       setUser(currentUser);
-      setUserStats(stats);
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      setUserStats({
+        reviewCount: currentUser.reviewCount || 0,
+        helpCount: currentUser.helpCount || 0,
+        favoriteCount: currentUser.favoriteCount || 0,
+        orderCount: currentUser.orderCount || 0,
+        totalSpent: currentUser.totalSpent || 0
+      });
+      
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
     } catch (error) {
       console.error('사용자 정보 새로고침 실패:', error);
       setError(error.message);

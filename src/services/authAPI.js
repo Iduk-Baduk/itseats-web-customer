@@ -1,5 +1,4 @@
 import apiClient from './apiClient';
-import { API_ENDPOINTS } from '../config/api';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // 토큰에서 사용자 ID 추출 유틸리티
@@ -53,10 +52,64 @@ export const regist = async (form) => {
 };
 
 // 로그인 API
+export const login = async ({ username, password, isAutoLogin }) => {
+  try {
+    if (!username || !password) {
+      throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
+    }
+
+    const response = await apiClient.post("/login", { username, password });
+    const accessToken = response.headers["access-token"];
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+
+    const currentMember = await apiClient.get("/members/me");
+
+    return {
+      success: true,
+      user: {
+        id: currentMember.data.memberId,
+        username: currentMember.data.username,
+        name: currentMember.data.name,
+        nickname: currentMember.data.nickname,
+        email: currentMember.data.email,
+        phone: currentMember.data.phone,
+        reviewCount: currentMember.data.reviewCount,
+        favoriteCount: currentMember.data.favoriteCount,
+      },
+      accessToken,
+    };
+  } catch (error) {
+    logger.error('로그인 실패:', error);
+    if (error.originalError.response) {
+      logger.error('로그인 실패 응답:', error.originalError.response.data);
+      error.message = JSON.stringify(error.originalError.response.data) || '로그인에 실패했습니다.';
+    }
+    throw error;
+  }
+}
+
+// 내 정보 조회 API
+export const getCurrentUser = async () => {
+  try {
+    const response = await apiClient.get("/members/me");
+    return {
+      id: response.data.memberId,
+      username: response.data.username,
+      name: response.data.name,
+      email: response.data.email,
+      phone: response.data.phone,
+    };
+  } catch (error) {
+    logger.error('내 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+// 로그인 Mock API
 // ⚠️ 주의: 이 구현은 개발 환경에서만 사용되며, 실제 프로덕션에서는 서버 측 인증을 사용해야 합니다.
 // 프로덕션 환경에서는 평문 비밀번호를 클라이언트로 전송하지 않고,
 // 서버에서 해시된 비밀번호와 비교하여 JWT 토큰을 발급해야 합니다.
-export const login = async ({ username, password }) => {
+export const loginMock = async ({ username, password }) => {
   try {
     // 개발 환경에서만 사용하는 클라이언트 측 인증
     // 실제 환경에서는 다음과 같이 구현해야 함:
@@ -94,7 +147,7 @@ export const login = async ({ username, password }) => {
 };
 
 // 현재 사용자 정보 조회
-export const getCurrentUser = async () => {
+export const getCurrentUserMock = async () => {
   try {
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (!token) {
