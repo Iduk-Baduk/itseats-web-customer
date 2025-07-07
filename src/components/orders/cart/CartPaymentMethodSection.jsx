@@ -76,6 +76,12 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
       value: accounts.length,
       disabled: accounts.length === 0,
     },
+    {
+      type: 'toss',
+      label: '토스페이먼츠',
+      value: '간편결제',
+      disabled: false,
+    },
   ];
 
   // 쿠페이머니 입력값 변경 처리
@@ -107,6 +113,8 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
   } else if (selectedPaymentType === 'account') {
     const account = accounts.find(a => a.id === selectedAccountId) || accounts[0];
     selectedLabel = account ? `${account.bankName} ****${account.last4}` : '계좌 선택';
+  } else if (selectedPaymentType === 'toss') {
+    selectedLabel = '토스페이먼츠 간편결제';
   }
 
   // 공통 드롭다운 버튼 렌더링 함수

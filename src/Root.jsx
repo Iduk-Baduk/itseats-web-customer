@@ -41,6 +41,8 @@ const AddCard = React.lazy(() => import("./pages/payments/AddCard"));
 const AddAccount = React.lazy(() => import("./pages/payments/AddAccount"));
 const PaymentSuccess = React.lazy(() => import("./pages/payments/PaymentSuccess"));
 const PaymentFailure = React.lazy(() => import("./pages/payments/PaymentFailure"));
+const TossPaymentSuccess = React.lazy(() => import("./pages/payments/TossPaymentSuccess"));
+const TossPaymentFail = React.lazy(() => import("./pages/payments/TossPaymentFail"));
 const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
@@ -342,6 +344,28 @@ export default function Root() {
               <Layout navVisible={false}>
                 <LazyPageWrapper>
                   <PaymentFailure />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          
+          {/* 토스페이먼츠 결제 관련 */}
+          <Route 
+            path="/success" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TossPaymentSuccess />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/fail" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TossPaymentFail />
                 </LazyPageWrapper>
               </Layout>
             } 

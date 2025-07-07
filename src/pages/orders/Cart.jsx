@@ -21,6 +21,7 @@ import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
 import { findOrCreateStoreInfo } from "../../utils/storeUtils";
 import { ENV_CONFIG } from '../../config/api';
+import { TossPaymentWidget } from "../../components/payment/TossPaymentWidget";
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -85,6 +86,8 @@ export default function Cart() {
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [showTossPayment, setShowTossPayment] = useState(false);
+  const [tossOrderData, setTossOrderData] = useState(null);
 
   // Toast 헬퍼 함수 강화
   const showToast = (message, duration = 4000) => {
@@ -309,6 +312,31 @@ export default function Cart() {
     
     if (selectedPaymentType === 'coupay' && usedCoupayAmount <= 0) {
       showToast("쿠페이머니 사용 금액을 입력해주세요.");
+      return;
+    }
+
+    // 토스페이먼츠 결제 처리
+    if (selectedPaymentType === 'toss') {
+      // 주문 데이터 준비
+      const orderData = {
+        store: {
+          id: currentStoreId,
+          name: currentStoreInfo?.name || "알 수 없는 매장",
+          image: currentStoreInfo?.imageUrl || "/samples/food1.jpg"
+        },
+        orderMenus,
+        deliveryAddress: selectedAddress,
+        deliveryOption,
+        isDelivery,
+        riderRequest,
+        totalPrice: cartInfo.totalPrice,
+        appliedCoupons,
+        status: ORDER_STATUS.WAITING
+      };
+
+      // 토스페이먼츠 결제 모달 표시
+      setTossOrderData(orderData);
+      setShowTossPayment(true);
       return;
     }
 
@@ -690,6 +718,58 @@ export default function Cart() {
           message={toast.message}
           onClose={hideToast}
         />
+      )}
+      
+      {/* 토스페이먼츠 결제 모달 */}
+      {showTossPayment && tossOrderData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3>토스페이먼츠 결제</h3>
+              <button 
+                onClick={() => setShowTossPayment(false)}
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <TossPaymentWidget
+              amount={{
+                currency: "KRW",
+                value: tossOrderData.totalPrice
+              }}
+              orderId={generateOrderId()}
+              orderName={`${tossOrderData.store.name} 외 ${tossOrderData.orderMenus.length}건`}
+              customerEmail="customer@example.com"
+              customerName="고객"
+              customerMobilePhone="01012345678"
+              onPaymentRequest={() => {
+                logger.log('토스페이먼츠 결제 요청 시작');
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
