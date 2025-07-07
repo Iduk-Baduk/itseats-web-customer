@@ -45,7 +45,7 @@ apiClient.interceptors.response.use(
     const processedError = processError(error);
     
     // 인증 에러 처리
-    if (processedError.statusCode === 401) {
+    if (processedError.statusCode === 401 || processedError.statusCode === 403) {
       localStorage.removeItem('authToken');
       window.location.href = '/login';
     }

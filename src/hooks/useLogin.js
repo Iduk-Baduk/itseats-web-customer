@@ -20,7 +20,6 @@ export default function useLogin() {
 
       if (result.success) {
         // 토큰과 사용자 정보 저장
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, result.accessToken);
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(result.user));
         
         return result;

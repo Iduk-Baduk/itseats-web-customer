@@ -1,5 +1,4 @@
 import apiClient from './apiClient';
-import { API_ENDPOINTS } from '../config/api';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
 // 토큰에서 사용자 ID 추출 유틸리티
@@ -60,8 +59,8 @@ export const login = async ({ username, password, isAutoLogin }) => {
     }
 
     const response = await apiClient.post("/login", { username, password });
-    console.log("로그인 응답:", response);
     const accessToken = response.headers["access-token"];
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
 
     const currentMember = await apiClient.get("/members/me");
 
