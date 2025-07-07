@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 import { logger } from '../utils/logger';
 
 const TOSS_API_BASE_URL = process.env.REACT_APP_TOSS_API_URL || '/api/toss';
