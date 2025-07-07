@@ -93,14 +93,11 @@ export const getCurrentUser = async () => {
   try {
     const response = await apiClient.get("/members/me");
     return {
-      success: true,
-      user: {
-        id: response.data.memberId,
-        username: response.data.username,
-        name: response.data.name,
-        email: response.data.email,
-        phone: response.data.phone,
-      },
+      id: response.data.memberId,
+      username: response.data.username,
+      name: response.data.name,
+      email: response.data.email,
+      phone: response.data.phone,
     };
   } catch (error) {
     logger.error('내 정보 조회 실패:', error);
