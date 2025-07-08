@@ -179,7 +179,8 @@ export default function ApiErrorHandler({
               message: error.message,
               statusCode: error.statusCode,
               type: error.type,
-              stack: error.stack
+              // stack은 보안상 제외
+              timestamp: new Date().toISOString()
             }, null, 2)}
           </pre>
         </details>
