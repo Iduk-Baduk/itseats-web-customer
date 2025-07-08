@@ -131,13 +131,17 @@ class TossPaymentAPI {
     }
   }
 
-  // Mock 모드용 결제 승인 (개발 환경)
+    // Mock 모드용 결제 승인 (개발 환경)
   async mockConfirmPayment(paymentData) {
     logger.log('Mock 토스페이먼츠 결제 승인:', paymentData);
-    
+
     // 2초 지연으로 실제 API 호출 시뮬레이션
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
+    // VAT 계산 (한국 부가가치세율 10%)
+    const suppliedAmount = Math.floor(paymentData.amount / 1.1);
+    const vat = paymentData.amount - suppliedAmount;
+
     // Mock 성공 응답
     return {
       paymentKey: paymentData.paymentKey,
@@ -159,8 +163,8 @@ class TossPaymentAPI {
       },
       totalAmount: paymentData.amount,
       balanceAmount: 0,
-      suppliedAmount: paymentData.amount,
-      vat: Math.floor(paymentData.amount * 0.1),
+      suppliedAmount: suppliedAmount,
+      vat: vat,
       taxFreeAmount: 0,
       approvedAt: new Date().toISOString(),
       useEscrow: false,
