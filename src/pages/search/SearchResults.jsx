@@ -6,7 +6,7 @@ import StoreListItem from "../../components/stores/StoreListItem";
 import SortBottomSheet, {
   getSortLabel,
 } from "../../components/stores/SortBottomSheet";
-import { fetchStoresByKeyword, clearCurrentStore } from "../../store/storeSlice";
+import { fetchStoresByKeyword } from "../../store/storeSlice";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
@@ -46,13 +46,17 @@ export default function SearchResult() {
     setSearchedKeyword(initialKeyword);
     handleAddKeyword(keyword);
     setKeyword(initialKeyword);
+  }, []);
+
+  useEffect(() => {
+    // 정렬 변경 시 다시 검색
     dispatch(fetchStoresByKeyword({
-      keyword: initialKeyword,
+      keyword,
       sort,
       page: 0,
       addressId: selectedAddressId,
     }));
-  }, []);
+  }, [dispatch, initialKeyword, sort, keyword, selectedAddressId]);
 
   // 에러 핸들러
   const handleRetry = () => {

@@ -23,7 +23,7 @@ export default function Search() {
   const dispatch = useDispatch();
 
   // 최근 검색어
-  const recentKeywords = useSelector(state => {console.log(state);  return state.search?.keywords || []});
+  const recentKeywords = useSelector(state => state.search?.keywords || []);
 
   const [keyword, setKeyword] = useState("");
 
