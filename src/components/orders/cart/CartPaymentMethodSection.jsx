@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import styles from '../../../pages/orders/Cart.module.css';
 import { setSelectedPaymentMethod, setCoupayAmount } from '../../../store/paymentSlice';
-import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
+import TossPaymentWidget from '../../payment/TossPaymentWidget';
 import { logger } from '../../../utils/logger';
 
 export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
