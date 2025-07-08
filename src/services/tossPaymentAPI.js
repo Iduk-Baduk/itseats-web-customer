@@ -6,7 +6,21 @@ class TossPaymentAPI {
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
     this.timeout = API_CONFIG.TIMEOUT;
-    this.apiKey = import.meta.env.VITE_TOSS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+    
+    // 환경 변수에서 API 키 가져오기
+    const envApiKey = import.meta.env.VITE_TOSS_SECRET_KEY;
+    
+    if (!envApiKey) {
+      logger.warn('VITE_TOSS_SECRET_KEY가 설정되지 않았습니다. 테스트 키를 사용합니다.');
+      this.apiKey = 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+    } else {
+      this.apiKey = envApiKey;
+    }
+    
+    // API 키 유효성 검증
+    if (!this.apiKey || this.apiKey.trim() === '') {
+      throw new Error('토스페이먼츠 API 키가 유효하지 않습니다. VITE_TOSS_SECRET_KEY를 확인해주세요.');
+    }
   }
 
   // 인증 헤더 생성
