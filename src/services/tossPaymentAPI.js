@@ -6,6 +6,59 @@ class TossPaymentAPI {
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
     this.timeout = API_CONFIG.TIMEOUT;
+    this.apiKey = import.meta.env.VITE_TOSS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+  }
+
+  // 인증 헤더 생성
+  getAuthHeaders() {
+    return {
+      'Authorization': `Basic ${btoa(`${this.apiKey}:`)}`,
+    };
+  }
+
+  // 공통 헤더 생성
+  getHeaders(contentType = 'application/json') {
+    const headers = {
+      ...this.getAuthHeaders(),
+    };
+    
+    if (contentType) {
+      headers['Content-Type'] = contentType;
+    }
+    
+    return headers;
+  }
+
+  // 공통 fetch 요청 처리
+  async makeRequest(url, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        logger.error('API 요청 실패:', { url, status: response.status, result });
+        throw new Error(result.message || `API 요청 실패 (${response.status})`);
+      }
+
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error.name === 'AbortError') {
+        throw new Error('요청 시간이 초과되었습니다.');
+      }
+      
+      throw error;
+    }
   }
 
   // 결제 승인 API
@@ -13,21 +66,11 @@ class TossPaymentAPI {
     try {
       logger.log('토스페이먼츠 결제 승인 요청:', paymentData);
 
-      const response = await fetch(`${this.baseURL}/api/payments/confirm`, {
+      const result = await this.makeRequest(`${this.baseURL}/api/payments/confirm`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${btoa('test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6:')}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(paymentData),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        logger.error('토스페이먼츠 결제 승인 실패:', result);
-        throw new Error(result.message || '결제 승인에 실패했습니다.');
-      }
 
       logger.log('토스페이먼츠 결제 승인 성공:', result);
       return result;
@@ -42,19 +85,10 @@ class TossPaymentAPI {
     try {
       logger.log('토스페이먼츠 결제 조회 요청:', paymentKey);
 
-      const response = await fetch(`${this.baseURL}/api/payments/${paymentKey}`, {
+      const result = await this.makeRequest(`${this.baseURL}/api/payments/${paymentKey}`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Basic ${btoa('test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6:')}`,
-        },
+        headers: this.getHeaders(null), // Content-Type 제외
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        logger.error('토스페이먼츠 결제 조회 실패:', result);
-        throw new Error(result.message || '결제 조회에 실패했습니다.');
-      }
 
       logger.log('토스페이먼츠 결제 조회 성공:', result);
       return result;
@@ -69,21 +103,11 @@ class TossPaymentAPI {
     try {
       logger.log('토스페이먼츠 결제 취소 요청:', { paymentKey, cancelData });
 
-      const response = await fetch(`${this.baseURL}/api/payments/${paymentKey}/cancel`, {
+      const result = await this.makeRequest(`${this.baseURL}/api/payments/${paymentKey}/cancel`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${btoa('test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6:')}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(cancelData),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        logger.error('토스페이먼츠 결제 취소 실패:', result);
-        throw new Error(result.message || '결제 취소에 실패했습니다.');
-      }
 
       logger.log('토스페이먼츠 결제 취소 성공:', result);
       return result;
