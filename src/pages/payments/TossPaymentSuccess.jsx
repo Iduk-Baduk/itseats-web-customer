@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { tossPaymentAPI } from '../../services/tossPaymentAPI';
 import { logger } from '../../utils/logger';
 import styles from "./PaymentSuccess.module.css";
+import commonStyles from "../../styles/CommonResult.module.css";
 
 export function TossPaymentSuccess() {
   const navigate = useNavigate();
@@ -63,12 +64,12 @@ export function TossPaymentSuccess() {
   // 로딩 상태
   if (isProcessing) {
     return (
-      <div className={styles.result}>
-        <div className={styles.wrapper}>
-          <div className={styles.boxSection}>
+      <div className={commonStyles.result}>
+        <div className={commonStyles.wrapper}>
+          <div className={commonStyles.boxSection}>
             <h2>결제 처리 중</h2>
             <p>결제를 확인하고 있습니다...</p>
-            <div className="btn-loading"></div>
+            <div className={styles.loadingSpinner}></div>
           </div>
         </div>
       </div>
@@ -78,20 +79,20 @@ export function TossPaymentSuccess() {
   // 에러 상태
   if (error) {
     return (
-      <div className={styles.result}>
-        <div className={styles.wrapper}>
-          <div className={styles.boxSection}>
+      <div className={commonStyles.result}>
+        <div className={commonStyles.wrapper}>
+          <div className={commonStyles.boxSection}>
             <h2>결제 실패</h2>
             <p>{error}</p>
             <div className="btn-group">
               <button 
-                className={`btn btn-primary ${styles.homeButton}`}
+                className="btn btn-primary"
                 onClick={() => navigate('/cart')}
               >
                 장바구니로 돌아가기
               </button>
               <button 
-                className={`btn btn-secondary ${styles.homeButton}`}
+                className="btn btn-secondary"
                 onClick={() => navigate('/')}
               >
                 홈으로 돌아가기
@@ -105,26 +106,26 @@ export function TossPaymentSuccess() {
 
   // 성공 상태
   return (
-    <div className={styles.result}>
-      <div className={styles.wrapper}>
-        <div className={styles.boxSection}>
-          <h2>결제 완료</h2>
+    <div className={commonStyles.result}>
+      <div className={commonStyles.wrapper}>
+        <div className={`${commonStyles.boxSection} ${styles.successTitle}`}>
+          <h2 className={styles.successTitle}>결제 완료</h2>
           <p>{`주문번호: ${searchParams.get("orderId")}`}</p>
           <p>{`결제 금액: ${Number(
             searchParams.get("amount")
           ).toLocaleString()}원`}</p>
-          <p>결제가 정상적으로 완료되었습니다.</p>
+          <p className={styles.successMessage}>결제가 정상적으로 완료되었습니다.</p>
           <p>주문 내역은 마이페이지에서 확인하실 수 있습니다.</p>
           
           <div className="btn-group">
             <button 
-              className={`btn btn-primary ${styles.homeButton}`}
+              className="btn btn-primary"
               onClick={() => navigate('/mypage')}
             >
               주문 내역 보기
             </button>
             <button 
-              className={`btn btn-secondary ${styles.homeButton}`}
+              className="btn btn-secondary"
               onClick={() => navigate('/')}
             >
               홈으로 돌아가기
