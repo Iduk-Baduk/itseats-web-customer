@@ -1,6 +1,7 @@
 import React from 'react';
 import Button from './basic/Button';
 import { logger } from '../../utils/logger';
+import styles from './ApiErrorHandler.module.css';
 
 /**
  * API 에러 처리 컴포넌트
@@ -82,48 +83,20 @@ export default function ApiErrorHandler({
   const errorMessage = getErrorMessage(error);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px 20px',
-      textAlign: 'center',
-      minHeight: '300px'
-    }}>
-      <div style={{
-        fontSize: '48px',
-        marginBottom: '20px',
-        color: '#666'
-      }}>
+    <div className={styles.container}>
+      <div className={styles.icon}>
         ⚠️
       </div>
       
-      <h2 style={{
-        fontSize: '18px',
-        fontWeight: '600',
-        marginBottom: '12px',
-        color: '#333'
-      }}>
+      <h2 className={styles.title}>
         오류가 발생했습니다
       </h2>
       
-      <p style={{
-        fontSize: '14px',
-        color: '#666',
-        marginBottom: '30px',
-        lineHeight: '1.5',
-        maxWidth: '400px'
-      }}>
+      <p className={styles.message}>
         {errorMessage}
       </p>
       
-      <div style={{
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap',
-        justifyContent: 'center'
-      }}>
+      <div className={styles.buttonContainer}>
         {showRetry && onRetry && (
           <Button
             onClick={handleRetry}
@@ -155,26 +128,11 @@ export default function ApiErrorHandler({
       
       {/* 개발 환경에서만 상세 에러 정보 표시 */}
       {import.meta.env.DEV && error && (
-        <details style={{
-          marginTop: '20px',
-          padding: '15px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
-          fontSize: '12px',
-          textAlign: 'left',
-          maxWidth: '500px',
-          width: '100%'
-        }}>
-          <summary style={{ cursor: 'pointer', fontWeight: '600' }}>
+        <details className={styles.devDetails}>
+          <summary className={styles.devSummary}>
             개발자 정보 (클릭하여 확장)
           </summary>
-          <pre style={{
-            marginTop: '10px',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            fontSize: '11px',
-            color: '#666'
-          }}>
+          <pre className={styles.devContent}>
             {JSON.stringify({
               message: error.message,
               statusCode: error.statusCode,
