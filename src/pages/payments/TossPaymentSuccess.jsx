@@ -42,19 +42,28 @@ export function TossPaymentSuccess() {
     <div className={styles.result}>
       <div className={styles.wrapper}>
         <div className={styles.boxSection}>
-          <h2>토스페이먼츠 결제 성공</h2>
+          <h2>결제 완료</h2>
           <p>{`주문번호: ${searchParams.get("orderId")}`}</p>
           <p>{`결제 금액: ${Number(
             searchParams.get("amount")
           ).toLocaleString()}원`}</p>
-          <p>{`paymentKey: ${searchParams.get("paymentKey")}`}</p>
+          <p>결제가 정상적으로 완료되었습니다.</p>
+          <p>주문 내역은 마이페이지에서 확인하실 수 있습니다.</p>
           
-          <button 
-            className={styles.homeButton}
-            onClick={() => navigate('/')}
-          >
-            홈으로 돌아가기
-          </button>
+          <div className="btn-group">
+            <button 
+              className={`btn btn-primary ${styles.homeButton}`}
+              onClick={() => navigate('/mypage')}
+            >
+              주문 내역 보기
+            </button>
+            <button 
+              className={`btn btn-secondary ${styles.homeButton}`}
+              onClick={() => navigate('/')}
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
         </div>
       </div>
     </div>
