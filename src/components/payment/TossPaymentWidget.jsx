@@ -1,191 +1,151 @@
-import React, { useEffect, useState } from 'react';
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
-import { tossPaymentAPI } from '../../services/tossPaymentAPI';
+import React, { useState, useCallback } from 'react';
+import { usePayment } from '../../hooks/usePayment';
+import { validatePaymentData, formatAmount } from '../../utils/paymentUtils';
 import { logger } from '../../utils/logger';
+import styles from './TossPaymentWidget.module.css';
 
-const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-const customerKey = import.meta.env.VITE_TOSS_CUSTOMER_KEY || "2TERsuSTRNCJMuXpIi-Rt";
-
-export function TossPaymentWidget({ 
-  amount, 
-  orderId, 
-  orderName, 
-  customerEmail, 
-  customerName, 
-  customerMobilePhone,
-  onPaymentSuccess,
-  onPaymentError 
+export default function TossPaymentWidget({ 
+  orderData, 
+  onSuccess, 
+  onError, 
+  onCancel,
+  disabled = false 
 }) {
-  const [ready, setReady] = useState(false);
-  const [widgets, setWidgets] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { loading, error, paymentStatus, processPayment, clearError } = usePayment();
+  const [validationError, setValidationError] = useState(null);
 
-  useEffect(() => {
-    async function fetchPaymentWidgets() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // ------  결제위젯 초기화 ------
-        const tossPayments = await loadTossPayments(clientKey);
-        // 회원 결제
-        const widgets = tossPayments.widgets({
-          customerKey,
-        });
-        // 비회원 결제
-        // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
-
-        setWidgets(widgets);
-      } catch (err) {
-        logger.error('토스페이먼츠 위젯 초기화 실패:', err);
-        setError('결제 위젯을 불러오는데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPaymentWidgets();
-  }, [clientKey, customerKey]);
-
-  useEffect(() => {
-    async function renderPaymentWidgets() {
-      if (widgets == null) {
-        return;
-      }
-      // ------ 주문의 결제 금액 설정 ------
-      await widgets.setAmount(amount);
-
-      await Promise.all([
-        // ------  결제 UI 렌더링 ------
-        widgets.renderPaymentMethods({
-          selector: "#payment-method",
-          variantKey: "DEFAULT",
-        }),
-        // ------  이용약관 UI 렌더링 ------
-        widgets.renderAgreement({
-          selector: "#agreement",
-          variantKey: "AGREEMENT",
-        }),
-      ]);
-
-      setReady(true);
-    }
-
-    renderPaymentWidgets();
-  }, [widgets]);
-
-  // 결제 금액이 변경될 때마다 위젯 업데이트
-  useEffect(() => {
-    if (widgets && ready) {
-      widgets.setAmount(amount);
-    }
-  }, [amount, widgets, ready]);
-
-  const handlePayment = async () => {
+  const handlePayment = useCallback(async () => {
     try {
-      // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-      // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
-      // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
-      await widgets.requestPayment({
-        orderId: orderId,
-        orderName: orderName,
-        successUrl: window.location.origin + "/payments/toss-success",
-        failUrl: window.location.origin + "/payments/failure?redirect=/cart",
-        customerEmail: customerEmail,
-        customerName: customerName,
-        customerMobilePhone: customerMobilePhone,
-      });
-    } catch (error) {
-      // 에러 처리하기
-      logger.error('토스페이먼츠 결제 요청 실패:', error);
-      if (onPaymentError) {
-        onPaymentError(error);
+      // 입력 데이터 검증
+      setValidationError(null);
+      validatePaymentData(orderData);
+
+      logger.log('결제 시작:', orderData);
+
+      // 결제 프로세스 실행
+      await processPayment(orderData);
+
+      // 성공 콜백 호출
+      if (onSuccess) {
+        onSuccess(orderData);
       }
+
+    } catch (err) {
+      logger.error('결제 위젯 오류:', err);
+      
+      // 검증 오류인지 확인
+      if (err.message.includes('필수 결제 정보') || err.message.includes('결제 금액')) {
+        setValidationError(err.message);
+      } else {
+        // 일반 오류는 onError 콜백으로 전달
+        if (onError) {
+          onError(err);
+        }
+      }
+    }
+  }, [orderData, processPayment, onSuccess, onError]);
+
+  const handleCancel = useCallback(() => {
+    clearError();
+    setValidationError(null);
+    if (onCancel) {
+      onCancel();
+    }
+  }, [clearError, onCancel]);
+
+  // 로딩 상태 표시
+  const getLoadingText = () => {
+    switch (paymentStatus) {
+      case 'PREPARING':
+        return '결제 정보를 준비하고 있습니다...';
+      case 'REQUESTING':
+        return '결제창을 실행하고 있습니다...';
+      case 'REDIRECTING':
+        return '결제창으로 이동합니다...';
+      default:
+        return '결제를 처리하고 있습니다...';
     }
   };
 
-  const wrapperStyle = {
-    width: '100%'
-  };
-
-  const sectionStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  };
-
-  const buttonStyle = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: '#2196f3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: ready ? 'pointer' : 'not-allowed',
-    transition: 'background-color 0.2s ease',
-    opacity: ready ? 1 : 0.6
-  };
-
-  const loadingStyle = {
-    textAlign: 'center',
-    padding: '40px 20px',
-    color: '#666',
-    fontSize: '14px'
-  };
-
-  const errorStyle = {
-    textAlign: 'center',
-    padding: '20px',
-    color: '#d32f2f',
-    fontSize: '14px',
-    backgroundColor: '#ffebee',
-    border: '1px solid #ffcdd2',
-    borderRadius: '8px'
-  };
-
-  if (isLoading) {
-    return (
-      <div style={wrapperStyle}>
-        <div style={sectionStyle}>
-          <div style={loadingStyle}>
-            결제 위젯을 불러오는 중...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={wrapperStyle}>
-        <div style={sectionStyle}>
-          <div style={errorStyle}>
-            {error}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 버튼 비활성화 조건
+  const isButtonDisabled = disabled || loading || !orderData;
 
   return (
-    <div style={wrapperStyle}>
-      <div style={sectionStyle}>
-        {/* 결제 UI */}
-        <div id="payment-method" />
-        {/* 이용약관 UI */}
-        <div id="agreement" />
-        
-        {/* 결제하기 버튼 */}
+    <div className={styles.paymentWidget}>
+      {/* 결제 정보 요약 */}
+      <div className={styles.paymentSummary}>
+        <h3>결제 정보</h3>
+        <div className={styles.summaryItem}>
+          <span>주문번호:</span>
+          <span>{orderData?.orderId || '-'}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span>주문명:</span>
+          <span>{orderData?.orderName || '-'}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span>결제 금액:</span>
+          <span className={styles.amount}>
+            {orderData?.amount ? formatAmount(orderData.amount) + '원' : '-'}
+          </span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span>고객명:</span>
+          <span>{orderData?.customerName || '-'}</span>
+        </div>
+      </div>
+
+      {/* 검증 오류 표시 */}
+      {validationError && (
+        <div className={styles.validationError}>
+          <p>⚠️ {validationError}</p>
+        </div>
+      )}
+
+      {/* 결제 오류 표시 */}
+      {error && (
+        <div className={styles.paymentError}>
+          <p>❌ {error}</p>
+          <button 
+            className={styles.retryButton}
+            onClick={clearError}
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
+
+      {/* 로딩 상태 표시 */}
+      {loading && (
+        <div className={styles.loadingState}>
+          <div className={styles.spinner}></div>
+          <p>{getLoadingText()}</p>
+        </div>
+      )}
+
+      {/* 결제 버튼 */}
+      <div className={styles.paymentActions}>
         <button
-          style={buttonStyle}
-          disabled={!ready}
+          className={`${styles.paymentButton} ${isButtonDisabled ? styles.disabled : ''}`}
           onClick={handlePayment}
+          disabled={isButtonDisabled}
         >
-          {ready ? '결제하기' : '위젯 로딩 중...'}
+          {loading ? '처리 중...' : '결제하기'}
         </button>
+        
+        <button
+          className={styles.cancelButton}
+          onClick={handleCancel}
+          disabled={loading}
+        >
+          취소
+        </button>
+      </div>
+
+      {/* 결제 안내 */}
+      <div className={styles.paymentInfo}>
+        <p>💳 안전한 결제를 위해 토스페이먼츠가 제공하는 결제창을 사용합니다.</p>
+        <p>🔒 카드 정보는 안전하게 암호화되어 전송됩니다.</p>
       </div>
     </div>
   );

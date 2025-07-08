@@ -1,5 +1,6 @@
 import { API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 
 // 토스페이먼츠 결제 API 서비스
 class TossPaymentAPI {
@@ -9,18 +10,49 @@ class TossPaymentAPI {
     
     // 환경 변수에서 API 키 가져오기
     const envApiKey = import.meta.env.VITE_TOSS_SECRET_KEY;
+    const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
     
     if (!envApiKey) {
       logger.warn('VITE_TOSS_SECRET_KEY가 설정되지 않았습니다. 테스트 키를 사용합니다.');
-      this.apiKey = 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+      this.apiKey = 'test_sk_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
     } else {
       this.apiKey = envApiKey;
+    }
+
+    if (!clientKey) {
+      logger.warn('VITE_TOSS_CLIENT_KEY가 설정되지 않았습니다. 테스트 키를 사용합니다.');
+      this.clientKey = 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
+    } else {
+      this.clientKey = clientKey;
     }
     
     // API 키 유효성 검증
     if (!this.apiKey || this.apiKey.trim() === '') {
       throw new Error('토스페이먼츠 API 키가 유효하지 않습니다. VITE_TOSS_SECRET_KEY를 확인해주세요.');
     }
+
+    // 토스페이먼츠 클라이언트 초기화
+    this.tossPayments = null;
+    this.initTossPayments();
+  }
+
+  // 토스페이먼츠 클라이언트 초기화
+  async initTossPayments() {
+    try {
+      this.tossPayments = await loadTossPayments(this.clientKey);
+      logger.log('토스페이먼츠 클라이언트 초기화 성공');
+    } catch (error) {
+      logger.error('토스페이먼츠 클라이언트 초기화 실패:', error);
+      throw error;
+    }
+  }
+
+  // 토스페이먼츠 클라이언트 가져오기
+  async getTossPayments() {
+    if (!this.tossPayments) {
+      await this.initTossPayments();
+    }
+    return this.tossPayments;
   }
 
   // 인증 헤더 생성
@@ -71,6 +103,50 @@ class TossPaymentAPI {
         throw new Error('요청 시간이 초과되었습니다.');
       }
       
+      throw error;
+    }
+  }
+
+  // 결제 준비 요청 (백엔드에 결제 정보 전송)
+  async preparePayment(paymentData) {
+    try {
+      logger.log('결제 준비 요청:', paymentData);
+
+      const result = await this.makeRequest(`${this.baseURL}/api/payments/prepare`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(paymentData),
+      });
+
+      logger.log('결제 준비 성공:', result);
+      return result;
+    } catch (error) {
+      logger.error('결제 준비 오류:', error);
+      throw error;
+    }
+  }
+
+  // 결제창 실행 (토스페이먼츠 SDK 사용)
+  async requestPayment(paymentMethod, paymentData) {
+    try {
+      const tossPayments = await this.getTossPayments();
+      
+      logger.log('결제창 실행:', { paymentMethod, paymentData });
+
+      const result = await tossPayments.requestPayment(paymentMethod, {
+        amount: paymentData.amount,
+        orderId: paymentData.orderId,
+        orderName: paymentData.orderName,
+        customerName: paymentData.customerName,
+        customerEmail: paymentData.customerEmail,
+        successUrl: paymentData.successUrl || `${window.location.origin}/payments/success`,
+        failUrl: paymentData.failUrl || `${window.location.origin}/payments/failure`,
+      });
+
+      logger.log('결제창 실행 성공:', result);
+      return result;
+    } catch (error) {
+      logger.error('결제창 실행 오류:', error);
       throw error;
     }
   }
@@ -131,7 +207,7 @@ class TossPaymentAPI {
     }
   }
 
-    // Mock 모드용 결제 승인 (개발 환경)
+  // Mock 모드용 결제 승인 (개발 환경)
   async mockConfirmPayment(paymentData) {
     logger.log('Mock 토스페이먼츠 결제 승인:', paymentData);
 

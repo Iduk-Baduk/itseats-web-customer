@@ -18,16 +18,36 @@
 }
 
 .successTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #212529;
+  text-align: center;
+  color: #28a745;
+}
+
+.successTitle h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #28a745;
 }
 
 .successMessage {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #28a745;
+  margin: 20px 0;
+}
+
+.redirectMessage {
+  font-size: 14px;
   color: #6c757d;
-  line-height: 1.5;
+  font-style: italic;
+  margin: 16px 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 .progressSection {
@@ -256,8 +276,16 @@
     padding: 16px;
   }
   
-  .successTitle {
-    font-size: 1.5rem;
+  .successTitle h2 {
+    font-size: 24px;
+  }
+  
+  .successMessage {
+    font-size: 16px;
+  }
+
+  .redirectMessage {
+    font-size: 12px;
   }
   
   .cardHeader {
@@ -268,6 +296,12 @@
   
   .secondaryButtons {
     flex-direction: column;
+  }
+
+  .loadingSpinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
   }
 } 
 
@@ -286,13 +320,33 @@
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #2e7d32;
+  border-top: 4px solid #2196f3;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  margin: 20px auto;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+} 
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .successTitle h2 {
+    color: #68d391;
+  }
+
+  .successMessage {
+    color: #68d391;
+  }
+
+  .redirectMessage {
+    color: #a0aec0;
+  }
+
+  .loadingSpinner {
+    border-color: #4a5568;
+    border-top-color: #63b3ed;
+  }
 } 
