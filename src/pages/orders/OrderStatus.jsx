@@ -85,7 +85,35 @@ export default function OrderStatus() {
 
   // 에러 상태 처리
   if (error) {
-    return <StatusLayout message={`주문 정보를 불러오는데 실패했습니다: ${error}`} navigate={navigate} />;
+    return (
+      <div className={styles.container}>
+        <Header
+          title="주문 오류"
+          leftIcon="close"
+          rightIcon={null}
+          leftButtonAction={() => navigate('/cart')}
+        />
+        <div className={styles.errorContainer}>
+          <div className={styles.errorIcon}>⚠️</div>
+          <h2>주문 정보를 불러오는데 실패했습니다</h2>
+          <p>{error}</p>
+          <div className={styles.errorActions}>
+            <button 
+              onClick={() => navigate('/cart')}
+              className={styles.primaryButton}
+            >
+              장바구니로 돌아가기
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className={styles.secondaryButton}
+            >
+              홈으로 이동
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // 필수 데이터 검증

@@ -101,7 +101,7 @@ export function TossPaymentWidget({
         orderId: orderId,
         orderName: orderName,
         successUrl: window.location.origin + "/payments/toss-success",
-        failUrl: window.location.origin + "/payments/failure",
+        failUrl: window.location.origin + "/payments/failure?redirect=/cart",
         customerEmail: customerEmail,
         customerName: customerName,
         customerMobilePhone: customerMobilePhone,
