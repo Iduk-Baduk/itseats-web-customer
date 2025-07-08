@@ -20,110 +20,33 @@
 /* 실패 섹션 */
 .failureSection {
   text-align: center;
-  padding: 40px 20px;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
 }
 
 .failureIcon {
-  margin-bottom: 24px;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: shake 0.8s ease-in-out;
 }
 
-.icon {
-  font-size: 64px;
-  display: block;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
 }
 
 .failureTitle {
+  font-size: 1.75rem;
+  font-weight: bold;
   color: #dc3545;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 16px;
+  margin: 0 0 1rem 0;
 }
 
-.errorMessage {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.errorMessage p {
-  margin: 0;
-  color: #721c24;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.orderInfo {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  text-align: left;
-}
-
-.orderInfo p {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  color: #495057;
-}
-
-.orderInfo p:last-child {
-  margin-bottom: 0;
-}
-
-.orderInfo strong {
-  color: #212529;
-  font-weight: 600;
-}
-
-.helpText {
-  background: #e7f3ff;
-  border: 1px solid #b3d9ff;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  text-align: left;
-}
-
-.helpText p {
-  margin: 0 0 12px 0;
-  color: #0056b3;
-  font-weight: 500;
-}
-
-.helpText ul {
-  margin: 0;
-  padding-left: 20px;
-  color: #0056b3;
-}
-
-.helpText li {
-  margin-bottom: 4px;
-  font-size: 14px;
-}
-
-.helpText li:last-child {
-  margin-bottom: 0;
-}
-
-.contactInfo {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid #dee2e6;
-}
-
-.contactInfo p {
-  margin: 0 0 8px 0;
+.failureMessage {
   color: #6c757d;
-  font-size: 14px;
-}
-
-.phoneNumber {
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: #2196f3 !important;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* 카드 공통 스타일 */
@@ -255,7 +178,7 @@
   }
   
   .failureTitle {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
   
   .secondaryButtons {
@@ -271,28 +194,6 @@
   
   .value {
     text-align: left;
-  }
-
-  .failureSection {
-    padding: 24px 16px;
-  }
-
-  .icon {
-    font-size: 48px;
-  }
-
-  .errorMessage,
-  .orderInfo,
-  .helpText {
-    padding: 12px;
-  }
-
-  .helpText ul {
-    padding-left: 16px;
-  }
-
-  .phoneNumber {
-    font-size: 16px !important;
   }
 }
 
@@ -340,56 +241,4 @@
   color: #dc3545;
   font-weight: 500;
   margin: 8px 0;
-} 
-
-/* 다크 모드 지원 */
-@media (prefers-color-scheme: dark) {
-  .failureTitle {
-    color: #f56565;
-  }
-
-  .errorMessage {
-    background: #742a2a;
-    border-color: #9b2c2c;
-  }
-
-  .errorMessage p {
-    color: #feb2b2;
-  }
-
-  .orderInfo {
-    background: #4a5568;
-    border-color: #718096;
-  }
-
-  .orderInfo p {
-    color: #a0aec0;
-  }
-
-  .orderInfo strong {
-    color: #e2e8f0;
-  }
-
-  .helpText {
-    background: #2a4365;
-    border-color: #4a5568;
-  }
-
-  .helpText p,
-  .helpText ul,
-  .helpText li {
-    color: #90cdf4;
-  }
-
-  .contactInfo {
-    border-top-color: #4a5568;
-  }
-
-  .contactInfo p {
-    color: #a0aec0;
-  }
-
-  .phoneNumber {
-    color: #63b3ed !important;
-  }
 } 
