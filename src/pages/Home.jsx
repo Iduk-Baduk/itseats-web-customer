@@ -107,8 +107,8 @@ export default function Home() {
   }, [dispatch]);
 
   const handleSearchStores = useCallback(() => {
-    navigate("/search");
-  }, [navigate]);
+    navigate(`/search-result?keyword=${encodeURIComponent(keyword)}`);
+  }, [navigate, keyword]);
 
   // useMemo로 장바구니 정보 계산 최적화
   const cartInfo = useMemo(() => {
@@ -185,6 +185,12 @@ export default function Home() {
         <SearchInput
           value={keyword}
           onChange={handleKeywordChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearchStores();
+            }
+          }}
           showIcon={true}
         />
         <MenuGrid />
