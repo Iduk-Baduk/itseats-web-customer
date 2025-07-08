@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import store from '../store';
 import { ORDER_STATUS } from '../constants/orderStatus';
 import { updateOrder, addOrder } from '../store/orderSlice';
+import { retryOrderTracking } from '../utils/apiRetry';
 
 // Mock 데이터
 const mockOrders = new Map();
@@ -135,7 +136,8 @@ export const orderAPI = {
         logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.orderStatus})`);
         return { data: trackedOrder };
       } else {
-        const response = await apiClient.get(`/orders/${orderId}/status`);
+        // 운영 환경: 재시도 로직이 포함된 API 호출
+        const response = await retryOrderTracking(orderId, () => apiClient.get(`/orders/${orderId}/status`));
         return response.data;
       }
     } catch (error) {

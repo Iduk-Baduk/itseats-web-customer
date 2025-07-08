@@ -214,3 +214,31 @@
     font-size: 1.25rem;
   }
 } 
+
+/* 실패 전용 스타일 */
+.failureTitle {
+  color: #d32f2f;
+}
+
+.failureMessage {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+/* 에러 코드 스타일 */
+.errorCode {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #6c757d;
+  margin: 8px 0;
+}
+
+/* 실패 사유 스타일 */
+.failureReason {
+  color: #dc3545;
+  font-weight: 500;
+  margin: 8px 0;
+} 

@@ -141,3 +141,6 @@ ol {
     -webkit-font-smoothing: subpixel-antialiased;
   }
 }
+
+/* ===== 유틸리티 스타일 import ===== */
+@import url('./styles/buttonUtils.css');

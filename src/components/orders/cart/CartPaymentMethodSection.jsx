@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 import styles from '../../../pages/orders/Cart.module.css';
 import { setSelectedPaymentMethod, setCoupayAmount } from '../../../store/paymentSlice';
+import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
+import { logger } from '../../../utils/logger';
 
 export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
   const navigate = useNavigate();
@@ -16,6 +19,13 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
     coupayMoney,
     coupayAmount,
   } = useSelector(state => state.payment);
+  
+  // 고객 정보 가져오기 (실제로는 로그인된 사용자 정보를 사용해야 함)
+  const customerInfo = useSelector(state => state.user?.currentUser) || {
+    email: "test@example.com",
+    name: "테스트사용자",
+    phone: "01000000000"
+  };
   
   // cartInfo는 props로 받아옴
 
@@ -76,6 +86,12 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
       value: accounts.length,
       disabled: accounts.length === 0,
     },
+    {
+      type: 'toss',
+      label: '토스페이먼츠',
+      value: '다양한 결제수단',
+      disabled: false,
+    },
   ];
 
   // 쿠페이머니 입력값 변경 처리
@@ -107,6 +123,8 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
   } else if (selectedPaymentType === 'account') {
     const account = accounts.find(a => a.id === selectedAccountId) || accounts[0];
     selectedLabel = account ? `${account.bankName} ****${account.last4}` : '계좌 선택';
+  } else if (selectedPaymentType === 'toss') {
+    selectedLabel = '토스페이먼츠로 결제';
   }
 
   // 공통 드롭다운 버튼 렌더링 함수
@@ -279,6 +297,40 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
             )}
             
             <div className={styles.coupaySelectedInfo}>{selectedLabel}</div>
+          </div>
+        )}
+        
+        {/* 토스페이먼츠 결제위젯 */}
+        {(selectedPaymentType === 'toss') && (
+          <div className={styles.tossContainer}>
+            {/* 쿠폰 할인 정보 표시 */}
+            {cartInfo.couponDiscount > 0 && (
+              <div className={styles.tossDiscountInfo}>
+                <span>쿠폰 할인: -{cartInfo.couponDiscount.toLocaleString()}원</span>
+              </div>
+            )}
+            
+            <TossPaymentWidget
+              amount={{
+                currency: "KRW",
+                value: cartInfo.totalPrice || 0,
+              }}
+              orderId={uuidv4()}
+              orderName={`${cartInfo.itemCount}개 메뉴`}
+              customerEmail={customerInfo.email}
+              customerName={customerInfo.name}
+              customerMobilePhone={customerInfo.phone}
+              onPaymentSuccess={(result) => {
+                logger.log('토스페이먼츠 결제 성공:', result);
+                // 결제 성공 시 처리 로직
+                navigate(`/payments/toss-success?paymentKey=${result.paymentKey}&orderId=${result.orderId}&amount=${result.amount}`);
+              }}
+              onPaymentError={(error) => {
+                logger.error('토스페이먼츠 결제 실패:', error);
+                // 결제 실패 시 처리 로직
+                navigate(`/payments/failure?code=${error.code}&message=${encodeURIComponent(error.message)}`);
+              }}
+            />
           </div>
         )}
       </div>
