@@ -143,4 +143,4 @@ ol {
 }
 
 /* ===== 유틸리티 스타일 import ===== */
-@import './styles/buttonUtils.css';
+@import url('./styles/buttonUtils.css');
