@@ -33,14 +33,20 @@ npm install
 
 ```env
 # 토스페이먼츠 API 설정
-VITE_TOSS_SECRET_KEY=your_actual_secret_key_here
+VITE_TOSS_CLIENT_KEY=your_toss_client_key_here
+VITE_TOSS_CUSTOMER_KEY=your_toss_customer_key_here
 
 # API 설정
 VITE_API_BASE_URL=http://localhost:3000
 VITE_API_TIMEOUT=10000
 ```
 
-자세한 설정 방법은 [환경 변수 설정 가이드](docs/ENVIRONMENT_SETUP.md)를 참조하세요.
+**주의사항:**
+- `.env` 파일은 `.gitignore`에 포함되어 있어야 합니다
+- 프로덕션 환경에서는 실제 API 키를 사용하세요
+- 테스트 환경에서는 토스페이먼츠에서 제공하는 테스트 키를 사용할 수 있습니다
+
+자세한 설정 방법은 [구현 현황 문서](docs/IMPLEMENTATION_STATUS.md)의 환경 변수 설정 섹션을 참조하세요.
 
 ### 3. 개발 서버 실행
 

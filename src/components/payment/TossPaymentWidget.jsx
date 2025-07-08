@@ -4,8 +4,8 @@ import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import { tossPaymentAPI } from '../../services/tossPaymentAPI';
 import { logger } from '../../utils/logger';
 
-const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-const customerKey = "2TERsuSTRNCJMuXpIi-Rt";
+const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+const customerKey = import.meta.env.VITE_TOSS_CUSTOMER_KEY || "2TERsuSTRNCJMuXpIi-Rt";
 
 export function TossPaymentWidget({ 
   amount, 
