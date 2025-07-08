@@ -21,9 +21,9 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
   
   // 고객 정보 가져오기 (실제로는 로그인된 사용자 정보를 사용해야 함)
   const customerInfo = useSelector(state => state.user?.currentUser) || {
-    email: "customer@example.com",
-    name: "고객",
-    phone: "01012345678"
+    email: "test@example.com",
+    name: "테스트사용자",
+    phone: "01000000000"
   };
   
   // cartInfo는 props로 받아옴
