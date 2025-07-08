@@ -97,16 +97,16 @@ export default function OrderStatus() {
           <div className={styles.errorIcon}>⚠️</div>
           <h2>주문 정보를 불러오는데 실패했습니다</h2>
           <p>{error}</p>
-          <div className={styles.errorActions}>
+          <div className={`${styles.errorActions} btn-group`}>
             <button 
               onClick={() => navigate('/cart')}
-              className={styles.primaryButton}
+              className={`btn btn-primary ${styles.primaryButton}`}
             >
               장바구니로 돌아가기
             </button>
             <button 
               onClick={() => navigate('/')}
-              className={styles.secondaryButton}
+              className={`btn btn-secondary ${styles.secondaryButton}`}
             >
               홈으로 이동
             </button>

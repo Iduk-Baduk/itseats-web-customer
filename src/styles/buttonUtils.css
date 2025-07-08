@@ -1,0 +1,207 @@
+/* 공통 버튼 스타일 유틸리티 */
+
+/* 기본 버튼 스타일 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-width: 120px;
+  min-height: 44px; /* 터치 친화적 */
+  user-select: none;
+  outline: none;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 버튼 변형 */
+.btn-primary {
+  background-color: var(--theme-color, #2196f3);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--theme-color-dark, #1976d2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--black-700, #333);
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border-color-light, #f5f5f5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* 버튼 크기 */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-width: 80px;
+  min-height: 36px;
+}
+
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 16px;
+  min-width: 140px;
+  min-height: 52px;
+}
+
+/* 전체 너비 버튼 */
+.btn-full {
+  width: 100%;
+}
+
+/* 버튼 그룹 */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    min-width: 100px;
+    min-height: 40px;
+  }
+  
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 70px;
+    min-height: 32px;
+  }
+  
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+    min-width: 120px;
+    min-height: 48px;
+  }
+  
+  .btn-group {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 12px 16px;
+    font-size: 12px;
+    min-width: auto;
+    min-height: 44px;
+  }
+  
+  .btn-sm {
+    padding: 8px 12px;
+    font-size: 11px;
+    min-width: auto;
+    min-height: 36px;
+  }
+  
+  .btn-lg {
+    padding: 16px 24px;
+    font-size: 14px;
+    min-width: auto;
+    min-height: 52px;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+  }
+}
+
+/* 로딩 상태 */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 아이콘 버튼 */
+.btn-icon {
+  min-width: auto;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.btn-icon.btn-sm {
+  width: 36px;
+  height: 36px;
+}
+
+.btn-icon.btn-lg {
+  width: 52px;
+  height: 52px;
+} 

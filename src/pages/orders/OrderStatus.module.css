@@ -239,36 +239,109 @@
     justify-content: center;
 }
 
-.primaryButton {
-    padding: 12px 24px;
-    background-color: var(--theme-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.primaryButton:hover {
-    background-color: var(--theme-color-dark);
-}
-
+.primaryButton,
 .secondaryButton {
     padding: 12px 24px;
-    background-color: transparent;
-    color: var(--black-700);
-    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.primaryButton {
+    background-color: var(--theme-color);
+    color: white;
+    border: none;
+}
+
+.primaryButton:hover {
+    background-color: var(--theme-color-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.secondaryButton {
+    background-color: transparent;
+    color: var(--black-700);
+    border: 1px solid var(--border-color);
 }
 
 .secondaryButton:hover {
     background-color: var(--border-color-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+    .errorContainer {
+        padding: 32px 16px;
+    }
+    
+    .errorIcon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    
+    .errorContainer h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .errorContainer p {
+        font-size: 13px;
+        margin-bottom: 24px;
+        max-width: 350px;
+    }
+    
+    .errorActions {
+        gap: 10px;
+    }
+    
+    .primaryButton,
+    .secondaryButton {
+        padding: 10px 20px;
+        font-size: 13px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .errorContainer {
+        padding: 24px 12px;
+    }
+    
+    .errorIcon {
+        font-size: 36px;
+        margin-bottom: 12px;
+    }
+    
+    .errorContainer h2 {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .errorContainer p {
+        font-size: 12px;
+        margin-bottom: 20px;
+        max-width: 300px;
+    }
+    
+    .errorActions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .primaryButton,
+    .secondaryButton {
+        padding: 12px 16px;
+        font-size: 12px;
+        min-width: auto;
+        width: 100%;
+    }
 }
 
 .progressContainer {

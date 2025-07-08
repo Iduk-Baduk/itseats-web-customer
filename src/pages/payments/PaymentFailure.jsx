@@ -28,19 +28,21 @@ export function PaymentFailure() {
           <p>{`에러 코드: ${searchParams.get("code")}`}</p>
           <p>{`실패 사유: ${searchParams.get("message")}`}</p>
           
-          <button 
-            className={styles.retryButton}
-            onClick={handleRetry}
-          >
-            {redirectTo === "/cart" ? "장바구니로 돌아가기" : "다시 시도하기"}
-          </button>
-          
-          <button 
-            className={styles.homeButton}
-            onClick={handleGoHome}
-          >
-            홈으로 돌아가기
-          </button>
+          <div className="btn-group">
+            <button 
+              className={`btn btn-primary ${styles.retryButton}`}
+              onClick={handleRetry}
+            >
+              {redirectTo === "/cart" ? "장바구니로 돌아가기" : "다시 시도하기"}
+            </button>
+            
+            <button 
+              className={`btn btn-secondary ${styles.homeButton}`}
+              onClick={handleGoHome}
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
         </div>
       </div>
     </div>

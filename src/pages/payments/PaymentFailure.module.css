@@ -215,12 +215,13 @@
   }
 } 
 
+/* 통합된 결과 섹션 스타일 */
 .result {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
 }
 
 .wrapper {
@@ -251,37 +252,103 @@
   word-break: break-all;
 }
 
-.retryButton {
+/* 통합된 버튼 스타일 */
+.retryButton,
+.homeButton {
   margin-top: 24px;
-  margin-right: 12px;
   padding: 12px 24px;
-  background-color: #2196f3;
-  color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.retryButton {
+  margin-right: 12px;
+  background-color: #2196f3;
+  color: white;
 }
 
 .retryButton:hover {
   background-color: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
 }
 
 .homeButton {
-  margin-top: 24px;
-  padding: 12px 24px;
   background-color: #757575;
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .homeButton:hover {
   background-color: #616161;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(117, 117, 117, 0.3);
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 16px;
+  }
+  
+  .boxSection {
+    padding: 24px 16px;
+  }
+  
+  .boxSection h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .boxSection p {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .retryButton,
+  .homeButton {
+    padding: 14px 20px;
+    font-size: 14px;
+    min-width: 100px;
+  }
+  
+  .retryButton {
+    margin-right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    padding: 12px;
+  }
+  
+  .boxSection {
+    padding: 20px 12px;
+  }
+  
+  .boxSection h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  
+  .boxSection p {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  
+  .retryButton,
+  .homeButton {
+    padding: 12px 16px;
+    font-size: 13px;
+    min-width: 80px;
+    margin-top: 16px;
+  }
+  
+  .retryButton {
+    margin-right: 6px;
+  }
 } 
