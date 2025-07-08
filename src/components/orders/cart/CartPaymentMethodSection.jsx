@@ -322,12 +322,12 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
               onPaymentSuccess={(result) => {
                 logger.log('토스페이먼츠 결제 성공:', result);
                 // 결제 성공 시 처리 로직
-                window.location.href = `/payments/success?paymentKey=${result.paymentKey}&orderId=${result.orderId}&amount=${result.amount}`;
+                navigate(`/payments/toss-success?paymentKey=${result.paymentKey}&orderId=${result.orderId}&amount=${result.amount}`);
               }}
               onPaymentError={(error) => {
                 logger.error('토스페이먼츠 결제 실패:', error);
                 // 결제 실패 시 처리 로직
-                window.location.href = `/payments/failure?code=${error.code}&message=${error.message}`;
+                navigate(`/payments/failure?code=${error.code}&message=${encodeURIComponent(error.message)}`);
               }}
             />
           </div>
