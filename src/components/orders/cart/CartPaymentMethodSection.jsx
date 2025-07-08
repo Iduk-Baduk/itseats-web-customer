@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 import styles from '../../../pages/orders/Cart.module.css';
 import { setSelectedPaymentMethod, setCoupayAmount } from '../../../store/paymentSlice';
 import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
@@ -314,7 +315,7 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
                 currency: "KRW",
                 value: cartInfo.totalPrice || 0,
               }}
-              orderId={`order_${Date.now()}`}
+              orderId={uuidv4()}
               orderName={`${cartInfo.itemCount}개 메뉴`}
               customerEmail={customerInfo.email}
               customerName={customerInfo.name}
