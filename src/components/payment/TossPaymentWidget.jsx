@@ -76,15 +76,6 @@ export function TossPaymentWidget({
     renderPaymentWidgets();
   }, [widgets]);
 
-  useEffect(() => {
-    if (widgets == null) {
-      return;
-    }
-
-    // 결제 금액 업데이트
-    widgets.setAmount(amount);
-  }, [widgets, amount]);
-
   // 결제 금액이 변경될 때마다 위젯 업데이트
   useEffect(() => {
     if (widgets && ready) {
