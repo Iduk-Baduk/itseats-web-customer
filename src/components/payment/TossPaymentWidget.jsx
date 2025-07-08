@@ -39,7 +39,7 @@ export function TossPaymentWidget({
 
         setWidgets(widgets);
       } catch (err) {
-        console.error('토스페이먼츠 위젯 초기화 실패:', err);
+        logger.error('토스페이먼츠 위젯 초기화 실패:', err);
         setError('결제 위젯을 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
@@ -298,7 +298,7 @@ const TossPaymentWidgetOld = ({ orderData, onPaymentComplete, onPaymentError }) 
               } 
             });
           } catch (error) {
-            console.error('결제 승인 실패:', error);
+            logger.error('결제 승인 실패:', error);
             
             if (onPaymentError) {
               onPaymentError(error);
@@ -316,7 +316,7 @@ const TossPaymentWidgetOld = ({ orderData, onPaymentComplete, onPaymentError }) 
 
         // 결제 실패 이벤트 리스너
         newWidgetInstance.on('paymentError', (errorData) => {
-          console.error('결제 실패:', errorData);
+          logger.error('결제 실패:', errorData);
           
           if (onPaymentError) {
             onPaymentError(errorData);
@@ -350,7 +350,7 @@ const TossPaymentWidgetOld = ({ orderData, onPaymentComplete, onPaymentError }) 
         try {
           widgetInstance.destroy();
         } catch (error) {
-          console.warn('위젯 정리 중 오류:', error);
+          logger.warn('위젯 정리 중 오류:', error);
         }
       }
     };

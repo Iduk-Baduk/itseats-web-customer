@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../../../pages/orders/Cart.module.css';
 import { setSelectedPaymentMethod, setCoupayAmount } from '../../../store/paymentSlice';
 import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
+import { logger } from '../../../utils/logger';
 
 export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
   const navigate = useNavigate();
@@ -319,12 +320,12 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
               customerName={customerInfo.name}
               customerMobilePhone={customerInfo.phone}
               onPaymentSuccess={(result) => {
-                console.log('토스페이먼츠 결제 성공:', result);
+                logger.log('토스페이먼츠 결제 성공:', result);
                 // 결제 성공 시 처리 로직
                 window.location.href = `/payments/success?paymentKey=${result.paymentKey}&orderId=${result.orderId}&amount=${result.amount}`;
               }}
               onPaymentError={(error) => {
-                console.error('토스페이먼츠 결제 실패:', error);
+                logger.error('토스페이먼츠 결제 실패:', error);
                 // 결제 실패 시 처리 로직
                 window.location.href = `/payments/failure?code=${error.code}&message=${error.message}`;
               }}
