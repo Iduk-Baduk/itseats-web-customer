@@ -28,6 +28,19 @@ const StoreAPI = {
       throw error;
     }
   },
+  // 매장 검색 API
+  searchStores: async ({ keyword, sort, page, addressId }) => {
+    try {
+      const response = await apiClient.get("/search/stores/list", {
+        params: { keyword, sort, page, addressId: Number(addressId) || null },
+      });
+      // logger.log("✅ 매장 검색 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      logger.error("📡 매장 검색 요청 실패:", error);
+      throw error;
+    }
+  },
   // 매장 상세 정보 조회 API
   getStoreById: async (storeId) => {
     try {
