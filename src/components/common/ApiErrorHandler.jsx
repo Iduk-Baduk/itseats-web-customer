@@ -28,8 +28,8 @@ export default function ApiErrorHandler({
     
     if (!error) return '알 수 없는 오류가 발생했습니다.';
     
-    // 네트워크 에러
-    if (error.type === 'NETWORK_ERROR' || !error.response) {
+    // 네트워크 에러 (apiClient에서 래핑된 에러 구조 반영)
+    if (error.type === 'NETWORK_ERROR' || !error.originalError?.response) {
       return '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.';
     }
     
