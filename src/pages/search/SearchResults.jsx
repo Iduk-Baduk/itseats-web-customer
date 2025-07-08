@@ -12,6 +12,7 @@ import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import { useListUIState, getErrorVariant } from "../../hooks/useUIState";
 import useAddressRedux from "../../hooks/useAddressRedux";
+import { addKeyword } from "../../store/searchSlice";
 import styles from "../stores/StoreList.module.css";
 
 export default function SearchResult() {
@@ -43,6 +44,7 @@ export default function SearchResult() {
 
   useEffect(() => {
     setSearchedKeyword(initialKeyword);
+    handleAddKeyword(keyword);
     setKeyword(initialKeyword);
     dispatch(fetchStoresByKeyword({
       keyword: initialKeyword,
@@ -75,6 +77,16 @@ export default function SearchResult() {
       })
     );
     setSearchedKeyword(keyword);
+    handleAddKeyword(keyword);
+  };
+
+  // 최근 검색어 추가
+  const handleAddKeyword = (keyword) => {
+    if (keyword === undefined || keyword === "") {
+      return;
+    }
+
+    dispatch(addKeyword(keyword));
   };
 
   const handleGoBack = () => {

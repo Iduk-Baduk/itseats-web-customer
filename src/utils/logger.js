@@ -22,5 +22,6 @@ export const STORAGE_KEYS = {
   CURRENT_USER: 'currentUser',
   AUTH_TOKEN: 'authToken',
   ORDERS: 'itseats-orders',
-  FAVORITES: 'itseats-favorites'
+  FAVORITES: 'itseats-favorites',
+  RECENT_SEARCHES: 'itseats-recent-searches',
 }; 
