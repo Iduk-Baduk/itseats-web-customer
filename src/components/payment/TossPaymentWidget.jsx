@@ -237,9 +237,9 @@ const TossPaymentWidgetOld = ({ orderData, onPaymentComplete, onPaymentError }) 
 
     const createWidget = async () => {
       try {
-        // 임시로 하드코딩된 설정 사용 (실제로는 API에서 가져와야 함)
+        // 상단에서 정의한 동일한 클라이언트 키 사용
         const config = {
-          clientKey: 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq' // 토스페이먼츠 테스트 클라이언트 키
+          clientKey: clientKey
         };
         
         // 기존 위젯 인스턴스 정리
