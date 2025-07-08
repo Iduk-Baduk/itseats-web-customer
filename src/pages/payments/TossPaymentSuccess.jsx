@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
 import styles from "./PaymentSuccess.module.css";
 import commonStyles from "../../styles/CommonResult.module.css";
 
-export function TossPaymentSuccess() {
+export default function TossPaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);

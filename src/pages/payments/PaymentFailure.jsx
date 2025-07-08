@@ -6,7 +6,7 @@ import Card from '../../components/common/Card';
 import styles from './PaymentFailure.module.css';
 import commonStyles from "../../styles/CommonResult.module.css";
 
-export function PaymentFailure() {
+export default function PaymentFailure() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
