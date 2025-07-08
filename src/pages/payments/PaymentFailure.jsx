@@ -27,7 +27,7 @@ export function PaymentFailure() {
           <button 
             className={styles.homeButton}
             onClick={() => navigate('/')}
-          >
+            >
             홈으로 돌아가기
           </button>
         </div>

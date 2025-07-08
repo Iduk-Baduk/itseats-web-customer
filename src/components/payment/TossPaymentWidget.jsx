@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
+import { tossPaymentAPI } from '../../services/tossPaymentAPI';
+import { logger } from '../../utils/logger';
 
 const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
 const customerKey = "2TERsuSTRNCJMuXpIi-Rt";
@@ -98,7 +100,7 @@ export function TossPaymentWidget({
       await widgets.requestPayment({
         orderId: orderId,
         orderName: orderName,
-        successUrl: window.location.origin + "/payments/success",
+        successUrl: window.location.origin + "/payments/toss-success",
         failUrl: window.location.origin + "/payments/failure",
         customerEmail: customerEmail,
         customerName: customerName,
@@ -106,7 +108,7 @@ export function TossPaymentWidget({
       });
     } catch (error) {
       // 에러 처리하기
-      console.error('토스페이먼츠 결제 요청 실패:', error);
+      logger.error('토스페이먼츠 결제 요청 실패:', error);
       if (onPaymentError) {
         onPaymentError(error);
       }

@@ -269,7 +269,7 @@
   .secondaryButtons {
     flex-direction: column;
   }
-}
+} 
 
 .result {
   display: flex;
