@@ -109,7 +109,7 @@ const VideoBanner = ({
       </video>
       
       {/* 로딩 중일 때 표시할 스켈레톤 */}
-      {!isVideoLoaded && (
+      {!isVideoLoaded && !isVideoError && (
         <div className={styles.loadingSkeleton}>
           <div className={styles.skeletonContent}></div>
         </div>
