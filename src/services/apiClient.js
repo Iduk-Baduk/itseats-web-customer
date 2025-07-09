@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/api';
 import { processError } from '../utils/errorHandler';
-import { STORAGE_KEYS } from '../utils/logger';
+import { getToken, isTokenValid, clearToken } from '../utils/tokenUtils';
 
 // API 클라이언트 생성
 const apiClient = axios.create({
@@ -20,9 +20,12 @@ apiClient.interceptors.request.use(
     if (config.url?.includes('/login'))
       return config;
 
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // 토큰 유효성 검사 후 추가
+    if (isTokenValid()) {
+      const token = getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -42,13 +45,27 @@ apiClient.interceptors.response.use(
     return response.data; // 자동으로 .data 반환
   },
   (error) => {
+    // 서버 연결 실패 시 더 친화적인 메시지
+    if (!error.response) {
+      const networkError = new Error('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      networkError.type = 'NETWORK_ERROR';
+      networkError.statusCode = 0;
+      networkError.originalError = error;
+      return Promise.reject(networkError);
+    }
+
     // 통합 에러 처리
     const processedError = processError(error);
     
     // 인증 에러 처리
     if (processedError.statusCode === 401 || processedError.statusCode === 403) {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      clearToken();
       window.location.href = '/login';
+    }
+    
+    // 500 에러 시 사용자 친화적 메시지
+    if (processedError.statusCode === 500) {
+      processedError.message = '서버 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     }
     
     // 처리된 에러 정보로 새로운 에러 생성

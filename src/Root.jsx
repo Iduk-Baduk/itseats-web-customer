@@ -32,8 +32,6 @@ const Login = React.lazy(() => import("./pages/Login"));
 const MyPage = React.lazy(() => import("./pages/mypage/MyPage"));
 const MyPageDetails = React.lazy(() => import("./pages/mypage/MyPageDetails"));
 const Coupons = React.lazy(() => import("./pages/coupons/Coupons"));
-const Events = React.lazy(() => import("./pages/events/Events"));
-const EventsDetails = React.lazy(() => import("./pages/events/EventsDetails"));
 const Settings = React.lazy(() => import("./pages/mypage/Settings"));
 const Payments = React.lazy(() => import("./pages/payments/Payments"));
 const AddPaymentMethod = React.lazy(() => import("./pages/payments/AddPaymentMethod"));
@@ -41,6 +39,7 @@ const AddCard = React.lazy(() => import("./pages/payments/AddCard"));
 const AddAccount = React.lazy(() => import("./pages/payments/AddAccount"));
 const PaymentSuccess = React.lazy(() => import("./pages/payments/PaymentSuccess"));
 const PaymentFailure = React.lazy(() => import("./pages/payments/PaymentFailure"));
+const TossPaymentSuccess = React.lazy(() => import("./pages/payments/TossPaymentSuccess"));
 const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
@@ -337,6 +336,16 @@ export default function Root() {
             } 
           />
           <Route 
+            path="/payments/toss-success" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TossPaymentSuccess />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
             path="/payments/failure" 
             element={
               <Layout navVisible={false}>
@@ -378,26 +387,7 @@ export default function Root() {
               </Layout>
             } 
           />
-          <Route 
-            path="/events" 
-            element={
-              <Layout navVisible={false}>
-                <LazyPageWrapper>
-                  <Events />
-                </LazyPageWrapper>
-              </Layout>
-            } 
-          />
-          <Route 
-            path="/events/:eventId" 
-            element={
-              <Layout navVisible={false}>
-                <LazyPageWrapper>
-                  <EventsDetails />
-                </LazyPageWrapper>
-              </Layout>
-            } 
-          />
+
 
           {/* 지연 로딩 - 인증 관련 */}
           <Route 

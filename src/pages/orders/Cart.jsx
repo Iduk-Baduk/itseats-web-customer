@@ -563,7 +563,7 @@ export default function Cart() {
       navigate(`/payments/success?${successParams}`);
       
     } catch (error) {
-      console.error("❌ 주문/결제 실패:", error);
+      logger.error("❌ 주문/결제 실패:", error);
       
       // 결제 실패 상태 업데이트
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));

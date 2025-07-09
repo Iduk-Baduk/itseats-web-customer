@@ -128,7 +128,7 @@ export default function PaymentSuccess() {
         // 로딩 완료
         setIsLoading(false);
       } catch (error) {
-        console.error('결제 성공 처리 중 오류:', error);
+        logger.error('결제 성공 처리 중 오류:', error);
         setIsLoading(false);
         
         // 에러 발생 시 홈으로 이동
@@ -143,7 +143,7 @@ export default function PaymentSuccess() {
 
   const handleGoToOrderStatus = () => {
     if (!orderData?.id) {
-      console.error('주문 데이터가 없습니다.');
+      logger.error('주문 데이터가 없습니다.');
       return;
     }
     navigate(`/orders/${orderData.id}/status`);

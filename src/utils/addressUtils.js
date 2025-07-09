@@ -65,7 +65,7 @@ const transformFallbackResult = (addr) => ({
   x: addr.x,
   y: addr.y,
   category_name: "주소",
-  id: Math.random().toString(36).slice(2, 11)
+  id: `fallback_${Date.now()}_${addr.x}_${addr.y}`
 });
 
 // Fallback 주소 검색 (목업 데이터)

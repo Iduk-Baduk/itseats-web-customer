@@ -8,6 +8,7 @@ import orderReducer from "../store/orderSlice";
 import couponReducer from "../store/couponSlice";
 import storeReducer from "../store/storeSlice";
 import searchReducer from "../store/searchSlice";
+import tokenReducer from '../store/tokenSlice';
 
 const rootReducer = combineReducers({
   cart, counter,
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   coupon: couponReducer,
   store: storeReducer,
   search: searchReducer,
+  token: tokenReducer,
 });
 
 export default rootReducer;

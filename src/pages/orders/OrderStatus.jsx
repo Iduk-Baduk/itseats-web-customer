@@ -83,9 +83,60 @@ export default function OrderStatus() {
     return <StatusLayout message="주문 정보를 불러오는 중..." navigate={navigate} />;
   }
 
+  // 사용자 친화적 에러 메시지 변환
+  const getUserFriendlyErrorMessage = (error) => {
+    if (error?.includes('Network') || error?.includes('fetch')) {
+      return '네트워크 연결을 확인해 주세요.';
+    }
+    if (error?.includes('404') || error?.includes('not found')) {
+      return '주문 정보를 찾을 수 없습니다.';
+    }
+    if (error?.includes('500') || error?.includes('server')) {
+      return '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    if (error?.includes('timeout')) {
+      return '요청 시간이 초과되었습니다. 다시 시도해 주세요.';
+    }
+    return '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+  };
+
   // 에러 상태 처리
   if (error) {
-    return <StatusLayout message={`주문 정보를 불러오는데 실패했습니다: ${error}`} navigate={navigate} />;
+    return (
+      <div className={styles.container}>
+        <Header
+          title="주문 오류"
+          leftIcon="close"
+          rightIcon={null}
+          leftButtonAction={() => navigate(-1)}
+        />
+        <div className={styles.errorContainer}>
+          <div className={styles.errorIcon}>⚠️</div>
+          <h2>주문 정보를 불러오는데 실패했습니다</h2>
+          <p>{getUserFriendlyErrorMessage(error)}</p>
+          <div className={`${styles.errorActions} btn-group`}>
+            <button 
+              onClick={() => window.location.reload()}
+              className={`btn btn-primary ${styles.retryButton}`}
+            >
+              다시 시도
+            </button>
+            <button 
+              onClick={() => navigate('/cart')}
+              className={`btn btn-secondary ${styles.primaryButton}`}
+            >
+              장바구니로 돌아가기
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className={`btn btn-secondary ${styles.secondaryButton}`}
+            >
+              홈으로 이동
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // 필수 데이터 검증

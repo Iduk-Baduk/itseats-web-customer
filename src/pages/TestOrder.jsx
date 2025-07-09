@@ -8,6 +8,7 @@ import { ORDER_STATUS } from "../constants/orderStatus";
 import Header from "../components/common/Header";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorState from "../components/common/ErrorState";
+import { paymentTestUtils } from "../utils/paymentTestUtils";
 import styles from "./TestOrder.module.css";
 
 export default function TestOrder() {
@@ -47,6 +48,8 @@ export default function TestOrder() {
       if (stopSimulationRef.current) {
         stopSimulationRef.current();
       }
+      // 테스트 데이터 정리
+      paymentTestUtils.cleanupTestData();
     };
   }, []);
 

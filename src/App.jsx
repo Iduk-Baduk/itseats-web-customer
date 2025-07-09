@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import { generatePerformanceReport } from "./utils/performance";
 import { checkStorageSize, clearLocalStorage } from "./utils/storageUtils";
 import { logger } from "./utils/logger";
+import { useTokenManagement } from "./hooks/useTokenManagement";
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
@@ -18,6 +19,14 @@ export default function App() {
   const showDataMigrationNotice = useSelector(
     (state) => state.showDataMigrationNotice
   );
+
+  // 토큰 관리 초기화
+  const { tokenInfo } = useTokenManagement({
+    checkInterval: 30 * 1000, // 30초마다 확인
+    warningMinutes: 5, // 5분 전 경고
+    autoRefresh: true,
+    autoLogout: true
+  });
 
   // 카카오맵 전역 로딩 (앱 시작 시 미리 로드)
   const [kakaoLoading, kakaoError] = useKakaoLoader({
@@ -37,6 +46,13 @@ export default function App() {
       }
     }
   }, [kakaoLoading, kakaoError]);
+
+  // 토큰 상태 로그 (개발 환경에서만)
+  useEffect(() => {
+    if (import.meta.env.DEV && tokenInfo && tokenInfo.token !== undefined) {
+      logger.log("🔐 토큰 상태:", tokenInfo);
+    }
+  }, [tokenInfo]);
 
   // 초기화 및 설정
   useEffect(() => {
