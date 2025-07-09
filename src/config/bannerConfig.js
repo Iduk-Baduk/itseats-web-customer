@@ -126,7 +126,14 @@ export const renderBanner = (type = 'home', customProps = {}) => {
             try {
               const url = new URL(onClick.target);
               // 새 탭에서 열기 (noopener, noreferrer로 보안 강화)
-              window.open(url.href, '_blank', 'noopener,noreferrer');
+              const newWindow = window.open(url.href, '_blank', 'noopener,noreferrer');
+              
+              // 팝업 차단 확인
+              if (!newWindow) {
+                console.warn('팝업이 차단되었습니다. 현재 탭에서 열기로 폴백합니다.');
+                window.location.href = onClick.target;
+                return;
+              }
               
               // 성공적으로 열렸는지 확인
               console.log(`외부 링크 열기 성공: ${url.href}`);
