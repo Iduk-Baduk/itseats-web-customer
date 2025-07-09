@@ -64,7 +64,7 @@ export default function MyPage() {
     { icon: "megaphone", label: "공지사항" },
     { icon: "paper", label: "약관 및 정책" },
     { icon: "sheild", label: "개인정보 처리방침" },
-    { icon: "sheild", label: "쿠팡페이 개인정보 처리방침" },
+    { icon: "sheild", label: "잇츠페이 개인정보 처리방침" },
   ];
 
   return (

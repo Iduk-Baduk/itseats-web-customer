@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import { securityUtils } from './securityUtils';
 
 // 결제 테스트용 유틸리티
 export class PaymentTestUtils {
@@ -194,11 +195,11 @@ export class PaymentTestUtils {
     return log;
   }
 
-  // 세션 ID 생성
+  // 세션 ID 생성 - 보안 강화 버전
   getSessionId() {
     let sessionId = sessionStorage.getItem('payment_session_id');
     if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionId = securityUtils.generateSecureSessionId('payment');
       sessionStorage.setItem('payment_session_id', sessionId);
     }
     return sessionId;
