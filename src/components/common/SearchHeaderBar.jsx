@@ -40,6 +40,11 @@ export default function SearchHeaderBar({ keyword, onChange, onSearch, onBack })
         className={styles.searchInput}
         value={keyword}
         onChange={onChange}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onSearch();
+          }
+        }}
       />
       <button className={styles.searchBtn} onClick={onSearch}>
         <SearchIcon className={styles.icon}/>

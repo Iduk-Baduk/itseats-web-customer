@@ -109,8 +109,8 @@ export default function Home() {
   }, [dispatch]);
 
   const handleSearchStores = useCallback(() => {
-    navigate("/search");
-  }, [navigate]);
+    navigate(`/search-result?keyword=${encodeURIComponent(keyword)}`);
+  }, [navigate, keyword]);
 
   // useMemo로 장바구니 정보 계산 최적화
   const cartInfo = useMemo(() => {
@@ -187,6 +187,12 @@ export default function Home() {
         <SearchInput
           value={keyword}
           onChange={handleKeywordChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearchStores();
+            }
+          }}
           showIcon={true}
         />
         <MenuGrid />
@@ -199,7 +205,13 @@ export default function Home() {
               minHeight: "150px",
               maxHeight: "250px"
             };
-            return <VideoBanner {...bannerConfig.props} {...heightSettings} />;
+            
+            const handleVideoError = (error) => {
+              console.error('홈 화면 비디오 배너 에러:', error);
+              // 에러 발생 시 로깅 또는 분석 도구에 전송
+            };
+            
+            return <VideoBanner {...bannerConfig.props} {...heightSettings} onVideoError={handleVideoError} />;
           } else if (bannerConfig?.component === 'OptimizedImage') {
             return <OptimizedImage {...bannerConfig.props} />;
           }

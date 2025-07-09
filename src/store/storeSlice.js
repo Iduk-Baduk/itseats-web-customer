@@ -25,6 +25,20 @@ export const fetchStoresByCategory = createAsyncThunk(
   }
 );
 
+// 매장 검색 API 연동
+export const fetchStoresByKeyword = createAsyncThunk(
+  "store/fetchStoresByKeyword",
+  async ({ keyword, sort, page, addressId }) => {
+    const data = await StoreAPI.searchStores({
+      keyword,
+      sort,
+      page,
+      addressId,
+    });
+    return data;
+  }
+);
+
 // 매장 상세 정보 조회 API 연동
 export const fetchStoreById = createAsyncThunk(
   "store/fetchStoreById",
@@ -103,6 +117,21 @@ const storeSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchStoresByCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 매장 검색
+      .addCase(fetchStoresByKeyword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStoresByKeyword.fulfilled, (state, action) => {
+        state.stores = action.payload.stores || [];
+        state.currentPage = action.payload.page || 0;
+        state.hasNext = action.payload.hasNext || false;
+        state.loading = false;
+      })
+      .addCase(fetchStoresByKeyword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })

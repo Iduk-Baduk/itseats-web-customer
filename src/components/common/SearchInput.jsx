@@ -3,6 +3,7 @@ import styles from "./SearchInput.module.css";
 export default function SearchInput({
   value,
   onChange,
+  onKeyDown,
   placeholder = "검색어를 입력해주세요",
   showIcon = false,
   className = "",
@@ -22,6 +23,7 @@ export default function SearchInput({
         className={styles.input}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
       />
     </div>

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import styles from "../search/Search.module.css";
 import SearchHeaderBar from "../../components/common/SearchHeaderBar";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { addKeyword, removeKeyword, clearKeywords } from "../../store/searchSlice";
 
 const watchIcon = (
   <svg 
@@ -18,46 +20,28 @@ const watchIcon = (
 
 export default function Search() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // 최근 검색어
-  const [recentKeywords, setRecentKeywords] = useState([
-    {keyword: "삽겹살", date: "06.01"},
-    {keyword: "햄버거", date: "05.31"},
-  ]);
+  const recentKeywords = useSelector(state => state.search?.keywords || []);
 
   const [keyword, setKeyword] = useState("");
-
-  // 최근 검색어 추가
-  const handleAddKeyword = (text) => {
-    if (text === undefined || text === "") {
-      return;
-    }
-
-    const today = new Date();
-    const date = `${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
-
-    const newKeyword = { keyword: text, date: date };
-
-    setRecentKeywords((prev) => {
-      // 중복 제거
-      const filtered = prev.filter((item) => item.keyword !== text);
-      return [newKeyword, ...filtered];
-    });
-  };
 
   const handleSearch = (text) => {
     if (!text || text === "") {
       return;
     }
-    // 키워드 저장
-    handleAddKeyword(text);
     navigate(`/search-result?keyword=${encodeURIComponent(text)}`);
   }
 
   // 최근 검색어 삭제
   const handleRemoveKeyword = (keyword) => {
-    const filtered = recentKeywords.filter((item) => item.keyword !== keyword);
-    setRecentKeywords(filtered);
+    dispatch(removeKeyword(keyword));
+  }
+
+  // 최근 검색어 전체 삭제
+  const handleClearKeyword = () => {
+    dispatch(clearKeywords());
   }
 
   // 최근 검색어 눌렀을때
@@ -91,7 +75,7 @@ export default function Search() {
       <div>
         <div className={styles.keywordHeader}>
           <span className={styles.title}>최근 검색어</span>
-          <button className={styles.subTextRight}>전체삭제</button>
+          <button className={styles.subTextRight} onClick={handleClearKeyword}>전체삭제</button>
         </div>
           <ul className={styles.recentList}>
             <ul className={styles.recentList}>

@@ -1,0 +1,21 @@
+{
+  "allowedDomains": [
+    "deepdive.goorm.io",
+    "goorm.io",
+    "github.com",
+    "docs.github.com"
+  ],
+  "allowedProtocols": [
+    "https://",
+    "http://"
+  ],
+  "security": {
+    "enableDomainValidation": true,
+    "enableProtocolValidation": true,
+    "enablePopupFallback": true,
+    "logSecurityViolations": true
+  },
+  "description": "외부 링크 보안 설정 - 허용된 도메인과 프로토콜 목록",
+  "version": "1.0.0",
+  "lastUpdated": "2024-12"
+} 

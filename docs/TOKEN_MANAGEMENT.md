@@ -109,9 +109,12 @@ const { tokenInfo } = useTokenManagement({
 
 ### 갱신 로직
 ```javascript
-// 만료 5분 전에 갱신 시도
-if (minutesRemaining <= warningMinutes && minutesRemaining > 0) {
-  const refreshDelay = (minutesRemaining - 1) * 60 * 1000; // 1분 전에 갱신
+// 갱신 시점 계산 (warningMinutes 또는 1분 중 작은 값)
+const refreshBeforeMinutes = Math.min(warningMinutes, 1);
+const refreshThreshold = refreshBeforeMinutes * 60 * 1000;
+
+if (timeRemaining > 0 && timeRemaining <= warningMinutes * 60 * 1000) {
+  const refreshDelay = Math.max(timeRemaining - refreshThreshold, 0);
   
   setTimeout(() => {
     refreshToken().then((result) => {

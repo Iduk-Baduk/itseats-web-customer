@@ -49,7 +49,7 @@ export default function App() {
 
   // 토큰 상태 로그 (개발 환경에서만)
   useEffect(() => {
-    if (import.meta.env.DEV && tokenInfo && tokenInfo.token !== undefined) {
+    if (import.meta.env.DEV && tokenInfo) {
       logger.log("🔐 토큰 상태:", tokenInfo);
     }
   }, [tokenInfo]);

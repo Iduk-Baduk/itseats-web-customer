@@ -1,32 +1,14 @@
 import { logger } from './logger';
 import { securityUtils } from './securityUtils';
+import testCardsConfig from '../config/testCards.json';
 
 // 결제 테스트용 유틸리티
 export class PaymentTestUtils {
   constructor() {
     this.isTestMode = import.meta.env.VITE_PAYMENT_TEST_MODE === 'true';
-    this.testCards = {
-      success: {
-        number: '4111-1111-1111-1111',
-        expiry: '12/25',
-        cvc: '123'
-      },
-      insufficient: {
-        number: '4111-1111-1111-1111',
-        expiry: '12/25',
-        cvc: '123'
-      },
-      expired: {
-        number: '4111-1111-1111-1111',
-        expiry: '12/20',
-        cvc: '123'
-      },
-      invalid: {
-        number: '4000-0000-0000-0002',
-        expiry: '12/25',
-        cvc: '123'
-      }
-    };
+    this.testCards = testCardsConfig.testCards || {};
+    this.testScenarios = testCardsConfig.testScenarios || {};
+    this.metadata = testCardsConfig.metadata || {};
   }
 
   // 테스트 모드 확인
@@ -41,6 +23,54 @@ export class PaymentTestUtils {
       return null;
     }
     return this.testCards[type] || this.testCards.success;
+  }
+
+  // 테스트 카드 상세 정보 반환
+  getTestCardDetails(type = 'success') {
+    if (!this.isTestEnvironment()) {
+      logger.warn('테스트 환경이 아닙니다. 테스트 카드 상세 정보를 반환하지 않습니다.');
+      return null;
+    }
+    
+    const card = this.testCards[type];
+    if (!card) {
+      logger.warn(`테스트 카드 타입 '${type}'을 찾을 수 없습니다.`);
+      return null;
+    }
+
+    return {
+      ...card,
+      scenario: this.testScenarios[type] || '알 수 없는 시나리오',
+      provider: this.metadata.provider || 'Unknown',
+      version: this.metadata.version || '1.0.0'
+    };
+  }
+
+  // 사용 가능한 테스트 시나리오 목록 반환
+  getAvailableTestScenarios() {
+    if (!this.isTestEnvironment()) {
+      return [];
+    }
+    
+    return Object.keys(this.testScenarios).map(type => ({
+      type,
+      description: this.testScenarios[type],
+      cardNumber: this.testCards[type]?.number || 'N/A',
+      expectedResult: this.testCards[type]?.expectedResult || 'N/A'
+    }));
+  }
+
+  // 테스트 카드 메타데이터 반환
+  getTestCardsMetadata() {
+    if (!this.isTestEnvironment()) {
+      return null;
+    }
+    
+    return {
+      ...this.metadata,
+      availableScenarios: Object.keys(this.testScenarios),
+      totalCards: Object.keys(this.testCards).length
+    };
   }
 
   // 결제 시뮬레이션
@@ -253,10 +283,17 @@ export class PaymentTestUtils {
         this.cleanupTestData();
       };
       
-      // 페이지 숨김 시 정리 (탭 전환 등)
+      // 장시간 비활성 상태일 때만 정리 (5분)
+      let inactivityTimer;
       const handleVisibilityChange = () => {
         if (document.hidden) {
-          this.cleanupTestData();
+          // 5분 후 정리
+          inactivityTimer = setTimeout(() => {
+            this.cleanupTestData();
+          }, 5 * 60 * 1000);
+        } else {
+          // 다시 활성화되면 타이머 취소
+          clearTimeout(inactivityTimer);
         }
       };
       
@@ -267,16 +304,23 @@ export class PaymentTestUtils {
       // 리스너 참조 저장 (나중에 제거하기 위해)
       this._cleanupListeners = {
         beforeunload: handleBeforeUnload,
-        visibilitychange: handleVisibilityChange
+        visibilitychange: handleVisibilityChange,
+        inactivityTimer
       };
       
-      logger.log('테스트 데이터 자동 정리 설정 완료');
+      logger.log('테스트 데이터 자동 정리 설정 완료 (5분 비활성 후 정리)');
     }
   }
 
   // 자동 정리 이벤트 리스너 제거
   removeAutoCleanup() {
     if (typeof window !== 'undefined' && this._cleanupListeners) {
+      // 타이머 정리
+      if (this._cleanupListeners.inactivityTimer) {
+        clearTimeout(this._cleanupListeners.inactivityTimer);
+      }
+      
+      // 이벤트 리스너 제거
       window.removeEventListener('beforeunload', this._cleanupListeners.beforeunload);
       document.removeEventListener('visibilitychange', this._cleanupListeners.visibilitychange);
       this._cleanupListeners = null;

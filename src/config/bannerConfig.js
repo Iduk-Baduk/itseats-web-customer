@@ -1,3 +1,6 @@
+// 외부 링크 보안 설정
+import externalLinksConfig from './externalLinksConfig.json';
+
 // 배너 설정 관리
 export const bannerConfig = {
   // 홈 화면 배너 설정
@@ -22,6 +25,7 @@ export const bannerConfig = {
       muted: true,
       controls: false,
       alt: "홈 페이지 배너 동영상",
+      ariaLabel: "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)",
       // 높이 설정
       height: "auto", // "auto", "200px", "300px" 등
       minHeight: "150px",
@@ -72,6 +76,126 @@ export const heightPresets = {
   autoPortrait: { height: "auto", aspectRatio: "4/5", minHeight: "250px" }
 };
 
+/**
+ * 배너 클릭 핸들러 생성
+ * @param {Object} onClick - 클릭 설정 객체
+ * @returns {Function|undefined} 클릭 핸들러 함수 또는 undefined
+ */
+const handleBannerClick = (onClick) => {
+  // 입력 유효성 검증
+  if (!onClick || typeof onClick !== 'object') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('handleBannerClick: onClick 설정이 유효하지 않습니다');
+    }
+    return undefined;
+  }
+  
+  if (!onClick.enabled) return undefined;
+  
+  // 필수 필드 검증
+  if (!onClick.action || !onClick.target) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('handleBannerClick: action 또는 target이 누락되었습니다', onClick);
+    }
+    return undefined;
+  }
+  
+  return () => {
+    try {
+      // 클릭 액션 처리
+      if (onClick.action === 'navigate') {
+        // 네비게이션 처리
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`배너 클릭: ${onClick.target}`);
+        }
+        // TODO: 실제 네비게이션 로직 구현
+      } else if (onClick.action === 'external') {
+        // 외부 링크 처리
+        handleExternalLink(onClick.target);
+      } else if (process.env.NODE_ENV === 'development') {
+        console.warn(`지원하지 않는 액션: ${onClick.action}`);
+      }
+      
+      // 분석 이벤트 전송
+      handleAnalytics(onClick.analytics);
+    } catch (error) {
+      console.error('배너 클릭 처리 중 오류 발생:', error);
+    }
+  };
+};
+
+/**
+ * 외부 링크 처리
+ * @param {string} target - 대상 URL
+ */
+const handleExternalLink = (target) => {
+  try {
+    // 프로토콜 검증
+    if (externalLinksConfig.security.enableProtocolValidation) {
+      const isValidProtocol = externalLinksConfig.allowedProtocols.some(
+        protocol => target.startsWith(protocol)
+      );
+      if (!isValidProtocol) {
+        throw new Error('허용되지 않는 프로토콜입니다');
+      }
+    }
+    
+    const url = new URL(target);
+    
+    // 도메인 검증
+    if (externalLinksConfig.security.enableDomainValidation) {
+      const isAllowedDomain = externalLinksConfig.allowedDomains.includes(url.hostname);
+      if (!isAllowedDomain) {
+        throw new Error('허용되지 않는 도메인입니다');
+      }
+    }
+    
+    const newWindow = window.open(url.href, '_blank', 'noopener,noreferrer');
+    
+    if (!newWindow) {
+      if (externalLinksConfig.security.enablePopupFallback) {
+        console.warn('팝업이 차단되었습니다. 현재 탭에서 열기로 폴백합니다.');
+        window.location.href = target;
+      } else {
+        console.warn('팝업이 차단되었습니다.');
+      }
+      return;
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`외부 링크 열기 성공: ${url.href}`);
+    }
+  } catch (error) {
+    console.error('외부 링크 열기 실패:', error);
+    
+    // 보안 검증 실패 시 현재 탭에서 열지 않음
+    if (externalLinksConfig.security.logSecurityViolations) {
+      console.warn('보안 검증 실패로 링크를 열지 않습니다:', error.message);
+    }
+  }
+};
+
+/**
+ * 분석 이벤트 처리
+ * @param {Object} analytics - 분석 설정
+ */
+const handleAnalytics = (analytics) => {
+  if (!analytics) return;
+  
+  try {
+    if (window.gtag) {
+      window.gtag('event', analytics.event, {
+        event_category: analytics.category,
+        event_label: analytics.label
+      });
+    } else if (process.env.NODE_ENV === 'development') {
+      console.log('Analytics event:', analytics);
+    }
+  } catch (error) {
+    console.error('분석 이벤트 전송 실패:', error);
+  }
+};
+
 // 배너 타입별 컴포넌트 렌더링 함수
 export const renderBanner = (type = 'home', customProps = {}) => {
   // 입력 유효성 검증
@@ -116,40 +240,7 @@ export const renderBanner = (type = 'home', customProps = {}) => {
       props: {
         ...video,
         ...customProps,
-        onVideoClick: onClick.enabled ? () => {
-          // 클릭 액션 처리
-          if (onClick.action === 'navigate') {
-            // 네비게이션 처리
-            console.log(`배너 클릭: ${onClick.target}`);
-          } else if (onClick.action === 'external') {
-            // 외부 링크 처리 - 보안 및 사용자 경험 개선
-            try {
-              const url = new URL(onClick.target);
-              // 새 탭에서 열기 (noopener, noreferrer로 보안 강화)
-              const newWindow = window.open(url.href, '_blank', 'noopener,noreferrer');
-              
-              // 팝업 차단 확인
-              if (!newWindow) {
-                console.warn('팝업이 차단되었습니다. 현재 탭에서 열기로 폴백합니다.');
-                window.location.href = onClick.target;
-                return;
-              }
-              
-              // 성공적으로 열렸는지 확인
-              console.log(`외부 링크 열기 성공: ${url.href}`);
-            } catch (error) {
-              console.error('외부 링크 열기 실패:', error);
-              // 폴백: 현재 탭에서 열기
-              window.location.href = onClick.target;
-            }
-          }
-          
-          // 분석 이벤트 전송
-          if (onClick.analytics) {
-            console.log('Analytics event:', onClick.analytics);
-            // 실제 분석 서비스 연동 시 여기에 코드 추가
-          }
-        } : undefined
+        onVideoClick: handleBannerClick(onClick)
       }
     };
   } else {
@@ -159,7 +250,8 @@ export const renderBanner = (type = 'home', customProps = {}) => {
         ...image,
         ...customProps,
         priority: true,
-        className: 'bannerImage'
+        className: 'bannerImage',
+        onClick: handleBannerClick(onClick)
       }
     };
   }
