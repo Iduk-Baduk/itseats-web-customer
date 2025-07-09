@@ -42,7 +42,14 @@ window.open(url.href, '_blank', 'noopener,noreferrer');
 ```javascript
 try {
   const url = new URL(targetUrl);
-  window.open(url.href, '_blank', 'noopener,noreferrer');
+  const newWindow = window.open(url.href, '_blank', 'noopener,noreferrer');
+  
+  // 팝업 차단 확인
+  if (!newWindow) {
+    // 팝업 차단 등으로 새 창이 열리지 않았을 때 폴백
+    window.location.href = targetUrl;
+    return;
+  }
 } catch (error) {
   // 폴백: 현재 탭에서 열기
   window.location.href = targetUrl;
