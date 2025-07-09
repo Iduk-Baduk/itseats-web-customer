@@ -32,7 +32,14 @@ export const bannerConfig = {
     
     // 클릭 액션 설정
     onClick: {
-      enabled: false
+      enabled: true,
+      action: "external", // "navigate", "modal", "external"
+      target: "https://deepdive.goorm.io/", // 구름톤 DEEP DIVE 링크
+      analytics: {
+        event: "banner_click",
+        category: "home_banner",
+        label: "goorm_deepdive"
+      }
     }
   },
   
@@ -81,13 +88,25 @@ export const renderBanner = (type = 'home', customProps = {}) => {
             // 네비게이션 처리
             console.log(`배너 클릭: ${onClick.target}`);
           } else if (onClick.action === 'external') {
-            // 외부 링크 처리
-            window.open(onClick.target, '_blank');
+            // 외부 링크 처리 - 보안 및 사용자 경험 개선
+            try {
+              const url = new URL(onClick.target);
+              // 새 탭에서 열기 (noopener, noreferrer로 보안 강화)
+              window.open(url.href, '_blank', 'noopener,noreferrer');
+              
+              // 성공적으로 열렸는지 확인
+              console.log(`외부 링크 열기 성공: ${url.href}`);
+            } catch (error) {
+              console.error('외부 링크 열기 실패:', error);
+              // 폴백: 현재 탭에서 열기
+              window.location.href = onClick.target;
+            }
           }
           
           // 분석 이벤트 전송
           if (onClick.analytics) {
             console.log('Analytics event:', onClick.analytics);
+            // 실제 분석 서비스 연동 시 여기에 코드 추가
           }
         } : undefined
       }

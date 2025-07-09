@@ -43,6 +43,11 @@ const VideoBanner = ({
     }
   };
 
+  // 외부 링크인지 확인하는 함수
+  const isExternalLink = () => {
+    return onVideoClick && typeof onVideoClick === 'function';
+  };
+
   // 비디오가 지원되지 않거나 에러가 발생한 경우 이미지로 대체
   if (!isVideoSupported || isVideoError) {
     return (
@@ -54,6 +59,15 @@ const VideoBanner = ({
           maxHeight: maxHeight !== "none" ? maxHeight : undefined,
           aspectRatio: height === "auto" ? aspectRatio : undefined
         }}
+        role={isExternalLink() ? "button" : undefined}
+        tabIndex={isExternalLink() ? 0 : undefined}
+        aria-label={isExternalLink() ? "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)" : undefined}
+        onKeyDown={isExternalLink() ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleVideoClick();
+          }
+        } : undefined}
       >
         <img 
           src={fallbackImage || poster} 
@@ -74,6 +88,15 @@ const VideoBanner = ({
         maxHeight: maxHeight !== "none" ? maxHeight : undefined,
         aspectRatio: height === "auto" ? aspectRatio : undefined
       }}
+      role={isExternalLink() ? "button" : undefined}
+      tabIndex={isExternalLink() ? 0 : undefined}
+      aria-label={isExternalLink() ? "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)" : undefined}
+      onKeyDown={isExternalLink() ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleVideoClick();
+        }
+      } : undefined}
     >
       <video
         ref={videoRef}
