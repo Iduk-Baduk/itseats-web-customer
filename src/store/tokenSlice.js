@@ -48,21 +48,16 @@ export const validateTokenAsync = createAsyncThunk(
 );
 
 // 비동기 액션: 토큰 갱신 (서버 API 호출)
+// ⚠️ 현재 백엔드 지원 대기 중 - 실제 구현 시 아래 주석 해제
+// TODO: 백엔드 API 구현 후 실제 토큰 갱신 로직으로 교체
+// const response = await authAPI.refreshToken();
+// return response.data;
 export const refreshTokenAsync = createAsyncThunk(
   'token/refreshToken',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      // TODO: 실제 서버 API 호출로 대체
-      // const response = await authAPI.refreshToken();
-      // return response.data;
-      
-      // 임시 구현: 현재 토큰 정보 반환
-      const tokenInfo = getTokenInfo();
-      if (!tokenInfo.hasToken) {
-        throw new Error('갱신할 토큰이 없습니다.');
-      }
-      
-      return tokenInfo;
+      // 백엔드 지원 대기 중
+      throw new Error('토큰 갱신 기능은 현재 지원되지 않습니다. 백엔드 구현 대기 중입니다.');
     } catch (error) {
       return rejectWithValue(error.message);
     }

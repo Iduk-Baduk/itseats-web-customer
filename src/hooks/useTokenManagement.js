@@ -56,8 +56,9 @@ export const useTokenManagement = (options = {}) => {
     return dispatch(validateTokenAsync());
   }, [dispatch]);
 
-  // 토큰 갱신
+  // 토큰 갱신 (현재 백엔드 지원 대기 중)
   const refreshToken = useCallback(() => {
+    console.warn('토큰 갱신 기능은 현재 지원되지 않습니다. 백엔드 구현 대기 중입니다.');
     return dispatch(refreshTokenAsync());
   }, [dispatch]);
 
@@ -71,13 +72,13 @@ export const useTokenManagement = (options = {}) => {
     dispatch(updateTokenState());
   }, [dispatch]);
 
-  // 자동 갱신 스케줄링
+  // 자동 갱신 스케줄링 (현재 백엔드 지원 대기 중)
   const scheduleRefresh = useCallback(() => {
     if (!autoRefresh || !isValid || isLoading) return;
 
     const minutesRemaining = Math.floor(timeRemaining / (60 * 1000));
     
-    // 만료 5분 전에 갱신 시도
+    // 만료 5분 전에 갱신 시도 (현재는 경고만 표시)
     if (minutesRemaining <= warningMinutes && minutesRemaining > 0) {
       const refreshDelay = Math.max(timeRemaining - 60 * 1000, 0); // 1분 전에 갱신, 최소 0
       
@@ -86,17 +87,21 @@ export const useTokenManagement = (options = {}) => {
       }
       
       refreshTimeoutRef.current = setTimeout(() => {
-        refreshToken().then((result) => {
-          if (result.error) {
-            console.warn('토큰 자동 갱신 실패:', result.error);
-            if (autoLogout) {
-              handleLogout();
-            }
-          }
-        });
+        // 현재는 갱신 시도하지 않고 경고만 표시
+        console.warn(`토큰이 곧 만료됩니다 (${minutesRemaining}분 남음). 백엔드 갱신 API 구현 대기 중입니다.`);
+        
+        // TODO: 백엔드 API 구현 후 아래 주석 해제
+        // refreshToken().then((result) => {
+        //   if (result.error) {
+        //     console.warn('토큰 자동 갱신 실패:', result.error);
+        //     if (autoLogout) {
+        //       handleLogout();
+        //   }
+        //   }
+        // });
       }, refreshDelay);
     }
-  }, [autoRefresh, isValid, isLoading, timeRemaining, warningMinutes, refreshToken, autoLogout, handleLogout]);
+  }, [autoRefresh, isValid, isLoading, timeRemaining, warningMinutes, autoLogout, handleLogout]);
 
   // 주기적 토큰 상태 확인
   const startTokenMonitoring = useCallback(() => {
