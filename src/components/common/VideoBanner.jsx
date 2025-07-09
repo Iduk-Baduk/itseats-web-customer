@@ -18,15 +18,8 @@ const VideoBanner = ({
   aspectRatio = "16/9"
 }) => {
   const videoRef = useRef(null);
-  const [isVideoSupported, setIsVideoSupported] = useState(true);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [isVideoError, setIsVideoError] = useState(false);
-
-  useEffect(() => {
-    // 비디오 지원 여부 확인
-    const video = document.createElement('video');
-    setIsVideoSupported(!!video.canPlayType);
-  }, []);
 
   const handleVideoLoad = () => {
     setIsVideoLoaded(true);
@@ -34,7 +27,6 @@ const VideoBanner = ({
 
   const handleVideoError = () => {
     setIsVideoError(true);
-    setIsVideoSupported(false);
   };
 
   const handleVideoClick = () => {
@@ -48,8 +40,8 @@ const VideoBanner = ({
     return onVideoClick && typeof onVideoClick === 'function';
   };
 
-  // 비디오가 지원되지 않거나 에러가 발생한 경우 이미지로 대체
-  if (!isVideoSupported || isVideoError) {
+  // 비디오 에러가 발생한 경우 이미지로 대체
+  if (isVideoError) {
     return (
       <div 
         className={`${styles.bannerContainer} ${className}`}
@@ -112,8 +104,6 @@ const VideoBanner = ({
         onClick={handleVideoClick}
       >
         <source src={src} type="video/mp4" />
-        <source src={src} type="video/webm" />
-        <source src={src} type="video/ogg" />
         {/* 비디오를 지원하지 않는 브라우저를 위한 대체 이미지 */}
         <img src={fallbackImage || poster} alt={alt} />
       </video>

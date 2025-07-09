@@ -232,12 +232,10 @@ const optimizedHeight = optimizeBannerHeight(heightConfig, isMobile);
 ## 브라우저 호환성
 
 ### 지원되는 비디오 포맷
-- MP4 (H.264)
-- WebM
-- OGG
+- MP4 (H.264) - 주요 포맷
 
 ### 대체 이미지 제공
-동영상이 지원되지 않는 브라우저에서는 자동으로 대체 이미지가 표시됩니다.
+동영상이 지원되지 않는 브라우저에서는 자동으로 대체 이미지가 표시됩니다. 브라우저의 기본 fallback 메커니즘을 활용합니다.
 
 ## 문제 해결
 
