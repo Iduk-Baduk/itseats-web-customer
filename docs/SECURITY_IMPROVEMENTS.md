@@ -46,7 +46,7 @@ const generateId = () => {
   if (!randomString) {
     // 프로덕션에서 암호학적 난수 미지원 시 대체 로직
     console.warn('암호학적 난수 미지원으로 대체 로직 사용');
-    return `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `fallback_${Date.now()}_${Date.now().toString(36)}`;
   }
   
   return randomString;
