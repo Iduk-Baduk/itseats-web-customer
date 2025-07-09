@@ -7,7 +7,14 @@ export const bannerConfig = {
     
     // 동영상 설정
     video: {
+      // 단일 src 사용 (기본값)
       src: "/samples/banner-video.mp4",
+      // 또는 여러 포맷 지원을 위한 sources 배열 사용
+      // sources: [
+      //   { src: "/samples/banner-video.mp4", type: "video/mp4" },
+      //   { src: "/samples/banner-video.webm", type: "video/webm" },
+      //   { src: "/samples/banner-video.ogg", type: "video/ogg" }
+      // ],
       poster: "/samples/banner.jpg",
       fallbackImage: "/samples/banner.jpg",
       autoPlay: true,

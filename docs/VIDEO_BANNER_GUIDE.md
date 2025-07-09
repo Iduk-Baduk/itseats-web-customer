@@ -6,13 +6,27 @@ ITSeats 웹 애플리케이션에서 동영상 배너를 사용하는 방법을 
 
 ## 기본 사용법
 
-### 1. 간단한 동영상 배너
+### 1. 간단한 동영상 배너 (단일 포맷)
 
 ```jsx
 import VideoBanner from '../components/common/VideoBanner';
 
 <VideoBanner
   src="/samples/banner-video.mp4"
+  poster="/samples/banner.jpg"
+  alt="배너 동영상"
+/>
+```
+
+### 2. 여러 포맷 지원 동영상 배너
+
+```jsx
+<VideoBanner
+  sources={[
+    { src: "/samples/banner-video.mp4", type: "video/mp4" },
+    { src: "/samples/banner-video.webm", type: "video/webm" },
+    { src: "/samples/banner-video.ogg", type: "video/ogg" }
+  ]}
   poster="/samples/banner.jpg"
   alt="배너 동영상"
 />
@@ -233,9 +247,14 @@ const optimizedHeight = optimizeBannerHeight(heightConfig, isMobile);
 
 ### 지원되는 비디오 포맷
 - MP4 (H.264) - 주요 포맷
+- WebM - 추가 지원 (sources 배열 사용 시)
+- OGG - 추가 지원 (sources 배열 사용 시)
 
 ### 대체 이미지 제공
 동영상이 지원되지 않는 브라우저에서는 자동으로 대체 이미지가 표시됩니다. 브라우저의 기본 fallback 메커니즘을 활용합니다.
+
+### 포맷 우선순위
+`sources` 배열을 사용할 경우, 브라우저는 배열의 순서대로 포맷을 시도하여 첫 번째로 지원되는 포맷을 재생합니다.
 
 ## 문제 해결
 

@@ -3,6 +3,7 @@ import styles from './VideoBanner.module.css';
 
 const VideoBanner = ({ 
   src, 
+  sources,
   poster, 
   alt = "배너 동영상",
   autoPlay = true,
@@ -39,6 +40,9 @@ const VideoBanner = ({
   const isExternalLink = () => {
     return onVideoClick && typeof onVideoClick === 'function';
   };
+
+  // 비디오 소스 처리 - 배열 또는 단일 src 지원
+  const videoSources = sources || (src ? [{ src, type: 'video/mp4' }] : []);
 
   // 비디오 에러가 발생한 경우 이미지로 대체
   if (isVideoError) {
@@ -103,7 +107,9 @@ const VideoBanner = ({
         onError={handleVideoError}
         onClick={handleVideoClick}
       >
-        <source src={src} type="video/mp4" />
+        {videoSources.map((source, index) => (
+          <source key={index} src={source.src} type={source.type} />
+        ))}
         {/* 비디오를 지원하지 않는 브라우저를 위한 대체 이미지 */}
         <img src={fallbackImage || poster} alt={alt} />
       </video>
