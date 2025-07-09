@@ -76,17 +76,19 @@ export const useTokenManagement = (options = {}) => {
   const scheduleRefresh = useCallback(() => {
     if (!autoRefresh || !isValid || isLoading) return;
 
-    const minutesRemaining = Math.floor(timeRemaining / (60 * 1000));
+    // 갱신 시점 계산 (warningMinutes 또는 1분 중 작은 값)
+    const refreshBeforeMinutes = Math.min(warningMinutes, 1);
+    const refreshThreshold = refreshBeforeMinutes * 60 * 1000;
     
-    // 만료 5분 전에 갱신 시도 (현재는 경고만 표시)
-    if (minutesRemaining <= warningMinutes && minutesRemaining > 0) {
-      const refreshDelay = Math.max(timeRemaining - 60 * 1000, 0); // 1분 전에 갱신, 최소 0
+    if (timeRemaining > 0 && timeRemaining <= warningMinutes * 60 * 1000) {
+      const refreshDelay = Math.max(timeRemaining - refreshThreshold, 0);
       
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
       
       refreshTimeoutRef.current = setTimeout(() => {
+        const minutesRemaining = Math.floor(timeRemaining / (60 * 1000));
         // 현재는 갱신 시도하지 않고 경고만 표시
         console.warn(`토큰이 곧 만료됩니다 (${minutesRemaining}분 남음). 백엔드 갱신 API 구현 대기 중입니다.`);
         
