@@ -283,10 +283,17 @@ export class PaymentTestUtils {
         this.cleanupTestData();
       };
       
-      // 페이지 숨김 시 정리 (탭 전환 등)
+      // 장시간 비활성 상태일 때만 정리 (5분)
+      let inactivityTimer;
       const handleVisibilityChange = () => {
         if (document.hidden) {
-          this.cleanupTestData();
+          // 5분 후 정리
+          inactivityTimer = setTimeout(() => {
+            this.cleanupTestData();
+          }, 5 * 60 * 1000);
+        } else {
+          // 다시 활성화되면 타이머 취소
+          clearTimeout(inactivityTimer);
         }
       };
       
@@ -297,16 +304,23 @@ export class PaymentTestUtils {
       // 리스너 참조 저장 (나중에 제거하기 위해)
       this._cleanupListeners = {
         beforeunload: handleBeforeUnload,
-        visibilitychange: handleVisibilityChange
+        visibilitychange: handleVisibilityChange,
+        inactivityTimer
       };
       
-      logger.log('테스트 데이터 자동 정리 설정 완료');
+      logger.log('테스트 데이터 자동 정리 설정 완료 (5분 비활성 후 정리)');
     }
   }
 
   // 자동 정리 이벤트 리스너 제거
   removeAutoCleanup() {
     if (typeof window !== 'undefined' && this._cleanupListeners) {
+      // 타이머 정리
+      if (this._cleanupListeners.inactivityTimer) {
+        clearTimeout(this._cleanupListeners.inactivityTimer);
+      }
+      
+      // 이벤트 리스너 제거
       window.removeEventListener('beforeunload', this._cleanupListeners.beforeunload);
       document.removeEventListener('visibilitychange', this._cleanupListeners.visibilitychange);
       this._cleanupListeners = null;
