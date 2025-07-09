@@ -1,3 +1,6 @@
+// 외부 링크 보안 설정
+import externalLinksConfig from './externalLinksConfig.json';
+
 // 배너 설정 관리
 export const bannerConfig = {
   // 홈 화면 배너 설정
@@ -53,9 +56,6 @@ export const bannerConfig = {
   
 
 };
-
-// 외부 링크 보안 설정
-import externalLinksConfig from './externalLinksConfig.json';
 
 // 높이 설정 예시
 export const heightPresets = {
