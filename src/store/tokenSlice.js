@@ -196,14 +196,14 @@ export const {
   clearError 
 } = tokenSlice.actions;
 
-// 선택자
-export const selectToken = (state) => state.token.token;
-export const selectIsTokenValid = (state) => state.token.isValid;
-export const selectIsTokenLoading = (state) => state.token.isLoading;
-export const selectTokenError = (state) => state.token.error;
-export const selectTokenExpiresAt = (state) => state.token.expiresAt;
-export const selectTokenTimeRemaining = (state) => state.token.timeRemaining;
-export const selectIsTokenExpiringSoon = (state) => state.token.isExpiringSoon;
-export const selectTokenLastChecked = (state) => state.token.lastChecked;
+// 선택자 (안전한 접근)
+export const selectToken = (state) => state.token?.token || null;
+export const selectIsTokenValid = (state) => state.token?.isValid || false;
+export const selectIsTokenLoading = (state) => state.token?.isLoading || false;
+export const selectTokenError = (state) => state.token?.error || null;
+export const selectTokenExpiresAt = (state) => state.token?.expiresAt || null;
+export const selectTokenTimeRemaining = (state) => state.token?.timeRemaining || 0;
+export const selectIsTokenExpiringSoon = (state) => state.token?.isExpiringSoon || false;
+export const selectTokenLastChecked = (state) => state.token?.lastChecked || null;
 
 export default tokenSlice.reducer; 

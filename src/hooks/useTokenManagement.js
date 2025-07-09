@@ -37,14 +37,14 @@ export const useTokenManagement = (options = {}) => {
   const intervalRef = useRef(null);
   const refreshTimeoutRef = useRef(null);
 
-  // Redux 상태
-  const token = useSelector(selectToken);
-  const isValid = useSelector(selectIsTokenValid);
-  const isLoading = useSelector(selectIsTokenLoading);
-  const error = useSelector(selectTokenError);
-  const timeRemaining = useSelector(selectTokenTimeRemaining);
-  const isExpiringSoon = useSelector(selectIsTokenExpiringSoon);
-  const lastChecked = useSelector(selectTokenLastChecked);
+  // Redux 상태 (안전한 접근)
+  const token = useSelector(selectToken) || null;
+  const isValid = useSelector(selectIsTokenValid) || false;
+  const isLoading = useSelector(selectIsTokenLoading) || false;
+  const error = useSelector(selectTokenError) || null;
+  const timeRemaining = useSelector(selectTokenTimeRemaining) || 0;
+  const isExpiringSoon = useSelector(selectIsTokenExpiringSoon) || false;
+  const lastChecked = useSelector(selectTokenLastChecked) || null;
 
   // 토큰 저장
   const saveToken = useCallback((tokenValue, expiresIn) => {
