@@ -1,0 +1,28 @@
+{
+  "sensitiveKeys": [
+    "token",
+    "auth",
+    "password",
+    "secret",
+    "key",
+    "credential",
+    "api_key",
+    "private_key",
+    "session",
+    "jwt",
+    "bearer",
+    "access_token",
+    "refresh_token",
+    "authorization"
+  ],
+  "projectSpecific": [
+    "payment_token",
+    "user_secret",
+    "admin_key",
+    "toss_payment_key",
+    "order_secret"
+  ],
+  "description": "민감 정보로 간주되어 클라이언트 스토리지에 저장이 차단되는 키워드 목록",
+  "version": "1.0.0",
+  "lastUpdated": "2024-12"
+} 

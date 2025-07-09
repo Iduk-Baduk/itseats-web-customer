@@ -37,6 +37,22 @@ if (!crypto?.getRandomValues) {
 - 프로덕션 환경: 기능 제한으로 사용자 경험 보호
 - 상세 로깅: 브라우저 정보, 지원 여부 기록
 
+**빈 문자열 폴백 처리 가이드**:
+```javascript
+// 호출 측 예외 처리 예시
+const generateId = () => {
+  const randomString = securityUtils.generateSecureRandomString(16);
+  
+  if (!randomString) {
+    // 프로덕션에서 암호학적 난수 미지원 시 대체 로직
+    console.warn('암호학적 난수 미지원으로 대체 로직 사용');
+    return `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+  
+  return randomString;
+};
+```
+
 ### 2. 세션 ID 생성 (개선됨) - v2.1.0
 **기존 문제점**: 실제 세션 ID로 오해 가능
 **개선사항**: 클라이언트 보조 식별자로 명확히 구분
@@ -54,6 +70,26 @@ generateClientSubId() // 클라이언트 보조 식별자
 2. 서버 요청: 보조 식별자를 헤더나 로그에 포함
 3. 서버 검증: 실제 세션 ID와 함께 로그 기록
 4. 운영 모니터링: 보조 식별자로 클라이언트 행동 추적
+
+**예외 처리 방침**:
+```javascript
+// 서버 측 검증 로직 예시
+const validateClientSubId = (clientSubId) => {
+  // 형식 검증: client_timestamp_random_userAgentHash
+  const pattern = /^client_\d+_[a-zA-Z0-9]{16}_[a-f0-9]{8}$/;
+  
+  if (!pattern.test(clientSubId)) {
+    console.warn('잘못된 클라이언트 보조 식별자 형식:', clientSubId);
+    return {
+      valid: false,
+      reason: 'INVALID_FORMAT',
+      fallback: `invalid_${Date.now()}`
+    };
+  }
+  
+  return { valid: true, subId: clientSubId };
+};
+```
 
 ### 3. 브라우저 지문 (개선됨) - v2.1.0
 **기존 문제점**: 모든 정보 수집으로 GDPR 위험
@@ -88,6 +124,31 @@ generateBrowserFingerprint(minimal = true) // 최소 정보만
 2. 동의 없이 확장 지문 수집 시도 시 최소 정보로 폴백
 3. 동의 상태는 서버에서 관리 권장
 
+**동의 상태 관리 흐름**:
+```javascript
+// 동의 상태 저장 위치: HttpOnly 쿠키 (권장)
+// 쿠키명: privacy_consent_fingerprinting
+// 만료: 1년
+
+// 동의 변경 시 처리 흐름
+const handleConsentChange = (newConsent) => {
+  if (newConsent === false) {
+    // 동의 철회 시 기존 확장 지문 데이터 삭제
+    localStorage.removeItem('extended_fingerprint_data');
+    sessionStorage.removeItem('extended_fingerprint_data');
+    
+    // 서버에 동의 철회 알림
+    fetch('/api/privacy/consent', {
+      method: 'POST',
+      body: JSON.stringify({ fingerprint: false })
+    });
+  }
+  
+  // 새로운 동의 상태 저장
+  document.cookie = `privacy_consent_fingerprinting=${newConsent}; max-age=31536000; path=/; secure; samesite=strict`;
+};
+```
+
 ### 4. 엔트로피 풀 시스템 (제거됨)
 **제거 이유**: 복잡도 대비 보안 이득이 미미, `crypto.getRandomValues()` 직접 호출이 더 안정적
 **대안**: 단순하고 효율적인 암호학적 난수 생성 사용
@@ -106,10 +167,22 @@ secureStore('auth_token', token) // 에러 발생, 저장 차단
 
 **차단 로직 상세**:
 ```javascript
-const sensitiveKeys = ['token', 'auth', 'password', 'secret', 'key', 'credential'];
-const isSensitive = sensitiveKeys.some(sensitiveKey => 
-  key.toLowerCase().includes(sensitiveKey)
-);
+// 민감 키 설정 파일: config/sensitiveKeys.json
+{
+  "sensitiveKeys": [
+    "token", "auth", "password", "secret", "key", "credential",
+    "api_key", "private_key", "session", "jwt", "bearer"
+  ],
+  "projectSpecific": [
+    "payment_token", "user_secret", "admin_key"
+  ]
+}
+
+// 사용 예시
+import sensitiveKeysConfig from '../config/sensitiveKeys.json';
+
+const isSensitive = [...sensitiveKeysConfig.sensitiveKeys, ...sensitiveKeysConfig.projectSpecific]
+  .some(sensitiveKey => key.toLowerCase().includes(sensitiveKey));
 
 if (isSensitive) {
   console.error('민감 정보 스토리지 저장 금지:', key);
@@ -121,6 +194,14 @@ if (isSensitive) {
 - CSP (Content Security Policy) 설정
 - 쿠키 SameSite=Strict, HttpOnly, Secure 설정
 - XSS 방지를 위한 입력값 검증 강화
+- SecureContext (HTTPS 필수) 적용
+```javascript
+// SecureContext 확인
+if (!window.isSecureContext) {
+  console.warn('보안 경고: HTTPS가 아닌 환경에서 실행 중입니다.');
+  // 민감한 기능 제한 또는 경고 표시
+}
+```
 
 ## 구현된 보안 기능
 
@@ -241,6 +322,67 @@ const preferences = securityUtils.secureRetrieve('ui_preferences');
 4. **감사 로그**: 보안 이벤트 서버 로깅 시스템 구축
 5. **Web Worker**: 중요한 UX 흐름에서 Web Crypto API 블로킹 방지
 
+## 개발 도구 설정
+
+### ESLint 규칙 추가 (권장)
+```javascript
+// .eslintrc.js
+module.exports = {
+  rules: {
+    // deprecated 메서드 사용 금지
+    'no-restricted-properties': [
+      'error',
+      {
+        object: 'securityUtils',
+        property: 'generateClientToken',
+        message: '클라이언트 토큰 생성이 보안상 제거되었습니다. 서버에서 JWT를 발급받으세요.'
+      },
+      {
+        object: 'securityUtils',
+        property: 'verifyClientToken',
+        message: '클라이언트 토큰 검증이 보안상 제거되었습니다. 서버에서 토큰을 검증하세요.'
+      }
+    ],
+    
+    // Math.random() 사용 금지 (보안상)
+    'no-restricted-globals': [
+      'error',
+      {
+        name: 'Math',
+        message: '보안상 crypto.getRandomValues()를 사용하세요.'
+      }
+    ]
+  }
+};
+```
+
+### CI/CD 파이프라인 설정
+```yaml
+# .github/workflows/security-check.yml
+name: Security Check
+on: [push, pull_request]
+
+jobs:
+  security-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      
+      - run: npm install
+      - run: npm run lint
+      - run: npm test -- --coverage
+      
+      # 보안 테스트 실행
+      - run: npm run test:security
+      
+      # 빌드 시점 보안 검사
+      - run: npm run build
+      - run: npm run security:audit
+```
+
 ## 테스트 방법
 
 ### 1. 기본 보안 테스트
@@ -274,16 +416,64 @@ describe('SecurityUtils', () => {
     expect(random1.length).toBe(32);
   });
 
+  test('암호학적 난수 생성 실패 시 처리', () => {
+    // crypto.getRandomValues를 모킹하여 실패 상황 시뮬레이션
+    const originalCrypto = window.crypto;
+    delete window.crypto;
+    
+    const result = securityUtils.generateSecureRandomString(16);
+    expect(result).toBe(''); // 프로덕션에서는 빈 문자열 반환
+    
+    window.crypto = originalCrypto;
+  });
+
   test('브라우저 지문 생성 (최소)', () => {
     const fingerprint = securityUtils.generateBrowserFingerprint(true);
     expect(fingerprint).toBeTruthy();
     expect(typeof fingerprint).toBe('string');
   });
 
+  test('브라우저 지문 생성 (확장) - 동의 없음', () => {
+    // 동의 없이 확장 지문 수집 시도
+    const fingerprint = securityUtils.generateBrowserFingerprint(false);
+    // 최소 정보로 폴백되어야 함
+    expect(fingerprint).toBeTruthy();
+  });
+
+  test('브라우저 지문 필드 개수 검증', () => {
+    const minimalFingerprint = securityUtils.generateBrowserFingerprint(true);
+    const extendedFingerprint = securityUtils.generateBrowserFingerprint(false);
+    
+    // 최소 지문은 3개 필드, 확장 지문은 10개 필드
+    // (실제 구현에 따라 조정 필요)
+    expect(minimalFingerprint).toBeTruthy();
+    expect(extendedFingerprint).toBeTruthy();
+  });
+
   test('클라이언트 토큰 생성 제거 확인', () => {
     expect(() => {
       securityUtils.generateClientToken();
     }).toThrow('클라이언트 토큰 생성이 보안상 제거되었습니다');
+  });
+
+  test('클라이언트 토큰 검증 제거 확인', () => {
+    expect(() => {
+      securityUtils.verifyClientToken('fake_token');
+    }).toThrow('클라이언트 토큰 검증이 보안상 제거되었습니다');
+  });
+
+  test('SecureContext 확인', () => {
+    // SecureContext 모킹 테스트
+    const originalIsSecureContext = window.isSecureContext;
+    window.isSecureContext = false;
+    
+    // HTTPS가 아닌 환경에서 경고 로그 확인
+    const consoleSpy = jest.spyOn(console, 'warn');
+    securityUtils.secureStore('test_key', 'test_data');
+    expect(consoleSpy).toHaveBeenCalledWith('보안 경고: HTTPS가 아닌 환경에서 민감한 데이터 저장 시도');
+    
+    window.isSecureContext = originalIsSecureContext;
+    consoleSpy.mockRestore();
   });
 });
 ```

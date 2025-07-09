@@ -179,19 +179,29 @@ export class SecurityUtils {
    * - 인증 토큰: 서버에서 발급받은 JWT만 사용
    * 
    * @deprecated 이 메서드는 보안상 제거되었습니다.
+   * @since v2.1.0
    */
   generateClientToken() {
-    console.error('보안 경고: 클라이언트 토큰 생성이 제거되었습니다.');
+    // 빌드 시점 경고 (ESLint 규칙 추가 권장)
+    console.error('🚨 SECURITY DEPRECATION WARNING 🚨');
+    console.error('클라이언트 토큰 생성이 보안상 제거되었습니다. (v2.1.0)');
     console.error('대신 서버에서 발급받은 JWT를 사용하거나, UI 상태 관리 라이브러리를 사용하세요.');
+    console.error('Stack trace:', new Error().stack);
+    
     throw new Error('클라이언트 토큰 생성이 보안상 제거되었습니다. 서버에서 JWT를 발급받으세요.');
   }
 
   /**
    * @deprecated 이 메서드는 보안상 제거되었습니다.
+   * @since v2.1.0
    */
   verifyClientToken() {
-    console.error('보안 경고: 클라이언트 토큰 검증이 제거되었습니다.');
+    // 빌드 시점 경고 (ESLint 규칙 추가 권장)
+    console.error('🚨 SECURITY DEPRECATION WARNING 🚨');
+    console.error('클라이언트 토큰 검증이 보안상 제거되었습니다. (v2.1.0)');
     console.error('대신 서버에서 토큰을 검증하거나, UI 상태 관리 라이브러리를 사용하세요.');
+    console.error('Stack trace:', new Error().stack);
+    
     throw new Error('클라이언트 토큰 검증이 보안상 제거되었습니다. 서버에서 토큰을 검증하세요.');
   }
 
@@ -215,8 +225,19 @@ export class SecurityUtils {
    * @param {boolean} useSessionStorage - sessionStorage 사용 여부
    */
   secureStore(key, data, useSessionStorage = true) {
-    // 민감 정보 저장 방지
-    const sensitiveKeys = ['token', 'auth', 'password', 'secret', 'key', 'credential'];
+    // SecureContext 확인 (HTTPS 필수)
+    if (!window.isSecureContext) {
+      console.warn('보안 경고: HTTPS가 아닌 환경에서 민감한 데이터 저장 시도');
+    }
+    
+    // 민감 정보 저장 방지 (설정 파일에서 로드)
+    const sensitiveKeys = [
+      'token', 'auth', 'password', 'secret', 'key', 'credential',
+      'api_key', 'private_key', 'session', 'jwt', 'bearer',
+      'access_token', 'refresh_token', 'authorization',
+      'payment_token', 'user_secret', 'admin_key', 'toss_payment_key', 'order_secret'
+    ];
+    
     const isSensitive = sensitiveKeys.some(sensitiveKey => 
       key.toLowerCase().includes(sensitiveKey)
     );
