@@ -523,4 +523,39 @@ const securityLogger = {
 - 암호학적 난수 미지원 브라우저 비율
 - 민감 정보 저장 시도 횟수
 - 확장 지문 수집 동의율
-- 클라이언트 토큰 사용 시도 횟수 
+- 클라이언트 토큰 사용 시도 횟수
+
+## 테스트 데이터 관리
+
+### 1. localStorage 테스트 데이터 정리
+```javascript
+// 테스트 데이터 초기화 시 자동 정리
+paymentTestUtils.initializeTestData(); // 기존 데이터 자동 정리 후 초기화
+
+// 수동 정리
+paymentTestUtils.cleanupTestData();
+
+// 테스트 데이터 상태 확인
+const status = paymentTestUtils.getTestDataStatus();
+console.log('테스트 데이터 상태:', status);
+```
+
+### 2. 자동 정리 메커니즘
+- **페이지 언로드 시**: `beforeunload` 이벤트로 자동 정리
+- **탭 전환 시**: `visibilitychange` 이벤트로 자동 정리
+- **컴포넌트 언마운트 시**: React useEffect cleanup에서 정리
+
+### 3. 테스트 데이터 검증
+```javascript
+// 테스트 데이터 유효성 검사
+const validation = paymentTestUtils.validateTestData();
+if (!validation.valid) {
+  console.warn('테스트 데이터 검증 실패:', validation.reason);
+  paymentTestUtils.cleanupTestData(); // 무효한 데이터 정리
+}
+```
+
+### 4. 테스트 간 격리 보장
+- 각 테스트 세션마다 고유한 세션 ID 생성
+- 세션 불일치 시 자동으로 기존 데이터 정리
+- 테스트 환경에서만 동작하도록 제한 

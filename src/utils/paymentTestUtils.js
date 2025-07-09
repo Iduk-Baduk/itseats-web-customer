@@ -211,15 +211,23 @@ export class PaymentTestUtils {
       return;
     }
 
+    // 기존 테스트 데이터 정리 (중복 방지)
+    this.cleanupTestData();
+
     // 테스트용 결제 정보를 localStorage에 저장
     const testData = {
       testCards: this.testCards,
       testAmounts: [1000, 5000, 10000, 50000],
-      testOrderIds: Array.from({ length: 10 }, (_, i) => `test_order_${Date.now()}_${i}`)
+      testOrderIds: Array.from({ length: 10 }, (_, i) => `test_order_${Date.now()}_${i}`),
+      createdAt: new Date().toISOString(),
+      sessionId: this.getSessionId()
     };
 
     localStorage.setItem('payment_test_data', JSON.stringify(testData));
     logger.log('테스트 데이터 초기화 완료');
+    
+    // 페이지 언로드 시 자동 정리
+    this.setupAutoCleanup();
   }
 
   // 테스트 데이터 정리
@@ -230,7 +238,96 @@ export class PaymentTestUtils {
 
     localStorage.removeItem('payment_test_data');
     sessionStorage.removeItem('payment_session_id');
+    
+    // 자동 정리 이벤트 리스너 제거
+    this.removeAutoCleanup();
+    
     logger.log('테스트 데이터 정리 완료');
+  }
+
+  // 자동 정리 설정
+  setupAutoCleanup() {
+    if (typeof window !== 'undefined') {
+      // 페이지 언로드 시 자동 정리
+      const handleBeforeUnload = () => {
+        this.cleanupTestData();
+      };
+      
+      // 페이지 숨김 시 정리 (탭 전환 등)
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          this.cleanupTestData();
+        }
+      };
+      
+      // 이벤트 리스너 등록
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      // 리스너 참조 저장 (나중에 제거하기 위해)
+      this._cleanupListeners = {
+        beforeunload: handleBeforeUnload,
+        visibilitychange: handleVisibilityChange
+      };
+      
+      logger.log('테스트 데이터 자동 정리 설정 완료');
+    }
+  }
+
+  // 자동 정리 이벤트 리스너 제거
+  removeAutoCleanup() {
+    if (typeof window !== 'undefined' && this._cleanupListeners) {
+      window.removeEventListener('beforeunload', this._cleanupListeners.beforeunload);
+      document.removeEventListener('visibilitychange', this._cleanupListeners.visibilitychange);
+      this._cleanupListeners = null;
+      
+      logger.log('테스트 데이터 자동 정리 리스너 제거 완료');
+    }
+  }
+
+  // 테스트 데이터 검증
+  validateTestData() {
+    if (!this.isTestEnvironment()) {
+      return { valid: false, reason: 'NOT_TEST_ENVIRONMENT' };
+    }
+
+    const testData = localStorage.getItem('payment_test_data');
+    if (!testData) {
+      return { valid: false, reason: 'NO_TEST_DATA' };
+    }
+
+    try {
+      const parsedData = JSON.parse(testData);
+      const requiredFields = ['testCards', 'testAmounts', 'testOrderIds', 'createdAt', 'sessionId'];
+      
+      for (const field of requiredFields) {
+        if (!parsedData[field]) {
+          return { valid: false, reason: `MISSING_FIELD: ${field}` };
+        }
+      }
+
+      // 세션 ID 일치 확인
+      if (parsedData.sessionId !== this.getSessionId()) {
+        return { valid: false, reason: 'SESSION_MISMATCH' };
+      }
+
+      return { valid: true, data: parsedData };
+    } catch (error) {
+      return { valid: false, reason: 'INVALID_JSON', error: error.message };
+    }
+  }
+
+  // 테스트 데이터 상태 확인
+  getTestDataStatus() {
+    const validation = this.validateTestData();
+    const hasListeners = !!this._cleanupListeners;
+    
+    return {
+      ...validation,
+      hasAutoCleanup: hasListeners,
+      isTestEnvironment: this.isTestEnvironment(),
+      timestamp: new Date().toISOString()
+    };
   }
 }
 
