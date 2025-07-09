@@ -205,7 +205,13 @@ export default function Home() {
               minHeight: "150px",
               maxHeight: "250px"
             };
-            return <VideoBanner {...bannerConfig.props} {...heightSettings} />;
+            
+            const handleVideoError = (error) => {
+              console.error('홈 화면 비디오 배너 에러:', error);
+              // 에러 발생 시 로깅 또는 분석 도구에 전송
+            };
+            
+            return <VideoBanner {...bannerConfig.props} {...heightSettings} onVideoError={handleVideoError} />;
           } else if (bannerConfig?.component === 'OptimizedImage') {
             return <OptimizedImage {...bannerConfig.props} />;
           }
