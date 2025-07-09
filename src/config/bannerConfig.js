@@ -74,6 +74,17 @@ export const heightPresets = {
 
 // 배너 타입별 컴포넌트 렌더링 함수
 export const renderBanner = (type = 'home', customProps = {}) => {
+  // 입력 유효성 검증
+  if (typeof type !== 'string' || !type.trim()) {
+    console.warn('배너 타입은 유효한 문자열이어야 합니다');
+    return null;
+  }
+  
+  if (typeof customProps !== 'object' || customProps === null) {
+    console.warn('customProps는 객체여야 합니다');
+    customProps = {};
+  }
+  
   const config = bannerConfig[type];
   
   if (!config) {
@@ -82,6 +93,22 @@ export const renderBanner = (type = 'home', customProps = {}) => {
   }
   
   const { useVideo, video, image, onClick } = config;
+  
+  // config 구조 유효성 검증
+  if (typeof useVideo !== 'boolean') {
+    console.warn(`배너 설정 '${type}'의 useVideo는 boolean 값이어야 합니다`);
+    return null;
+  }
+  
+  if (useVideo && (!video || typeof video !== 'object')) {
+    console.warn(`배너 설정 '${type}'에서 useVideo가 true이지만 video 설정이 유효하지 않습니다`);
+    return null;
+  }
+  
+  if (!useVideo && (!image || typeof image !== 'object')) {
+    console.warn(`배너 설정 '${type}'에서 useVideo가 false이지만 image 설정이 유효하지 않습니다`);
+    return null;
+  }
   
   if (useVideo) {
     return {
