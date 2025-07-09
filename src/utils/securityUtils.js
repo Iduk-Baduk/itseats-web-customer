@@ -63,6 +63,12 @@ export class SecurityUtils {
    * @returns {string} 클라이언트 보조 식별자
    */
   generateClientSubId(prefix = 'client') {
+    // SSR 환경 고려
+    if (typeof navigator === 'undefined') {
+      console.warn('브라우저 환경이 아닙니다. 기본 식별자를 반환합니다.');
+      return `${prefix}_ssr_${Date.now()}`;
+    }
+    
     const timestamp = Date.now();
     const randomPart = this.generateSecureRandomString(16);
     const userAgentHash = this.hashString(navigator.userAgent);
@@ -115,6 +121,12 @@ export class SecurityUtils {
    * @returns {string} 제한된 브라우저 지문 해시
    */
   generateBrowserFingerprint(minimal = true) {
+    // SSR 환경 고려
+    if (typeof window === 'undefined' || typeof navigator === 'undefined' || typeof screen === 'undefined') {
+      console.warn('브라우저 환경이 아닙니다. 기본 지문을 반환합니다.');
+      return this.hashString('ssr-default-fingerprint');
+    }
+    
     if (minimal) {
       // 최소한의 정보만 수집 (GDPR 친화적)
       const components = [
@@ -225,6 +237,12 @@ export class SecurityUtils {
    * @param {boolean} useSessionStorage - sessionStorage 사용 여부
    */
   secureStore(key, data, useSessionStorage = true) {
+    // SSR 환경 고려
+    if (typeof window === 'undefined') {
+      console.warn('브라우저 환경이 아닙니다. 데이터 저장을 건너뜁니다.');
+      return;
+    }
+    
     // SecureContext 확인 (HTTPS 필수)
     if (!window.isSecureContext) {
       console.warn('보안 경고: HTTPS가 아닌 환경에서 민감한 데이터 저장 시도');
@@ -271,6 +289,12 @@ export class SecurityUtils {
    * @returns {any|null} 저장된 데이터 또는 null
    */
   secureRetrieve(key, useSessionStorage = true) {
+    // SSR 환경 고려
+    if (typeof window === 'undefined') {
+      console.warn('브라우저 환경이 아닙니다. null을 반환합니다.');
+      return null;
+    }
+    
     const secureKey = this.generateStorageKey(key);
     const storage = useSessionStorage ? sessionStorage : localStorage;
     
