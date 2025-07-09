@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/api';
 import { processError } from '../utils/errorHandler';
-import { STORAGE_KEYS } from '../utils/logger';
+import { getToken, isTokenValid, clearToken } from '../utils/tokenUtils';
 
 // API 클라이언트 생성
 const apiClient = axios.create({
@@ -20,9 +20,12 @@ apiClient.interceptors.request.use(
     if (config.url?.includes('/login'))
       return config;
 
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // 토큰 유효성 검사 후 추가
+    if (isTokenValid()) {
+      const token = getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -56,7 +59,7 @@ apiClient.interceptors.response.use(
     
     // 인증 에러 처리
     if (processedError.statusCode === 401 || processedError.statusCode === 403) {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      clearToken();
       window.location.href = '/login';
     }
     
