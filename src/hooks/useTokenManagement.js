@@ -79,7 +79,7 @@ export const useTokenManagement = (options = {}) => {
     
     // 만료 5분 전에 갱신 시도
     if (minutesRemaining <= warningMinutes && minutesRemaining > 0) {
-      const refreshDelay = (minutesRemaining - 1) * 60 * 1000; // 1분 전에 갱신
+      const refreshDelay = Math.max(timeRemaining - 60 * 1000, 0); // 1분 전에 갱신, 최소 0
       
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
