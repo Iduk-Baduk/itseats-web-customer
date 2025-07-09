@@ -20,7 +20,18 @@ export class SecurityUtils {
   generateSecureRandomString(length = 32, charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') {
     // Web Crypto API 지원 확인
     if (!crypto?.getRandomValues) {
-      throw new Error('암호학적 난수 미지원 환경입니다. 보안상 안전하지 않은 난수 생성을 사용할 수 없습니다.');
+      console.error('보안 경고: 암호학적 난수 미지원 환경입니다. 기능이 제한됩니다.');
+      console.error('브라우저: ' + navigator.userAgent);
+      console.error('지원 여부: crypto=' + !!crypto + ', getRandomValues=' + !!(crypto?.getRandomValues));
+      
+      // 개발 환경에서는 에러 발생, 프로덕션에서는 기능 제한
+      if (process.env.NODE_ENV === 'development') {
+        throw new Error('암호학적 난수 미지원 환경입니다. 보안상 안전하지 않은 난수 생성을 사용할 수 없습니다.');
+      } else {
+        // 프로덕션에서는 기능 제한 (빈 문자열 반환)
+        console.warn('프로덕션 환경에서 암호학적 난수 미지원으로 인한 기능 제한');
+        return '';
+      }
     }
 
     try {
@@ -33,7 +44,14 @@ export class SecurityUtils {
       }
       return result;
     } catch (error) {
-      throw new Error(`암호학적 난수 생성 실패: ${error.message}`);
+      console.error('암호학적 난수 생성 실패:', error);
+      
+      if (process.env.NODE_ENV === 'development') {
+        throw new Error(`암호학적 난수 생성 실패: ${error.message}`);
+      } else {
+        console.warn('프로덕션 환경에서 암호학적 난수 생성 실패로 인한 기능 제한');
+        return '';
+      }
     }
   }
 
@@ -76,7 +94,24 @@ export class SecurityUtils {
    * 제한된 브라우저 지문 생성 (GDPR 고려)
    * 주의: 개인정보보호 규제에 따라 사용자 동의 필요할 수 있습니다.
    * 용도: 서버 로그와 보조 조합으로만 사용
-   * @param {boolean} minimal - 최소한의 정보만 수집
+   * 
+   * 수집 필드:
+   * - minimal=true (기본값, GDPR 친화적):
+   *   * navigator.userAgent: 브라우저 식별
+   *   * navigator.language: 언어 설정
+   *   * screen.width + 'x' + screen.height: 화면 해상도
+   * 
+   * - minimal=false (사용자 동의 필요):
+   *   * 위 필드 + 추가 필드:
+   *   * screen.colorDepth: 색상 깊이
+   *   * timezoneOffset: 시간대
+   *   * hardwareConcurrency: CPU 코어 수
+   *   * deviceMemory: 메모리 용량
+   *   * platform: 운영체제
+   *   * cookieEnabled: 쿠키 지원 여부
+   *   * doNotTrack: 추적 거부 설정
+   * 
+   * @param {boolean} minimal - 최소한의 정보만 수집 (기본값: true)
    * @returns {string} 제한된 브라우저 지문 해시
    */
   generateBrowserFingerprint(minimal = true) {
@@ -91,6 +126,15 @@ export class SecurityUtils {
     } else {
       // 확장 정보 수집 (사용자 동의 필요)
       console.warn('브라우저 지문 수집: 개인정보보호 규제 준수 필요');
+      console.warn('사용자 동의 없이 확장 지문 수집을 금지합니다.');
+      
+      // 사용자 동의 확인 (실제 구현에서는 동의 상태 확인 필요)
+      const hasUserConsent = this.checkUserConsentForFingerprinting();
+      if (!hasUserConsent) {
+        console.error('사용자 동의 없이 확장 지문 수집 시도');
+        return this.generateBrowserFingerprint(true); // 최소 정보로 폴백
+      }
+      
       const components = [
         navigator.userAgent,
         navigator.language,
@@ -108,65 +152,47 @@ export class SecurityUtils {
   }
 
   /**
-   * 클라이언트 토큰 생성 (제한적 용도)
-   * 주의: 이는 서버에서 발급하는 실제 JWT를 대체할 수 없습니다.
-   * 용도: 클라이언트 측 임시 데이터, UI 상태 관리용
-   * 실제 인증/인가 토큰은 반드시 서버에서 발급해야 합니다.
-   * @param {Object} payload - 토큰에 포함할 데이터
-   * @param {number} expiryMinutes - 만료 시간 (분)
-   * @returns {string} 클라이언트 토큰
+   * 사용자 동의 확인 (브라우저 지문 수집용)
+   * 실제 구현에서는 개인정보처리방침 동의 상태를 확인해야 합니다.
+   * @returns {boolean} 사용자 동의 여부
    */
-  generateClientToken(payload = {}, expiryMinutes = 60) {
-    console.warn('클라이언트 토큰 생성: 실제 인증 토큰이 아닙니다. 서버에서 JWT 발급 필요');
-    
-    const header = {
-      alg: 'HS256',
-      typ: 'JWT'
-    };
-    
-    const now = Math.floor(Date.now() / 1000);
-    const body = {
-      ...payload,
-      iat: now,
-      exp: now + (expiryMinutes * 60)
-    };
-    
-    const headerB64 = btoa(JSON.stringify(header));
-    const bodyB64 = btoa(JSON.stringify(body));
-    
-    // 간단한 서명 (실제로는 HMAC 사용해야 함)
-    const signature = this.hashString(headerB64 + '.' + bodyB64);
-    
-    return `${headerB64}.${bodyB64}.${signature}`;
+  checkUserConsentForFingerprinting() {
+    // 실제 구현에서는 동의 상태를 확인하는 로직 필요
+    // 예: localStorage.getItem('privacy_consent_fingerprinting')
+    // 또는 서버에서 동의 상태 확인
+    return false; // 기본적으로 동의 없음
   }
 
   /**
-   * 클라이언트 토큰 검증 (제한적 용도)
-   * 주의: 이는 서버에서 발급하는 실제 JWT 검증을 대체할 수 없습니다.
-   * 용도: 클라이언트 측 임시 데이터 검증용
-   * 실제 인증/인가 토큰은 반드시 서버에서 검증해야 합니다.
-   * @param {string} token - 검증할 클라이언트 토큰
-   * @returns {Object|null} 검증된 페이로드 또는 null
+   * 클라이언트 토큰 생성·검증 로직 제거됨
+   * 
+   * 보안 강화를 위해 클라이언트에서 토큰 생성·검증 로직을 완전히 제거했습니다.
+   * 
+   * 이유:
+   * - 클라이언트 토큰은 공격 표면을 늘림
+   * - 실제 인증/인가는 서버에서만 처리해야 함
+   * - "토큰은 오직 백엔드" 원칙 적용
+   * 
+   * 대안:
+   * - UI 상태 관리: Redux, Context API 등 사용
+   * - 임시 데이터: sessionStorage/localStorage 직접 사용
+   * - 인증 토큰: 서버에서 발급받은 JWT만 사용
+   * 
+   * @deprecated 이 메서드는 보안상 제거되었습니다.
    */
-  verifyClientToken(token) {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) return null;
-      
-      const [headerB64, bodyB64, signature] = parts;
-      const expectedSignature = this.hashString(headerB64 + '.' + bodyB64);
-      
-      if (signature !== expectedSignature) return null;
-      
-      const body = JSON.parse(atob(bodyB64));
-      const now = Math.floor(Date.now() / 1000);
-      
-      if (body.exp && body.exp < now) return null;
-      
-      return body;
-    } catch (error) {
-      return null;
-    }
+  generateClientToken() {
+    console.error('보안 경고: 클라이언트 토큰 생성이 제거되었습니다.');
+    console.error('대신 서버에서 발급받은 JWT를 사용하거나, UI 상태 관리 라이브러리를 사용하세요.');
+    throw new Error('클라이언트 토큰 생성이 보안상 제거되었습니다. 서버에서 JWT를 발급받으세요.');
+  }
+
+  /**
+   * @deprecated 이 메서드는 보안상 제거되었습니다.
+   */
+  verifyClientToken() {
+    console.error('보안 경고: 클라이언트 토큰 검증이 제거되었습니다.');
+    console.error('대신 서버에서 토큰을 검증하거나, UI 상태 관리 라이브러리를 사용하세요.');
+    throw new Error('클라이언트 토큰 검증이 보안상 제거되었습니다. 서버에서 토큰을 검증하세요.');
   }
 
   /**
