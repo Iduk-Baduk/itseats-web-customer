@@ -31,6 +31,13 @@ export const calculateViewportHeight = (percentage, minHeight = 150, maxHeight =
   }
   
   const viewportHeight = window.innerHeight;
+  
+  // viewportHeight가 0인 경우 방지
+  if (viewportHeight <= 0) {
+    console.warn('calculateViewportHeight: viewportHeight가 유효하지 않습니다');
+    return `${minHeight}px`;
+  }
+  
   const calculatedHeight = (viewportHeight * percentage) / 100;
   
   if (calculatedHeight < minHeight) return `${minHeight}px`;
@@ -85,19 +92,20 @@ export const calculateAspectRatioHeight = (aspectRatio, width) => {
   // 매개변수 유효성 검증
   if (typeof aspectRatio !== 'string' || !aspectRatio.includes('/')) {
     console.warn('calculateAspectRatioHeight: aspectRatio는 "width/height" 형식의 문자열이어야 합니다');
-    return 0;
+    return width * (9/16); // 기본값 16:9
   }
   
   if (typeof width !== 'number' || width <= 0) {
-    console.warn('calculateAspectRatioHeight: width는 0보다 큰 숫자여야 합니다');
+    console.warn('calculateAspectRatioHeight: width는 양수여야 합니다');
     return 0;
   }
   
   const [w, h] = aspectRatio.split('/').map(Number);
   
-  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-    console.warn('calculateAspectRatioHeight: aspectRatio는 유효한 숫자 형식이어야 합니다');
-    return 0;
+  // 0으로 나누기 방지 및 유효한 숫자 검증
+  if (w === 0 || h === 0 || isNaN(w) || isNaN(h)) {
+    console.warn('calculateAspectRatioHeight: aspectRatio에 유효한 숫자가 포함되어야 합니다');
+    return width * (9/16); // 기본값 16:9
   }
   
   return (width * h) / w;
