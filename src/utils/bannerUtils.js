@@ -8,6 +8,12 @@
  * @returns {string} 계산된 높이 값
  */
 export const calculateViewportHeight = (percentage, minHeight = 150, maxHeight = 500) => {
+  // SSR 환경 고려
+  if (typeof window === 'undefined') {
+    // 서버 사이드 렌더링 환경에서는 기본값 반환
+    return `${minHeight}px`;
+  }
+  
   const viewportHeight = window.innerHeight;
   const calculatedHeight = (viewportHeight * percentage) / 100;
   
@@ -29,6 +35,12 @@ export const getResponsiveHeight = (breakpoints = {}) => {
     desktop: { height: "300px", minHeight: "250px", maxHeight: "500px" },
     ...breakpoints
   };
+
+  // SSR 환경 고려
+  if (typeof window === 'undefined') {
+    // 서버 사이드 렌더링 환경에서는 desktop 기본값 반환
+    return defaultBreakpoints.desktop;
+  }
 
   const width = window.innerWidth;
   
