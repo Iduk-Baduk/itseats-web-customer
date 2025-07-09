@@ -54,6 +54,9 @@ export const bannerConfig = {
 
 };
 
+// 외부 링크 보안 설정
+import externalLinksConfig from './externalLinksConfig.json';
+
 // 높이 설정 예시
 export const heightPresets = {
   // 고정 높이
@@ -127,12 +130,35 @@ const handleBannerClick = (onClick) => {
  */
 const handleExternalLink = (target) => {
   try {
+    // 프로토콜 검증
+    if (externalLinksConfig.security.enableProtocolValidation) {
+      const isValidProtocol = externalLinksConfig.allowedProtocols.some(
+        protocol => target.startsWith(protocol)
+      );
+      if (!isValidProtocol) {
+        throw new Error('허용되지 않는 프로토콜입니다');
+      }
+    }
+    
     const url = new URL(target);
+    
+    // 도메인 검증
+    if (externalLinksConfig.security.enableDomainValidation) {
+      const isAllowedDomain = externalLinksConfig.allowedDomains.includes(url.hostname);
+      if (!isAllowedDomain) {
+        throw new Error('허용되지 않는 도메인입니다');
+      }
+    }
+    
     const newWindow = window.open(url.href, '_blank', 'noopener,noreferrer');
     
     if (!newWindow) {
-      console.warn('팝업이 차단되었습니다. 현재 탭에서 열기로 폴백합니다.');
-      window.location.href = target;
+      if (externalLinksConfig.security.enablePopupFallback) {
+        console.warn('팝업이 차단되었습니다. 현재 탭에서 열기로 폴백합니다.');
+        window.location.href = target;
+      } else {
+        console.warn('팝업이 차단되었습니다.');
+      }
       return;
     }
     
@@ -141,7 +167,11 @@ const handleExternalLink = (target) => {
     }
   } catch (error) {
     console.error('외부 링크 열기 실패:', error);
-    window.location.href = target;
+    
+    // 보안 검증 실패 시 현재 탭에서 열지 않음
+    if (externalLinksConfig.security.logSecurityViolations) {
+      console.warn('보안 검증 실패로 링크를 열지 않습니다:', error.message);
+    }
   }
 };
 
