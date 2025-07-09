@@ -155,8 +155,8 @@ export const useTokenManagement = (options = {}) => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [updateTokenStatus]);
 
-  // 토큰 정보 (디버깅용)
-  const tokenInfo = {
+  // 토큰 정보 (디버깅용 - 개발 환경에서만)
+  const tokenInfo = import.meta.env.DEV ? {
     token: token ? `${token.substring(0, 10)}...` : null,
     isValid,
     isLoading,
@@ -165,7 +165,7 @@ export const useTokenManagement = (options = {}) => {
     minutesRemaining: Math.floor(timeRemaining / (60 * 1000)),
     isExpiringSoon,
     lastChecked: lastChecked ? new Date(lastChecked).toLocaleTimeString() : null
-  };
+  } : null;
 
   return {
     // 상태
