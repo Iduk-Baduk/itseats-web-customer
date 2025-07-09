@@ -22,6 +22,7 @@ export const bannerConfig = {
       muted: true,
       controls: false,
       alt: "홈 페이지 배너 동영상",
+      ariaLabel: "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)",
       // 높이 설정
       height: "auto", // "auto", "200px", "300px" 등
       minHeight: "150px",

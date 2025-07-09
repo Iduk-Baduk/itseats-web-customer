@@ -17,7 +17,8 @@ const VideoBanner = ({
   height,
   minHeight,
   maxHeight,
-  aspectRatio
+  aspectRatio,
+  ariaLabel
 }) => {
   const videoRef = useRef(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -58,7 +59,7 @@ const VideoBanner = ({
         }}
         role={isExternalLink() ? "button" : undefined}
         tabIndex={isExternalLink() ? 0 : undefined}
-        aria-label={isExternalLink() ? "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)" : undefined}
+        aria-label={isExternalLink() ? ariaLabel : undefined}
         onKeyDown={isExternalLink() ? (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -87,7 +88,7 @@ const VideoBanner = ({
       }}
       role={isExternalLink() ? "button" : undefined}
       tabIndex={isExternalLink() ? 0 : undefined}
-      aria-label={isExternalLink() ? "구름톤 DEEP DIVE로 이동 (새 탭에서 열림)" : undefined}
+      aria-label={isExternalLink() ? ariaLabel : undefined}
       onKeyDown={isExternalLink() ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -156,7 +157,8 @@ VideoBanner.propTypes = {
   height: PropTypes.string,
   minHeight: PropTypes.string,
   maxHeight: PropTypes.string,
-  aspectRatio: PropTypes.string
+  aspectRatio: PropTypes.string,
+  ariaLabel: PropTypes.string
 };
 
 VideoBanner.defaultProps = {
@@ -169,7 +171,8 @@ VideoBanner.defaultProps = {
   height: "auto",
   minHeight: "150px",
   maxHeight: "none",
-  aspectRatio: "16/9"
+  aspectRatio: "16/9",
+  ariaLabel: "링크로 이동 (새 탭에서 열림)"
 };
 
 export default VideoBanner; 
