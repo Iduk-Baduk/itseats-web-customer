@@ -59,8 +59,6 @@ export default function MyPage() {
     { icon: "list", label: "주소 관리", path: "/address" },
     { icon: "heart", label: "즐겨찾기", path: "/favorites" },
     { icon: "tag", label: "할인쿠폰", path: "/coupons" },
-    { icon: "percent", label: "진행중인 이벤트", path: "/events" },
-    { icon: "people", label: "친구 초대" },
     { icon: "credit", label: "결제관리", path: "/payments" },
     { icon: "settings", label: "설정", path: "/mypage/settings" },
     { icon: "megaphone", label: "공지사항" },
