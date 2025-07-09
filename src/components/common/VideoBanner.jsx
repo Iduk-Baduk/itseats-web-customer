@@ -33,6 +33,7 @@ const VideoBanner = ({
   const handleVideoError = (error) => {
     console.error('비디오 로드 실패:', error);
     setIsVideoError(true);
+    setIsPlaying(false);
     if (onVideoError) {
       onVideoError(error);
     }
@@ -51,14 +52,19 @@ const VideoBanner = ({
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        videoRef.current.play().catch(error => {
-          console.error('비디오 재생 실패:', error);
-          setIsVideoError(true);
-          if (onVideoError) {
-            onVideoError(error);
-          }
-        });
-        setIsPlaying(true);
+        videoRef.current.play()
+          .then(() => {
+            // 재생 성공 시에만 상태 업데이트
+            setIsPlaying(true);
+          })
+          .catch(error => {
+            console.error('비디오 재생 실패:', error);
+            setIsVideoError(true);
+            setIsPlaying(false);
+            if (onVideoError) {
+              onVideoError(error);
+            }
+          });
       }
     }
   }, [onVideoError]);
@@ -71,6 +77,24 @@ const VideoBanner = ({
   const handlePause = () => {
     setIsPlaying(false);
   };
+
+  // 비디오 상태 동기화 (안전장치)
+  const syncVideoState = useCallback(() => {
+    if (videoRef.current) {
+      const actualPaused = videoRef.current.paused;
+      if (actualPaused !== !isPlaying) {
+        setIsPlaying(!actualPaused);
+      }
+    }
+  }, [isPlaying]);
+
+  // 주기적으로 비디오 상태 동기화
+  useEffect(() => {
+    if (isVideoLoaded && !isVideoError) {
+      const interval = setInterval(syncVideoState, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isVideoLoaded, isVideoError, syncVideoState]);
 
   // 외부 링크인지 확인하는 함수
   const isExternalLink = () => {
@@ -169,6 +193,7 @@ const VideoBanner = ({
           }}
           aria-label={isPlaying ? "일시정지" : "재생"}
           type="button"
+          disabled={!videoRef.current}
         >
           {isPlaying ? "⏸️" : "▶️"}
         </button>
