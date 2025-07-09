@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import { STORAGE_KEYS, logger } from '../utils/logger';
+import { saveToken, clearToken } from '../utils/tokenUtils';
 
 // 토큰에서 사용자 ID 추출 유틸리티
 const extractUserIdFromToken = (token) => {
@@ -60,7 +61,10 @@ export const login = async ({ username, password, isAutoLogin }) => {
 
     const response = await apiClient.post("/login", { username, password });
     const accessToken = response.headers["access-token"];
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+    
+    // 토큰 저장 (24시간 만료)
+    const expiresIn = isAutoLogin ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7일 또는 24시간
+    saveToken(accessToken, expiresIn);
 
     const currentMember = await apiClient.get("/members/me");
 
@@ -183,7 +187,7 @@ export const getCurrentUserMock = async () => {
 
 // 로그아웃
 export const logout = () => {
-  localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+  clearToken();
   localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
   return { success: true, message: '로그아웃되었습니다.' };
 };

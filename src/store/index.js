@@ -6,6 +6,7 @@ import addressReducer from "./addressSlice";
 import orderReducer from "./orderSlice";
 import couponReducer from "./couponSlice";
 import storeReducer from "./storeSlice";
+import tokenReducer from "./tokenSlice";
 
 const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
     order: orderReducer,
     coupon: couponReducer,
     store: storeReducer,
+    token: tokenReducer,
   },
 });
 
