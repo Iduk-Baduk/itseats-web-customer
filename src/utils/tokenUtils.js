@@ -10,13 +10,63 @@ import { STORAGE_KEYS } from './logger';
  */
 
 /**
+ * 토큰 데이터 구조 검증
+ * @param {any} data - 검증할 데이터
+ * @returns {boolean} 유효한 토큰 데이터인지 여부
+ */
+export const validateTokenData = (data) => {
+  try {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+
+    // 필수 필드 존재 확인
+    if (!data.token || typeof data.token !== 'string') {
+      return false;
+    }
+    if (!data.expiresAt || typeof data.expiresAt !== 'number') {
+      return false;
+    }
+    if (!data.issuedAt || typeof data.issuedAt !== 'number') {
+      return false;
+    }
+
+    // 시간 값 유효성 확인
+    if (data.expiresAt <= 0 || data.issuedAt <= 0) {
+      return false;
+    }
+    if (data.issuedAt > data.expiresAt) {
+      return false;
+    }
+
+    // 토큰 값 유효성 확인 (최소 길이 등)
+    if (data.token.length < 10) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('토큰 데이터 검증 실패:', error);
+    return false;
+  }
+};
+
+/**
  * 토큰을 안전한 형식으로 저장
  * @param {string} token - 저장할 토큰
  * @param {number} expiresIn - 만료 시간 (밀리초, 기본값: 24시간)
  */
 export const saveToken = (token, expiresIn = 24 * 60 * 60 * 1000) => {
-  if (!token) {
-    throw new Error('토큰이 제공되지 않았습니다.');
+  if (!token || typeof token !== 'string') {
+    throw new Error('유효한 토큰이 제공되지 않았습니다.');
+  }
+
+  if (token.length < 10) {
+    throw new Error('토큰이 너무 짧습니다.');
+  }
+
+  if (expiresIn <= 0) {
+    throw new Error('만료 시간은 0보다 커야 합니다.');
   }
 
   const tokenData = {
@@ -24,6 +74,11 @@ export const saveToken = (token, expiresIn = 24 * 60 * 60 * 1000) => {
     expiresAt: Date.now() + expiresIn,
     issuedAt: Date.now()
   };
+
+  // 저장 전 검증
+  if (!validateTokenData(tokenData)) {
+    throw new Error('생성된 토큰 데이터가 유효하지 않습니다.');
+  }
 
   try {
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, JSON.stringify(tokenData));
@@ -51,6 +106,16 @@ export const getTokenData = () => {
         expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
         issuedAt: Date.now()
       };
+    }
+
+    // 객체 구조 검증
+    if (!validateTokenData(parsed)) {
+      // 복구 시도
+      if (attemptTokenRecovery()) {
+        // 복구 성공 시 다시 조회
+        return getTokenData();
+      }
+      throw new Error('토큰 데이터 구조가 유효하지 않습니다');
     }
 
     return parsed;
@@ -142,20 +207,71 @@ export const getTokenInfo = () => {
       isValid: false,
       timeRemaining: 0,
       minutesRemaining: 0,
-      isExpiringSoon: false
+      isExpiringSoon: false,
+      validationErrors: []
     };
   }
 
   const timeRemaining = getTokenTimeRemaining();
   const minutesRemaining = getTokenMinutesRemaining();
+  const isValid = isTokenValid();
 
   return {
     hasToken: true,
-    isValid: isTokenValid(),
+    isValid,
     timeRemaining,
     minutesRemaining,
     isExpiringSoon: isTokenExpiringSoon(),
     issuedAt: new Date(tokenData.issuedAt).toISOString(),
-    expiresAt: new Date(tokenData.expiresAt).toISOString()
+    expiresAt: new Date(tokenData.expiresAt).toISOString(),
+    validationErrors: isValid ? [] : ['토큰이 만료되었거나 유효하지 않습니다']
   };
+};
+
+/**
+ * 토큰 데이터 복구 시도 (손상된 데이터 정리)
+ * @returns {boolean} 복구 성공 여부
+ */
+export const attemptTokenRecovery = () => {
+  try {
+    const tokenData = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    if (!tokenData) return false;
+
+    const parsed = JSON.parse(tokenData);
+    
+    // 문자열로 저장된 경우 복구
+    if (typeof parsed === 'string' && parsed.length >= 10) {
+      const recoveredData = {
+        token: parsed,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+        issuedAt: Date.now()
+      };
+      
+      if (validateTokenData(recoveredData)) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, JSON.stringify(recoveredData));
+        console.log('토큰 데이터 복구 성공');
+        return true;
+      }
+    }
+
+    // 부분적으로 손상된 객체 복구 시도
+    if (typeof parsed === 'object' && parsed !== null && parsed.token) {
+      const recoveredData = {
+        token: parsed.token,
+        expiresAt: parsed.expiresAt || Date.now() + (24 * 60 * 60 * 1000),
+        issuedAt: parsed.issuedAt || Date.now()
+      };
+      
+      if (validateTokenData(recoveredData)) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, JSON.stringify(recoveredData));
+        console.log('토큰 데이터 복구 성공');
+        return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('토큰 데이터 복구 실패:', error);
+    return false;
+  }
 }; 
