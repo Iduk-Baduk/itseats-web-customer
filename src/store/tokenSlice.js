@@ -152,6 +152,7 @@ const tokenSlice = createSlice({
         state.lastChecked = Date.now();
         
         if (!action.payload.isValid) {
+          clearToken(); // localStorage에서 토큰 삭제
           state.token = null;
           state.expiresAt = null;
           state.issuedAt = null;
@@ -179,6 +180,7 @@ const tokenSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
         // 토큰 갱신 실패 시 로그아웃
+        clearToken(); // localStorage에서 토큰 삭제
         state.token = null;
         state.isValid = false;
         state.expiresAt = null;
