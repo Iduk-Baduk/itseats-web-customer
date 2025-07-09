@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 import Root from "./Root";
