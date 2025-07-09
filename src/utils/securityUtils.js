@@ -3,6 +3,8 @@
  * 세션 ID, 토큰, 암호화 등 보안 기능 제공
  */
 
+import sensitiveKeysConfig from '../config/sensitiveKeys.json';
+
 export class SecurityUtils {
   constructor() {
     // 엔트로피 풀 시스템 제거됨
@@ -228,6 +230,40 @@ export class SecurityUtils {
   }
 
   /**
+   * 민감한 키워드인지 확인
+   * @param {string} key - 확인할 키
+   * @returns {boolean} 민감한 키워드 여부
+   */
+  isSensitiveKey(key) {
+    const sensitiveKeys = sensitiveKeysConfig.sensitiveKeys || [];
+    return sensitiveKeys.some(sensitiveKey => 
+      key.toLowerCase().includes(sensitiveKey)
+    );
+  }
+
+  /**
+   * 민감한 키워드 목록 조회
+   * @returns {string[]} 민감한 키워드 목록
+   */
+  getSensitiveKeys() {
+    return sensitiveKeysConfig.sensitiveKeys || [];
+  }
+
+  /**
+   * 민감한 키워드 목록 업데이트 (런타임)
+   * 주의: 이 함수는 개발/테스트 목적으로만 사용하세요.
+   * @param {string[]} newKeys - 새로운 민감한 키워드 목록
+   */
+  updateSensitiveKeys(newKeys) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('민감한 키워드 목록이 런타임에 업데이트되었습니다:', newKeys);
+      sensitiveKeysConfig.sensitiveKeys = newKeys;
+    } else {
+      console.error('프로덕션 환경에서는 민감한 키워드 목록을 런타임에 변경할 수 없습니다.');
+    }
+  }
+
+  /**
    * 세션 데이터 안전하게 저장 (제한적 용도)
    * 주의: 민감한 정보(토큰, 사용자 정보)는 절대 스토리지에 저장하지 마세요.
    * XSS 취약점만으로도 저장된 데이터가 탈취될 수 있습니다.
@@ -249,16 +285,7 @@ export class SecurityUtils {
     }
     
     // 민감 정보 저장 방지 (설정 파일에서 로드)
-    const sensitiveKeys = [
-      'token', 'auth', 'password', 'secret', 'key', 'credential',
-      'api_key', 'private_key', 'session', 'jwt', 'bearer',
-      'access_token', 'refresh_token', 'authorization',
-      'payment_token', 'user_secret', 'admin_key', 'toss_payment_key', 'order_secret'
-    ];
-    
-    const isSensitive = sensitiveKeys.some(sensitiveKey => 
-      key.toLowerCase().includes(sensitiveKey)
-    );
+    const isSensitive = this.isSensitiveKey(key);
     
     if (isSensitive) {
       console.error('민감 정보 스토리지 저장 금지:', key);
