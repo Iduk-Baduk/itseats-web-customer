@@ -1,22 +1,23 @@
 import { useRef, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import styles from './VideoBanner.module.css';
 
 const VideoBanner = ({ 
   src, 
   sources,
   poster, 
-  alt = "배너 동영상",
-  autoPlay = true,
-  loop = true,
-  muted = true,
-  controls = false,
-  className = "",
+  alt,
+  autoPlay,
+  loop,
+  muted,
+  controls,
+  className,
   onVideoClick,
   fallbackImage,
-  height = "auto",
-  minHeight = "150px",
-  maxHeight = "none",
-  aspectRatio = "16/9"
+  height,
+  minHeight,
+  maxHeight,
+  aspectRatio
 }) => {
   const videoRef = useRef(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -122,6 +123,53 @@ const VideoBanner = ({
       )}
     </div>
   );
+};
+
+VideoBanner.propTypes = {
+  src: function(props, propName, componentName) {
+    if (!props.src && !props.sources) {
+      return new Error(
+        `'${componentName}' requires either 'src' or 'sources' prop to be provided.`
+      );
+    }
+    if (props.src && props.sources) {
+      return new Error(
+        `'${componentName}' should use either 'src' or 'sources' prop, not both.`
+      );
+    }
+  },
+  sources: PropTypes.arrayOf(
+    PropTypes.shape({
+      src: PropTypes.string.isRequired,
+      type: PropTypes.string.isRequired
+    })
+  ),
+  poster: PropTypes.string,
+  alt: PropTypes.string,
+  autoPlay: PropTypes.bool,
+  loop: PropTypes.bool,
+  muted: PropTypes.bool,
+  controls: PropTypes.bool,
+  className: PropTypes.string,
+  onVideoClick: PropTypes.func,
+  fallbackImage: PropTypes.string,
+  height: PropTypes.string,
+  minHeight: PropTypes.string,
+  maxHeight: PropTypes.string,
+  aspectRatio: PropTypes.string
+};
+
+VideoBanner.defaultProps = {
+  alt: "배너 동영상",
+  autoPlay: true,
+  loop: true,
+  muted: true,
+  controls: false,
+  className: "",
+  height: "auto",
+  minHeight: "150px",
+  maxHeight: "none",
+  aspectRatio: "16/9"
 };
 
 export default VideoBanner; 
