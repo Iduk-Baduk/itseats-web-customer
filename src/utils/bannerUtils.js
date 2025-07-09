@@ -8,6 +8,22 @@
  * @returns {string} 계산된 높이 값
  */
 export const calculateViewportHeight = (percentage, minHeight = 150, maxHeight = 500) => {
+  // 매개변수 유효성 검증
+  if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
+    console.warn('calculateViewportHeight: percentage는 0-100 사이의 숫자여야 합니다');
+    return `${minHeight}px`;
+  }
+  
+  if (typeof minHeight !== 'number' || minHeight < 0) {
+    console.warn('calculateViewportHeight: minHeight는 0 이상의 숫자여야 합니다');
+    minHeight = 150;
+  }
+  
+  if (typeof maxHeight !== 'number' || maxHeight < minHeight) {
+    console.warn('calculateViewportHeight: maxHeight는 minHeight보다 크거나 같아야 합니다');
+    maxHeight = Math.max(minHeight + 100, 500);
+  }
+  
   // SSR 환경 고려
   if (typeof window === 'undefined') {
     // 서버 사이드 렌더링 환경에서는 기본값 반환
@@ -29,6 +45,12 @@ export const calculateViewportHeight = (percentage, minHeight = 150, maxHeight =
  * @returns {Object} 현재 화면 크기에 맞는 높이 설정
  */
 export const getResponsiveHeight = (breakpoints = {}) => {
+  // 매개변수 유효성 검증
+  if (typeof breakpoints !== 'object' || breakpoints === null) {
+    console.warn('getResponsiveHeight: breakpoints는 객체여야 합니다');
+    breakpoints = {};
+  }
+  
   const defaultBreakpoints = {
     mobile: { height: "200px", minHeight: "150px", maxHeight: "300px" },
     tablet: { height: "250px", minHeight: "200px", maxHeight: "400px" },
@@ -60,7 +82,24 @@ export const getResponsiveHeight = (breakpoints = {}) => {
  * @returns {number} 계산된 높이
  */
 export const calculateAspectRatioHeight = (aspectRatio, width) => {
+  // 매개변수 유효성 검증
+  if (typeof aspectRatio !== 'string' || !aspectRatio.includes('/')) {
+    console.warn('calculateAspectRatioHeight: aspectRatio는 "width/height" 형식의 문자열이어야 합니다');
+    return 0;
+  }
+  
+  if (typeof width !== 'number' || width <= 0) {
+    console.warn('calculateAspectRatioHeight: width는 0보다 큰 숫자여야 합니다');
+    return 0;
+  }
+  
   const [w, h] = aspectRatio.split('/').map(Number);
+  
+  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+    console.warn('calculateAspectRatioHeight: aspectRatio는 유효한 숫자 형식이어야 합니다');
+    return 0;
+  }
+  
   return (width * h) / w;
 };
 
@@ -87,6 +126,17 @@ export const heightConfigToStyle = (heightConfig) => {
  * @returns {Object} 높이 설정 객체
  */
 export const createHeightPreset = (type, customSettings = {}) => {
+  // 매개변수 유효성 검증
+  if (typeof type !== 'string' || !type.trim()) {
+    console.warn('createHeightPreset: type은 유효한 문자열이어야 합니다');
+    return { height: "200px", minHeight: "150px", maxHeight: "300px" };
+  }
+  
+  if (typeof customSettings !== 'object' || customSettings === null) {
+    console.warn('createHeightPreset: customSettings는 객체여야 합니다');
+    customSettings = {};
+  }
+  
   const presets = {
     compact: {
       height: "120px",
@@ -114,6 +164,11 @@ export const createHeightPreset = (type, customSettings = {}) => {
       minHeight: "150px"
     }
   };
+
+  if (!presets[type]) {
+    console.warn(`createHeightPreset: 알 수 없는 프리셋 타입 '${type}'입니다. standard 프리셋을 사용합니다.`);
+    return { ...presets.standard, ...customSettings };
+  }
 
   return { ...presets[type], ...customSettings };
 };
