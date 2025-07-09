@@ -1,8 +1,9 @@
 // 안전한 ID 생성 유틸리티
 export const generateUniqueId = (prefix = 'id') => {
   const timestamp = Date.now();
-  const randomStr = Math.random().toString(36).slice(2, 11);
-  return `${prefix}_${timestamp}_${randomStr}`;
+  // Math.random() 대신 타임스탬프 기반 고유 ID 생성
+  const uniqueStr = timestamp.toString(36) + (typeof performance !== 'undefined' ? performance.now().toString(36).replace('.', '') : '0');
+  return `${prefix}_${timestamp}_${uniqueStr}`;
 };
 
 // 주문 ID 생성

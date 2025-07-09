@@ -252,8 +252,8 @@ export const generatePerformanceReport = async () => {
     webVitals,
     userAgent: navigator.userAgent,
     viewport: {
-      width: window.innerWidth,
-      height: window.innerHeight
+      width: typeof window !== 'undefined' ? window.innerWidth : 0,
+      height: typeof window !== 'undefined' ? window.innerHeight : 0
     }
   };
 

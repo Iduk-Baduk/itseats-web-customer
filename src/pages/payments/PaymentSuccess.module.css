@@ -22,12 +22,16 @@
   font-weight: bold;
   margin-bottom: 12px;
   color: #212529;
+  text-align: center;
 }
 
 .successMessage {
   font-size: 16px;
   color: #6c757d;
   line-height: 1.5;
+  color: #4caf50;
+  font-weight: 600;
+  margin: 20px 0;
 }
 
 .progressSection {
@@ -286,13 +290,114 @@
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #2e7d32;
+  border-top: 4px solid #2196f3;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  margin: 20px auto;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+} 
+
+/* 폴링 상태 스타일 */
+.pollingStatus {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.pollingStatus p {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #2196f3;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 결제 상태 표시 스타일 */
+.paymentStatus {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.statusInfo, .paymentMethod {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.statusInfo:last-child, .paymentMethod:last-child {
+  margin-bottom: 0;
+}
+
+.statusLabel, .methodLabel {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.statusValue, .methodValue {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.statusValue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 폴링 완료 상태 */
+.pollingComplete {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.pollingComplete p {
+  margin: 0;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .statusInfo, .paymentMethod {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .statusValue, .methodValue {
+    font-size: 13px;
+  }
+  
+  .pollingStatus, .paymentStatus {
+    padding: 12px;
+  }
 } 
