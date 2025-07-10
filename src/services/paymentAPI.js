@@ -4,19 +4,18 @@ import { logger } from '../utils/logger';
 
 // 결제 수단 API 서비스
 export const paymentAPI = {
-  // 결제 수단 목록 조회
+  // 결제 수단 목록 조회 (토스페이먼츠로 통일하여 비활성화)
   getPaymentMethods: async () => {
     try {
-      const [cards, accounts, coupayMoney] = await Promise.all([
-        apiClient.get('/cards'),
-        apiClient.get('/accounts'),
-        apiClient.get('/coupayMoney'),
-      ]);
-
+      // 백엔드 API가 아직 구현되지 않아서 비활성화
+      // 토스페이먼츠로 결제 방식을 통일할 예정
+      logger.log('결제 수단 API 비활성화: 토스페이먼츠로 통일 예정');
+      
+      // 빈 데이터 반환 (에러 방지)
       return {
-        cards,
-        accounts,
-        coupayMoney,
+        cards: [],
+        accounts: [],
+        coupayMoney: [],
       };
     } catch (error) {
       logger.error('결제 수단 조회 실패:', error);
@@ -24,40 +23,44 @@ export const paymentAPI = {
     }
   },
 
-  // 카드 추가
+  // 카드 추가 (비활성화)
   addCard: async (cardData) => {
     try {
-      return await apiClient.post('/cards', cardData);
+      logger.log('카드 추가 API 비활성화: 토스페이먼츠로 통일 예정');
+      throw new Error('카드 추가 기능은 토스페이먼츠로 통일되어 비활성화되었습니다.');
     } catch (error) {
       logger.error('카드 추가 실패:', error);
       throw error;
     }
   },
 
-  // 계좌 추가
+  // 계좌 추가 (비활성화)
   addAccount: async (accountData) => {
     try {
-      return await apiClient.post('/accounts', accountData);
+      logger.log('계좌 추가 API 비활성화: 토스페이먼츠로 통일 예정');
+      throw new Error('계좌 추가 기능은 토스페이먼츠로 통일되어 비활성화되었습니다.');
     } catch (error) {
       logger.error('계좌 추가 실패:', error);
       throw error;
     }
   },
 
-  // 카드 삭제
+  // 카드 삭제 (비활성화)
   deleteCard: async (cardId) => {
     try {
-      return await apiClient.delete(`/cards/${cardId}`);
+      logger.log('카드 삭제 API 비활성화: 토스페이먼츠로 통일 예정');
+      throw new Error('카드 삭제 기능은 토스페이먼츠로 통일되어 비활성화되었습니다.');
     } catch (error) {
       logger.error('카드 삭제 실패:', error);
       throw error;
     }
   },
 
-  // 계좌 삭제
+  // 계좌 삭제 (비활성화)
   deleteAccount: async (accountId) => {
     try {
-      return await apiClient.delete(`/accounts/${accountId}`);
+      logger.log('계좌 삭제 API 비활성화: 토스페이먼츠로 통일 예정');
+      throw new Error('계좌 삭제 기능은 토스페이먼츠로 통일되어 비활성화되었습니다.');
     } catch (error) {
       logger.error('계좌 삭제 실패:', error);
       throw error;
