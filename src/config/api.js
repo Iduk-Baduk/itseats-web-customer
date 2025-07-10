@@ -29,6 +29,8 @@ export const API_ENDPOINTS = {
   ACCOUNTS: '/accounts',
   ACCOUNT_BY_ID: (id) => `/accounts/${id}`,
   PAYMENTS: '/payments',
+  PAYMENT_BY_ID: (id) => `/payments/${id}`,
+  PAYMENT_STATUS: (id) => `/payments/${id}/status`,
   
   // 쿠폰 관련
   COUPONS: '/coupons',
@@ -36,11 +38,31 @@ export const API_ENDPOINTS = {
   COUPON_AVAILABLE: '/coupons/available',
   COUPON_REGISTER: '/coupons/register',
   
+  // 주소 관련
+  ADDRESSES: '/addresses',
+  ADDRESS_BY_ID: (id) => `/addresses/${id}`,
+  
+  // 매장 관련
+  STORES: '/stores/list',
+  STORES_BY_CATEGORY: (category) => `/stores/list/${category}`,
+  STORE_SEARCH: '/search/stores/list',
+  STORE_BY_ID: (id) => `/stores/${id}`,
+  STORE_MENUS: (storeId) => `/stores/${storeId}/menus`,
+  MENU_OPTIONS: (storeId, menuId) => `/stores/${storeId}/menus/${menuId}/options`,
+  
+  // 사용자 관련
+  USER_PROFILE: '/members/me',
+  USER_STATS: '/members/stats',
+  USER_FAVORITES: '/members/favorites',
+  USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
+  USER_REVIEWS: '/members/reviews',
+  
   // 인증 관련
   AUTH_REGISTER: '/members/regist',
   AUTH_LOGIN: '/auth/login',
   AUTH_LOGOUT: '/auth/logout',
   AUTH_REFRESH: '/auth/refresh',
+  AUTH_ME: '/auth/me',
 };
 
 export default API_CONFIG; 

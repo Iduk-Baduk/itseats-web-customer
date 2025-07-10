@@ -61,8 +61,10 @@ export default function Cart() {
   
   // Redux에서 쿠폰 정보 가져오기
   const coupons = useSelector(state => state.coupon.coupons);
-  const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
+  const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds) || [];
+  const appliedCoupons = coupons.filter(c => 
+    selectedCouponIds.some(id => String(id) === String(c.id))
+  );
   
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
@@ -319,7 +321,7 @@ export default function Cart() {
         menuTotalPrice: calculateCartTotal(menu),
         quantity: menu.quantity
       })),
-      coupons: selectedCouponIds.length > 0 ? selectedCouponIds : [],
+      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
       deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
     };
 
@@ -330,7 +332,8 @@ export default function Cart() {
       cartInfo,
       orderMenusCount: orderMenus.length,
       paymentMethod,
-      selectedAddress
+      selectedAddress,
+      selectedCouponIds
     });
 
     // 서버로 전송할 최종 주문 데이터 (orderAPI.js 스펙에 맞춤)
@@ -355,7 +358,7 @@ export default function Cart() {
       // 추가 정보
       storeRequest: requestInfo?.storeRequest || "",
       riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-      coupons: selectedCouponIds?.length > 0 ? selectedCouponIds : [],
+      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
       
       // 결제 관련 정보
       paymentStatus: "PENDING",

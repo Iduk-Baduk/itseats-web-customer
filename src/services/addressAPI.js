@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
 import { logger } from "../utils/logger";
+import { API_ENDPOINTS } from "../config/api";
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -49,7 +50,7 @@ const AddressAPI = {
   // 주소 목록 조회 API
   getAddressList: async () => {
     try {
-      const response = await retryRequest(() => apiClient.get("/addresses"));
+      const response = await retryRequest(() => apiClient.get(API_ENDPOINTS.ADDRESSES));
       logger.log("✅ 주소 목록 조회 성공:", response.data);
       return response.data;
     } catch (error) {
@@ -93,7 +94,7 @@ const AddressAPI = {
         addressCategory: getCategoryFromLabel(label),
       }
 
-      const response = await retryRequest(() => apiClient.post("/addresses", newAddress));
+      const response = await retryRequest(() => apiClient.post(API_ENDPOINTS.ADDRESSES, newAddress));
       logger.log("✅ 주소 추가 성공:", response.data);
       return response.data.addressId; // 성공적으로 추가된 주소 ID 반환
 
@@ -148,7 +149,7 @@ const AddressAPI = {
         addressCategory: getCategoryFromLabel(label),
       }
 
-      const response = await retryRequest(() => apiClient.put(`/addresses/${addressId}`, updatedAddress));
+      const response = await retryRequest(() => apiClient.put(API_ENDPOINTS.ADDRESS_BY_ID(addressId), updatedAddress));
       logger.log("✅ 주소 수정 성공:", response.data);
       return response.data;
 
@@ -186,7 +187,7 @@ const AddressAPI = {
   // 주소 삭제 API
   deleteAddress: async (addressId) => {
     try {
-      const response = await retryRequest(() => apiClient.delete(`/addresses/${addressId}`));
+      const response = await retryRequest(() => apiClient.delete(API_ENDPOINTS.ADDRESS_BY_ID(addressId)));
       logger.log("✅ 주소 삭제 성공:", response.data);
       return response.data;
     } catch (error) {

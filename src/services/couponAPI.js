@@ -2,84 +2,140 @@ import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 import { logger } from '../utils/logger';
 
+// 재시도 설정
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  retryBackoff: 2,
+};
+
+// 재시도 로직
+const retryRequest = async (requestFn, retryCount = 0) => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    const isRetryableError = 
+      error.statusCode >= 500 || 
+      error.statusCode === 0 || 
+      error.type === 'NETWORK_ERROR';
+    
+    if (isRetryableError && retryCount < RETRY_CONFIG.maxRetries) {
+      const delay = RETRY_CONFIG.retryDelay * Math.pow(RETRY_CONFIG.retryBackoff, retryCount);
+      logger.warn(`📡 쿠폰 API 재시도 ${retryCount + 1}/${RETRY_CONFIG.maxRetries} (${delay}ms 후)`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryRequest(requestFn, retryCount + 1);
+    }
+    
+    throw error;
+  }
+};
+
 // 쿠폰 API 서비스
 export const couponAPI = {
   // 쿠폰 목록 조회
   getCoupons: async () => {
     try {
-      const data = await apiClient.get('/coupons');
-      // 데이터를 그대로 반환 (직렬화 문제 방지)
-      return data;
-    } catch (error) {
-      logger.error('쿠폰 조회 실패:', error);
-      throw error;
-    }
-  },
-
-  // 쿠폰 사용 (목업용 - 상태만 변경)
-  useCoupon: async (couponId, orderData) => {
-    try {
-      const coupon = await apiClient.get(`/coupons/${couponId}`);
-      const usedCoupon = {
-        ...coupon,
-        isUsed: true,
-        usedAt: new Date().toISOString(),
-        orderId: orderData.orderId
-      };
+      logger.log('📡 쿠폰 목록 조회 요청');
       
-      return await apiClient.put(`/coupons/${couponId}`, usedCoupon);
-    } catch (error) {
-      logger.error('쿠폰 사용 실패:', error);
-      throw error;
-    }
-  },
-
-  // 사용 가능한 쿠폰 조회 (간단한 필터링)
-  getAvailableCoupons: async (orderData) => {
-    try {
-      const allCoupons = await apiClient.get('/coupons');
-      
-      // 사용 가능한 쿠폰 필터링 (간단한 로직)
-      const availableCoupons = allCoupons.filter(coupon => 
-        !coupon.isUsed && 
-        !coupon.isExpired &&
-        (orderData.totalAmount >= (coupon.minOrderAmount || 0))
+      const response = await retryRequest(() => 
+        apiClient.get(API_ENDPOINTS.COUPONS)
       );
       
-      return availableCoupons;
+      logger.log('✅ 쿠폰 목록 조회 성공:', response.data);
+      return response.data;
     } catch (error) {
-      logger.error('사용 가능한 쿠폰 조회 실패:', error);
+      logger.error('❌ 쿠폰 조회 실패:', error);
+      
+      // 백엔드 에러 메시지 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 401) {
+        error.message = '로그인이 필요합니다.';
+      } else {
+        error.message = '쿠폰 목록을 불러오는데 실패했습니다.';
+      }
+      
       throw error;
     }
   },
 
-  // 쿠폰 등록 (목업용 - 새 쿠폰 추가)
-  registerCoupon: async (promoCode) => {
+  // 사용 가능한 쿠폰 조회
+  getAvailableCoupons: async (orderData) => {
     try {
-      // 간단한 프로모션 코드 검증 로직
-      const predefinedCoupons = {
-        'WELCOME2024': {
-          id: `COUPON-${Date.now()}`,
-          name: '신규 가입 환영 쿠폰',
-          discount: 5000,
-          type: 'general',
-          description: '신규 가입자 전용 5,000원 할인',
-          minOrderAmount: 15000,
-          validDate: '2025-12-31T23:59:59.000Z',
-          isUsed: false,
-          isExpired: false,
-          isStackable: true
-        }
-      };
+      logger.log('📡 사용 가능한 쿠폰 조회 요청:', orderData);
       
-      const newCoupon = predefinedCoupons[promoCode];
-      if (!newCoupon) {
-        throw new Error('유효하지 않은 프로모션 코드입니다.');
+      const response = await retryRequest(() => 
+        apiClient.get(API_ENDPOINTS.COUPON_AVAILABLE, { params: orderData })
+      );
+      
+      logger.log('✅ 사용 가능한 쿠폰 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      logger.error('❌ 사용 가능한 쿠폰 조회 실패:', error);
+      
+      if (error.statusCode === 401) {
+        error.message = '로그인이 필요합니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '주문 정보를 확인해주세요.';
+      } else {
+        error.message = '사용 가능한 쿠폰을 불러오는데 실패했습니다.';
       }
       
-      return await apiClient.post('/coupons', newCoupon);
+      throw error;
+    }
+  },
+
+  // 쿠폰 사용
+  useCoupon: async (couponId, orderData) => {
+    try {
+      logger.log(`📡 쿠폰 사용 요청 (ID: ${couponId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.COUPON_USE(couponId), orderData)
+      );
+      
+      logger.log(`✅ 쿠폰 사용 성공 (ID: ${couponId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error('쿠폰 등록 실패:', error);
+      logger.error(`❌ 쿠폰 사용 실패 (ID: ${couponId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '쿠폰을 찾을 수 없습니다.';
+      } else if (error.statusCode === 409) {
+        error.message = '이미 사용된 쿠폰입니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '쿠폰 사용 조건을 확인해주세요.';
+      } else {
+        error.message = '쿠폰 사용에 실패했습니다.';
+      }
+      
+      throw error;
+    }
+  },
+
+  // 쿠폰 등록
+  registerCoupon: async (promoCode) => {
+    try {
+      logger.log('📡 쿠폰 등록 요청:', promoCode);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.COUPON_REGISTER, { promoCode })
+      );
+      
+      logger.log('✅ 쿠폰 등록 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      logger.error('❌ 쿠폰 등록 실패:', error);
+      
+      if (error.statusCode === 409) {
+        error.message = '이미 등록된 쿠폰입니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '유효하지 않은 프로모션 코드입니다.';
+      } else {
+        error.message = '쿠폰 등록에 실패했습니다.';
+      }
+      
       throw error;
     }
   },

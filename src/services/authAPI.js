@@ -1,6 +1,36 @@
 import apiClient from './apiClient';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 import { saveToken, clearToken } from '../utils/tokenUtils';
+import { API_ENDPOINTS } from '../config/api';
+
+// 재시도 설정
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  retryBackoff: 2,
+};
+
+// 재시도 로직
+const retryRequest = async (requestFn, retryCount = 0) => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    const isRetryableError = 
+      error.statusCode >= 500 || 
+      error.statusCode === 0 || 
+      error.type === 'NETWORK_ERROR';
+    
+    if (isRetryableError && retryCount < RETRY_CONFIG.maxRetries) {
+      const delay = RETRY_CONFIG.retryDelay * Math.pow(RETRY_CONFIG.retryBackoff, retryCount);
+      logger.warn(`📡 인증 API 재시도 ${retryCount + 1}/${RETRY_CONFIG.maxRetries} (${delay}ms 후)`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryRequest(requestFn, retryCount + 1);
+    }
+    
+    throw error;
+  }
+};
 
 // 토큰에서 사용자 ID 추출 유틸리티
 const extractUserIdFromToken = (token) => {
@@ -22,12 +52,15 @@ const extractUserIdFromToken = (token) => {
   }
 };
 
+// 회원가입 API
 export const regist = async (form) => {
   try {
     const sanitizedForm = { ...form, password: "[REDACTED]" };
     logger.log("📡 회원가입 요청 데이터:", sanitizedForm);
 
-    const response = await apiClient.post('/members/sign-up', form);
+    const response = await retryRequest(() => 
+      apiClient.post(API_ENDPOINTS.AUTH_REGISTER, form)
+    );
 
     logger.log("✅ 회원가입 성공 응답:", response.data);
 
@@ -44,10 +77,18 @@ export const regist = async (form) => {
     };
   } catch (error) {
     logger.error('회원가입 실패:', error);
-    if (error.originalError.response) {
-      logger.error('회원가입 실패 응답:', error.originalError.response.data);
-      error.message = JSON.stringify(error.originalError.response.data) || '회원가입에 실패했습니다.';
+    
+    // 백엔드 에러 메시지 처리
+    if (error.originalError?.response?.data?.message) {
+      error.message = error.originalError.response.data.message;
+    } else if (error.statusCode === 409) {
+      error.message = '이미 존재하는 사용자입니다.';
+    } else if (error.statusCode === 422) {
+      error.message = '입력 정보를 확인해주세요.';
+    } else {
+      error.message = '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.';
     }
+    
     throw error;
   }
 };
@@ -59,14 +100,24 @@ export const login = async ({ username, password, isAutoLogin }) => {
       throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
     }
 
-    const response = await apiClient.post("/login", { username, password });
-    const accessToken = response.headers["access-token"];
+    const response = await retryRequest(() => 
+      apiClient.post(API_ENDPOINTS.AUTH_LOGIN, { username, password })
+    );
+    
+    const accessToken = response.headers?.["access-token"] || response.data?.accessToken;
+    
+    if (!accessToken) {
+      throw new Error('로그인 토큰을 받지 못했습니다.');
+    }
     
     // 토큰 저장 (24시간 만료)
     const expiresIn = isAutoLogin ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7일 또는 24시간
     saveToken(accessToken, expiresIn);
 
-    const currentMember = await apiClient.get("/members/me");
+    // 사용자 정보 조회
+    const currentMember = await retryRequest(() => 
+      apiClient.get("/members/me")
+    );
 
     return {
       success: true,
@@ -77,17 +128,25 @@ export const login = async ({ username, password, isAutoLogin }) => {
         nickname: currentMember.data.nickname,
         email: currentMember.data.email,
         phone: currentMember.data.phone,
-        reviewCount: currentMember.data.reviewCount,
-        favoriteCount: currentMember.data.favoriteCount,
+        reviewCount: currentMember.data.reviewCount || 0,
+        favoriteCount: currentMember.data.favoriteCount || 0,
       },
       accessToken,
     };
   } catch (error) {
     logger.error('로그인 실패:', error);
-    if (error.originalError.response) {
-      logger.error('로그인 실패 응답:', error.originalError.response.data);
-      error.message = JSON.stringify(error.originalError.response.data) || '로그인에 실패했습니다.';
+    
+    // 백엔드 에러 메시지 처리
+    if (error.originalError?.response?.data?.message) {
+      error.message = error.originalError.response.data.message;
+    } else if (error.statusCode === 401) {
+      error.message = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    } else if (error.statusCode === 404) {
+      error.message = '존재하지 않는 사용자입니다.';
+    } else {
+      error.message = '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
     }
+    
     throw error;
   }
 }
@@ -95,101 +154,87 @@ export const login = async ({ username, password, isAutoLogin }) => {
 // 내 정보 조회 API
 export const getCurrentUser = async () => {
   try {
-    const response = await apiClient.get("/members/me");
+    const response = await retryRequest(() => 
+      apiClient.get("/members/me")
+    );
+    
     return {
       id: response.data.memberId,
       username: response.data.username,
       name: response.data.name,
       email: response.data.email,
       phone: response.data.phone,
+      nickname: response.data.nickname,
+      reviewCount: response.data.reviewCount || 0,
+      favoriteCount: response.data.favoriteCount || 0,
     };
   } catch (error) {
     logger.error('내 정보 조회 실패:', error);
+    
+    if (error.statusCode === 401) {
+      error.message = '로그인이 필요합니다.';
+    } else {
+      error.message = '사용자 정보를 불러오는데 실패했습니다.';
+    }
+    
     throw error;
   }
 };
 
-// 로그인 Mock API
-// ⚠️ 주의: 이 구현은 개발 환경에서만 사용되며, 실제 프로덕션에서는 서버 측 인증을 사용해야 합니다.
-// 프로덕션 환경에서는 평문 비밀번호를 클라이언트로 전송하지 않고,
-// 서버에서 해시된 비밀번호와 비교하여 JWT 토큰을 발급해야 합니다.
-export const loginMock = async ({ username, password }) => {
+// 로그아웃 API
+export const logout = async () => {
   try {
-    // 개발 환경에서만 사용하는 클라이언트 측 인증
-    // 실제 환경에서는 다음과 같이 구현해야 함:
-    // const response = await apiClient.post('/auth/login', { username, password });
-    // return response.data;
-    
-    const response = await apiClient.get('/users');
-    const users = response || [];
-    
-    const user = users.find(u => u.username === username && u.password === password);
-    
-    if (!user) {
-      throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
-    }
-    
-    // 가짜 토큰 생성 (실제 환경에서는 서버에서 제공)
-    const token = `token_${user.id}_${Date.now()}`;
-    
-    return {
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-      },
-      accessToken: token,
-      message: '로그인에 성공했습니다.'
-    };
+    // 백엔드에 로그아웃 요청
+    await retryRequest(() => 
+      apiClient.post(API_ENDPOINTS.AUTH_LOGOUT)
+    );
   } catch (error) {
-    logger.error('로그인 실패:', error);
-    throw error;
+    logger.warn('백엔드 로그아웃 실패, 로컬에서만 로그아웃:', error);
+  } finally {
+    // 로컬 토큰 및 사용자 정보 삭제
+    clearToken();
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
   }
-};
-
-// 현재 사용자 정보 조회
-export const getCurrentUserMock = async () => {
-  try {
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (!token) {
-      throw new Error('로그인이 필요합니다.');
-    }
-    
-    // 안전한 토큰 파싱
-    const userId = extractUserIdFromToken(token);
-    if (!userId) {
-      throw new Error('유효하지 않은 토큰입니다.');
-    }
-    
-    const response = await apiClient.get('/users');
-    const users = response || [];
-    
-    const user = users.find(u => u.id == userId || u.id === parseInt(userId));
-    if (!user) {
-      throw new Error('사용자를 찾을 수 없습니다.');
-    }
-    
-    return {
-      id: user.id,
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-    };
-  } catch (error) {
-    logger.error('사용자 정보 조회 실패:', error);
-    throw error;
-  }
-};
-
-// 로그아웃
-export const logout = () => {
-  clearToken();
-  localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+  
   return { success: true, message: '로그아웃되었습니다.' };
+};
+
+// 토큰 갱신 API
+export const refreshToken = async () => {
+  try {
+    const response = await retryRequest(() => 
+      apiClient.post(API_ENDPOINTS.AUTH_REFRESH)
+    );
+    
+    const newAccessToken = response.headers?.["access-token"] || response.data?.accessToken;
+    
+    if (newAccessToken) {
+      // 새 토큰 저장 (24시간 만료)
+      saveToken(newAccessToken, 24 * 60 * 60 * 1000);
+      logger.log('토큰 갱신 성공');
+      return newAccessToken;
+    } else {
+      throw new Error('새 토큰을 받지 못했습니다.');
+    }
+  } catch (error) {
+    logger.error('토큰 갱신 실패:', error);
+    
+    if (error.statusCode === 401) {
+      error.message = '토큰이 만료되었습니다. 다시 로그인해주세요.';
+    } else {
+      error.message = '토큰 갱신에 실패했습니다.';
+    }
+    
+    throw error;
+  }
+};
+
+export default {
+  regist,
+  login,
+  getCurrentUser,
+  logout,
+  refreshToken,
 };
 
 
