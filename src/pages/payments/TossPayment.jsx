@@ -5,6 +5,7 @@ import { setPaymentProcessing, setPaymentError } from '../../store/paymentSlice'
 import { orderAPI } from '../../services';
 import { logger } from '../../utils/logger';
 import { ENV_CONFIG } from '../../config/api';
+import { TossPaymentWidget } from '../../components/payment/TossPaymentWidget';
 
 import Header from '../../components/common/Header';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -17,7 +18,6 @@ export default function TossPayment() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tossWidget, setTossWidget] = useState(null);
   
   // URL 파라미터에서 결제 정보 추출
   const orderId = searchParams.get('orderId');
@@ -27,64 +27,54 @@ export default function TossPayment() {
   const customerEmail = searchParams.get('customerEmail');
 
   useEffect(() => {
-    const initializeTossPayment = async () => {
-      try {
-        setIsLoading(true);
-        
-        // 필수 파라미터 검증
-        if (!orderId || !amount) {
-          throw new Error('주문 정보가 올바르지 않습니다.');
-        }
+    // 필수 파라미터 검증
+    if (!orderId || !amount) {
+      setError('주문 정보가 올바르지 않습니다.');
+      setIsLoading(false);
+      return;
+    }
 
-        logger.log('🔄 토스페이먼츠 결제 초기화:', {
+    // 잠시 후 로딩 상태 해제
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [orderId, amount]);
+
+  const handlePaymentSuccess = async (paymentKey) => {
+    try {
+      // 결제 성공 처리
+      const response = await orderAPI.confirmPayment(orderId, paymentKey);
+      navigate('/payments/success', { 
+        state: { 
           orderId,
-          amount,
-          orderName,
-          customerName,
-          customerEmail
-        });
-
-        // 토스페이먼츠 SDK 로드 확인
-        if (typeof window.TossPayments === 'undefined') {
-          throw new Error('토스페이먼츠 SDK를 로드할 수 없습니다.');
+          paymentKey,
+          amount 
         }
+      });
+    } catch (error) {
+      logger.error('결제 승인 실패:', error);
+      navigate('/payments/failure', {
+        state: {
+          error: 'payment_confirmation_failed',
+          message: error.message
+        }
+      });
+    }
+  };
 
-        // 토스페이먼츠 위젯 초기화
-        const tossPayments = window.TossPayments(ENV_CONFIG.TOSS_CLIENT_KEY);
-        
-        // 결제 위젯 렌더링
-        const widget = tossPayments.requestPayment('카드', {
-          amount: parseInt(amount),
-          orderId: orderId,
-          orderName: orderName || '주문',
-          customerName: customerName || '고객',
-          customerEmail: customerEmail || 'customer@example.com',
-          successUrl: `${window.location.origin}/payments/toss/success`,
-          failUrl: `${window.location.origin}/payments/failure`,
-        });
-
-        setTossWidget(widget);
-        setIsLoading(false);
-
-      } catch (error) {
-        logger.error('❌ 토스페이먼츠 초기화 실패:', error);
-        setError(error.message);
-        setIsLoading(false);
-        
-        // 에러 발생 시 결제 실패 페이지로 이동
-        setTimeout(() => {
-          navigate('/payments/failure?error=initialization_failed&message=' + encodeURIComponent(error.message));
-        }, 2000);
+  const handlePaymentError = (error) => {
+    logger.error('결제 실패:', error);
+    navigate('/payments/failure', {
+      state: {
+        error: error.code || 'payment_failed',
+        message: error.message
       }
-    };
-
-    initializeTossPayment();
-  }, [orderId, amount, orderName, customerName, customerEmail, navigate]);
+    });
+  };
 
   const handleCancel = () => {
-    if (tossWidget) {
-      tossWidget.close();
-    }
     navigate('/cart');
   };
 
@@ -143,8 +133,16 @@ export default function TossPayment() {
           </div>
         </div>
         <div className={styles.paymentWidget}>
-          <p>토스페이먼츠 결제 위젯이 로드되었습니다.</p>
-          <p>결제 창이 자동으로 열립니다...</p>
+          <div id="payment-widget"></div>
+          <TossPaymentWidget
+            orderId={orderId}
+            amount={parseInt(amount)}
+            orderName={orderName}
+            customerName={customerName}
+            customerEmail={customerEmail}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+          />
         </div>
       </div>
     </div>

@@ -28,16 +28,16 @@ const reloadTossPaymentsSDK = async () => {
     );
     tossGlobalKeys.forEach(key => {
       try {
-        delete window[key];
+        window[key] = undefined;
       } catch (e) {
         logger.warn(`전역 객체 ${key} 제거 실패:`, e.message);
       }
     });
     
     // 캐시된 모듈 정리
-    if (window.__TOSS_PAYMENT_WIDGETS__) delete window.__TOSS_PAYMENT_WIDGETS__;
-    if (window.__tossPayments) delete window.__tossPayments;
-    if (window.TossPayments) delete window.TossPayments;
+    if (window.__TOSS_PAYMENT_WIDGETS__) window.__TOSS_PAYMENT_WIDGETS__ = undefined;
+    if (window.__tossPayments) window.__tossPayments = undefined;
+    if (window.TossPayments) window.TossPayments = undefined;
     
     // 잠시 대기 (완전한 정리 보장)
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -429,7 +429,12 @@ export function TossPaymentWidget({
         // 렌더링 성능 측정
         await paymentTestUtils.measurePerformance('위젯 렌더링', async () => {
           // 주문의 결제 금액 설정
-          await widgetsRef.current.setAmount(amount);
+          try {
+            await widgetsRef.current.setAmount(amount);
+          } catch (setAmountError) {
+            logger.error('결제 금액 설정 실패:', setAmountError);
+            throw new Error('결제 금액 설정에 실패했습니다.');
+          }
 
           // 순차 렌더링 (병렬 렌더링 대신 안전한 순차 렌더링)
           logger.log('🔄 결제 방법 렌더링 시작');
@@ -489,7 +494,13 @@ export function TossPaymentWidget({
   // 결제 금액이 변경될 때마다 위젯 업데이트
   useEffect(() => {
     if (widgetsRef.current && ready) {
-      widgetsRef.current.setAmount(amount);
+      try {
+        widgetsRef.current.setAmount(amount);
+        logger.log('💰 결제 금액 업데이트 성공:', amount);
+      } catch (error) {
+        logger.error('결제 금액 업데이트 실패:', error);
+        setError('결제 금액 업데이트에 실패했습니다.');
+      }
     }
   }, [amount, ready]);
 
