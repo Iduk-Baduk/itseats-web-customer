@@ -17,16 +17,11 @@ const apiClient = axios.create({
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // 회원가입 요청은 토큰 제외 (로그인은 별도 클라이언트 사용)
-    if (config.url?.includes('/sign-up')) {
-      return config;
-    }
-
-    // 인증이 필요한 요청인지 확인
-    const requiresAuth = AuthService.requiresAuth(window.location.pathname);
+    // 인증이 필요한 API 엔드포인트인지 확인
+    const requiresAuth = AuthService.requiresAuthForEndpoint(config.url || '');
     
     if (requiresAuth && !AuthService.isAuthenticated()) {
-      logger.warn('인증이 필요한 요청이지만 토큰이 없음');
+      logger.warn('인증이 필요한 API 요청이지만 토큰이 없음:', config.url);
       AuthService.redirectToLogin();
       return Promise.reject(new Error('로그인이 필요합니다.'));
     }
