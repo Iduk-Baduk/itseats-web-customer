@@ -12,7 +12,8 @@ export const couponAPI = {
       return data;
     } catch (error) {
       logger.error('쿠폰 조회 실패:', error);
-      throw error;
+      // 에러가 발생해도 빈 배열 반환하여 Cart 페이지가 정상 로드되도록 함
+      return [];
     }
   },
 
