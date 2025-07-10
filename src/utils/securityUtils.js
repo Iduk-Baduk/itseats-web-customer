@@ -79,15 +79,6 @@ export class SecurityUtils {
   }
 
   /**
-   * 보안 세션 ID 생성 (generateClientSubId의 별칭)
-   * @param {string} prefix - 식별자 접두사
-   * @returns {string} 보안 세션 ID
-   */
-  generateSecureSessionId(prefix = 'session') {
-    return this.generateClientSubId(prefix);
-  }
-
-  /**
    * 간단한 문자열 해시 함수 (djb2 알고리즘)
    * @param {string} str - 해시할 문자열
    * @returns {string} 16진수 해시값

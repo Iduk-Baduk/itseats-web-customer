@@ -241,31 +241,21 @@ gap: 14px;
 position: relative;
 }
 
-.paymentOptions {
-display: flex;
-align-items: center;
-gap: 28px;
+.sectionTitle {
+margin-bottom: 16px;
 }
 
-.paymentOption {
-display: flex;
-align-items: center;
-gap: 6px;
+.sectionTitle h3 {
+font-size: 18px;
 font-weight: 600;
-font-size: 16px;
-color: #222;
-cursor: pointer;
+color: var(--black-700);
+margin-bottom: 4px;
 }
 
-.paymentOption.disabled {
-color: #bbb;
-cursor: not-allowed;
-}
-
-.radioInput {
-accent-color: #2196f3;
-width: 20px;
-height: 20px;
+.sectionTitle p {
+font-size: 14px;
+color: var(--black-500);
+margin: 0;
 }
 
 .dropdownContainer {
@@ -719,24 +709,6 @@ line-height: 1.5;
   margin-top: 4px;
   padding: 8px 0;
   border-top: 1px dashed #ddd;
-}
-
-/* 결제수단 헤더 스타일 */
-.paymentHeader {
-  margin-bottom: 16px;
-}
-
-.paymentTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--black-700);
-  margin: 0 0 4px 0;
-}
-
-.paymentDescription {
-  font-size: 14px;
-  color: var(--black-500);
-  margin: 0;
 }
 
 /* 토스페이먼츠 위젯 스타일 */

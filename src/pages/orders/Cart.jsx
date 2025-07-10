@@ -11,7 +11,7 @@ import {
   clearPaymentResult 
 } from "../../store/paymentSlice";
 import { fetchCoupons } from "../../store/couponSlice";
-// import { fetchPaymentMethods } from "../../store/paymentSlice";
+import { fetchPaymentMethods } from "../../store/paymentSlice";
 import { fetchStores, fetchStoreById } from "../../store/storeSlice";
 import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
@@ -83,7 +83,6 @@ export default function Cart() {
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
-  const [paymentRequestFunction, setPaymentRequestFunction] = useState(null);
 
   // Toast 헬퍼 함수 강화
   const showToast = (message, duration = 4000) => {
@@ -119,7 +118,14 @@ export default function Cart() {
       logger.warn('쿠폰 로드 실패 (정상):', error.message);
     }
     
-    // 결제수단 API 호출 제거 (토스페이먼츠만 사용)
+    // 결제수단 API가 비활성화되어 있어서 에러가 발생할 수 있으므로 try-catch로 감싸기
+    try {
+      dispatch(fetchPaymentMethods()).catch(error => {
+        logger.warn('결제수단 API 비활성화로 인한 에러 (정상):', error.message);
+      });
+    } catch (error) {
+      logger.warn('결제수단 로드 실패 (정상):', error.message);
+    }
     
     dispatch(fetchStores()).then((result) => {
       logger.log('🏪 매장 데이터 로드 결과:', result.payload);
@@ -194,18 +200,7 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 토스페이먼츠 결제 요청
-    if (paymentRequestFunction) {
-      try {
-        await paymentRequestFunction();
-      } catch (error) {
-        logger.error('토스페이먼츠 결제 요청 실패:', error);
-        showToast('결제 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      }
-      return;
-    }
-
-    // 기존 결제 로직 (백업용)
+    // 전역 변수로 함수 시작 시 초기화
     let orderResponse = null;
     
     // 중복 결제 방지 강화
@@ -301,7 +296,7 @@ export default function Cart() {
       return;
     }
     
-    // 결제 수단 설정 (토스페이먼츠만 사용)
+    // 결제 수단 설정 (토스페이먼츠로 고정)
     let paymentMethod = 'toss';
     let remainingAmount = cartInfo.totalPrice;
     let usedCoupayAmount = 0;
@@ -492,6 +487,8 @@ export default function Cart() {
         orderId: orderResponse.data.orderId,
         paymentMethod: paymentMethod,
         amount: cartInfo.totalPrice,
+        coupayAmount: usedCoupayAmount,
+        remainingAmount: remainingAmount,
         customerInfo: {
           address: selectedAddress
         }
@@ -504,20 +501,26 @@ export default function Cart() {
         // Mock 결제 처리 (2초 지연)
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 목업에서는 항상 성공 (토스페이먼츠 무조건 성공)
+        // 목업에서는 항상 성공 (신용카드/계좌이체 무조건 성공)
         paymentResult = {
           paymentId: `payment_${Date.now()}`,
           status: 'SUCCESS',
           amount: paymentData.amount,
           method: paymentData.paymentMethod,
+          coupayAmount: usedCoupayAmount,
+          remainingAmount: remainingAmount,
+          additionalPaymentMethod: remainingAmount > 0 ? 'card' : null,
           timestamp: new Date().toISOString()
         };
         
         dispatch(setPaymentSuccess(paymentResult));
         logger.log('✅ Mock 결제 성공:', paymentResult);
         
-        // 토스페이먼츠 결제 완료 (목업)
-        logger.log('토스페이먼츠 결제 완료');
+        // 쿠페이머니 사용 시 잔액 업데이트 (목업)
+        if (usedCoupayAmount > 0) {
+          // 실제로는 서버에서 처리되어야 함
+          logger.log(`쿠페이머니 ${usedCoupayAmount}원 사용됨`);
+        }
       } else {
         // 실제 결제 API 호출
         try {
@@ -634,10 +637,7 @@ export default function Cart() {
           <CartPaymentSummarySection 
             cartInfo={cartInfo} 
           />
-          <CartPaymentMethodSection 
-            cartInfo={cartInfo} 
-            onPaymentRequest={setPaymentRequestFunction}
-          />
+          <CartPaymentMethodSection cartInfo={cartInfo} />
           <CartRequestSection />
           <Header
             title=""

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   initializeToken, 
@@ -103,7 +103,7 @@ export const useTokenManagement = (options = {}) => {
         // });
       }, refreshDelay);
     }
-  }, [autoRefresh, isValid, isLoading, timeRemaining, warningMinutes, autoLogout, handleLogout]);
+  }, [autoRefresh, isValid, isLoading, warningMinutes, autoLogout, handleLogout]);
 
   // 주기적 토큰 상태 확인
   const startTokenMonitoring = useCallback(() => {
@@ -113,9 +113,9 @@ export const useTokenManagement = (options = {}) => {
 
     intervalRef.current = setInterval(() => {
       updateTokenStatus();
-      scheduleRefresh();
+      // scheduleRefresh는 별도 useEffect에서 처리
     }, checkInterval);
-  }, [checkInterval, updateTokenStatus, scheduleRefresh]);
+  }, [checkInterval, updateTokenStatus]);
 
   // 토큰 모니터링 중지
   const stopTokenMonitoring = useCallback(() => {
@@ -137,12 +137,14 @@ export const useTokenManagement = (options = {}) => {
     return () => {
       stopTokenMonitoring();
     };
-  }, []); // 의존성 배열을 빈 배열로 변경
+  }, [dispatch, startTokenMonitoring, stopTokenMonitoring]);
 
-  // 토큰 상태 변경 시 갱신 스케줄링
+  // 토큰 상태 변경 시 갱신 스케줄링 (timeRemaining 변경 시에만)
   useEffect(() => {
-    scheduleRefresh();
-  }, [scheduleRefresh]);
+    if (timeRemaining > 0) {
+      scheduleRefresh();
+    }
+  }, [timeRemaining, scheduleRefresh]);
 
   // 토큰이 만료되면 자동 로그아웃
   useEffect(() => {
@@ -163,16 +165,20 @@ export const useTokenManagement = (options = {}) => {
   }, [updateTokenStatus]);
 
   // 토큰 정보 (디버깅용 - 개발 환경에서만)
-  const tokenInfo = import.meta.env.DEV ? {
-    token: token ? `${token.substring(0, 10)}...` : null,
-    isValid,
-    isLoading,
-    error,
-    timeRemaining,
-    minutesRemaining: Math.floor(timeRemaining / (60 * 1000)),
-    isExpiringSoon,
-    lastChecked: lastChecked ? new Date(lastChecked).toLocaleTimeString() : null
-  } : null;
+  const tokenInfo = useMemo(() => {
+    if (!import.meta.env.DEV) return null;
+    
+    return {
+      token: token ? `${token.substring(0, 10)}...` : null,
+      isValid,
+      isLoading,
+      error,
+      timeRemaining,
+      minutesRemaining: Math.floor(timeRemaining / (60 * 1000)),
+      isExpiringSoon,
+      lastChecked: lastChecked ? new Date(lastChecked).toLocaleTimeString() : null
+    };
+  }, [token, isValid, isLoading, error, timeRemaining, isExpiringSoon, lastChecked]);
 
   return {
     // 상태

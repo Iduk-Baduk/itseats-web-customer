@@ -2,7 +2,7 @@ import apiClient from './apiClient';
 import { API_ENDPOINTS, ENV_CONFIG } from '../config/api';
 import { generateOrderId } from '../utils/idUtils';
 import { logger } from '../utils/logger';
-import store from '../store';
+import store from '../Store.js';
 import { ORDER_STATUS } from '../constants/orderStatus';
 import { updateOrder, addOrder } from '../store/orderSlice';
 import { retryOrderTracking } from '../utils/apiRetry';

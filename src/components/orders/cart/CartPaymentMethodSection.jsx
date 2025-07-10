@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,9 +6,8 @@ import styles from '../../../pages/orders/Cart.module.css';
 import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
 import { logger } from '../../../utils/logger';
 
-export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 }, onPaymentRequest }) {
+export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
   const navigate = useNavigate();
-  const tossWidgetRef = useRef(null);
   
   // 고객 정보 가져오기 (실제로는 로그인된 사용자 정보를 사용해야 함)
   const customerInfo = useSelector(state => state.user?.currentUser) || {
@@ -17,35 +16,16 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 },
     phone: "01000000000"
   };
 
-  // 결제 요청 함수
-  const handlePaymentRequest = async () => {
-    if (tossWidgetRef.current && tossWidgetRef.current.isReady) {
-      try {
-        await tossWidgetRef.current.requestPayment();
-      } catch (error) {
-        logger.error('결제 요청 실패:', error);
-      }
-    } else {
-      logger.warn('토스페이먼츠 위젯이 준비되지 않았습니다.');
-    }
-  };
-
-  // 외부에서 결제 요청할 수 있도록 콜백 전달
-  React.useEffect(() => {
-    if (onPaymentRequest) {
-      onPaymentRequest(handlePaymentRequest);
-    }
-  }, [onPaymentRequest]);
+  // 주문 ID를 useMemo로 안정화 (중복 렌더링 방지)
+  const orderId = useMemo(() => uuidv4(), []);
 
   return (
     <section className={styles.section}>
       <div className={styles.paymentContainer}>
-        {/* 결제수단 헤더 */}
-        <div className={styles.paymentHeader}>
-          <h3 className={styles.paymentTitle}>결제수단</h3>
-          <div className={styles.paymentDescription}>
-            토스페이먼츠로 안전하게 결제하세요
-          </div>
+        {/* 결제수단 제목 */}
+        <div className={styles.sectionTitle}>
+          <h3>결제수단</h3>
+          <p>토스페이먼츠로 안전하게 결제하세요</p>
         </div>
         
         {/* 토스페이먼츠 결제위젯 */}
@@ -58,12 +38,11 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 },
           )}
           
           <TossPaymentWidget
-            ref={tossWidgetRef}
             amount={{
               currency: "KRW",
               value: cartInfo.totalPrice || 0,
             }}
-            orderId={uuidv4()}
+            orderId={orderId}
             orderName={`${cartInfo.itemCount}개 메뉴`}
             customerEmail={customerInfo.email}
             customerName={customerInfo.name}
