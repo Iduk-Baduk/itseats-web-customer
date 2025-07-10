@@ -44,7 +44,9 @@ const getCookie = (name) => {
 
 // 로그인 전용 클라이언트 (baseURL에서 /api 제외)
 const loginClient = axios.create({
-  baseURL: API_CONFIG.BASE_URL.replace('/api', ''), // API_CONFIG 사용
+  baseURL: API_CONFIG.BASE_URL.endsWith('/api') 
+    ? API_CONFIG.BASE_URL.slice(0, -4) 
+    : API_CONFIG.BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

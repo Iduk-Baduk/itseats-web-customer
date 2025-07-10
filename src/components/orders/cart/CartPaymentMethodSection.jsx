@@ -1,20 +1,25 @@
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import styles from '../../../pages/orders/Cart.module.css';
 import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
 import { logger } from '../../../utils/logger';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 
-export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
+export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0, itemCount: 0, couponDiscount: 0 } }) {
   const navigate = useNavigate();
+  const { user, loading, error } = useCurrentUser();
   
-  // 고객 정보 가져오기 (실제로는 로그인된 사용자 정보를 사용해야 함)
-  const customerInfo = useSelector(state => state.user?.currentUser) || {
-    email: "test@example.com",
-    name: "테스트사용자",
-    phone: "01000000000"
-  };
+  // 로딩 중이거나 에러 발생 시 처리
+  if (loading) {
+    return <div className={styles.loading}>결제 정보를 불러오는 중...</div>;
+  }
+
+  if (error || !user) {
+    logger.error('사용자 정보 로드 실패:', error);
+    navigate('/login');
+    return null;
+  }
 
   // 주문 ID를 useMemo로 안정화 (중복 렌더링 방지)
   const orderId = useMemo(() => uuidv4(), []);
@@ -44,17 +49,22 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
             }}
             orderId={orderId}
             orderName={`${cartInfo.itemCount}개 메뉴`}
-            customerEmail={customerInfo.email}
-            customerName={customerInfo.name}
-            customerMobilePhone={customerInfo.phone}
+            customerEmail={user.email}
+            customerName={user.name}
+            customerMobilePhone={user.phone}
             onPaymentSuccess={(result) => {
               logger.log('토스페이먼츠 결제 성공:', result);
-              // 결제 성공 시 처리 로직
-              navigate(`/payments/toss-success?paymentKey=${result.paymentKey}&orderId=${result.orderId}&amount=${result.amount}`);
+              // 민감한 결제 정보를 sessionStorage에 저장
+              sessionStorage.setItem('paymentResult', JSON.stringify({
+                paymentKey: result.paymentKey,
+                orderId: result.orderId,
+                amount: result.amount
+              }));
+              navigate('/payments/toss-success');
             }}
             onPaymentError={(error) => {
               logger.error('토스페이먼츠 결제 실패:', error);
-              // 결제 실패 시 처리 로직
+              // 에러 코드와 메시지만 URL에 포함
               navigate(`/payments/failure?code=${error.code}&message=${encodeURIComponent(error.message)}`);
             }}
           />

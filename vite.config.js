@@ -36,13 +36,28 @@ export default defineConfig(() => {
         }
       }
     },
+    
+    // esbuild 설정 추가
+    esbuild: {
+      loader: 'jsx',
+      include: /\.[jt]sx?$/,
+      exclude: [],
+    },
+    
+    optimizeDeps: {
+      esbuildOptions: {
+        loader: {
+          '.js': 'jsx',
+        },
+      },
+    },
+    
     build: {
       target: 'es2015',
       outDir: 'dist',
       assetsDir: 'assets'
     },
 
-    
     // CSS 전처리기 설정 (기존 설정 유지)
     css: {
       modules: {
