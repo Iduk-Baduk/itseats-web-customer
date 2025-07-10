@@ -137,7 +137,7 @@ export const useTokenManagement = (options = {}) => {
     return () => {
       stopTokenMonitoring();
     };
-  }, [dispatch, startTokenMonitoring, stopTokenMonitoring]);
+  }, []); // 의존성 배열을 빈 배열로 변경
 
   // 토큰 상태 변경 시 갱신 스케줄링
   useEffect(() => {

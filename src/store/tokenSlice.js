@@ -78,7 +78,17 @@ const tokenSlice = createSlice({
       state.issuedAt = tokenInfo.issuedAt;
       state.timeRemaining = tokenInfo.timeRemaining;
       state.isExpiringSoon = tokenInfo.isExpiringSoon;
-      state.lastChecked = Date.now();
+      // 상태가 실제로 바뀔 때만 lastChecked 갱신
+      if (
+        state.token !== tokenInfo.hasToken ||
+        state.isValid !== tokenInfo.isValid ||
+        state.expiresAt !== tokenInfo.expiresAt ||
+        state.issuedAt !== tokenInfo.issuedAt ||
+        state.timeRemaining !== tokenInfo.timeRemaining ||
+        state.isExpiringSoon !== tokenInfo.isExpiringSoon
+      ) {
+        state.lastChecked = Date.now();
+      }
     },
 
     // 토큰 상태 업데이트
@@ -87,7 +97,14 @@ const tokenSlice = createSlice({
       state.isValid = tokenInfo.isValid;
       state.timeRemaining = tokenInfo.timeRemaining;
       state.isExpiringSoon = tokenInfo.isExpiringSoon;
-      state.lastChecked = Date.now();
+      // 상태가 실제로 바뀔 때만 lastChecked 갱신
+      if (
+        state.isValid !== tokenInfo.isValid ||
+        state.timeRemaining !== tokenInfo.timeRemaining ||
+        state.isExpiringSoon !== tokenInfo.isExpiringSoon
+      ) {
+        state.lastChecked = Date.now();
+      }
     },
 
     // 토큰 삭제
