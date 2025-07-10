@@ -62,7 +62,9 @@ export default function Cart() {
   // Redux에서 쿠폰 정보 가져오기
   const coupons = useSelector(state => state.coupon.coupons);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
+  // coupons가 배열이 아닐 경우 빈 배열로 대체
+  const couponsArray = Array.isArray(coupons) ? coupons : [];
+  const appliedCoupons = couponsArray.filter(c => selectedCouponIds.includes(c.id));
   
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
@@ -111,8 +113,24 @@ export default function Cart() {
   useEffect(() => {
     logger.log('🚀 Cart 컴포넌트 마운트:', { storeId, orderMenusCount: orderMenus.length });
     
-    dispatch(fetchCoupons());
-    dispatch(fetchPaymentMethods());
+    // 쿠폰 API가 실패할 수 있으므로 try-catch로 감싸기
+    try {
+      dispatch(fetchCoupons()).catch(error => {
+        logger.warn('쿠폰 API 로드 실패 (정상):', error.message);
+      });
+    } catch (error) {
+      logger.warn('쿠폰 로드 실패 (정상):', error.message);
+    }
+    
+    // 결제수단 API가 비활성화되어 있어서 에러가 발생할 수 있으므로 try-catch로 감싸기
+    try {
+      dispatch(fetchPaymentMethods()).catch(error => {
+        logger.warn('결제수단 API 비활성화로 인한 에러 (정상):', error.message);
+      });
+    } catch (error) {
+      logger.warn('결제수단 로드 실패 (정상):', error.message);
+    }
+    
     dispatch(fetchStores()).then((result) => {
       logger.log('🏪 매장 데이터 로드 결과:', result.payload);
     });
