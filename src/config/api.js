@@ -1,14 +1,12 @@
 // API 설정 관리
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_MOCK_MODE === 'true' 
-    ? 'http://localhost:3001' 
-    : (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001'),
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || parseInt(import.meta.env.VITE_TIMEOUT) || 10000,
 };
 
 // 환경별 설정
 export const ENV_CONFIG = {
-  isDevelopment:  import.meta.env.VITE_MOCK_MODE === 'true' && import.meta.env.DEV,
+  isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
   version: import.meta.env.VITE_APP_VERSION || '1.0.0',
 };
