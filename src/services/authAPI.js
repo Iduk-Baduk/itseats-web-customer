@@ -51,20 +51,20 @@ const loginClient = axios.create({
   withCredentials: true,
 });
 
-// 회원가입 API (백엔드 명세에 맞게 수정)
+// 회원가입 API (백엔드 최종 명세에 맞게 수정)
 export const regist = async (form) => {
   try {
     const sanitizedForm = { ...form, password: "[REDACTED]" };
     logger.log("📡 회원가입 요청 데이터:", sanitizedForm);
 
-    // 백엔드 명세에 맞는 요청 데이터 형식으로 변환
+    // 백엔드 최종 명세에 맞는 요청 데이터 형식으로 변환
     const requestData = {
       username: form.username,
       password: form.password,
       name: form.name,
       nickname: form.nickname || form.name, // 닉네임이 없으면 이름 사용
       email: form.email,
-      phoneNumber: form.phone // phone -> phoneNumber로 변경
+      phone: form.phone // phoneNumber가 아님! phone으로 유지
     };
 
     const response = await retryRequest(() => 
@@ -102,7 +102,7 @@ export const regist = async (form) => {
   }
 };
 
-// 로그인 API (백엔드 로그 분석 결과에 따라 수정)
+// 로그인 API (백엔드 최종 명세에 맞게 수정)
 export const login = async ({ username, password, isAutoLogin }) => {
   try {
     if (!username || !password) {
@@ -111,7 +111,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
 
     logger.log("📡 로그인 요청:", { username, password: "[REDACTED]" });
 
-    // 백엔드 로그 분석 결과: POST /login (baseURL에서 /api 제외)
+    // 백엔드 최종 명세: POST /login (AuthenticationFilter에서 처리)
     const response = await retryRequest(() => 
       loginClient.post('/login', { username, password })
     );
@@ -125,7 +125,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
                        response.headers['Authorization'];
     
     // 쿠키에서 Refresh Token 추출
-    const refreshToken = getCookie('Refresh-Token') || getCookie('refresh-token');
+    const refreshToken = getCookie('REFRESH_TOKEN') || getCookie('refresh-token');
     
     logger.log("🔐 토큰 추출 결과:", { 
       hasAccessToken: !!accessToken, 
@@ -147,7 +147,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
       AuthService.setRefreshToken(refreshToken);
     }
 
-    // 사용자 정보 조회 및 저장 (인증 필요)
+    // 사용자 정보 조회 및 저장 (인증 필요) - 이제 정상 작동할 것
     const currentMember = await retryRequest(() => 
       apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
@@ -158,7 +158,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
       name: currentMember.data.name,
       nickname: currentMember.data.nickname,
       email: currentMember.data.email,
-      phone: currentMember.data.phoneNumber, // phoneNumber로 변경
+      phone: currentMember.data.phone, // phone으로 유지
       reviewCount: currentMember.data.reviewCount || 0,
       favoriteCount: currentMember.data.favoriteCount || 0,
     };
@@ -191,7 +191,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
   }
 }
 
-// 내 정보 조회 API (백엔드 명세에 맞게 수정)
+// 내 정보 조회 API (백엔드 최종 명세에 맞게 수정)
 export const getCurrentUser = async () => {
   try {
     // 먼저 저장된 사용자 정보 확인
@@ -200,7 +200,7 @@ export const getCurrentUser = async () => {
       return savedUserInfo;
     }
 
-    // 저장된 정보가 없으면 API 호출 (인증 필요)
+    // 저장된 정보가 없으면 API 호출 (인증 필요) - 이제 정상 작동할 것
     const response = await retryRequest(() => 
       apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
@@ -210,7 +210,7 @@ export const getCurrentUser = async () => {
       username: response.data.username,
       name: response.data.name,
       email: response.data.email,
-      phone: response.data.phoneNumber, // phoneNumber로 변경
+      phone: response.data.phone, // phone으로 유지
       nickname: response.data.nickname,
       reviewCount: response.data.reviewCount || 0,
       favoriteCount: response.data.favoriteCount || 0,
