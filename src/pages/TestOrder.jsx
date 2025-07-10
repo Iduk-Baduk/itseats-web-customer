@@ -91,6 +91,12 @@ export default function TestOrder() {
       };
 
       const orderResponse = await orderAPI.createOrder(testOrderData);
+      
+      // 주문 생성 응답 검증
+      if (!orderResponse?.data?.id) {
+        throw new Error('주문 생성 응답에 주문 ID가 없습니다');
+      }
+      
       const orderId = orderResponse.data.id;
       addTestResult('테스트 주문 생성', 'success', `주문 ID: ${orderId}`);
 

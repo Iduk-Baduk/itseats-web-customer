@@ -105,7 +105,14 @@ export const useOrderTestData = () => {
       const testOrder = await generateTestOrderData();
       
       // orderAPI를 통해 주문 생성
-      const { data: createdOrder } = await orderAPI.createOrder(testOrder);
+      const response = await orderAPI.createOrder(testOrder);
+      
+      // 주문 생성 응답 검증
+      if (!response?.data?.id) {
+        throw new Error('주문 생성 응답에 주문 ID가 없습니다');
+      }
+      
+      const { data: createdOrder } = response;
       
       // Redux store 업데이트
       dispatch(addOrder(createdOrder));
