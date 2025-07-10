@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import { tossPaymentAPI } from '../../services/tossPaymentAPI';
 import { paymentTestUtils } from '../../utils/paymentTestUtils';
+import { tossWidgetManager } from '../../utils/tossWidgetManager';
 import { logger } from '../../utils/logger';
 
 const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
@@ -18,7 +18,6 @@ export const TossPaymentWidget = forwardRef(({
   onPaymentError 
 }, ref) => {
   const [ready, setReady] = useState(false);
-  const [widgets, setWidgets] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -30,6 +29,7 @@ export const TossPaymentWidget = forwardRef(({
   const paymentAttemptRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const initStartTimeRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   // 외부에서 호출할 수 있는 결제 함수를 ref로 expose
   useImperativeHandle(ref, () => ({
@@ -40,9 +40,11 @@ export const TossPaymentWidget = forwardRef(({
     error
   }));
 
-  // 위젯 초기화
+  // 위젯 초기화 및 렌더링
   useEffect(() => {
-    async function fetchPaymentWidgets() {
+    async function initializeAndRenderWidgets() {
+      if (!isMountedRef.current) return;
+      
       initStartTimeRef.current = performance.now();
       
       try {
@@ -50,26 +52,16 @@ export const TossPaymentWidget = forwardRef(({
         setError(null);
         setRetryCount(0);
         
-        logger.log('토스페이먼츠 위젯 초기화 시작');
+        logger.log('토스페이먼츠 위젯 초기화 및 렌더링 시작');
         
         // 성능 측정 시작
         const initResult = await paymentTestUtils.measurePerformance('위젯 초기화', async () => {
-          // ------  결제위젯 초기화 ------
-          const tossPayments = await loadTossPayments(clientKey);
-          
-          // 회원 결제
-          const widgets = tossPayments.widgets({
-            customerKey,
-          });
-          // 비회원 결제
-          // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
-
-          return widgets;
+          // 전역 관리자를 통한 위젯 초기화
+          return await tossWidgetManager.initialize(clientKey, customerKey);
         });
 
-        setWidgets(initResult);
-        logger.log('토스페이먼츠 위젯 초기화 성공');
-        
+        if (!isMountedRef.current) return;
+
         // 성능 메트릭 저장
         const initDuration = performance.now() - initStartTimeRef.current;
         setPerformanceMetrics(prev => ({
@@ -80,24 +72,46 @@ export const TossPaymentWidget = forwardRef(({
         // 메모리 사용량 측정
         paymentTestUtils.measureMemoryUsage('위젯 초기화');
         
+        // 위젯 렌더링
+        await paymentTestUtils.measurePerformance('위젯 렌더링', async () => {
+          await tossWidgetManager.renderWidgets(amount, orderId);
+        });
+
+        if (!isMountedRef.current) return;
+
+        setReady(true);
+        logger.log('토스페이먼츠 위젯 초기화 및 렌더링 완료');
+        
+        // 렌더링 완료 로그
+        paymentTestUtils.createPaymentLog('위젯 렌더링 완료', { amount, orderId }, { success: true });
+        
       } catch (err) {
-        logger.error('토스페이먼츠 위젯 초기화 실패:', err);
+        if (!isMountedRef.current) return;
+        
+        logger.error('토스페이먼츠 위젯 초기화/렌더링 실패:', err);
         setError('결제 위젯을 불러오는데 실패했습니다.');
+        
+        // 렌더링 실패 로그
+        paymentTestUtils.createPaymentLog('위젯 렌더링 실패', { amount, orderId }, { error: err.message });
         
         // 재시도 로직
         if (retryCount < 3) {
           const retryDelay = Math.pow(2, retryCount) * 1000; // 지수 백오프
           retryTimeoutRef.current = setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-            fetchPaymentWidgets();
+            if (isMountedRef.current) {
+              setRetryCount(prev => prev + 1);
+              initializeAndRenderWidgets();
+            }
           }, retryDelay);
         }
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     }
 
-    fetchPaymentWidgets();
+    initializeAndRenderWidgets();
 
     // 클린업
     return () => {
@@ -105,61 +119,24 @@ export const TossPaymentWidget = forwardRef(({
         clearTimeout(retryTimeoutRef.current);
       }
     };
-  }, [clientKey, customerKey, retryCount]);
-
-  // 위젯 렌더링
-  useEffect(() => {
-    async function renderPaymentWidgets() {
-      if (widgets == null) {
-        return;
-      }
-      
-      try {
-        logger.log('토스페이먼츠 위젯 렌더링 시작');
-        
-        // 렌더링 성능 측정
-        await paymentTestUtils.measurePerformance('위젯 렌더링', async () => {
-          // ------ 주문의 결제 금액 설정 ------
-          await widgets.setAmount(amount);
-
-          await Promise.all([
-            // ------  결제 UI 렌더링 ------
-            widgets.renderPaymentMethods({
-              selector: "#payment-method",
-              variantKey: "DEFAULT",
-            }),
-            // ------  이용약관 UI 렌더링 ------
-            widgets.renderAgreement({
-              selector: "#agreement",
-              variantKey: "AGREEMENT",
-            }),
-          ]);
-        });
-
-        setReady(true);
-        logger.log('토스페이먼츠 위젯 렌더링 완료');
-        
-        // 렌더링 완료 로그
-        paymentTestUtils.createPaymentLog('위젯 렌더링 완료', { amount, orderId }, { success: true });
-        
-      } catch (err) {
-        logger.error('토스페이먼츠 위젯 렌더링 실패:', err);
-        setError('결제 위젯 렌더링에 실패했습니다.');
-        
-        // 렌더링 실패 로그
-        paymentTestUtils.createPaymentLog('위젯 렌더링 실패', { amount, orderId }, { error: err.message });
-      }
-    }
-
-    renderPaymentWidgets();
-  }, [widgets, amount, orderId]);
+  }, [clientKey, customerKey, retryCount, amount, orderId]);
 
   // 결제 금액이 변경될 때마다 위젯 업데이트
   useEffect(() => {
-    if (widgets && ready) {
-      widgets.setAmount(amount);
+    if (ready && tossWidgetManager.getWidgets()) {
+      tossWidgetManager.getWidgets().setAmount(amount);
     }
-  }, [amount, widgets, ready]);
+  }, [amount, ready]);
+
+  // 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 결제 처리 함수
   const handlePayment = useCallback(async () => {
@@ -170,7 +147,7 @@ export const TossPaymentWidget = forwardRef(({
     }
 
     // 위젯이 준비되지 않았으면 에러
-    if (!ready || !widgets) {
+    if (!ready || !tossWidgetManager.getWidgets()) {
       setError('결제 위젯이 준비되지 않았습니다.');
       return;
     }
@@ -201,7 +178,7 @@ export const TossPaymentWidget = forwardRef(({
         // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
         // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
         // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
-        return await widgets.requestPayment({
+        return await tossWidgetManager.getWidgets().requestPayment({
           orderId: orderId,
           orderName: orderName,
           successUrl: window.location.origin + "/payments/toss-success",
@@ -246,7 +223,7 @@ export const TossPaymentWidget = forwardRef(({
     } finally {
       setIsProcessing(false);
     }
-  }, [widgets, orderId, amount, orderName, customerEmail, customerName, customerMobilePhone, isProcessing, ready, onPaymentSuccess, onPaymentError]);
+  }, [orderId, amount, orderName, customerEmail, customerName, customerMobilePhone, isProcessing, ready, onPaymentSuccess, onPaymentError]);
 
   // 결제 에러 메시지 변환
   const getPaymentErrorMessage = (error) => {
@@ -291,18 +268,8 @@ export const TossPaymentWidget = forwardRef(({
     setRetryCount(0);
     
     // 위젯 재초기화
-    setWidgets(null);
     setReady(false);
     setIsLoading(true);
-  }, []);
-
-  // 컴포넌트 언마운트 시 정리
-  useEffect(() => {
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-    };
   }, []);
 
   const wrapperStyle = {
@@ -426,6 +393,7 @@ export const TossPaymentWidget = forwardRef(({
             )}
             <div>주문번호: {orderId}</div>
             <div>금액: {amount?.value || amount}원</div>
+            <div>위젯 상태: {JSON.stringify(tossWidgetManager.getStatus())}</div>
           </div>
         )}
       </div>
