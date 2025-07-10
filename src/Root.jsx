@@ -44,6 +44,7 @@ const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
+const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
 
 // 페이지별 최적화된 로딩 메시지
 const getLoadingMessage = (pathname) => {
@@ -428,6 +429,16 @@ export default function Root() {
               <Layout navVisible={false}>
                 <LazyPageWrapper>
                   <TestOrder />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/test-backend" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TestBackendIntegration />
                 </LazyPageWrapper>
               </Layout>
             } 

@@ -221,6 +221,79 @@ export const orderAPI = {
       throw error;
     }
   },
+
+  // 토스페이먼츠 결제 승인 (백엔드 API 호출)
+  confirmPayment: async (paymentData) => {
+    const { orderId, amount, paymentKey } = paymentData;
+    
+    try {
+      logger.log('백엔드 결제 승인 요청:', { orderId, amount, paymentKey });
+      
+      if (ENV_CONFIG.isDevelopment) {
+        // 개발 환경: Mock 응답
+        logger.log('Mock: 백엔드 결제 승인 성공');
+        
+        // 2초 지연으로 실제 API 호출 시뮬레이션
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Mock 성공 응답 (백엔드 응답 형식에 맞춤)
+        return {
+          data: {
+            paymentKey,
+            orderId,
+            amount: Number(amount),
+            status: 'DONE',
+            method: 'CARD',
+            totalAmount: Number(amount),
+            balanceAmount: 0,
+            suppliedAmount: Math.floor(Number(amount) / 1.1),
+            vat: Number(amount) - Math.floor(Number(amount) / 1.1),
+            taxFreeAmount: 0,
+            approvedAt: new Date().toISOString(),
+            useEscrow: false,
+            card: {
+              company: '신한카드',
+              number: '123456******1234',
+              installmentPlanMonths: 0,
+              isInterestFree: false,
+              approveNo: '00000000',
+              useCardPoint: false,
+              cardType: 'CREDIT',
+              ownerType: 'PERSONAL',
+              acquireStatus: 'APPROVED',
+              amount: Number(amount),
+            },
+            receiptUrl: 'https://dashboard.tosspayments.com/receipt',
+            // 백엔드에서 추가하는 필드들
+            tossPaymentKey: paymentKey,
+            tossOrderId: orderId,
+            paymentStatus: 'COMPLETED'
+          }
+        };
+      } else {
+        // 운영 환경: 백엔드 API 호출
+        const response = await apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, {
+          orderId,
+          amount: Number(amount),
+          paymentKey
+        });
+        
+        logger.log('백엔드 결제 승인 성공:', response.data);
+        return response;
+      }
+    } catch (error) {
+      logger.error('백엔드 결제 승인 실패:', error);
+      
+      // 백엔드 에러 응답 처리
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('결제 승인 처리 중 오류가 발생했습니다.');
+      }
+    }
+  },
 };
 
 export default orderAPI; 

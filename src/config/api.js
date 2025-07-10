@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
   ORDER_TRACK: (id) => `/orders/${id}/track`,
   ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
   ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
+  ORDER_CONFIRM: '/orders/confirm',
   
   // 결제 관련
   CARDS: '/cards',
