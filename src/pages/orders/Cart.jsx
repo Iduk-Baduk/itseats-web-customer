@@ -21,6 +21,7 @@ import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
 import { findOrCreateStoreInfo } from "../../utils/storeUtils";
 import { ENV_CONFIG } from '../../config/api';
+import AuthService from '../../services/authService';
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -50,6 +51,9 @@ export default function Cart() {
   
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   const orders = useSelector(state => state.order?.orders || []); // 주문 목록 추가
+  
+  // AuthService를 사용하여 사용자 정보 가져오기
+  const user = AuthService.getUserInfo();
   
   // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
   const storeInfo = currentStore || allStores.find(store => 
