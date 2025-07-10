@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 import { API_ENDPOINTS } from '../config/api';
 import AuthService from './authService';
+import axios from 'axios';
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -39,6 +40,16 @@ const getCookie = (name) => {
   if (parts.length === 2) return parts.pop().split(';').shift();
   return null;
 };
+
+// 로그인 전용 클라이언트 (baseURL에서 /api 제외)
+const loginClient = axios.create({
+  baseURL: 'http://localhost:8080', // /api 제외
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+});
 
 // 회원가입 API (백엔드 명세에 맞게 수정)
 export const regist = async (form) => {
@@ -91,28 +102,47 @@ export const regist = async (form) => {
   }
 };
 
-// 로그인 API (백엔드 명세에 맞게 수정)
+// 로그인 API (백엔드 로그 분석 결과에 따라 수정)
 export const login = async ({ username, password, isAutoLogin }) => {
   try {
     if (!username || !password) {
       throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
     }
 
-    // 백엔드 명세: POST /login (AuthenticationFilter에서 처리)
+    logger.log("📡 로그인 요청:", { username, password: "[REDACTED]" });
+
+    // 백엔드 로그 분석 결과: POST /login (baseURL에서 /api 제외)
     const response = await retryRequest(() => 
-      apiClient.post(API_ENDPOINTS.AUTH_LOGIN, { username, password })
+      loginClient.post('/login', { username, password })
     );
     
-    // 응답 헤더에서 토큰 추출 (백엔드 명세에 따름)
-    const accessToken = response.headers?.["authorization"] || response.data?.accessToken;
-    const refreshToken = getCookie('refreshToken'); // 쿠키에서 refreshToken 추출
+    logger.log("📡 로그인 응답 헤더:", response.headers);
+    
+    // 백엔드에서 Access-Token 헤더로 전송 (대소문자 구분 없이)
+    const accessToken = response.headers['access-token'] || 
+                       response.headers['Access-Token'] ||
+                       response.headers['authorization'] ||
+                       response.headers['Authorization'];
+    
+    // 쿠키에서 Refresh Token 추출
+    const refreshToken = getCookie('Refresh-Token') || getCookie('refresh-token');
+    
+    logger.log("🔐 토큰 추출 결과:", { 
+      hasAccessToken: !!accessToken, 
+      hasRefreshToken: !!refreshToken,
+      accessTokenLength: accessToken?.length 
+    });
     
     if (!accessToken) {
+      logger.error('토큰을 받지 못했습니다. 응답 헤더:', response.headers);
       throw new Error('로그인 토큰을 받지 못했습니다.');
     }
     
+    // Bearer 접두사 제거 (있는 경우)
+    const cleanToken = accessToken.replace('Bearer ', '');
+    
     // AuthService를 사용하여 토큰 저장
-    AuthService.setToken(accessToken);
+    AuthService.setToken(cleanToken);
     if (refreshToken) {
       AuthService.setRefreshToken(refreshToken);
     }
@@ -136,10 +166,12 @@ export const login = async ({ username, password, isAutoLogin }) => {
     // 사용자 정보 저장
     AuthService.setUserInfo(userInfo);
 
+    logger.log("✅ 로그인 성공:", userInfo);
+
     return {
       success: true,
       user: userInfo,
-      accessToken,
+      accessToken: cleanToken,
     };
   } catch (error) {
     logger.error('로그인 실패:', error);

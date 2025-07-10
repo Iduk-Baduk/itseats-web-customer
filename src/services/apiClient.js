@@ -17,8 +17,8 @@ const apiClient = axios.create({
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // 로그인/회원가입 요청은 토큰 제외 (경로 수정)
-    if (config.url?.includes('/login') || config.url?.includes('/sign-up')) {
+    // 회원가입 요청은 토큰 제외 (로그인은 별도 클라이언트 사용)
+    if (config.url?.includes('/sign-up')) {
       return config;
     }
 
@@ -49,11 +49,6 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터 - 에러 처리
 apiClient.interceptors.response.use(
   (response) => {
-    // login 요청일 때는 전체 응답 반환
-    if (response.config.url?.includes('/login')) {
-      return response;
-    }
-
     return response.data; // 자동으로 .data 반환
   },
   async (error) => {
