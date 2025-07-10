@@ -16,20 +16,31 @@ const apiClient = axios.create({
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
+    // 요청 정보 로깅
+    console.log(`🔍 API 요청: ${config.method?.toUpperCase()} ${config.url}`);
+    console.log('🔍 요청 헤더:', config.headers);
+    console.log('🔍 요청 데이터:', config.data);
+    
     // 로그인 요청은 토큰 제외
-    if (config.url?.includes('/login'))
+    if (config.url?.includes('/login')) {
+      console.log('🔓 로그인 요청 - 토큰 제외');
       return config;
+    }
 
     // 토큰 유효성 검사 후 추가
     if (isTokenValid()) {
       const token = getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('🔐 토큰 추가됨');
       }
+    } else {
+      console.log('⚠️ 유효한 토큰 없음');
     }
     return config;
   },
   (error) => {
+    console.error('❌ 요청 인터셉터 에러:', error);
     return Promise.reject(error);
   }
 );

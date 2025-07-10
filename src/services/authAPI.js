@@ -59,8 +59,19 @@ export const login = async ({ username, password, isAutoLogin }) => {
       throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
     }
 
-    const response = await apiClient.post("/login", { username, password });
+    // 요청 데이터 로깅
+    const requestData = { username, password };
+    logger.log("📡 로그인 요청 데이터:", { ...requestData, password: "[REDACTED]" });
+    logger.log("📡 로그인 요청 URL:", "/login");
+
+    const response = await apiClient.post("/login", requestData);
+    
+    // 응답 로깅
+    logger.log("📡 로그인 응답 전체:", response);
+    logger.log("📡 로그인 응답 헤더:", response.headers);
+    
     const accessToken = response.headers["access-token"];
+    logger.log("📡 추출된 액세스 토큰:", accessToken ? "토큰 존재" : "토큰 없음");
     
     // 토큰 저장 (24시간 만료)
     const expiresIn = isAutoLogin ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7일 또는 24시간
@@ -84,6 +95,14 @@ export const login = async ({ username, password, isAutoLogin }) => {
     };
   } catch (error) {
     logger.error('로그인 실패:', error);
+    
+    // 상세한 에러 정보 로깅
+    if (error.originalError && error.originalError.response) {
+      logger.error('로그인 실패 응답 상태:', error.originalError.response.status);
+      logger.error('로그인 실패 응답 헤더:', error.originalError.response.headers);
+      logger.error('로그인 실패 응답 데이터:', error.originalError.response.data);
+    }
+    
     if (error.originalError.response) {
       logger.error('로그인 실패 응답:', error.originalError.response.data);
       error.message = JSON.stringify(error.originalError.response.data) || '로그인에 실패했습니다.';

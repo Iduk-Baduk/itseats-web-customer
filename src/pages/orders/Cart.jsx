@@ -11,7 +11,7 @@ import {
   clearPaymentResult 
 } from "../../store/paymentSlice";
 import { fetchCoupons } from "../../store/couponSlice";
-import { fetchPaymentMethods } from "../../store/paymentSlice";
+// import { fetchPaymentMethods } from "../../store/paymentSlice";
 import { fetchStores, fetchStoreById } from "../../store/storeSlice";
 import { paymentAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
@@ -70,10 +70,6 @@ export default function Cart() {
   const selectedAddress = useSelector(state => 
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
   );
-  const selectedPaymentType = useSelector(state => state.payment.selectedPaymentType);
-  const selectedCardId = useSelector(state => state.payment.selectedCardId);
-  const selectedAccountId = useSelector(state => state.payment.selectedAccountId);
-  const coupayAmount = useSelector(state => state.payment.coupayAmount);
   const isProcessingPayment = useSelector(state => state.payment.isProcessingPayment);
   const paymentError = useSelector(state => state.payment.paymentError);
 
@@ -122,14 +118,7 @@ export default function Cart() {
       logger.warn('쿠폰 로드 실패 (정상):', error.message);
     }
     
-    // 결제수단 API가 비활성화되어 있어서 에러가 발생할 수 있으므로 try-catch로 감싸기
-    try {
-      dispatch(fetchPaymentMethods()).catch(error => {
-        logger.warn('결제수단 API 비활성화로 인한 에러 (정상):', error.message);
-      });
-    } catch (error) {
-      logger.warn('결제수단 로드 실패 (정상):', error.message);
-    }
+    // 결제수단 API 호출 제거 (토스페이먼츠만 사용)
     
     dispatch(fetchStores()).then((result) => {
       logger.log('🏪 매장 데이터 로드 결과:', result.payload);
@@ -300,35 +289,10 @@ export default function Cart() {
       return;
     }
     
-    // 결제 수단 검증 및 설정
-    let paymentMethod = selectedPaymentType;
+    // 결제 수단 설정 (토스페이먼츠만 사용)
+    let paymentMethod = 'toss';
     let remainingAmount = cartInfo.totalPrice;
     let usedCoupayAmount = 0;
-    
-    // 쿠페이머니 사용 시 부분 결제 처리
-    if (selectedPaymentType === 'coupay') {
-      usedCoupayAmount = coupayAmount || 0;
-      remainingAmount = Math.max(0, cartInfo.totalPrice - usedCoupayAmount);
-      
-      if (remainingAmount > 0) {
-        // 추가 결제 수단이 필요한 경우 - 기본적으로 카드로 설정 (실제로는 사용자가 선택해야 함)
-        // 현재 목업에서는 카드로 자동 설정
-        paymentMethod = 'mixed'; // 혼합 결제
-      } else {
-        paymentMethod = 'coupay'; // 쿠페이머니 전액 결제
-      }
-    }
-    
-    // 결제 수단 유효성 검사
-    if (!selectedPaymentType) {
-      showToast("결제 수단을 선택해주세요.");
-      return;
-    }
-    
-    if (selectedPaymentType === 'coupay' && usedCoupayAmount <= 0) {
-      showToast("쿠페이머니 사용 금액을 입력해주세요.");
-      return;
-    }
 
     // API 스펙에 맞는 주문 데이터 구조 생성
     const orderRequestData = {
@@ -516,10 +480,6 @@ export default function Cart() {
         orderId: orderResponse.data.orderId,
         paymentMethod: paymentMethod,
         amount: cartInfo.totalPrice,
-        coupayAmount: usedCoupayAmount,
-        remainingAmount: remainingAmount,
-        cardId: (selectedPaymentType === 'card' || paymentMethod === 'mixed') ? selectedCardId : null,
-        accountId: (selectedPaymentType === 'account') ? selectedAccountId : null,
         customerInfo: {
           address: selectedAddress
         }
@@ -532,26 +492,20 @@ export default function Cart() {
         // Mock 결제 처리 (2초 지연)
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 목업에서는 항상 성공 (신용카드/계좌이체 무조건 성공)
+        // 목업에서는 항상 성공 (토스페이먼츠 무조건 성공)
         paymentResult = {
           paymentId: `payment_${Date.now()}`,
           status: 'SUCCESS',
           amount: paymentData.amount,
           method: paymentData.paymentMethod,
-          coupayAmount: usedCoupayAmount,
-          remainingAmount: remainingAmount,
-          additionalPaymentMethod: remainingAmount > 0 ? 'card' : null,
           timestamp: new Date().toISOString()
         };
         
         dispatch(setPaymentSuccess(paymentResult));
         logger.log('✅ Mock 결제 성공:', paymentResult);
         
-        // 쿠페이머니 사용 시 잔액 업데이트 (목업)
-        if (usedCoupayAmount > 0) {
-          // 실제로는 서버에서 처리되어야 함
-          logger.log(`쿠페이머니 ${usedCoupayAmount}원 사용됨`);
-        }
+        // 토스페이먼츠 결제 완료 (목업)
+        logger.log('토스페이먼츠 결제 완료');
       } else {
         // 실제 결제 API 호출
         try {
@@ -667,8 +621,6 @@ export default function Cart() {
           <CartCouponSection />
           <CartPaymentSummarySection 
             cartInfo={cartInfo} 
-            selectedPaymentType={selectedPaymentType}
-            coupayAmount={coupayAmount}
           />
           <CartPaymentMethodSection cartInfo={cartInfo} />
           <CartRequestSection />
