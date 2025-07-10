@@ -5,7 +5,7 @@ export const addAddressAsync = createAsyncThunk(
   'address/addAddressAsync',
   async (addressData) => {
     const addressId = await AddressAPI.createAddress(addressData);
-    return { ...addressData, id: String(addressId) };
+    return { ...addressData, id: String(addressId), isTemporary: addressId.startsWith('temp_') };
   }
 );
 
@@ -21,6 +21,7 @@ export const fetchAddressListAsync = createAsyncThunk(
       detailAddress: addr.detailAddress,
       lat: addr.lat,
       lng: addr.lng,
+      isTemporary: false,
     }));
   }
 );
@@ -28,16 +29,20 @@ export const fetchAddressListAsync = createAsyncThunk(
 export const updateAddressAsync = createAsyncThunk(
   'address/updateAddressAsync',
   async ({ id, ...addressData }) => {
-    await AddressAPI.updateAddress(id, addressData);
-    return { id, ...addressData };
+    const result = await AddressAPI.updateAddress(id, addressData);
+    return { 
+      id, 
+      ...addressData, 
+      isTemporary: result.message?.includes('로컬') || id.startsWith('temp_')
+    };
   }
 );
 
 export const removeAddressAsync = createAsyncThunk(
   'address/removeAddressAsync',
   async (addressId) => {
-    await AddressAPI.deleteAddress(addressId);
-    return addressId;
+    const result = await AddressAPI.deleteAddress(addressId);
+    return { addressId, isLocalOnly: result.message?.includes('로컬') };
   }
 );
 
@@ -113,6 +118,7 @@ const addressSlice = createSlice({
       }
 
       saveToLocalStorage(state);
+      state.isLoading = false;
     })
     .addCase(addAddressAsync.rejected, (state, action) => {
       state.isLoading = false;
@@ -137,6 +143,13 @@ const addressSlice = createSlice({
     .addCase(fetchAddressListAsync.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.error.message;
+      
+      // 서버 오류 시 로컬 데이터가 있으면 에러를 무시하고 로컬 데이터 사용
+      const localAddresses = loadFromLocalStorage().addresses;
+      if (localAddresses.length > 0) {
+        state.addresses = localAddresses;
+        state.error = null; // 에러를 무시하고 로컬 데이터 사용
+      }
     })
     .addCase(updateAddressAsync.pending, (state) => {
       state.isLoading = true;
@@ -162,7 +175,7 @@ const addressSlice = createSlice({
       state.error = null;
     })
     .addCase(removeAddressAsync.fulfilled, (state, action) => {
-      const addressId = action.payload;
+      const { addressId, isLocalOnly } = action.payload;
       state.addresses = state.addresses.filter((addr) => addr.id !== addressId);
       if (state.selectedAddressId === addressId) {
         state.selectedAddressId =
