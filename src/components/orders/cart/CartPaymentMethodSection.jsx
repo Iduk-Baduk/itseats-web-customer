@@ -6,9 +6,33 @@ import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
 import { logger } from '../../../utils/logger';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 
+// 전화번호 형식을 토스페이먼츠 요구사항에 맞게 변환
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  
+  // 특수문자 제거 (하이픈, 공백, 괄호 등)
+  const cleaned = phone.replace(/[^\d]/g, '');
+  
+  // 11자리 숫자인지 확인
+  if (cleaned.length === 11) {
+    return cleaned;
+  }
+  
+  // 10자리인 경우 11자리로 변환 (010 추가)
+  if (cleaned.length === 10) {
+    return `010${cleaned}`;
+  }
+  
+  // 기본값 반환
+  return cleaned || '01000000000';
+};
+
 export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0, itemCount: 0, couponDiscount: 0 } }) {
   const navigate = useNavigate();
   const { user, loading, error } = useCurrentUser();
+  
+  // 주문 ID를 useMemo로 안정화 (중복 렌더링 방지)
+  const orderId = useMemo(() => uuidv4(), []);
   
   // 로딩 중이거나 에러 발생 시 처리
   if (loading) {
@@ -21,8 +45,8 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0, i
     return null;
   }
 
-  // 주문 ID를 useMemo로 안정화 (중복 렌더링 방지)
-  const orderId = useMemo(() => uuidv4(), []);
+  // 전화번호 형식 변환
+  const formattedPhone = formatPhoneNumber(user.phone);
 
   return (
     <section className={styles.section}>
@@ -51,7 +75,7 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0, i
             orderName={`${cartInfo.itemCount}개 메뉴`}
             customerEmail={user.email}
             customerName={user.name}
-            customerMobilePhone={user.phone}
+            customerMobilePhone={formattedPhone}
             onPaymentSuccess={(result) => {
               logger.log('토스페이먼츠 결제 성공:', result);
               // 민감한 결제 정보를 sessionStorage에 저장
