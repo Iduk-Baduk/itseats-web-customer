@@ -170,6 +170,81 @@ class AuthService {
   }
 
   /**
+   * 비밀번호 유효성 검증
+   * @param {string} password - 검증할 비밀번호
+   * @returns {boolean} 유효성 여부
+   */
+  static validatePassword(password) {
+    // 최소 8자, 영문+숫자+특수문자 포함
+    const pattern = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return pattern.test(password);
+  }
+
+  /**
+   * 로그인 API 호출
+   * @param {Object} credentials - 로그인 정보
+   * @returns {Promise<Object>} 로그인 결과
+   */
+  static async login(credentials) {
+    try {
+      // 비밀번호 유효성 검증
+      if (!AuthService.validatePassword(credentials.password)) {
+        throw new Error('비밀번호는 최소 8자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+      }
+
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH_LOGIN}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '로그인에 실패했습니다.');
+      }
+
+      const data = await response.json();
+      
+      // 응답 헤더에서 토큰 추출 (백엔드 응답 형식에 따라 조정)
+      const accessToken = response.headers.get('Access-Token') || 
+                         response.headers.get('access-token') ||
+                         data.accessToken ||
+                         data.token;
+      
+      const refreshToken = response.headers.get('Set-Cookie') ||
+                          response.headers.get('refresh-token') ||
+                          data.refreshToken;
+
+      if (!accessToken) {
+        throw new Error('액세스 토큰을 받지 못했습니다.');
+      }
+
+      // 토큰 저장
+      AuthService.setToken(accessToken);
+      if (refreshToken) {
+        AuthService.setRefreshToken(refreshToken);
+      }
+
+      // 사용자 정보 저장
+      if (data.user || data.member) {
+        AuthService.setUserInfo(data.user || data.member);
+      }
+
+      logger.log('✅ 로그인 성공');
+      return { success: true, accessToken, user: data.user || data.member };
+      
+    } catch (error) {
+      logger.error('❌ 로그인 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 로그인 페이지로 리다이렉트
    */
   static redirectToLogin() {

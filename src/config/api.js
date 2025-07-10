@@ -14,14 +14,20 @@ export const ENV_CONFIG = {
 
 // API 엔드포인트 상수
 export const API_ENDPOINTS = {
+  // 인증 관련
+  AUTH_LOGIN: '/login', // /api/login에서 /login으로 수정
+  AUTH_REFRESH: '/api/auths/refresh',
+  AUTH_SIGNUP: '/api/members/sign-up',
+  MEMBERS_ME: '/api/members/me',
+  
   // 주문 관련
-  ORDERS: '/orders',
-  ORDER_BY_ID: (id) => `/orders/${id}`,
+  ORDERS: '/api/orders',
+  ORDER_BY_ID: (id) => `/api/orders/${id}`,
   ORDER_STATUS: (id) => `/orders/${id}/status`,
   ORDER_TRACK: (id) => `/orders/${id}/track`,
   ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
   ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
-  ORDER_CONFIRM: '/orders/confirm',
+  ORDER_CONFIRM: '/api/orders/confirm', // 결제 승인 엔드포인트 수정
   
   // 결제 관련
   CARDS: '/cards',
@@ -31,7 +37,8 @@ export const API_ENDPOINTS = {
   PAYMENTS: '/payments',
   PAYMENT_BY_ID: (id) => `/payments/${id}`,
   PAYMENT_STATUS: (id) => `/payments/${id}/status`,
-  PAYMENT_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`,
+  PAYMENT_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 기존 호환성 유지
+  PAYMENT_CREATE: '/payments', // 결제 정보 생성 API 추가
   
   // 쿠폰 관련
   COUPONS: '/coupons',

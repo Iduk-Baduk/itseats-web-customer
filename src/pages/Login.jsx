@@ -41,14 +41,32 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const result = await login({ username, password, isAutoLogin });
-      if (result) {
+      // 입력값 검증
+      if (!username || !password) {
+        alert('아이디와 비밀번호를 입력해주세요.');
+        return;
+      }
+
+      // 비밀번호 유효성 검증
+      if (!AuthService.validatePassword(password)) {
+        alert('비밀번호는 최소 8자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+        return;
+      }
+
+      // 새로운 AuthService.login 사용
+      const result = await AuthService.login({ 
+        email: username, 
+        password: password 
+      });
+      
+      if (result.success) {
         // 리다이렉트 경로가 있으면 해당 경로로, 없으면 홈으로
         const redirectPath = new URLSearchParams(location.search).get('redirect') || '/';
         navigate(redirectPath, { replace: true });
       }
     } catch (error) {
       console.error('로그인 실패:', error);
+      alert(error.message || '로그인에 실패했습니다.');
     }
   };
 
@@ -113,6 +131,30 @@ export default function Login() {
         <Button onClick={handleLogin} disabled={loading}>
           {loading ? "로그인 중..." : "로그인"}
         </Button>
+        
+        {/* 개발 환경에서만 테스트 버튼 표시 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ marginTop: '10px', textAlign: 'center' }}>
+            <small style={{ color: '#666', marginBottom: '10px', display: 'block' }}>
+              개발용 테스트 계정
+            </small>
+            <Button 
+              onClick={() => {
+                setUserId('test@example.com');
+                setPassword('Test123!@#');
+              }}
+              style={{ 
+                backgroundColor: '#f0f0f0', 
+                color: '#333',
+                fontSize: '12px',
+                padding: '8px 16px'
+              }}
+            >
+              테스트 계정 입력
+            </Button>
+          </div>
+        )}
+        
         <hr />
         <LineButton className={styles.grayButton} onClick={handleRegister}>회원가입</LineButton>
       </div>

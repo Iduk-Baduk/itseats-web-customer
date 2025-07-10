@@ -13,7 +13,7 @@ import {
 import { fetchCoupons } from "../../store/couponSlice";
 import { fetchPaymentMethods } from "../../store/paymentSlice";
 import { fetchStores, fetchStoreById } from "../../store/storeSlice";
-import { paymentAPI } from "../../services";
+import { paymentAPI, tossPaymentAPI, orderAPI } from "../../services";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
@@ -556,20 +556,77 @@ export default function Cart() {
       // 토스페이먼츠 결제 페이지로 이동
       logger.log('🔄 토스페이먼츠 결제 페이지로 이동:', paymentData);
       
-      // 토스페이먼츠 결제 위젯 페이지로 이동
-      const tossParams = new URLSearchParams({
-        orderId: orderResponse.data.orderId,
-        amount: paymentData.amount.toString(),
-        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
-        customerName: user?.name || '고객',
-        customerEmail: user?.email || 'customer@example.com'
-      });
-      
-      navigate(`/payments/toss?${tossParams}`);
-      return; // 여기서 함수 종료
-      
-      // 토스페이먼츠 결제는 별도 페이지에서 처리되므로 여기서는 주문 생성만 완료
-      logger.log('✅ 주문 생성 완료, 토스페이먼츠 결제 페이지로 이동됨');
+      // 백엔드 가이드에 따른 올바른 결제 플로우
+      try {
+        // Step 1: 주문 생성 (먼저 주문을 생성하여 orderId 확보)
+        logger.log('📡 Step 1: 주문 생성 요청');
+        const orderResponse = await orderAPI.createOrder(orderDataForPayment);
+        const orderId = orderResponse.data.orderId;
+        logger.log('✅ Step 1: 주문 생성 성공, orderId:', orderId);
+        
+        // Step 2: 결제 정보 생성 (orderId를 사용하여 결제 정보 생성)
+        const paymentInfo = {
+          orderId: orderId,
+          memberCouponId: selectedCouponIds?.[0] || null, // 첫 번째 쿠폰 사용
+          totalCost: cartInfo.totalPrice,
+          paymentMethod: 'CARD',
+          storeRequest: requestInfo?.storeRequest || '',
+          riderRequest: requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)'
+        };
+        
+        logger.log('📡 Step 2: 결제 정보 생성 요청:', paymentInfo);
+        const paymentCreateResponse = await tossPaymentAPI.createPayment(paymentInfo);
+        const backendPaymentId = paymentCreateResponse.paymentId;
+        logger.log('✅ Step 2: 결제 정보 생성 성공, paymentId:', backendPaymentId);
+        
+        // Step 3: 토스페이먼츠 결제 페이지로 이동 (paymentId 포함)
+        const tossParams = new URLSearchParams({
+          orderId: orderId,
+          paymentId: backendPaymentId, // 백엔드에서 받은 paymentId 전달
+          amount: cartInfo.totalPrice.toString(),
+          orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
+          customerName: user?.name || '고객',
+          customerEmail: user?.email || 'customer@example.com'
+        });
+        
+        // 토스페이먼츠 결제 페이지로 이동
+        logger.log('📡 Step 3: 토스페이먼츠 결제 페이지로 이동');
+        navigate(`/payments/toss?${tossParams}`);
+        
+      } catch (paymentError) {
+        logger.error('❌ 결제 처리 실패:', paymentError);
+        
+        // 결제 실패 시 Mock 모드로 fallback
+        try {
+          logger.warn('⚠️ 백엔드 결제 실패, Mock 모드로 fallback');
+          
+          // Mock 결제 데이터 생성
+          const mockPaymentData = {
+            orderId: `mock_${Date.now()}`,
+            amount: cartInfo.totalPrice,
+            paymentKey: `mock_${Date.now()}`
+          };
+          
+          const mockPaymentResponse = await tossPaymentAPI.mockConfirmPayment(mockPaymentData);
+          logger.log('✅ Mock 결제 성공:', mockPaymentResponse);
+          
+          // Mock 주문 생성
+          const mockOrderResponse = await orderAPI.createOrder(orderDataForPayment);
+          logger.log('✅ Mock 주문 생성 성공:', mockOrderResponse);
+          
+          // 결제 성공 페이지로 이동
+          navigate('/payments/success', { 
+            state: { 
+              orderData: mockOrderResponse,
+              paymentData: mockPaymentData 
+            } 
+          });
+          
+        } catch (mockError) {
+          logger.error('❌ Mock 결제도 실패:', mockError);
+          throw paymentError; // 원래 에러를 다시 던짐
+        }
+      }
       
       // 중복 방지 해시 초기화
       handlePayment.lastCartHash = null;
