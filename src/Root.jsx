@@ -385,7 +385,7 @@ export default function Root() {
             } 
           />
           <Route 
-            path="/payments/toss/success" 
+            path="/payments/toss-success" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
