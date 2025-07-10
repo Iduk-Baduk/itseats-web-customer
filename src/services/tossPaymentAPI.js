@@ -1,6 +1,37 @@
 import { API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
+import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../config/api';
+
+// 재시도 설정
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  retryBackoff: 2,
+};
+
+// 재시도 로직
+const retryRequest = async (requestFn, retryCount = 0) => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    const isRetryableError = 
+      error.statusCode >= 500 || 
+      error.statusCode === 0 || 
+      error.type === 'NETWORK_ERROR';
+    
+    if (isRetryableError && retryCount < RETRY_CONFIG.maxRetries) {
+      const delay = RETRY_CONFIG.retryDelay * Math.pow(RETRY_CONFIG.retryBackoff, retryCount);
+      logger.warn(`📡 토스페이먼츠 API 재시도 ${retryCount + 1}/${RETRY_CONFIG.maxRetries} (${delay}ms 후)`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryRequest(requestFn, retryCount + 1);
+    }
+    
+    throw error;
+  }
+};
 
 // 토스페이먼츠 결제 API 서비스
 class TossPaymentAPI {
@@ -153,7 +184,7 @@ class TossPaymentAPI {
     }
   }
 
-  // 결제 승인 (토큰화 및 멱등성 적용)
+  // 결제 승인 (백엔드 API를 통해 호출)
   async confirmPayment(paymentData) {
     const { orderId, amount, paymentKey } = paymentData;
     
@@ -161,36 +192,39 @@ class TossPaymentAPI {
     const attemptId = this.registerPaymentAttempt(orderId);
     
     try {
-      // 멱등성 키 생성
-      const idempotencyKey = `${orderId}_${attemptId}`;
+      logger.log('📡 토스페이먼츠 결제 승인 요청 (백엔드 API):', { orderId, amount, paymentKey });
       
-      logger.log('토스페이먼츠 결제 승인 요청:', { orderId, amount, paymentKey });
-      
-      const result = await this.makeRequest(
-        'https://api.tosspayments.com/v1/payments/confirm',
-        {
-          method: 'POST',
-          headers: this.getHeaders('application/json', idempotencyKey),
-          body: JSON.stringify({
-            paymentKey,
-            orderId,
-            amount: Number(amount)
-          })
-        },
-        { maxRetries: 2, delay: 1000 } // 결제 승인은 재시도 횟수 제한
+      // 백엔드 API를 통해 토스페이먼츠 결제 승인
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.PAYMENTS, {
+          paymentKey,
+          orderId,
+          amount: Number(amount)
+        })
       );
 
       this.completePaymentAttempt(orderId, 'success');
-      logger.log('토스페이먼츠 결제 승인 성공:', result);
+      logger.log('✅ 토스페이먼츠 결제 승인 성공 (백엔드 API):', response.data);
       
-      return result;
+      return response.data;
     } catch (error) {
       this.completePaymentAttempt(orderId, 'failed');
-      logger.error('토스페이먼츠 결제 승인 실패:', error);
+      logger.error('❌ 토스페이먼츠 결제 승인 실패 (백엔드 API):', error);
       
-      // 사용자 친화적인 에러 메시지 변환
-      const userMessage = this.getUserFriendlyErrorMessage(error);
-      throw new Error(userMessage);
+      // 백엔드 에러 응답 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 400) {
+        error.message = '잘못된 금액이 입력되었습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '인증이 필요합니다.';
+      } else if (error.statusCode === 500) {
+        error.message = '토스 서버 오류가 발생했습니다.';
+      } else {
+        error.message = '결제 승인 처리 중 오류가 발생했습니다.';
+      }
+      
+      throw error;
     } finally {
       // 주기적으로 오래된 결제 시도 데이터 정리
       this.cleanupPaymentAttempts();
