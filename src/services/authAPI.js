@@ -3,6 +3,7 @@ import { STORAGE_KEYS, logger } from '../utils/logger';
 import { API_ENDPOINTS } from '../config/api';
 import AuthService from './authService';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api';
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -43,7 +44,7 @@ const getCookie = (name) => {
 
 // 로그인 전용 클라이언트 (baseURL에서 /api 제외)
 const loginClient = axios.create({
-  baseURL: 'http://localhost:8080', // /api 제외
+  baseURL: API_CONFIG.BASE_URL.replace('/api', ''), // API_CONFIG 사용
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -111,9 +112,12 @@ export const login = async ({ username, password, isAutoLogin }) => {
 
   logger.log("📡 로그인 요청:", { username, password: "[REDACTED]" });
 
-    // 백엔드 최종 명세: POST /login (AuthenticationFilter에서 처리)
+    // 백엔드 최종 명세: POST /api/login (baseURL에 이미 /api가 포함되어 있으므로 /login만 사용)
     const response = await retryRequest(() => 
-      loginClient.post('/login', { username, password })
+      axios.post(`${API_CONFIG.BASE_URL}/login`, { username, password }, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
     );
     
     logger.log("📡 로그인 응답 헤더:", response.headers);

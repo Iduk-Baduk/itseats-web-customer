@@ -58,7 +58,7 @@ export const API_ENDPOINTS = {
   USER_REVIEWS: '/members/reviews',
   
   // 인증 관련 (백엔드 팀 제공 명세에 맞게 수정)
-  AUTH_LOGIN: '/login',                    // ✅ POST /login (AuthenticationFilter에서 처리)
+  AUTH_LOGIN: '/login',                    // ✅ POST /api/login (baseURL에 이미 /api 포함)
   AUTH_LOGOUT: '/auths/logout',            // ✅ POST /api/auths/logout?memberId={memberId}
   AUTH_REFRESH: '/auths/reissue',          // ✅ GET /api/auths/reissue?memberId={memberId}
   AUTH_REGISTER: '/members/sign-up',       // ✅ POST /api/members/sign-up
