@@ -25,6 +25,7 @@ export default function TestOrder() {
   const allOrders = useSelector(selectAllOrders);
   const activeOrders = useSelector(selectActiveOrders);
   const completedOrders = useSelector(selectCompletedOrders);
+  const cartState = useSelector(state => state.cart);
   
   // 로컬 상태
   const [selectedOrderId, setSelectedOrderId] = useState("");
@@ -143,7 +144,6 @@ export default function TestOrder() {
     try {
       // 1. 장바구니 상태 확인
       addTestResult('장바구니 상태', 'warning', '장바구니 데이터 확인 중...');
-      const cartState = useSelector(state => state.cart);
       if (cartState.orderMenus && cartState.orderMenus.length > 0) {
         addTestResult('장바구니 상태', 'success', `${cartState.orderMenus.length}개 메뉴 확인`);
       } else {
