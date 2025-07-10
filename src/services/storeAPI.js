@@ -133,8 +133,7 @@ const StoreAPI = {
           images: storeData.images || [],
           // 기존 프론트엔드 호환성을 위한 추가 필드
           storeImage: storeData.images?.[0] || "/samples/food1.jpg",
-          rating: storeData.reviewRating || 0,
-          reviewCount: storeData.reviewCount || 0
+          rating: storeData.reviewRating || 0
         };
       } else {
         throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
@@ -148,20 +147,9 @@ const StoreAPI = {
         AuthService.redirectToLogin();
         error.message = '로그인이 필요합니다.';
       } else if (error.statusCode === 500) {
-        // 500 에러 시 임시 데이터 반환 (사용자 경험 개선)
-        logger.warn('매장 상세 정보 조회 실패, 임시 데이터 반환');
-        return {
-          storeId: storeId,
-          name: "매장 정보를 불러올 수 없습니다",
-          isLiked: false,
-          reviewRating: 0,
-          reviewCount: 0,
-          images: ["/samples/food1.jpg"],
-          storeImage: "/samples/food1.jpg",
-          rating: 0,
-          reviewCount: 0,
-          _isTemporary: true // 임시 데이터임을 표시
-        };
+        logger.error('매장 상세 정보 조회 중 서버 오류(500) 발생');
+        error.message = '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        throw error;
       } else if (error.statusCode === 404) {
         error.message = '매장을 찾을 수 없습니다.';
       } else {
