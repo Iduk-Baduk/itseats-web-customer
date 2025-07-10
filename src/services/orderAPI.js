@@ -138,19 +138,38 @@ export const orderAPI = {
     const { orderId, amount, paymentKey } = paymentData;
     
     try {
-      logger.log('백엔드 결제 승인 요청:', { orderId, amount, paymentKey });
-      
-      // 백엔드 API 호출
-      const response = await apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, {
+      const requestData = {
         orderId,
         amount: Number(amount),
         paymentKey
+      };
+      
+      logger.log('백엔드 결제 승인 요청:', {
+        url: `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ORDER_CONFIRM}`,
+        method: 'POST',
+        data: requestData,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
-      logger.log('백엔드 결제 승인 성공:', response.data);
+      // 백엔드 API 호출
+      const response = await apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, requestData);
+      
+      logger.log('백엔드 결제 승인 성공:', response);
       return response;
     } catch (error) {
-      logger.error('백엔드 결제 승인 실패:', error);
+      logger.error('백엔드 결제 승인 실패:', {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.config?.data
+        }
+      });
       
       // 백엔드 에러 응답 처리
       if (error.response?.data?.message) {

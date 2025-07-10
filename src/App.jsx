@@ -47,12 +47,12 @@ export default function App() {
     }
   }, [kakaoLoading, kakaoError]);
 
-  // 토큰 상태 로그 (개발 환경에서만)
+  // 토큰 상태 로그 (개발 환경에서만, 초기 로드 시에만)
   useEffect(() => {
-    if (import.meta.env.DEV && tokenInfo) {
+    if (import.meta.env.DEV && tokenInfo && !tokenInfo.lastChecked) {
       logger.log("🔐 토큰 상태:", tokenInfo);
     }
-  }, [tokenInfo]);
+  }, [tokenInfo?.lastChecked]);
 
   // 초기화 및 설정
   useEffect(() => {
