@@ -1,6 +1,7 @@
 import apiClient from "./apiClient";
 import { logger } from "../utils/logger";
 import { API_ENDPOINTS } from "../config/api";
+import AuthService from "./authService";
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -109,7 +110,11 @@ const StoreAPI = {
   // 매장 상세 정보 조회 API
   getStoreById: async (storeId) => {
     try {
-      logger.log(`�� 매장 상세 정보 조회 요청 (ID: ${storeId})`);
+      logger.log(`📡 매장 상세 정보 조회 요청 (ID: ${storeId})`);
+      
+      // 인증 상태 확인
+      const isAuthenticated = AuthService.isAuthenticated();
+      logger.log(`🔐 인증 상태: ${isAuthenticated}`);
       
       const response = await retryRequest(() => 
         apiClient.get(API_ENDPOINTS.STORE_BY_ID(storeId))
@@ -122,14 +127,14 @@ const StoreAPI = {
         return {
           storeId: storeId,
           name: storeData.name,
-          isLiked: storeData.isLiked,
-          reviewRating: storeData.reviewRating,
-          reviewCount: storeData.reviewCount,
+          isLiked: storeData.isLiked || false,
+          reviewRating: storeData.reviewRating || 0,
+          reviewCount: storeData.reviewCount || 0,
           images: storeData.images || [],
           // 기존 프론트엔드 호환성을 위한 추가 필드
           storeImage: storeData.images?.[0] || "/samples/food1.jpg",
-          rating: storeData.reviewRating,
-          reviewCount: storeData.reviewCount
+          rating: storeData.reviewRating || 0,
+          reviewCount: storeData.reviewCount || 0
         };
       } else {
         throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
@@ -137,13 +142,28 @@ const StoreAPI = {
     } catch (error) {
       logger.error(`❌ 매장 상세 정보 조회 실패 (ID: ${storeId}):`, error);
       
-      // 500 에러는 재시도하지 않고 바로 사용자에게 알림
-      if (error.statusCode === 500) {
-        error.message = '매장 정보를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.';
+      // 인증 관련 에러 처리
+      if (error.statusCode === 401 || error.statusCode === 403) {
+        logger.warn('매장 상세 정보 조회에 인증이 필요합니다. 로그인 페이지로 리다이렉트합니다.');
+        AuthService.redirectToLogin();
+        error.message = '로그인이 필요합니다.';
+      } else if (error.statusCode === 500) {
+        // 500 에러 시 임시 데이터 반환 (사용자 경험 개선)
+        logger.warn('매장 상세 정보 조회 실패, 임시 데이터 반환');
+        return {
+          storeId: storeId,
+          name: "매장 정보를 불러올 수 없습니다",
+          isLiked: false,
+          reviewRating: 0,
+          reviewCount: 0,
+          images: ["/samples/food1.jpg"],
+          storeImage: "/samples/food1.jpg",
+          rating: 0,
+          reviewCount: 0,
+          _isTemporary: true // 임시 데이터임을 표시
+        };
       } else if (error.statusCode === 404) {
         error.message = '매장을 찾을 수 없습니다.';
-      } else if (error.statusCode === 401) {
-        error.message = '로그인이 필요합니다.';
       } else {
         error.message = '매장 정보를 불러오는데 실패했습니다.';
       }
