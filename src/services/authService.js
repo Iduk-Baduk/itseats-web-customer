@@ -187,9 +187,12 @@ class AuthService {
    */
   static async login(credentials) {
     try {
-      // 비밀번호 유효성 검증
-      if (!AuthService.validatePassword(credentials.password)) {
-        throw new Error('비밀번호는 최소 8자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+      // 개발 환경에서는 백엔드 테스트 계정을 위해 비밀번호 유효성 검증 건너뛰기
+      if (process.env.NODE_ENV === 'production') {
+        // 비밀번호 유효성 검증
+        if (!AuthService.validatePassword(credentials.password)) {
+          throw new Error('비밀번호는 최소 8자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+        }
       }
 
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH_LOGIN}`, {
@@ -198,7 +201,7 @@ class AuthService {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: credentials.email,
+          username: credentials.email,  // email → username으로 변경
           password: credentials.password
         })
       });

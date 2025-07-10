@@ -535,4 +535,5 @@ class TossPaymentAPI {
 
 // 싱글톤 인스턴스 생성
 export const tossPaymentAPI = new TossPaymentAPI();
+export { TossPaymentAPI };
 export default tossPaymentAPI; 

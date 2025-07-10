@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { orderAPI } from '../../services/orderAPI';
-import { tossPaymentAPI } from '../../services/tossPaymentAPI';
+import { tossPaymentAPI, TossPaymentAPI } from '../../services/tossPaymentAPI';
 import { paymentStatusService } from '../../services/paymentStatusService';
 import { logger } from '../../utils/logger';
 import styles from "./PaymentSuccess.module.css";
@@ -90,7 +90,7 @@ export default function TossPaymentSuccess() {
       try {
         // 결제 승인만 처리 (주문 생성과 결제 생성은 이미 Cart.jsx에서 완료)
         logger.log('📡 결제 승인 요청:', { requestData });
-        paymentResponse = await tossPaymentAPI.confirmPaymentWithBackend(null, {
+        paymentResponse = await TossPaymentAPI.confirmPaymentWithBackend(null, {
           orderId: requestData.orderId,
           amount: requestData.amount,
           paymentKey: requestData.paymentKey
