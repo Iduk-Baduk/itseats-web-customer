@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import { tossPaymentAPI } from '../../services/tossPaymentAPI';
 import { paymentTestUtils } from '../../utils/paymentTestUtils';
@@ -7,7 +7,7 @@ import { logger } from '../../utils/logger';
 const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
 const customerKey = import.meta.env.VITE_TOSS_CUSTOMER_KEY || "2TERsuSTRNCJMuXpIi-Rt";
 
-export function TossPaymentWidget({ 
+export const TossPaymentWidget = forwardRef(({ 
   amount, 
   orderId, 
   orderName, 
@@ -16,7 +16,7 @@ export function TossPaymentWidget({
   customerMobilePhone,
   onPaymentSuccess,
   onPaymentError 
-}) {
+}, ref) => {
   const [ready, setReady] = useState(false);
   const [widgets, setWidgets] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +30,15 @@ export function TossPaymentWidget({
   const paymentAttemptRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const initStartTimeRef = useRef(null);
+
+  // 외부에서 호출할 수 있는 결제 함수를 ref로 expose
+  useImperativeHandle(ref, () => ({
+    requestPayment: handlePayment,
+    isReady: ready,
+    isLoading,
+    isProcessing,
+    error
+  }));
 
   // 위젯 초기화
   useEffect(() => {
@@ -160,6 +169,12 @@ export function TossPaymentWidget({
       return;
     }
 
+    // 위젯이 준비되지 않았으면 에러
+    if (!ready || !widgets) {
+      setError('결제 위젯이 준비되지 않았습니다.');
+      return;
+    }
+
     // 결제 시도 중복 방지 체크
     if (tossPaymentAPI.isPaymentInProgress(orderId)) {
       setError('이미 진행 중인 결제가 있습니다. 잠시 후 다시 시도해주세요.');
@@ -231,7 +246,7 @@ export function TossPaymentWidget({
     } finally {
       setIsProcessing(false);
     }
-  }, [widgets, orderId, amount, orderName, customerEmail, customerName, customerMobilePhone, isProcessing, onPaymentSuccess, onPaymentError]);
+  }, [widgets, orderId, amount, orderName, customerEmail, customerName, customerMobilePhone, isProcessing, ready, onPaymentSuccess, onPaymentError]);
 
   // 결제 에러 메시지 변환
   const getPaymentErrorMessage = (error) => {
@@ -300,21 +315,6 @@ export function TossPaymentWidget({
     gap: '16px'
   };
 
-  const buttonStyle = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: isProcessing ? '#ccc' : '#2196f3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: (ready && !isProcessing) ? 'pointer' : 'not-allowed',
-    transition: 'all 0.2s ease',
-    opacity: (ready && !isProcessing) ? 1 : 0.6,
-    position: 'relative'
-  };
-
   const loadingStyle = {
     textAlign: 'center',
     padding: '40px 20px',
@@ -342,29 +342,6 @@ export function TossPaymentWidget({
     fontSize: '12px',
     cursor: 'pointer',
     marginTop: '8px'
-  };
-
-  const processingOverlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '8px',
-    zIndex: 10
-  };
-
-  const spinnerStyle = {
-    width: '20px',
-    height: '20px',
-    border: '2px solid #f3f3f3',
-    borderTop: '2px solid #2196f3',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
   };
 
   const debugInfoStyle = {
@@ -428,24 +405,6 @@ export function TossPaymentWidget({
         {/* 이용약관 */}
         <div id="agreement"></div>
         
-        {/* 결제하기 버튼 */}
-        <button 
-          style={buttonStyle}
-          onClick={handlePayment}
-          disabled={!ready || isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <div style={processingOverlayStyle}>
-                <div style={spinnerStyle}></div>
-              </div>
-              결제 처리 중...
-            </>
-          ) : (
-            '결제하기'
-          )}
-        </button>
-        
         {/* 에러 메시지 */}
         {error && (
           <div style={errorStyle}>
@@ -470,14 +429,6 @@ export function TossPaymentWidget({
           </div>
         )}
       </div>
-      
-      {/* 스피너 애니메이션 CSS */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
-} 
+}); 

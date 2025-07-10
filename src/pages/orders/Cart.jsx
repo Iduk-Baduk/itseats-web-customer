@@ -83,6 +83,7 @@ export default function Cart() {
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [paymentRequestFunction, setPaymentRequestFunction] = useState(null);
 
   // Toast 헬퍼 함수 강화
   const showToast = (message, duration = 4000) => {
@@ -193,7 +194,18 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 전역 변수로 함수 시작 시 초기화
+    // 토스페이먼츠 결제 요청
+    if (paymentRequestFunction) {
+      try {
+        await paymentRequestFunction();
+      } catch (error) {
+        logger.error('토스페이먼츠 결제 요청 실패:', error);
+        showToast('결제 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
+      return;
+    }
+
+    // 기존 결제 로직 (백업용)
     let orderResponse = null;
     
     // 중복 결제 방지 강화
@@ -622,7 +634,10 @@ export default function Cart() {
           <CartPaymentSummarySection 
             cartInfo={cartInfo} 
           />
-          <CartPaymentMethodSection cartInfo={cartInfo} />
+          <CartPaymentMethodSection 
+            cartInfo={cartInfo} 
+            onPaymentRequest={setPaymentRequestFunction}
+          />
           <CartRequestSection />
           <Header
             title=""

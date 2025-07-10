@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,8 +6,9 @@ import styles from '../../../pages/orders/Cart.module.css';
 import { TossPaymentWidget } from '../../payment/TossPaymentWidget';
 import { logger } from '../../../utils/logger';
 
-export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } }) {
+export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 }, onPaymentRequest }) {
   const navigate = useNavigate();
+  const tossWidgetRef = useRef(null);
   
   // 고객 정보 가져오기 (실제로는 로그인된 사용자 정보를 사용해야 함)
   const customerInfo = useSelector(state => state.user?.currentUser) || {
@@ -15,6 +16,26 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
     name: "테스트사용자",
     phone: "01000000000"
   };
+
+  // 결제 요청 함수
+  const handlePaymentRequest = async () => {
+    if (tossWidgetRef.current && tossWidgetRef.current.isReady) {
+      try {
+        await tossWidgetRef.current.requestPayment();
+      } catch (error) {
+        logger.error('결제 요청 실패:', error);
+      }
+    } else {
+      logger.warn('토스페이먼츠 위젯이 준비되지 않았습니다.');
+    }
+  };
+
+  // 외부에서 결제 요청할 수 있도록 콜백 전달
+  React.useEffect(() => {
+    if (onPaymentRequest) {
+      onPaymentRequest(handlePaymentRequest);
+    }
+  }, [onPaymentRequest]);
 
   return (
     <section className={styles.section}>
@@ -37,6 +58,7 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0 } 
           )}
           
           <TossPaymentWidget
+            ref={tossWidgetRef}
             amount={{
               currency: "KRW",
               value: cartInfo.totalPrice || 0,
