@@ -33,6 +33,14 @@ export default function TossPayment() {
       setIsLoading(false);
       return;
     }
+    
+    // amount 숫자 검증
+    const parsedAmount = parseInt(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError('결제 금액이 올바르지 않습니다.');
+      setIsLoading(false);
+      return;
+    }
 
     // 잠시 후 로딩 상태 해제
     const timer = setTimeout(() => {
