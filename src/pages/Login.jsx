@@ -6,6 +6,7 @@ import Button from "../components/common/basic/Button";
 import LineButton from "../components/common/basic/LineButton";
 import styles from "./Login.module.css";
 import CheckBox from "../components/common/basic/CheckBox";
+import AuthService from "../services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,6 +16,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isAutoLogin, setAutoLogin] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // 이미 로그인된 경우 리다이렉트
+  useEffect(() => {
+    if (AuthService.isAuthenticated()) {
+      const redirectPath = new URLSearchParams(location.search).get('redirect') || '/';
+      navigate(redirectPath, { replace: true });
+    }
+  }, [navigate, location.search]);
 
   // 회원가입에서 전달받은 정보 처리
   useEffect(() => {
@@ -31,9 +40,15 @@ export default function Login() {
   }, [location.state]);
 
   const handleLogin = async () => {
-    const result = await login({ username, password, isAutoLogin });
-    if (result) {
-      navigate("/"); // 홈으로 이동
+    try {
+      const result = await login({ username, password, isAutoLogin });
+      if (result) {
+        // 리다이렉트 경로가 있으면 해당 경로로, 없으면 홈으로
+        const redirectPath = new URLSearchParams(location.search).get('redirect') || '/';
+        navigate(redirectPath, { replace: true });
+      }
+    } catch (error) {
+      console.error('로그인 실패:', error);
     }
   };
 

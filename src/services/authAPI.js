@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 import { STORAGE_KEYS, logger } from '../utils/logger';
-import { saveToken, clearToken } from '../utils/tokenUtils';
 import { API_ENDPOINTS } from '../config/api';
+import AuthService from './authService';
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -29,26 +29,6 @@ const retryRequest = async (requestFn, retryCount = 0) => {
     }
     
     throw error;
-  }
-};
-
-// 토큰에서 사용자 ID 추출 유틸리티
-const extractUserIdFromToken = (token) => {
-  if (!token) return null;
-  
-  try {
-    // JWT 토큰인 경우 디코딩
-    if (token.includes('.')) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.userId || payload.sub;
-    }
-    
-    // 간단한 형식인 경우
-    const parts = token.split('_');
-    return parts.length > 1 ? parts[1] : null;
-  } catch (error) {
-    logger.error('토큰 파싱 실패:', error);
-    return null;
   }
 };
 
@@ -105,32 +85,40 @@ export const login = async ({ username, password, isAutoLogin }) => {
     );
     
     const accessToken = response.headers?.["access-token"] || response.data?.accessToken;
+    const refreshToken = response.headers?.["refresh-token"] || response.data?.refreshToken;
     
     if (!accessToken) {
       throw new Error('로그인 토큰을 받지 못했습니다.');
     }
     
-    // 토큰 저장 (24시간 만료)
-    const expiresIn = isAutoLogin ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7일 또는 24시간
-    saveToken(accessToken, expiresIn);
+    // AuthService를 사용하여 토큰 저장
+    AuthService.setToken(accessToken);
+    if (refreshToken) {
+      AuthService.setRefreshToken(refreshToken);
+    }
 
-    // 사용자 정보 조회
+    // 사용자 정보 조회 및 저장
     const currentMember = await retryRequest(() => 
-      apiClient.get("/members/me")
+      apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
+
+    const userInfo = {
+      id: currentMember.data.memberId,
+      username: currentMember.data.username,
+      name: currentMember.data.name,
+      nickname: currentMember.data.nickname,
+      email: currentMember.data.email,
+      phone: currentMember.data.phone,
+      reviewCount: currentMember.data.reviewCount || 0,
+      favoriteCount: currentMember.data.favoriteCount || 0,
+    };
+
+    // 사용자 정보 저장
+    AuthService.setUserInfo(userInfo);
 
     return {
       success: true,
-      user: {
-        id: currentMember.data.memberId,
-        username: currentMember.data.username,
-        name: currentMember.data.name,
-        nickname: currentMember.data.nickname,
-        email: currentMember.data.email,
-        phone: currentMember.data.phone,
-        reviewCount: currentMember.data.reviewCount || 0,
-        favoriteCount: currentMember.data.favoriteCount || 0,
-      },
+      user: userInfo,
       accessToken,
     };
   } catch (error) {
@@ -154,11 +142,18 @@ export const login = async ({ username, password, isAutoLogin }) => {
 // 내 정보 조회 API
 export const getCurrentUser = async () => {
   try {
+    // 먼저 저장된 사용자 정보 확인
+    const savedUserInfo = AuthService.getUserInfo();
+    if (savedUserInfo) {
+      return savedUserInfo;
+    }
+
+    // 저장된 정보가 없으면 API 호출
     const response = await retryRequest(() => 
-      apiClient.get("/members/me")
+      apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
     
-    return {
+    const userInfo = {
       id: response.data.memberId,
       username: response.data.username,
       name: response.data.name,
@@ -168,6 +163,11 @@ export const getCurrentUser = async () => {
       reviewCount: response.data.reviewCount || 0,
       favoriteCount: response.data.favoriteCount || 0,
     };
+
+    // 사용자 정보 저장
+    AuthService.setUserInfo(userInfo);
+    
+    return userInfo;
   } catch (error) {
     logger.error('내 정보 조회 실패:', error);
     
@@ -191,9 +191,8 @@ export const logout = async () => {
   } catch (error) {
     logger.warn('백엔드 로그아웃 실패, 로컬에서만 로그아웃:', error);
   } finally {
-    // 로컬 토큰 및 사용자 정보 삭제
-    clearToken();
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    // AuthService를 사용하여 모든 인증 정보 제거
+    AuthService.removeToken();
   }
   
   return { success: true, message: '로그아웃되었습니다.' };
@@ -209,8 +208,8 @@ export const refreshToken = async () => {
     const newAccessToken = response.headers?.["access-token"] || response.data?.accessToken;
     
     if (newAccessToken) {
-      // 새 토큰 저장 (24시간 만료)
-      saveToken(newAccessToken, 24 * 60 * 60 * 1000);
+      // AuthService를 사용하여 새 토큰 저장
+      AuthService.setToken(newAccessToken);
       logger.log('토큰 갱신 성공');
       return newAccessToken;
     } else {

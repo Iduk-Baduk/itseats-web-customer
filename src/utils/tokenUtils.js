@@ -1,4 +1,8 @@
 // 토큰 관리 유틸리티
+// ⚠️ 주의: 이 파일은 하위 호환성을 위해 유지됩니다.
+// 새로운 코드에서는 AuthService를 사용하는 것을 권장합니다.
+// import AuthService from '../services/authService';
+
 import { STORAGE_KEYS } from './logger';
 
 /**
@@ -125,6 +129,7 @@ export const validateTokenDataDetailed = (data) => {
  * 토큰을 안전한 형식으로 저장
  * @param {string} token - 저장할 토큰
  * @param {number} expiresIn - 만료 시간 (밀리초, 기본값: 24시간)
+ * @deprecated AuthService.setToken() 사용을 권장합니다
  */
 export const saveToken = (token, expiresIn = 24 * 60 * 60 * 1000) => {
   if (!token || typeof token !== 'string') {
@@ -161,6 +166,7 @@ export const saveToken = (token, expiresIn = 24 * 60 * 60 * 1000) => {
 /**
  * 저장된 토큰 데이터 조회
  * @returns {TokenData|null} 토큰 데이터 또는 null
+ * @deprecated AuthService.getToken() 사용을 권장합니다
  */
 export const getTokenData = () => {
   try {
@@ -198,28 +204,18 @@ export const getTokenData = () => {
         throw new Error('발급 시간이 만료 시간보다 늦습니다');
       }
       
-      // 토큰 길이 검증
-      if (parsed.token.length < 10) {
-        throw new Error('토큰이 너무 짧습니다');
-      }
-    } else {
-      throw new Error('토큰 데이터가 객체가 아닙니다');
+      return parsed;
     }
 
-    // 추가 검증 함수 호출
-    if (!validateTokenData(parsed)) {
-      // 복구 시도
-      if (attemptTokenRecovery()) {
-        // 복구 성공 시 다시 조회
-        return getTokenData();
-      }
-      throw new Error('토큰 데이터 구조가 유효하지 않습니다');
-    }
-
-    return parsed;
+    throw new Error('알 수 없는 토큰 데이터 형식');
   } catch (error) {
-    console.error('토큰 데이터 파싱 실패:', error);
-    clearToken();
+    console.error('토큰 데이터 조회 실패:', error);
+    // 오류 발생 시 토큰 데이터 삭제
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    } catch (clearError) {
+      console.error('토큰 데이터 삭제 실패:', clearError);
+    }
     return null;
   }
 };
@@ -227,34 +223,43 @@ export const getTokenData = () => {
 /**
  * 토큰 값만 조회
  * @returns {string|null} 토큰 값 또는 null
+ * @deprecated AuthService.getToken() 사용을 권장합니다
  */
 export const getToken = () => {
   const tokenData = getTokenData();
-  return tokenData?.token || null;
+  return tokenData ? tokenData.token : null;
 };
 
 /**
  * 토큰 유효성 검사
- * @returns {boolean} 토큰 유효 여부
+ * @returns {boolean} 토큰이 유효한지 여부
+ * @deprecated AuthService.isAuthenticated() 사용을 권장합니다
  */
 export const isTokenValid = () => {
   const tokenData = getTokenData();
   if (!tokenData) return false;
 
-  const now = Date.now();
-  const isValid = tokenData.token && now < tokenData.expiresAt;
-
-  // 만료된 토큰 자동 삭제
-  if (!isValid && tokenData.token) {
+  // 만료 시간 확인
+  if (Date.now() > tokenData.expiresAt) {
+    console.warn('토큰이 만료되었습니다');
     clearToken();
+    return false;
   }
 
-  return isValid;
+  // 토큰 값 유효성 확인
+  if (!tokenData.token || tokenData.token.length < 10) {
+    console.warn('토큰 값이 유효하지 않습니다');
+    clearToken();
+    return false;
+  }
+
+  return true;
 };
 
 /**
  * 토큰 만료까지 남은 시간 (밀리초)
  * @returns {number} 남은 시간 (밀리초), 만료된 경우 0
+ * @deprecated AuthService를 사용하여 토큰 만료 시간을 확인하세요
  */
 export const getTokenTimeRemaining = () => {
   const tokenData = getTokenData();
@@ -266,28 +271,33 @@ export const getTokenTimeRemaining = () => {
 
 /**
  * 토큰 만료까지 남은 시간 (분)
- * @returns {number} 남은 시간 (분)
+ * @returns {number} 남은 시간 (분), 만료된 경우 0
+ * @deprecated AuthService를 사용하여 토큰 만료 시간을 확인하세요
  */
 export const getTokenMinutesRemaining = () => {
-  return Math.floor(getTokenTimeRemaining() / (60 * 1000));
+  const timeRemaining = getTokenTimeRemaining();
+  return Math.floor(timeRemaining / (60 * 1000));
 };
 
 /**
- * 토큰이 곧 만료되는지 확인 (기본값: 5분 전)
- * @param {number} warningMinutes - 경고할 시간 (분)
+ * 토큰이 곧 만료되는지 확인
+ * @param {number} warningMinutes - 경고 시간 (분, 기본값: 5)
  * @returns {boolean} 곧 만료되는지 여부
+ * @deprecated AuthService를 사용하여 토큰 만료 시간을 확인하세요
  */
 export const isTokenExpiringSoon = (warningMinutes = 5) => {
   const minutesRemaining = getTokenMinutesRemaining();
-  return minutesRemaining > 0 && minutesRemaining <= warningMinutes;
+  return minutesRemaining <= warningMinutes && minutesRemaining > 0;
 };
 
 /**
  * 토큰 삭제
+ * @deprecated AuthService.removeToken() 사용을 권장합니다
  */
 export const clearToken = () => {
   try {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    console.log('토큰이 삭제되었습니다');
   } catch (error) {
     console.error('토큰 삭제 실패:', error);
   }
@@ -296,6 +306,7 @@ export const clearToken = () => {
 /**
  * 토큰 정보 조회 (디버깅용)
  * @returns {Object} 토큰 정보
+ * @deprecated AuthService를 사용하여 토큰 정보를 확인하세요
  */
 export const getTokenInfo = () => {
   const tokenData = getTokenData();
@@ -303,77 +314,63 @@ export const getTokenInfo = () => {
     return {
       hasToken: false,
       isValid: false,
-      timeRemaining: 0,
-      minutesRemaining: 0,
-      isExpiringSoon: false,
-      validationErrors: [],
-      validationWarnings: []
+      message: '토큰이 없습니다'
     };
   }
 
-  const timeRemaining = getTokenTimeRemaining();
-  const minutesRemaining = getTokenMinutesRemaining();
-  const isValid = isTokenValid();
-  const validationResult = validateTokenDataDetailed(tokenData);
+  const now = Date.now();
+  const isExpired = now > tokenData.expiresAt;
+  const timeRemaining = Math.max(0, tokenData.expiresAt - now);
+  const minutesRemaining = Math.floor(timeRemaining / (60 * 1000));
 
   return {
     hasToken: true,
-    isValid,
+    isValid: !isExpired && tokenData.token.length >= 10,
+    isExpired,
     timeRemaining,
     minutesRemaining,
-    isExpiringSoon: isTokenExpiringSoon(),
-    issuedAt: new Date(tokenData.issuedAt).toISOString(),
     expiresAt: new Date(tokenData.expiresAt).toISOString(),
-    validationErrors: validationResult.errors,
-    validationWarnings: validationResult.warnings,
-    validationDetails: validationResult
+    issuedAt: new Date(tokenData.issuedAt).toISOString(),
+    tokenLength: tokenData.token.length,
+    message: isExpired 
+      ? '토큰이 만료되었습니다' 
+      : `토큰이 유효합니다 (${minutesRemaining}분 남음)`
   };
 };
 
 /**
- * 토큰 데이터 복구 시도 (손상된 데이터 정리)
+ * 토큰 복구 시도 (오류 발생 시)
  * @returns {boolean} 복구 성공 여부
+ * @deprecated AuthService를 사용하여 토큰을 관리하세요
  */
 export const attemptTokenRecovery = () => {
   try {
-    const tokenData = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (!tokenData) return false;
-
-    const parsed = JSON.parse(tokenData);
-    
-    // 문자열로 저장된 경우 복구
-    if (typeof parsed === 'string' && parsed.length >= 10) {
-      const recoveredData = {
-        token: parsed,
-        expiresAt: Date.now() + (24 * 60 * 60 * 1000),
-        issuedAt: Date.now()
-      };
-      
-      if (validateTokenData(recoveredData)) {
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, JSON.stringify(recoveredData));
-        console.log('토큰 데이터 복구 성공');
-        return true;
-      }
+    const tokenData = getTokenData();
+    if (!tokenData) {
+      console.log('복구할 토큰이 없습니다');
+      return false;
     }
 
-    // 부분적으로 손상된 객체 복구 시도
-    if (typeof parsed === 'object' && parsed !== null && parsed.token) {
-      const recoveredData = {
-        token: parsed.token,
-        expiresAt: parsed.expiresAt || Date.now() + (24 * 60 * 60 * 1000),
-        issuedAt: parsed.issuedAt || Date.now()
-      };
-      
-      if (validateTokenData(recoveredData)) {
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, JSON.stringify(recoveredData));
-        console.log('토큰 데이터 복구 성공');
-        return true;
-      }
+    // 토큰 데이터 검증
+    const validation = validateTokenDataDetailed(tokenData);
+    if (!validation.isValid) {
+      console.warn('토큰 데이터 검증 실패:', validation.errors);
+      clearToken();
+      return false;
     }
 
-    return false;
+    // 만료 확인
+    if (Date.now() > tokenData.expiresAt) {
+      console.warn('토큰이 만료되어 복구할 수 없습니다');
+      clearToken();
+      return false;
+    }
+
+    console.log('토큰 복구 성공');
+    return true;
   } catch (error) {
-    console.error('토큰 데이터 복구 실패:', error);
+    console.error('토큰 복구 실패:', error);
+    clearToken();
     return false;
   }
 }; 
