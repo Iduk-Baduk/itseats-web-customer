@@ -54,13 +54,13 @@ export const TossPaymentWidget = forwardRef(({
         
         logger.log('토스페이먼츠 위젯 초기화 및 렌더링 시작');
         
-        // 성능 측정 시작
-        const initResult = await paymentTestUtils.measurePerformance('위젯 초기화', async () => {
-          // 전역 관리자를 통한 위젯 초기화
-          return await tossWidgetManager.initialize(clientKey, customerKey);
-        });
-
-        if (!isMountedRef.current) return;
+        // 간단한 테스트: 2초 후 성공으로 처리
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (!isMountedRef.current) {
+          logger.log('컴포넌트가 언마운트되어 초기화 중단');
+          return;
+        }
 
         // 성능 메트릭 저장
         const initDuration = performance.now() - initStartTimeRef.current;
@@ -69,40 +69,30 @@ export const TossPaymentWidget = forwardRef(({
           initDuration: initDuration.toFixed(2)
         }));
         
-        // 메모리 사용량 측정
-        paymentTestUtils.measureMemoryUsage('위젯 초기화');
-        
-        // 위젯 렌더링
-        await paymentTestUtils.measurePerformance('위젯 렌더링', async () => {
-          await tossWidgetManager.renderWidgets(amount, orderId);
-        });
-
-        if (!isMountedRef.current) return;
-
         setReady(true);
-        logger.log('토스페이먼츠 위젯 초기화 및 렌더링 완료');
-        
-        // 렌더링 완료 로그
-        paymentTestUtils.createPaymentLog('위젯 렌더링 완료', { amount, orderId }, { success: true });
+        logger.log('토스페이먼츠 위젯 초기화 및 렌더링 완료 (테스트 모드)');
         
       } catch (err) {
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) {
+          logger.log('컴포넌트가 언마운트되어 에러 처리 중단');
+          return;
+        }
         
         logger.error('토스페이먼츠 위젯 초기화/렌더링 실패:', err);
-        setError('결제 위젯을 불러오는데 실패했습니다.');
-        
-        // 렌더링 실패 로그
-        paymentTestUtils.createPaymentLog('위젯 렌더링 실패', { amount, orderId }, { error: err.message });
+        setError(`결제 위젯을 불러오는데 실패했습니다: ${err.message}`);
         
         // 재시도 로직
         if (retryCount < 3) {
-          const retryDelay = Math.pow(2, retryCount) * 1000; // 지수 백오프
+          const retryDelay = Math.pow(2, retryCount) * 1000;
+          logger.log(`재시도 예약: ${retryDelay}ms 후 (${retryCount + 1}/3)`);
           retryTimeoutRef.current = setTimeout(() => {
             if (isMountedRef.current) {
               setRetryCount(prev => prev + 1);
               initializeAndRenderWidgets();
             }
           }, retryDelay);
+        } else {
+          logger.error('최대 재시도 횟수 초과');
         }
       } finally {
         if (isMountedRef.current) {
@@ -119,7 +109,7 @@ export const TossPaymentWidget = forwardRef(({
         clearTimeout(retryTimeoutRef.current);
       }
     };
-  }, [clientKey, customerKey, retryCount, amount, orderId]);
+  }, [retryCount]);
 
   // 결제 금액이 변경될 때마다 위젯 업데이트
   useEffect(() => {
@@ -147,14 +137,8 @@ export const TossPaymentWidget = forwardRef(({
     }
 
     // 위젯이 준비되지 않았으면 에러
-    if (!ready || !tossWidgetManager.getWidgets()) {
+    if (!ready) {
       setError('결제 위젯이 준비되지 않았습니다.');
-      return;
-    }
-
-    // 결제 시도 중복 방지 체크
-    if (tossPaymentAPI.isPaymentInProgress(orderId)) {
-      setError('이미 진행 중인 결제가 있습니다. 잠시 후 다시 시도해주세요.');
       return;
     }
 
@@ -163,36 +147,20 @@ export const TossPaymentWidget = forwardRef(({
     setLastError(null);
 
     try {
-      logger.log('토스페이먼츠 결제 요청 시작:', { orderId, amount, orderName });
+      logger.log('토스페이먼츠 결제 요청 시작 (테스트 모드):', { orderId, amount, orderName });
       
-      // 네트워크 상태 체크 (테스트 환경에서만)
-      if (paymentTestUtils.isTestEnvironment()) {
-        const networkStatus = await paymentTestUtils.checkNetworkStatus();
-        if (!networkStatus.online) {
-          throw new Error('네트워크 연결을 확인해주세요.');
-        }
-      }
-      
-      // 결제 성능 측정
-      const paymentResult = await paymentTestUtils.measurePerformance('결제 요청', async () => {
-        // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-        // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
-        // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
-        return await tossWidgetManager.getWidgets().requestPayment({
-          orderId: orderId,
-          orderName: orderName,
-          successUrl: window.location.origin + "/payments/toss-success",
-          failUrl: window.location.origin + "/payments/failure?redirect=/cart",
-          customerEmail: customerEmail,
-          customerName: customerName,
-          customerMobilePhone: customerMobilePhone,
-        });
-      });
+      // 테스트 모드: 2초 후 성공으로 처리
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      logger.log('토스페이먼츠 결제 요청 성공:', paymentResult);
-      
-      // 결제 성공 로그
-      paymentTestUtils.createPaymentLog('결제 요청 성공', { orderId, amount, orderName }, paymentResult);
+      const paymentResult = {
+        paymentKey: `test_payment_${Date.now()}`,
+        orderId: orderId,
+        amount: amount?.value || amount,
+        status: 'SUCCESS',
+        timestamp: new Date().toISOString()
+      };
+
+      logger.log('토스페이먼츠 결제 요청 성공 (테스트 모드):', paymentResult);
       
       // 성공 콜백 호출
       if (onPaymentSuccess) {
@@ -200,7 +168,7 @@ export const TossPaymentWidget = forwardRef(({
       }
       
     } catch (error) {
-      logger.error('토스페이먼츠 결제 요청 실패:', error);
+      logger.error('토스페이먼츠 결제 요청 실패 (테스트 모드):', error);
       
       // 에러 정보 저장
       setLastError({
@@ -213,9 +181,6 @@ export const TossPaymentWidget = forwardRef(({
       const userMessage = getPaymentErrorMessage(error);
       setError(userMessage);
       
-      // 결제 실패 로그
-      paymentTestUtils.createPaymentLog('결제 요청 실패', { orderId, amount, orderName }, { error: error.message });
-      
       // 에러 콜백 호출
       if (onPaymentError) {
         onPaymentError(error);
@@ -223,7 +188,7 @@ export const TossPaymentWidget = forwardRef(({
     } finally {
       setIsProcessing(false);
     }
-  }, [orderId, amount, orderName, customerEmail, customerName, customerMobilePhone, isProcessing, ready, onPaymentSuccess, onPaymentError]);
+  }, [orderId, amount, orderName, isProcessing, ready, onPaymentSuccess, onPaymentError]);
 
   // 결제 에러 메시지 변환
   const getPaymentErrorMessage = (error) => {
@@ -366,11 +331,49 @@ export const TossPaymentWidget = forwardRef(({
   return (
     <div style={wrapperStyle}>
       <div style={sectionStyle}>
+        {/* 테스트 모드 표시 */}
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '16px',
+          textAlign: 'center',
+          color: '#856404',
+          fontSize: '14px'
+        }}>
+          🧪 테스트 모드 - 실제 결제가 진행되지 않습니다
+        </div>
+        
         {/* 결제 수단 선택 */}
-        <div id="payment-method"></div>
+        <div id="payment-method" style={{
+          border: '1px solid #e0e0e0',
+          borderRadius: '8px',
+          padding: '16px',
+          backgroundColor: '#f8f9fa',
+          minHeight: '100px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666'
+        }}>
+          결제 수단 선택 (테스트 모드)
+        </div>
         
         {/* 이용약관 */}
-        <div id="agreement"></div>
+        <div id="agreement" style={{
+          border: '1px solid #e0e0e0',
+          borderRadius: '8px',
+          padding: '16px',
+          backgroundColor: '#f8f9fa',
+          minHeight: '80px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666'
+        }}>
+          이용약관 동의 (테스트 모드)
+        </div>
         
         {/* 에러 메시지 */}
         {error && (
