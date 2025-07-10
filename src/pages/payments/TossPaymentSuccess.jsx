@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { orderAPI } from '../../services/orderAPI';
+import { tossPaymentAPI } from '../../services/tossPaymentAPI';
 import { paymentStatusService } from '../../services/paymentStatusService';
 import { logger } from '../../utils/logger';
 import styles from "./PaymentSuccess.module.css";
@@ -13,6 +14,7 @@ export default function TossPaymentSuccess() {
   const [error, setError] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [pollingStatus, setPollingStatus] = useState(null);
+  const [orderData, setOrderData] = useState(null);
 
   const confirmPayment = useCallback(async () => {
     const requestData = {
@@ -39,15 +41,46 @@ export default function TossPaymentSuccess() {
     }
 
     try {
-      // 백엔드 API를 통한 결제 승인
-      const response = await orderAPI.confirmPayment(requestData);
-      const json = response.data;
-
-      // 결제 성공 비즈니스 로직을 구현하세요.
-      logger.log('백엔드 결제 승인 성공:', json);
+      // 1. 토스페이먼츠 결제 승인 (백엔드 API)
+      logger.log('📡 토스페이먼츠 결제 승인 시작:', requestData);
+      
+      // paymentId는 orderId를 기반으로 생성 (실제로는 백엔드에서 관리)
+      const paymentId = requestData.orderId;
+      
+      const paymentResponse = await tossPaymentAPI.confirmPaymentWithBackend(
+        paymentId,
+        requestData
+      );
+      
+      logger.log('✅ 토스페이먼츠 결제 승인 성공:', paymentResponse);
+      
+      // 2. 주문 생성 (결제 승인 성공 후)
+      logger.log('📡 주문 생성 시작');
+      
+      // sessionStorage에서 주문 데이터 가져오기
+      const storedOrderData = sessionStorage.getItem('pendingOrderData');
+      if (!storedOrderData) {
+        throw new Error('주문 정보를 찾을 수 없습니다. 장바구니에서 다시 시도해주세요.');
+      }
+      
+      const orderData = JSON.parse(storedOrderData);
+      logger.log('📦 주문 데이터:', orderData);
+      
+      const orderResponse = await orderAPI.createOrder(orderData);
+      logger.log('✅ 주문 생성 성공:', orderResponse);
+      
+      // 주문 데이터 저장
+      setOrderData(orderResponse);
       
       // 결제 상태 설정
-      setPaymentStatus(json);
+      setPaymentStatus({
+        ...paymentResponse,
+        orderId: orderResponse.orderId || requestData.orderId,
+        status: 'DONE'
+      });
+      
+      // sessionStorage에서 주문 데이터 정리
+      sessionStorage.removeItem('pendingOrderData');
       
       // 폴링 시작 (Webhook 상태 반영을 위해)
       startPaymentPolling(requestData.paymentKey, requestData.orderId);
@@ -56,7 +89,7 @@ export default function TossPaymentSuccess() {
       
     } catch (error) {
       // 결제 실패 비즈니스 로직을 구현하세요.
-      logger.error('백엔드 결제 승인 실패:', error);
+      logger.error('❌ 결제/주문 처리 실패:', error);
       const errorMessage = error?.message || '결제 처리 중 오류가 발생했습니다';
       setError(errorMessage);
       setIsProcessing(false);
@@ -120,7 +153,7 @@ export default function TossPaymentSuccess() {
         <div className={commonStyles.wrapper}>
           <div className={commonStyles.boxSection}>
             <h2>결제 처리 중</h2>
-            <p>결제를 확인하고 있습니다...</p>
+            <p>결제를 확인하고 주문을 생성하고 있습니다...</p>
             <div className={styles.loadingSpinner}></div>
             
             {/* 폴링 상태 표시 */}
@@ -186,7 +219,7 @@ export default function TossPaymentSuccess() {
                   style={{ color: paymentStatusService.getStatusStyle(paymentStatus.status).color }}
                 >
                   {paymentStatusService.getStatusStyle(paymentStatus.status).icon} {' '}
-                  {paymentStatusService.getStatusMessage(paymentStatus.status)}
+                  {paymentStatusService.getStatusStyle(paymentStatus.status).message}
                 </span>
               </div>
               
@@ -202,10 +235,19 @@ export default function TossPaymentSuccess() {
             </div>
           )}
           
-          <p>{`주문번호: ${searchParams.get("orderId")}`}</p>
-          <p>{`결제 금액: ${Number(
-            searchParams.get("amount")
-          ).toLocaleString()}원`}</p>
+          {/* 주문 정보 표시 */}
+          {orderData && (
+            <div className={styles.orderInfo}>
+              <h3>주문 정보</h3>
+              <p>주문번호: {orderData.orderId || searchParams.get("orderId")}</p>
+              <p>매장명: {orderData.storeName}</p>
+              <p>결제 금액: {Number(searchParams.get("amount")).toLocaleString()}원</p>
+              {orderData.deliveryAddress && (
+                <p>배송지: {orderData.deliveryAddress.mainAddress}</p>
+              )}
+            </div>
+          )}
+          
           <p className={styles.successMessage}>결제가 정상적으로 완료되었습니다.</p>
           <p>주문 내역은 마이페이지에서 확인하실 수 있습니다.</p>
           

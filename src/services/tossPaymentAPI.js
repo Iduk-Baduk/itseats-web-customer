@@ -231,6 +231,53 @@ class TossPaymentAPI {
     }
   }
 
+  // 결제 승인 (백엔드 API 엔드포인트 사용)
+  async confirmPaymentWithBackend(paymentId, paymentData) {
+    const { paymentKey, orderId, amount } = paymentData;
+    
+    // 결제 시도 중복 방지
+    const attemptId = this.registerPaymentAttempt(orderId);
+    
+    try {
+      logger.log('📡 토스페이먼츠 결제 승인 요청 (백엔드 API):', { paymentId, orderId, amount, paymentKey });
+      
+      // 백엔드 API를 통해 토스페이먼츠 결제 승인
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.PAYMENT_CONFIRM(paymentId), {
+          paymentKey,
+          orderId,
+          amount: Number(amount)
+        })
+      );
+
+      this.completePaymentAttempt(orderId, 'success');
+      logger.log('✅ 토스페이먼츠 결제 승인 성공 (백엔드 API):', response.data);
+      
+      return response.data;
+    } catch (error) {
+      this.completePaymentAttempt(orderId, 'failed');
+      logger.error('❌ 토스페이먼츠 결제 승인 실패 (백엔드 API):', error);
+      
+      // 백엔드 에러 응답 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 400) {
+        error.message = '잘못된 금액이 입력되었습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '인증이 필요합니다.';
+      } else if (error.statusCode === 500) {
+        error.message = '토스 서버 오류가 발생했습니다.';
+      } else {
+        error.message = '결제 승인 처리 중 오류가 발생했습니다.';
+      }
+      
+      throw error;
+    } finally {
+      // 주기적으로 오래된 결제 시도 데이터 정리
+      this.cleanupPaymentAttempts();
+    }
+  }
+
   // 사용자 친화적인 에러 메시지 변환
   getUserFriendlyErrorMessage(error) {
     const message = error.message || '';

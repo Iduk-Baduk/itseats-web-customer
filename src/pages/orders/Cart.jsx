@@ -521,6 +521,38 @@ export default function Cart() {
 
       let paymentResult = null; // 결제 결과 초기화
       
+      // 주문 데이터를 sessionStorage에 저장 (결제 성공 후 주문 생성용)
+      const orderDataForPayment = {
+        storeId: currentStoreId,
+        storeName: currentStoreInfo?.name || "알 수 없는 매장",
+        totalPrice: cartInfo.totalPrice,
+        deliveryFee: deliveryOption?.price || 0,
+        orderMenus: orderMenus.map(menu => ({
+          menuId: menu.menuId,
+          menuName: menu.menuName,
+          quantity: menu.quantity,
+          price: menu.menuTotalPrice || 0,
+          options: menu.menuOptions || []
+        })),
+        deliveryAddress: {
+          roadAddress: selectedAddress?.address || "",
+          detailAddress: selectedAddress?.detailAddress || "",
+          lat: selectedAddress?.lat,
+          lng: selectedAddress?.lng
+        },
+        paymentMethod: {
+          type: 'CARD',
+          id: 'toss'
+        },
+        storeRequest: requestInfo?.storeRequest || "",
+        riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
+        couponIds: Array.isArray(selectedCouponIds) ? selectedCouponIds : []
+      };
+      
+      // sessionStorage에 주문 데이터 저장
+      sessionStorage.setItem('pendingOrderData', JSON.stringify(orderDataForPayment));
+      logger.log('💾 주문 데이터 sessionStorage 저장:', orderDataForPayment);
+      
       // 토스페이먼츠 결제 페이지로 이동
       logger.log('🔄 토스페이먼츠 결제 페이지로 이동:', paymentData);
       

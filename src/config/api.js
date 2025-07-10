@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   PAYMENTS: '/payments',
   PAYMENT_BY_ID: (id) => `/payments/${id}`,
   PAYMENT_STATUS: (id) => `/payments/${id}/status`,
+  PAYMENT_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`,
   
   // 쿠폰 관련
   COUPONS: '/coupons',
