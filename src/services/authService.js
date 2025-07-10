@@ -211,13 +211,20 @@ class AuthService {
         throw new Error(errorData.message || '로그인에 실패했습니다.');
       }
 
-      const data = await response.json();
-      
-      // 응답 헤더에서 토큰 추출 (백엔드 응답 형식에 따라 조정)
+      // 백엔드에서 성공 시 응답 본문이 비어있으므로 헤더에서만 토큰 추출
       const accessToken = response.headers.get('Access-Token') || 
-                         response.headers.get('access-token') ||
-                         data.accessToken ||
-                         data.token;
+                         response.headers.get('access-token');
+      
+      // 응답 본문이 있는 경우에만 JSON 파싱 시도
+      let data = {};
+      try {
+        const responseText = await response.text();
+        if (responseText.trim()) {
+          data = JSON.parse(responseText);
+        }
+      } catch (parseError) {
+        logger.warn('응답 본문 파싱 실패 (정상적인 경우):', parseError);
+      }
       
       const refreshToken = response.headers.get('Set-Cookie') ||
                           response.headers.get('refresh-token') ||
