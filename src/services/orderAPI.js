@@ -150,7 +150,10 @@ export const orderAPI = {
         data: requestData,
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        fullUrl: `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ORDER_CONFIRM}`,
+        baseURL: API_CONFIG.BASE_URL,
+        endpoint: API_ENDPOINTS.ORDER_CONFIRM
       });
       
       // 백엔드 API 호출
