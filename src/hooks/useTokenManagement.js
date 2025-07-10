@@ -103,7 +103,7 @@ export const useTokenManagement = (options = {}) => {
         // });
       }, refreshDelay);
     }
-  }, [autoRefresh, isValid, isLoading, timeRemaining, warningMinutes, autoLogout, handleLogout]);
+  }, [autoRefresh, isValid, isLoading, timeRemaining, warningMinutes]);
 
   // 주기적 토큰 상태 확인
   const startTokenMonitoring = useCallback(() => {
@@ -137,7 +137,7 @@ export const useTokenManagement = (options = {}) => {
     return () => {
       stopTokenMonitoring();
     };
-  }, [dispatch, startTokenMonitoring, stopTokenMonitoring]);
+  }, []); // 의존성 배열을 비워서 마운트 시에만 실행
 
   // 토큰 상태 변경 시 갱신 스케줄링
   useEffect(() => {

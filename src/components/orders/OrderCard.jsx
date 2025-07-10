@@ -53,7 +53,7 @@ function OrderCard({
         stopTracking();
       }
     };
-  }, [order.id, startTracking, stopTracking]); // order.status 제거
+  }, [order.id, order.orderStatus]); // startTracking, stopTracking 의존성 제거
 
   // Redux 주문 데이터와 기존 더미 데이터 호환성을 위한 필드 매핑 - useMemo로 최적화
   const orderData = useMemo(() => {
