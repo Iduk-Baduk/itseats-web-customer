@@ -16,6 +16,11 @@ export const isKakaoMapLoaded = () => {
   return !!(window.kakao && window.kakao.maps);
 };
 
+// 카카오맵 API 키 확인
+export const isKakaoApiKeySet = () => {
+  return !!(import.meta.env.VITE_APP_KAKAOMAP_KEY);
+};
+
 // GPS 권한 체크
 export const checkGPSPermission = () => {
   return new Promise((resolve) => {

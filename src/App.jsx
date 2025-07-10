@@ -12,6 +12,7 @@ import { generatePerformanceReport } from "./utils/performance";
 import { checkStorageSize, clearLocalStorage } from "./utils/storageUtils";
 import { logger } from "./utils/logger";
 import { useTokenManagement } from "./hooks/useTokenManagement";
+import { logKakaoMapDebugInfo, getKakaoMapStatus } from "./utils/kakaoMapUtils";
 
 export default function App() {
   const cart = useSelector((state) => state.cart.orderMenus);
@@ -30,7 +31,7 @@ export default function App() {
 
   // 카카오맵 전역 로딩 (앱 시작 시 미리 로드)
   const [kakaoLoading, kakaoError] = useKakaoLoader({
-    appkey: import.meta.env.VITE_APP_KAKAOMAP_KEY,
+    appkey: import.meta.env.VITE_APP_KAKAOMAP_KEY || "fallback_key",
     libraries: ["services", "clusterer"],
   });
 
@@ -39,10 +40,13 @@ export default function App() {
     if (import.meta.env.DEV) {
       if (kakaoLoading) {
         console.log("🔄 카카오맵 전역 로딩 중...");
+        logKakaoMapDebugInfo();
       } else if (kakaoError) {
         console.error("❌ 카카오맵 로딩 오류:", kakaoError);
+        logKakaoMapDebugInfo();
       } else {
         console.log("✅ 카카오맵 전역 로딩 완료");
+        logKakaoMapDebugInfo();
       }
     }
   }, [kakaoLoading, kakaoError]);
