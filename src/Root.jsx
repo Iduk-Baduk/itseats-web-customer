@@ -40,6 +40,7 @@ const AddAccount = React.lazy(() => import("./pages/payments/AddAccount"));
 const PaymentSuccess = React.lazy(() => import("./pages/payments/PaymentSuccess"));
 const PaymentFailure = React.lazy(() => import("./pages/payments/PaymentFailure"));
 const TossPaymentSuccess = React.lazy(() => import("./pages/payments/TossPaymentSuccess"));
+const TossPayment = React.lazy(() => import("./pages/payments/TossPayment"));
 const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
@@ -337,7 +338,17 @@ export default function Root() {
             } 
           />
           <Route 
-            path="/payments/toss-success" 
+            path="/payments/toss" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TossPayment />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/payments/toss/success" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>

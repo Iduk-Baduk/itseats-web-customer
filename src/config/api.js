@@ -9,6 +9,7 @@ export const ENV_CONFIG = {
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
   version: import.meta.env.VITE_APP_VERSION || '1.0.0',
+  TOSS_CLIENT_KEY: import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
 };
 
 // API 엔드포인트 상수

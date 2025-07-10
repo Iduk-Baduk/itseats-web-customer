@@ -86,6 +86,26 @@ export default function Cart() {
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
 
+  // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
+  const cartInfo = useMemo(() => {
+    const orderPrice = orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0);
+    const deliveryFee = deliveryOption.price || 0;
+    
+    // 다중 쿠폰 할인 계산 (주문금액과 배달비 분리)
+    const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
+    
+    return {
+      orderPrice,
+      totalPrice: Math.max(0, orderPrice + deliveryFee - discountResult.totalDiscount),
+      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
+      deliveryFee,
+      deliveryLabel: deliveryOption.label,
+      couponDiscount: discountResult.totalDiscount,
+      orderDiscount: discountResult.orderDiscount,
+      deliveryDiscount: discountResult.deliveryDiscount,
+    };
+  }, [orderMenus, deliveryOption, appliedCoupons]);
+
   // Toast 헬퍼 함수 강화
   const showToast = (message, duration = 4000) => {
     // 기존 Toast 숨기기
@@ -282,35 +302,10 @@ export default function Cart() {
       return;
     }
     
-    // 결제 수단 검증 및 설정
-    let paymentMethod = selectedPaymentType;
-    let remainingAmount = cartInfo.totalPrice;
-    let usedCoupayAmount = 0;
-    
-    // 쿠페이머니 사용 시 부분 결제 처리
-    if (selectedPaymentType === 'coupay') {
-      usedCoupayAmount = coupayAmount || 0;
-      remainingAmount = Math.max(0, cartInfo.totalPrice - usedCoupayAmount);
-      
-      if (remainingAmount > 0) {
-        // 추가 결제 수단이 필요한 경우 - 기본적으로 카드로 설정 (실제로는 사용자가 선택해야 함)
-        // 현재 목업에서는 카드로 자동 설정
-        paymentMethod = 'mixed'; // 혼합 결제
-      } else {
-        paymentMethod = 'coupay'; // 쿠페이머니 전액 결제
-      }
-    }
-    
-    // 결제 수단 유효성 검사
-    if (!selectedPaymentType) {
-      showToast("결제 수단을 선택해주세요.");
-      return;
-    }
-    
-    if (selectedPaymentType === 'coupay' && usedCoupayAmount <= 0) {
-      showToast("쿠페이머니 사용 금액을 입력해주세요.");
-      return;
-    }
+    // 토스페이먼츠 결제로 단순화
+    const paymentMethod = 'toss';
+    const remainingAmount = cartInfo.totalPrice;
+    const usedCoupayAmount = 0;
 
     // API 스펙에 맞는 주문 데이터 구조 생성
     const orderRequestData = {
@@ -493,15 +488,11 @@ export default function Cart() {
         throw new Error('주문 생성에 실패했습니다. 다시 시도해주세요.');
       }
 
-      // 💳 실제 결제 처리 (Mock 모드에서도 테스트)
+      // 💳 토스페이먼츠 결제 처리
       const paymentData = {
         orderId: orderResponse.data.orderId,
-        paymentMethod: paymentMethod,
+        paymentMethod: 'toss',
         amount: cartInfo.totalPrice,
-        coupayAmount: usedCoupayAmount,
-        remainingAmount: remainingAmount,
-        cardId: (selectedPaymentType === 'card' || paymentMethod === 'mixed') ? selectedCardId : null,
-        accountId: (selectedPaymentType === 'account') ? selectedAccountId : null,
         customerInfo: {
           address: selectedAddress
         }
@@ -509,58 +500,26 @@ export default function Cart() {
 
       let paymentResult = null; // 결제 결과 초기화
       
-      // 결제 API 호출 (Mock 모드에서는 시뮬레이션)
-      if (ENV_CONFIG.isDevelopment) {
-        // Mock 결제 처리 (2초 지연)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // 목업에서는 항상 성공 (신용카드/계좌이체 무조건 성공)
-        paymentResult = {
-          paymentId: `payment_${Date.now()}`,
-          status: 'SUCCESS',
-          amount: paymentData.amount,
-          method: paymentData.paymentMethod,
-          coupayAmount: usedCoupayAmount,
-          remainingAmount: remainingAmount,
-          additionalPaymentMethod: remainingAmount > 0 ? 'card' : null,
-          timestamp: new Date().toISOString()
-        };
-        
-        dispatch(setPaymentSuccess(paymentResult));
-        logger.log('✅ Mock 결제 성공:', paymentResult);
-        
-        // 쿠페이머니 사용 시 잔액 업데이트 (목업)
-        if (usedCoupayAmount > 0) {
-          // 실제로는 서버에서 처리되어야 함
-          logger.log(`쿠페이머니 ${usedCoupayAmount}원 사용됨`);
-        }
-      } else {
-        // 실제 결제 API 호출
-        try {
-          paymentResult = await paymentAPI.processPayment(paymentData);
-          if (paymentResult) {
-            dispatch(setPaymentSuccess(paymentResult));
-            logger.log('✅ 실제 결제 성공:', paymentResult);
-          } else {
-            throw new Error('결제 API 응답이 비어있습니다.');
-          }
-        } catch (paymentError) {
-          logger.error('❌ 실제 결제 API 실패:', paymentError);
-          throw new Error(`결제 처리 실패: ${paymentError.message || '알 수 없는 오류'}`);
-        }
-      }
+      // 토스페이먼츠 결제 페이지로 이동
+      logger.log('🔄 토스페이먼츠 결제 페이지로 이동:', paymentData);
       
-      // 🎉 결제 성공 시 결제 완료 페이지로 이동
-      const successParams = new URLSearchParams({
-        paymentId: paymentResult?.paymentId || `payment_${Date.now()}`,
+      // 토스페이먼츠 결제 위젯 페이지로 이동
+      const tossParams = new URLSearchParams({
         orderId: orderResponse.data.orderId,
-        amount: paymentData.amount.toString()
+        amount: paymentData.amount.toString(),
+        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
+        customerName: user?.name || '고객',
+        customerEmail: user?.email || 'customer@example.com'
       });
       
-      // 중복 방지 해시 초기화 (성공 시)
-      handlePayment.lastCartHash = null;
+      navigate(`/payments/toss?${tossParams}`);
+      return; // 여기서 함수 종료
       
-      navigate(`/payments/success?${successParams}`);
+      // 토스페이먼츠 결제는 별도 페이지에서 처리되므로 여기서는 주문 생성만 완료
+      logger.log('✅ 주문 생성 완료, 토스페이먼츠 결제 페이지로 이동됨');
+      
+      // 중복 방지 해시 초기화
+      handlePayment.lastCartHash = null;
       
     } catch (error) {
       logger.error("❌ 주문/결제 실패:", error);
@@ -597,26 +556,6 @@ export default function Cart() {
       }, 5000); // 5초 후 해시 초기화
     }
   };
-
-  // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
-  const cartInfo = useMemo(() => {
-    const orderPrice = orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0);
-    const deliveryFee = deliveryOption.price || 0;
-    
-    // 다중 쿠폰 할인 계산 (주문금액과 배달비 분리)
-    const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
-    
-    return {
-      orderPrice,
-      totalPrice: Math.max(0, orderPrice + deliveryFee - discountResult.totalDiscount),
-      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-      deliveryFee,
-      deliveryLabel: deliveryOption.label,
-      couponDiscount: discountResult.totalDiscount,
-      orderDiscount: discountResult.orderDiscount,
-      deliveryDiscount: discountResult.deliveryDiscount,
-    };
-  }, [orderMenus, deliveryOption, appliedCoupons]);
 
   return (
     <div className={styles.container}>
