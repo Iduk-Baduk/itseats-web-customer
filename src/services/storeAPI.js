@@ -14,8 +14,13 @@ const retryRequest = async (requestFn, retryCount = 0) => {
   try {
     return await requestFn();
   } catch (error) {
+    // 500 에러는 재시도하지 않음 (서버 내부 오류이므로)
+    if (error.statusCode === 500) {
+      throw error;
+    }
+    
     const isRetryableError = 
-      error.statusCode >= 500 || 
+      error.statusCode >= 502 || 
       error.statusCode === 0 || 
       error.type === 'NETWORK_ERROR';
     
@@ -104,16 +109,41 @@ const StoreAPI = {
   // 매장 상세 정보 조회 API
   getStoreById: async (storeId) => {
     try {
+      logger.log(`�� 매장 상세 정보 조회 요청 (ID: ${storeId})`);
+      
       const response = await retryRequest(() => 
         apiClient.get(API_ENDPOINTS.STORE_BY_ID(storeId))
       );
-      logger.log("✅ 매장 상세 정보 조회 성공:", response.data);
-      return response.data;
-    } catch (error) {
-      logger.error("📡 매장 상세 정보 조회 요청 실패:", error);
       
-      if (error.statusCode === 404) {
+      // 백엔드 API 응답 구조에 맞춰 데이터 처리
+      if (response.data && response.data.httpStatus === 200) {
+        const storeData = response.data.data;
+        logger.log("✅ 매장 상세 정보 조회 성공:", storeData);
+        return {
+          storeId: storeId,
+          name: storeData.name,
+          isLiked: storeData.isLiked,
+          reviewRating: storeData.reviewRating,
+          reviewCount: storeData.reviewCount,
+          images: storeData.images || [],
+          // 기존 프론트엔드 호환성을 위한 추가 필드
+          storeImage: storeData.images?.[0] || "/samples/food1.jpg",
+          rating: storeData.reviewRating,
+          reviewCount: storeData.reviewCount
+        };
+      } else {
+        throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
+      }
+    } catch (error) {
+      logger.error(`❌ 매장 상세 정보 조회 실패 (ID: ${storeId}):`, error);
+      
+      // 500 에러는 재시도하지 않고 바로 사용자에게 알림
+      if (error.statusCode === 500) {
+        error.message = '매장 정보를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.';
+      } else if (error.statusCode === 404) {
         error.message = '매장을 찾을 수 없습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '로그인이 필요합니다.';
       } else {
         error.message = '매장 정보를 불러오는데 실패했습니다.';
       }
