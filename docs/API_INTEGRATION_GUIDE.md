@@ -40,23 +40,37 @@
 ## 2. 토큰 관리
 
 ### 2.1 토큰 저장
-로그인 성공 후 받은 토큰을 안전하게 저장하세요:
+로그인 성공 후 받은 토큰 저장 방식:
+
+**주의**: localStorage는 XSS 공격에 취약합니다. 프로덕션 환경에서는 httpOnly 쿠키 사용을 권장합니다.
+
 ```javascript
 // 로그인 성공 후
 const accessToken = response.headers.get('Access-Token');
-localStorage.setItem('accessToken', accessToken);
+// 개발 환경에서만 사용 권장
+if (process.env.NODE_ENV === 'development') {
+  localStorage.setItem('accessToken', accessToken);
+} else {
+  // 프로덕션에서는 httpOnly 쿠키 사용 권장
+  // 백엔드에서 Set-Cookie 헤더로 설정
+}
 ```
 
 ### 2.2 토큰 자동 추가
-모든 API 요청에 토큰을 자동으로 추가하는 인터셉터를 설정하세요:
+API 요청에 토큰을 자동으로 추가하는 인터셉터 설정:
+
 ```javascript
 // Axios 인터셉터 예시
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // 개발 환경: localStorage에서 토큰 가져오기
+    if (process.env.NODE_ENV === 'development') {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+    // 프로덕션 환경: 쿠키가 자동으로 요청에 포함됨
     return config;
   },
   (error) => {
@@ -68,6 +82,14 @@ axios.interceptors.request.use(
 ### 2.3 토큰 갱신
 액세스 토큰이 만료되면 리프레시 토큰을 사용하여 갱신하세요:
 ```javascript
+// 쿠키에서 값을 가져오는 유틸리티 함수
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -189,9 +211,14 @@ console.log('Request Data:', config.data);
 
 ### 7.3 토큰 상태 확인
 ```javascript
-// 토큰 존재 여부 확인
-const token = localStorage.getItem('accessToken');
-console.log('Current Token:', token);
+// 개발 환경에서만 사용 권장
+if (process.env.NODE_ENV === 'development') {
+  const token = localStorage.getItem('accessToken');
+  console.log('Current Token:', token);
+} else {
+  // 프로덕션에서는 httpOnly 쿠키 사용
+  console.log('Production: Using httpOnly cookies for token management');
+}
 ```
 
 ## 8. 주의사항
