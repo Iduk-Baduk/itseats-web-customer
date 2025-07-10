@@ -17,8 +17,8 @@ const apiClient = axios.create({
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // 로그인/회원가입 요청은 토큰 제외
-    if (config.url?.includes('/login') || config.url?.includes('/regist')) {
+    // 로그인/회원가입 요청은 토큰 제외 (경로 수정)
+    if (config.url?.includes('/login') || config.url?.includes('/sign-up')) {
       return config;
     }
 

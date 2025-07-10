@@ -32,14 +32,32 @@ const retryRequest = async (requestFn, retryCount = 0) => {
   }
 };
 
-// 회원가입 API
+// 쿠키에서 refreshToken 추출
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+// 회원가입 API (백엔드 명세에 맞게 수정)
 export const regist = async (form) => {
   try {
     const sanitizedForm = { ...form, password: "[REDACTED]" };
     logger.log("📡 회원가입 요청 데이터:", sanitizedForm);
 
+    // 백엔드 명세에 맞는 요청 데이터 형식으로 변환
+    const requestData = {
+      username: form.username,
+      password: form.password,
+      name: form.name,
+      nickname: form.nickname || form.name, // 닉네임이 없으면 이름 사용
+      email: form.email,
+      phoneNumber: form.phone // phone -> phoneNumber로 변경
+    };
+
     const response = await retryRequest(() => 
-      apiClient.post(API_ENDPOINTS.AUTH_REGISTER, form)
+      apiClient.post(API_ENDPOINTS.AUTH_REGISTER, requestData)
     );
 
     logger.log("✅ 회원가입 성공 응답:", response.data);
@@ -73,19 +91,21 @@ export const regist = async (form) => {
   }
 };
 
-// 로그인 API
+// 로그인 API (백엔드 명세에 맞게 수정)
 export const login = async ({ username, password, isAutoLogin }) => {
   try {
     if (!username || !password) {
       throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
     }
 
+    // 백엔드 명세: POST /login (AuthenticationFilter에서 처리)
     const response = await retryRequest(() => 
       apiClient.post(API_ENDPOINTS.AUTH_LOGIN, { username, password })
     );
     
-    const accessToken = response.headers?.["access-token"] || response.data?.accessToken;
-    const refreshToken = response.headers?.["refresh-token"] || response.data?.refreshToken;
+    // 응답 헤더에서 토큰 추출 (백엔드 명세에 따름)
+    const accessToken = response.headers?.["authorization"] || response.data?.accessToken;
+    const refreshToken = getCookie('refreshToken'); // 쿠키에서 refreshToken 추출
     
     if (!accessToken) {
       throw new Error('로그인 토큰을 받지 못했습니다.');
@@ -97,7 +117,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
       AuthService.setRefreshToken(refreshToken);
     }
 
-    // 사용자 정보 조회 및 저장
+    // 사용자 정보 조회 및 저장 (인증 필요)
     const currentMember = await retryRequest(() => 
       apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
@@ -108,7 +128,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
       name: currentMember.data.name,
       nickname: currentMember.data.nickname,
       email: currentMember.data.email,
-      phone: currentMember.data.phone,
+      phone: currentMember.data.phoneNumber, // phoneNumber로 변경
       reviewCount: currentMember.data.reviewCount || 0,
       favoriteCount: currentMember.data.favoriteCount || 0,
     };
@@ -139,7 +159,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
   }
 }
 
-// 내 정보 조회 API
+// 내 정보 조회 API (백엔드 명세에 맞게 수정)
 export const getCurrentUser = async () => {
   try {
     // 먼저 저장된 사용자 정보 확인
@@ -148,7 +168,7 @@ export const getCurrentUser = async () => {
       return savedUserInfo;
     }
 
-    // 저장된 정보가 없으면 API 호출
+    // 저장된 정보가 없으면 API 호출 (인증 필요)
     const response = await retryRequest(() => 
       apiClient.get(API_ENDPOINTS.AUTH_ME)
     );
@@ -158,7 +178,7 @@ export const getCurrentUser = async () => {
       username: response.data.username,
       name: response.data.name,
       email: response.data.email,
-      phone: response.data.phone,
+      phone: response.data.phoneNumber, // phoneNumber로 변경
       nickname: response.data.nickname,
       reviewCount: response.data.reviewCount || 0,
       favoriteCount: response.data.favoriteCount || 0,
@@ -181,13 +201,18 @@ export const getCurrentUser = async () => {
   }
 };
 
-// 로그아웃 API
+// 로그아웃 API (백엔드 명세에 맞게 수정)
 export const logout = async () => {
   try {
-    // 백엔드에 로그아웃 요청
-    await retryRequest(() => 
-      apiClient.post(API_ENDPOINTS.AUTH_LOGOUT)
-    );
+    const userInfo = AuthService.getUserInfo();
+    const memberId = userInfo?.id;
+    
+    if (memberId) {
+      // 백엔드 명세: POST /api/auths/logout?memberId={memberId}
+      await retryRequest(() => 
+        apiClient.post(`${API_ENDPOINTS.AUTH_LOGOUT}?memberId=${memberId}`)
+      );
+    }
   } catch (error) {
     logger.warn('백엔드 로그아웃 실패, 로컬에서만 로그아웃:', error);
   } finally {
@@ -198,14 +223,27 @@ export const logout = async () => {
   return { success: true, message: '로그아웃되었습니다.' };
 };
 
-// 토큰 갱신 API
+// 토큰 갱신 API (백엔드 명세에 맞게 수정)
 export const refreshToken = async () => {
   try {
+    const userInfo = AuthService.getUserInfo();
+    const memberId = userInfo?.id;
+    const refreshToken = AuthService.getRefreshToken();
+    
+    if (!memberId || !refreshToken) {
+      throw new Error('사용자 정보 또는 리프레시 토큰이 없습니다.');
+    }
+    
+    // 백엔드 명세: GET /api/auths/reissue?memberId={memberId}
     const response = await retryRequest(() => 
-      apiClient.post(API_ENDPOINTS.AUTH_REFRESH)
+      apiClient.get(`${API_ENDPOINTS.AUTH_REFRESH}?memberId=${memberId}`, {
+        headers: {
+          'Refresh-Token': refreshToken
+        }
+      })
     );
     
-    const newAccessToken = response.headers?.["access-token"] || response.data?.accessToken;
+    const newAccessToken = response.headers?.["authorization"] || response.data?.accessToken;
     
     if (newAccessToken) {
       // AuthService를 사용하여 새 토큰 저장
