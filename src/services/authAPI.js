@@ -116,10 +116,7 @@ export const login = async ({ username, password, isAutoLogin }) => {
 
     // 백엔드 최종 명세: POST /api/login (baseURL에 이미 /api가 포함되어 있으므로 /login만 사용)
     const response = await retryRequest(() => 
-      axios.post(`${API_CONFIG.BASE_URL}/login`, { username, password }, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      })
+      loginClient.post('/login', { username, password })
     );
     
     logger.log("📡 로그인 응답 헤더:", response.headers);

@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
 
 // 토큰 저장 키
@@ -132,7 +132,7 @@ class AuthService {
 
       // 백엔드 명세에 맞는 토큰 갱신 요청
       const response = await fetch(
-        `${API_ENDPOINTS.AUTH_REFRESH}?memberId=${userInfo.id}`,
+        `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH_REFRESH}?memberId=${userInfo.id}`,
         {
           method: 'GET',
           headers: {
