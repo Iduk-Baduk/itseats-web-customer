@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { API_ENDPOINTS, ENV_CONFIG } from '../config/api';
+import { API_CONFIG, API_ENDPOINTS, ENV_CONFIG } from '../config/api';
 import { generateOrderId } from '../utils/idUtils';
 import { logger } from '../utils/logger';
 import { ORDER_STATUS } from '../constants/orderStatus';
