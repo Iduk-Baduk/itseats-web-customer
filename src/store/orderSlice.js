@@ -53,7 +53,14 @@ const generateOrderId = generateUniqueOrderId;
 export const createOrderAsync = createAsyncThunk(
   'order/createOrder',
   async (orderData) => {
-    return await orderAPI.createOrder(orderData);
+    const response = await orderAPI.createOrder(orderData);
+    
+    // 주문 생성 응답 검증
+    if (!response?.data?.id) {
+      throw new Error('주문 생성 응답에 주문 ID가 없습니다');
+    }
+    
+    return response;
   }
 );
 

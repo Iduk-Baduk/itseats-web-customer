@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { tossPaymentAPI } from '../../services/tossPaymentAPI';
+import { orderAPI } from '../../services/orderAPI';
 import { paymentStatusService } from '../../services/paymentStatusService';
 import { logger } from '../../utils/logger';
 import styles from "./PaymentSuccess.module.css";
@@ -39,11 +39,12 @@ export default function TossPaymentSuccess() {
     }
 
     try {
-      // 토스페이먼츠 API를 사용한 결제 승인
-      const json = await tossPaymentAPI.confirmPayment(requestData);
+      // 백엔드 API를 통한 결제 승인
+      const response = await orderAPI.confirmPayment(requestData);
+      const json = response.data;
 
       // 결제 성공 비즈니스 로직을 구현하세요.
-      logger.log('토스페이먼츠 결제 성공:', json);
+      logger.log('백엔드 결제 승인 성공:', json);
       
       // 결제 상태 설정
       setPaymentStatus(json);
@@ -55,7 +56,7 @@ export default function TossPaymentSuccess() {
       
     } catch (error) {
       // 결제 실패 비즈니스 로직을 구현하세요.
-      logger.error('토스페이먼츠 결제 실패:', error);
+      logger.error('백엔드 결제 승인 실패:', error);
       const errorMessage = error?.message || '결제 처리 중 오류가 발생했습니다';
       setError(errorMessage);
       setIsProcessing(false);

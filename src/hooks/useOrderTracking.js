@@ -206,7 +206,7 @@ export const useMultipleOrderTracking = (orderIds = [], options = {}) => {
     if (Object.keys(newStates).length > 0) {
       setTrackingStates(prev => ({ ...prev, ...newStates }));
     }
-  }, [orderIdsString, trackingStates]);
+  }, [orderIdsString]); // trackingStates 의존성 제거
   
   // 개별 주문 추적 중단 (trackOrder보다 먼저 정의)
   const stopTracking = useCallback((orderId) => {

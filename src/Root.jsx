@@ -6,6 +6,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // 즉시 로딩 (핵심 페이지)
 import Home from "./pages/Home";
@@ -40,10 +41,12 @@ const AddAccount = React.lazy(() => import("./pages/payments/AddAccount"));
 const PaymentSuccess = React.lazy(() => import("./pages/payments/PaymentSuccess"));
 const PaymentFailure = React.lazy(() => import("./pages/payments/PaymentFailure"));
 const TossPaymentSuccess = React.lazy(() => import("./pages/payments/TossPaymentSuccess"));
+const TossPayment = React.lazy(() => import("./pages/payments/TossPayment"));
 const CouponHistory = React.lazy(() => import("./pages/coupons/CouponHistory"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
+const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
 
 // 페이지별 최적화된 로딩 메시지
 const getLoadingMessage = (pathname) => {
@@ -148,13 +151,15 @@ export default function Root() {
             } 
           />
 
-          {/* 지연 로딩 - 주문 관련 */}
+          {/* 지연 로딩 - 주문 관련 (인증 필요) */}
           <Route 
             path="/cart" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Cart />
+                  <ProtectedRoute>
+                    <Cart />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -164,7 +169,9 @@ export default function Root() {
             element={
               <Layout>
                 <LazyPageWrapper>
-                  <Order />
+                  <ProtectedRoute>
+                    <Order />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -174,7 +181,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <OrderStatus />
+                  <ProtectedRoute>
+                    <OrderStatus />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -184,7 +193,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <OrderStatus />
+                  <ProtectedRoute>
+                    <OrderStatus />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -194,19 +205,23 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Review />
+                  <ProtectedRoute>
+                    <Review />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
           />
 
-          {/* 지연 로딩 - 주소 관련 */}
+          {/* 지연 로딩 - 주소 관련 (인증 필요) */}
           <Route 
             path="/address" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Address />
+                  <ProtectedRoute>
+                    <Address />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -216,7 +231,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddressSearch />
+                  <ProtectedRoute>
+                    <AddressSearch />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -226,7 +243,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddressEdit />
+                  <ProtectedRoute>
+                    <AddressEdit />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -236,7 +255,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddressNew />
+                  <ProtectedRoute>
+                    <AddressNew />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -246,19 +267,23 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddressCurrentLocation />
+                  <ProtectedRoute>
+                    <AddressCurrentLocation />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
           />
 
-          {/* 지연 로딩 - 마이페이지 관련 */}
+          {/* 지연 로딩 - 마이페이지 관련 (인증 필요) */}
           <Route 
             path="/mypage" 
             element={
               <Layout>
                 <LazyPageWrapper>
-                  <MyPage />
+                  <ProtectedRoute>
+                    <MyPage />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -268,7 +293,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <MyPageDetails />
+                  <ProtectedRoute>
+                    <MyPageDetails />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -278,19 +305,23 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Settings />
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
           />
 
-          {/* 지연 로딩 - 결제 관련 */}
+          {/* 지연 로딩 - 결제 관련 (인증 필요) */}
           <Route 
             path="/payments" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Payments />
+                  <ProtectedRoute>
+                    <Payments />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -300,7 +331,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddPaymentMethod />
+                  <ProtectedRoute>
+                    <AddPaymentMethod />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -310,7 +343,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddCard />
+                  <ProtectedRoute>
+                    <AddCard />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -320,7 +355,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <AddAccount />
+                  <ProtectedRoute>
+                    <AddAccount />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -336,7 +373,19 @@ export default function Root() {
             } 
           />
           <Route 
-            path="/payments/toss-success" 
+            path="/payments/toss" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <ProtectedRoute>
+                    <TossPayment />
+                  </ProtectedRoute>
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/payments/toss/success" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
@@ -362,7 +411,9 @@ export default function Root() {
             element={
               <Layout>
                 <LazyPageWrapper>
-                  <Favorite />
+                  <ProtectedRoute>
+                    <Favorite />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -372,7 +423,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Coupons />
+                  <ProtectedRoute>
+                    <Coupons />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -382,20 +435,23 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <CouponHistory />
+                  <ProtectedRoute>
+                    <CouponHistory />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
           />
 
-
-          {/* 지연 로딩 - 인증 관련 */}
+          {/* 지연 로딩 - 인증 관련 (인증 불필요) */}
           <Route 
             path="/login" 
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Login />
+                  <ProtectedRoute requireAuth={false}>
+                    <Login />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -405,7 +461,9 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <Register />
+                  <ProtectedRoute requireAuth={false}>
+                    <Register />
+                  </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
             } 
@@ -432,14 +490,26 @@ export default function Root() {
               </Layout>
             } 
           />
+          <Route 
+            path="/test-backend" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TestBackendIntegration />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
 
-          {/* 404 페이지 - 모든 라우트의 마지막에 위치 */}
+          {/* 404 페이지 */}
           <Route 
             path="*" 
             element={
-              <LazyPageWrapper>
-                <NotFound />
-              </LazyPageWrapper>
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <NotFound />
+                </LazyPageWrapper>
+              </Layout>
             } 
           />
         </Routes>

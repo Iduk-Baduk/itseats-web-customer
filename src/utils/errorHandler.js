@@ -18,7 +18,7 @@ const ERROR_MESSAGES = {
   409: '이미 존재하는 데이터입니다.',
   422: '입력한 정보를 확인해 주세요.',
   429: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
-  500: '서버 오류가 발생했습니다.',
+  500: '서버 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
   502: '서버에 일시적인 문제가 있습니다.',
   503: '서비스를 일시적으로 사용할 수 없습니다.',
 };
@@ -38,7 +38,13 @@ export const processError = (error) => {
   if (error.response) {
     statusCode = error.response.status;
     errorType = getErrorTypeByStatus(statusCode);
-    message = ERROR_MESSAGES[statusCode] || error.response.data?.message || message;
+    
+    // 백엔드에서 제공하는 메시지가 있으면 우선 사용
+    if (error.response.data?.message) {
+      message = error.response.data.message;
+    } else {
+      message = ERROR_MESSAGES[statusCode] || message;
+    }
   } 
   // 네트워크 에러인 경우
   else if (error.request) {
@@ -132,10 +138,31 @@ export const handlePaymentError = (error) => {
   return processedError;
 };
 
+/**
+ * 매장 관련 에러 처리
+ * @param {Error} error - 발생한 에러
+ * @returns {Object} 매장 관련 에러 정보
+ */
+export const handleStoreError = (error) => {
+  const processedError = processError(error);
+  
+  // 매장 관련 특별한 에러 처리
+  if (processedError.statusCode === 404) {
+    processedError.message = '매장을 찾을 수 없습니다.';
+  } else if (processedError.statusCode === 500) {
+    processedError.message = '매장 정보를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.';
+  } else if (processedError.statusCode === 401) {
+    processedError.message = '로그인이 필요합니다.';
+  }
+  
+  return processedError;
+};
+
 export default {
   processError,
   handleErrorWithToast,
   handleOrderError,
   handlePaymentError,
+  handleStoreError,
   ERROR_TYPES,
 }; 

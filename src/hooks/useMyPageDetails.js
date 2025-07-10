@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { userAPI } from "../services/userAPI";
+import { userAPI } from "../services";
 import { orderAPI } from "../services/orderAPI";
 import { ORDER_STATUS } from "../constants/orderStatus";
 import { STORAGE_KEYS, logger } from "../utils/logger";
 import { useNavigate } from "react-router-dom";
 
 export default function useMyPageDetails() {
+  const navigate = useNavigate();
   const [reviewData, setReviewData] = useState([]);
   const [favoriteData, setFavoriteData] = useState([]);
   const [userStats, setUserStats] = useState({
@@ -16,26 +17,21 @@ export default function useMyPageDetails() {
     orderCount: 0,
     totalSpent: 0
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Redux에서 주문 데이터 가져오기
-  const orders = useSelector(state => state.order?.orders || []);
-  const stores = useSelector(state => state.store?.stores || []);
+  // Redux에서 데이터 가져오기
+  const orders = useSelector((state) => state.order?.orders || []);
+  const stores = useSelector((state) => state.store?.stores || []);
 
-  const navigate = useNavigate();
-
-  // 매장 이미지 가져오기 헬퍼 함수
+  // 매장 이미지 가져오기 함수
   const getStoreImage = (storeId) => {
-    const store = stores.find(s => s.id === storeId || s.id === parseInt(storeId));
+    const store = stores.find(s => s.id === storeId);
     return store?.images?.[0] || "/samples/food1.jpg";
   };
 
-  // 주문 데이터를 마이페이지 형식으로 변환
+  // 주문 데이터 변환 (완료된 주문만)
   const orderData = useMemo(() => {
-    logger.log('🔍 Redux 주문 데이터:', orders);
-    
-    // 완료된 주문만 필터링 (배달 완료 + 주문 완료)
     const completedOrders = orders.filter(order => 
       order.orderStatus === ORDER_STATUS.DELIVERED || 
       order.orderStatus === ORDER_STATUS.COMPLETED
@@ -68,58 +64,8 @@ export default function useMyPageDetails() {
       });
   }, [orders, stores]);
 
-  // API 호출로 데이터 로딩
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        logger.log('🔄 데이터 로딩 시작, stores 개수:', stores.length);
-
-        // Promise.all을 사용하여 병렬로 API 호출하고 개별 에러 처리
-        const [userStatsResult] = await Promise.all([
-          userAPI.getStats().catch((error) => {
-            logger.warn('사용자 통계 데이터 로드 실패:', error);
-            return {
-              reviewCount: 0,
-              helpCount: 0,
-              favoriteCount: 0,
-              orderCount: 0,
-              totalSpent: 0
-            };
-          })
-        ]);
-
-        setUserStats(userStatsResult);
-
-        // 리뷰 데이터는 당분간 빈 상태로 유지
-        setReviewData([]);
-
-      } catch (error) {
-        logger.error('마이페이지 데이터 로딩 실패:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [orders, stores]); // stores도 의존성에 추가
-
-  // stores 데이터가 변경될 때마다 즐겨찾기 데이터 다시 로드
-  useEffect(() => {
-    if (stores.length > 0) {
-      logger.log('📦 stores 데이터 변경됨, 즐겨찾기 다시 로드');
-      loadFavoriteData();
-    } else {
-      logger.log('⚠️ stores 데이터가 없음, 즐겨찾기 초기화');
-      setFavoriteData([]);
-    }
-  }, [stores]); // stores 변경 시에만 실행
-
-  // 즐겨찾기 데이터 로딩 함수 (로컬스토리지 우선)
-  const loadFavoriteData = async () => {
+  // 즐겨찾기 데이터 로딩 함수 (로컬스토리지 우선) - useCallback으로 최적화
+  const loadFavoriteData = useCallback(async () => {
     try {
       logger.log('🔄 즐겨찾기 데이터 로딩 시작...');
       
@@ -197,18 +143,68 @@ export default function useMyPageDetails() {
       logger.error('즐겨찾기 데이터 로딩 실패:', error);
       setFavoriteData([]);
     }
-  };
+  }, [stores]);
+
+  // API 호출로 데이터 로딩
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        logger.log('🔄 데이터 로딩 시작, stores 개수:', stores.length);
+
+        // Promise.all을 사용하여 병렬로 API 호출하고 개별 에러 처리
+        const [userStatsResult] = await Promise.all([
+          userAPI.getStats().catch((error) => {
+            logger.warn('사용자 통계 데이터 로드 실패:', error);
+            return {
+              reviewCount: 0,
+              helpCount: 0,
+              favoriteCount: 0,
+              orderCount: 0,
+              totalSpent: 0
+            };
+          })
+        ]);
+
+        setUserStats(userStatsResult);
+
+        // 리뷰 데이터는 당분간 빈 상태로 유지
+        setReviewData([]);
+
+      } catch (error) {
+        logger.error('마이페이지 데이터 로딩 실패:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [orders, stores]); // stores도 의존성에 추가
+
+  // stores 데이터가 변경될 때마다 즐겨찾기 데이터 다시 로드
+  useEffect(() => {
+    if (stores.length > 0) {
+      logger.log('📦 stores 데이터 변경됨, 즐겨찾기 다시 로드');
+      loadFavoriteData();
+    } else {
+      logger.log('⚠️ stores 데이터가 없음, 즐겨찾기 초기화');
+      setFavoriteData([]);
+    }
+  }, [stores, loadFavoriteData]); // loadFavoriteData 의존성 추가
 
   // 즐겨찾기 새로고침 함수
-  const refreshFavorites = async () => {
+  const refreshFavorites = useCallback(async () => {
     await loadFavoriteData();
-  };
+  }, [loadFavoriteData]);
 
-  const handleFavoriteClick = (storeId) => {
+  const handleFavoriteClick = useCallback((storeId) => {
     navigate(`/stores/${storeId}`);
-  };
+  }, [navigate]);
 
-  const handleOrderClick = (orderId) => {
+  const handleOrderClick = useCallback((orderId) => {
     // 주문 ID로 주문 정보 찾기
     const order = orders.find(o => o.id === orderId);
     if (!order) {
@@ -223,7 +219,7 @@ export default function useMyPageDetails() {
     } else {
       logger.warn('가게 정보를 찾을 수 없습니다:', order);
     }
-  };
+  }, [orders, navigate]);
 
   return {
     reviewData,

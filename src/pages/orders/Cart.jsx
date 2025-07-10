@@ -21,6 +21,7 @@ import { generateOrderId } from "../../utils/idUtils";
 import { logger } from "../../utils/logger";
 import { findOrCreateStoreInfo } from "../../utils/storeUtils";
 import { ENV_CONFIG } from '../../config/api';
+import AuthService from '../../services/authService';
 
 import Header from "../../components/common/Header";
 import DeliveryToggle from "../../components/orders/cart/DeliveryToggle";
@@ -51,6 +52,9 @@ export default function Cart() {
   const orderMenus = useSelector((state) => state.cart.orderMenus);
   const orders = useSelector(state => state.order?.orders || []); // 주문 목록 추가
   
+  // AuthService를 사용하여 사용자 정보 가져오기
+  const user = AuthService.getUserInfo();
+  
   // 현재 매장 정보 찾기 (Redux cart에서 우선, 없으면 전체 매장 목록에서 검색)
   const storeInfo = currentStore || allStores.find(store => 
     String(store.storeId) === String(storeId)
@@ -62,16 +66,14 @@ export default function Cart() {
   // Redux에서 쿠폰 정보 가져오기
   const coupons = useSelector(state => state.coupon.coupons);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
+  // coupons가 배열이 아닐 경우 빈 배열로 대체
+  const couponsArray = Array.isArray(coupons) ? coupons : [];
+  const appliedCoupons = couponsArray.filter(c => selectedCouponIds.includes(c.id));
   
   // Redux에서 주소 및 결제 정보 가져오기
   const selectedAddress = useSelector(state => 
     state.address.addresses.find(addr => addr.id === state.address.selectedAddressId)
   );
-  const selectedPaymentType = useSelector(state => state.payment.selectedPaymentType);
-  const selectedCardId = useSelector(state => state.payment.selectedCardId);
-  const selectedAccountId = useSelector(state => state.payment.selectedAccountId);
-  const coupayAmount = useSelector(state => state.payment.coupayAmount);
   const isProcessingPayment = useSelector(state => state.payment.isProcessingPayment);
   const paymentError = useSelector(state => state.payment.paymentError);
 
@@ -85,6 +87,26 @@ export default function Cart() {
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+
+  // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
+  const cartInfo = useMemo(() => {
+    const orderPrice = orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0);
+    const deliveryFee = deliveryOption.price || 0;
+    
+    // 다중 쿠폰 할인 계산 (주문금액과 배달비 분리)
+    const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
+    
+    return {
+      orderPrice,
+      totalPrice: Math.max(0, orderPrice + deliveryFee - discountResult.totalDiscount),
+      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
+      deliveryFee,
+      deliveryLabel: deliveryOption.label,
+      couponDiscount: discountResult.totalDiscount,
+      orderDiscount: discountResult.orderDiscount,
+      deliveryDiscount: discountResult.deliveryDiscount,
+    };
+  }, [orderMenus, deliveryOption, appliedCoupons]);
 
   // Toast 헬퍼 함수 강화
   const showToast = (message, duration = 4000) => {
@@ -111,8 +133,24 @@ export default function Cart() {
   useEffect(() => {
     logger.log('🚀 Cart 컴포넌트 마운트:', { storeId, orderMenusCount: orderMenus.length });
     
-    dispatch(fetchCoupons());
-    dispatch(fetchPaymentMethods());
+    // 쿠폰 API가 실패할 수 있으므로 try-catch로 감싸기
+    try {
+      dispatch(fetchCoupons()).catch(error => {
+        logger.warn('쿠폰 API 로드 실패 (정상):', error.message);
+      });
+    } catch (error) {
+      logger.warn('쿠폰 로드 실패 (정상):', error.message);
+    }
+    
+    // 결제수단 API가 비활성화되어 있어서 에러가 발생할 수 있으므로 try-catch로 감싸기
+    try {
+      dispatch(fetchPaymentMethods()).catch(error => {
+        logger.warn('결제수단 API 비활성화로 인한 에러 (정상):', error.message);
+      });
+    } catch (error) {
+      logger.warn('결제수단 로드 실패 (정상):', error.message);
+    }
+    
     dispatch(fetchStores()).then((result) => {
       logger.log('🏪 매장 데이터 로드 결과:', result.payload);
     });
@@ -282,35 +320,10 @@ export default function Cart() {
       return;
     }
     
-    // 결제 수단 검증 및 설정
-    let paymentMethod = selectedPaymentType;
+    // 결제 수단 설정 (토스페이먼츠로 고정)
+    let paymentMethod = 'toss';
     let remainingAmount = cartInfo.totalPrice;
     let usedCoupayAmount = 0;
-    
-    // 쿠페이머니 사용 시 부분 결제 처리
-    if (selectedPaymentType === 'coupay') {
-      usedCoupayAmount = coupayAmount || 0;
-      remainingAmount = Math.max(0, cartInfo.totalPrice - usedCoupayAmount);
-      
-      if (remainingAmount > 0) {
-        // 추가 결제 수단이 필요한 경우 - 기본적으로 카드로 설정 (실제로는 사용자가 선택해야 함)
-        // 현재 목업에서는 카드로 자동 설정
-        paymentMethod = 'mixed'; // 혼합 결제
-      } else {
-        paymentMethod = 'coupay'; // 쿠페이머니 전액 결제
-      }
-    }
-    
-    // 결제 수단 유효성 검사
-    if (!selectedPaymentType) {
-      showToast("결제 수단을 선택해주세요.");
-      return;
-    }
-    
-    if (selectedPaymentType === 'coupay' && usedCoupayAmount <= 0) {
-      showToast("쿠페이머니 사용 금액을 입력해주세요.");
-      return;
-    }
 
     // API 스펙에 맞는 주문 데이터 구조 생성
     const orderRequestData = {
@@ -324,7 +337,7 @@ export default function Cart() {
         menuTotalPrice: calculateCartTotal(menu),
         quantity: menu.quantity
       })),
-      coupons: selectedCouponIds.length > 0 ? selectedCouponIds : [],
+      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
       deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
     };
 
@@ -335,7 +348,8 @@ export default function Cart() {
       cartInfo,
       orderMenusCount: orderMenus.length,
       paymentMethod,
-      selectedAddress
+      selectedAddress,
+      selectedCouponIds
     });
 
     // 서버로 전송할 최종 주문 데이터 (orderAPI.js 스펙에 맞춤)
@@ -360,7 +374,7 @@ export default function Cart() {
       // 추가 정보
       storeRequest: requestInfo?.storeRequest || "",
       riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-      coupons: selectedCouponIds?.length > 0 ? selectedCouponIds : [],
+      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
       
       // 결제 관련 정보
       paymentStatus: "PENDING",
@@ -493,15 +507,13 @@ export default function Cart() {
         throw new Error('주문 생성에 실패했습니다. 다시 시도해주세요.');
       }
 
-      // 💳 실제 결제 처리 (Mock 모드에서도 테스트)
+      // 💳 토스페이먼츠 결제 처리
       const paymentData = {
         orderId: orderResponse.data.orderId,
-        paymentMethod: paymentMethod,
+        paymentMethod: 'toss',
         amount: cartInfo.totalPrice,
         coupayAmount: usedCoupayAmount,
         remainingAmount: remainingAmount,
-        cardId: (selectedPaymentType === 'card' || paymentMethod === 'mixed') ? selectedCardId : null,
-        accountId: (selectedPaymentType === 'account') ? selectedAccountId : null,
         customerInfo: {
           address: selectedAddress
         }
@@ -509,58 +521,26 @@ export default function Cart() {
 
       let paymentResult = null; // 결제 결과 초기화
       
-      // 결제 API 호출 (Mock 모드에서는 시뮬레이션)
-      if (ENV_CONFIG.isDevelopment) {
-        // Mock 결제 처리 (2초 지연)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // 목업에서는 항상 성공 (신용카드/계좌이체 무조건 성공)
-        paymentResult = {
-          paymentId: `payment_${Date.now()}`,
-          status: 'SUCCESS',
-          amount: paymentData.amount,
-          method: paymentData.paymentMethod,
-          coupayAmount: usedCoupayAmount,
-          remainingAmount: remainingAmount,
-          additionalPaymentMethod: remainingAmount > 0 ? 'card' : null,
-          timestamp: new Date().toISOString()
-        };
-        
-        dispatch(setPaymentSuccess(paymentResult));
-        logger.log('✅ Mock 결제 성공:', paymentResult);
-        
-        // 쿠페이머니 사용 시 잔액 업데이트 (목업)
-        if (usedCoupayAmount > 0) {
-          // 실제로는 서버에서 처리되어야 함
-          logger.log(`쿠페이머니 ${usedCoupayAmount}원 사용됨`);
-        }
-      } else {
-        // 실제 결제 API 호출
-        try {
-          paymentResult = await paymentAPI.processPayment(paymentData);
-          if (paymentResult) {
-            dispatch(setPaymentSuccess(paymentResult));
-            logger.log('✅ 실제 결제 성공:', paymentResult);
-          } else {
-            throw new Error('결제 API 응답이 비어있습니다.');
-          }
-        } catch (paymentError) {
-          logger.error('❌ 실제 결제 API 실패:', paymentError);
-          throw new Error(`결제 처리 실패: ${paymentError.message || '알 수 없는 오류'}`);
-        }
-      }
+      // 토스페이먼츠 결제 페이지로 이동
+      logger.log('🔄 토스페이먼츠 결제 페이지로 이동:', paymentData);
       
-      // 🎉 결제 성공 시 결제 완료 페이지로 이동
-      const successParams = new URLSearchParams({
-        paymentId: paymentResult?.paymentId || `payment_${Date.now()}`,
+      // 토스페이먼츠 결제 위젯 페이지로 이동
+      const tossParams = new URLSearchParams({
         orderId: orderResponse.data.orderId,
-        amount: paymentData.amount.toString()
+        amount: paymentData.amount.toString(),
+        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
+        customerName: user?.name || '고객',
+        customerEmail: user?.email || 'customer@example.com'
       });
       
-      // 중복 방지 해시 초기화 (성공 시)
-      handlePayment.lastCartHash = null;
+      navigate(`/payments/toss?${tossParams}`);
+      return; // 여기서 함수 종료
       
-      navigate(`/payments/success?${successParams}`);
+      // 토스페이먼츠 결제는 별도 페이지에서 처리되므로 여기서는 주문 생성만 완료
+      logger.log('✅ 주문 생성 완료, 토스페이먼츠 결제 페이지로 이동됨');
+      
+      // 중복 방지 해시 초기화
+      handlePayment.lastCartHash = null;
       
     } catch (error) {
       logger.error("❌ 주문/결제 실패:", error);
@@ -598,26 +578,6 @@ export default function Cart() {
     }
   };
 
-  // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
-  const cartInfo = useMemo(() => {
-    const orderPrice = orderMenus.reduce((sum, m) => sum + calculateCartTotal(m), 0);
-    const deliveryFee = deliveryOption.price || 0;
-    
-    // 다중 쿠폰 할인 계산 (주문금액과 배달비 분리)
-    const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
-    
-    return {
-      orderPrice,
-      totalPrice: Math.max(0, orderPrice + deliveryFee - discountResult.totalDiscount),
-      itemCount: orderMenus.reduce((sum, m) => sum + m.quantity, 0),
-      deliveryFee,
-      deliveryLabel: deliveryOption.label,
-      couponDiscount: discountResult.totalDiscount,
-      orderDiscount: discountResult.orderDiscount,
-      deliveryDiscount: discountResult.deliveryDiscount,
-    };
-  }, [orderMenus, deliveryOption, appliedCoupons]);
-
   return (
     <div className={styles.container}>
 
@@ -649,8 +609,6 @@ export default function Cart() {
           <CartCouponSection />
           <CartPaymentSummarySection 
             cartInfo={cartInfo} 
-            selectedPaymentType={selectedPaymentType}
-            coupayAmount={coupayAmount}
           />
           <CartPaymentMethodSection cartInfo={cartInfo} />
           <CartRequestSection />

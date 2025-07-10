@@ -1,21 +1,44 @@
 import apiClient from './apiClient';
-import { API_ENDPOINTS, ENV_CONFIG } from '../config/api';
+import { API_CONFIG, API_ENDPOINTS, ENV_CONFIG } from '../config/api';
 import { generateOrderId } from '../utils/idUtils';
 import { logger } from '../utils/logger';
-import store from '../store';
 import { ORDER_STATUS } from '../constants/orderStatus';
-import { updateOrder, addOrder } from '../store/orderSlice';
 import { retryOrderTracking } from '../utils/apiRetry';
 
-// Mock 데이터
-const mockOrders = new Map();
+// 재시도 설정
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  retryBackoff: 2,
+};
+
+// 재시도 로직
+const retryRequest = async (requestFn, retryCount = 0) => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    const isRetryableError = 
+      error.statusCode >= 500 || 
+      error.statusCode === 0 || 
+      error.type === 'NETWORK_ERROR';
+    
+    if (isRetryableError && retryCount < RETRY_CONFIG.maxRetries) {
+      const delay = RETRY_CONFIG.retryDelay * Math.pow(RETRY_CONFIG.retryBackoff, retryCount);
+      logger.warn(`📡 주문 API 재시도 ${retryCount + 1}/${RETRY_CONFIG.maxRetries} (${delay}ms 후)`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryRequest(requestFn, retryCount + 1);
+    }
+    
+    throw error;
+  }
+};
 
 // 주문 API 서비스
 export const orderAPI = {
   // 새 주문 생성
   createOrder: async (orderData) => {
     try {
-      // 간단한 주문 데이터 구조로 변환
       const {
         storeId,
         storeName,
@@ -34,64 +57,89 @@ export const orderAPI = {
         throw new Error("필수 주문 정보가 누락되었습니다.");
       }
 
-      // 주문 데이터 구성
+      // 백엔드 API 형식에 맞춰 주문 데이터 구성
       const newOrder = {
-        id: generateOrderId(),
         storeId: parseInt(storeId),
         storeName,
-        orderStatus: ORDER_STATUS.WAITING,
-        orderDate: new Date().toISOString(),
-        totalPrice,
-        deliveryFee,
-        orderMenus,
-        deliveryAddress,
-        paymentMethod,
+        totalPrice: Number(totalPrice),
+        deliveryFee: Number(deliveryFee),
+        orderMenus: orderMenus.map(menu => ({
+          menuId: menu.menuId,
+          menuName: menu.menuName,
+          quantity: menu.quantity,
+          price: menu.price,
+          options: menu.options || []
+        })),
+        deliveryAddress: {
+          mainAddress: deliveryAddress.roadAddress || deliveryAddress.address,
+          detailAddress: deliveryAddress.detailAddress || "",
+          lat: deliveryAddress.lat,
+          lng: deliveryAddress.lng
+        },
+        paymentMethod: {
+          type: paymentMethod.type,
+          id: paymentMethod.id
+        },
         storeRequest,
         riderRequest,
-        coupons,
-        statusHistory: [{
-          orderStatus: ORDER_STATUS.WAITING,
-          timestamp: new Date().toISOString(),
-          message: "주문이 접수되었습니다."
-        }]
+        couponIds: coupons.map(coupon => coupon.id)
       };
 
-      if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: 목업 데이터 사용
-        mockOrders.set(newOrder.id, newOrder);
-        
-        // Redux store 업데이트
-        store.dispatch(addOrder(newOrder));
-        
-        logger.log('Mock: 새 주문 생성:', newOrder);
-        return { data: newOrder };
-      } else {
-        // 운영 환경: 실제 API 호출
-        logger.log('새 주문 생성:', newOrder);
-        return await apiClient.post('/orders', newOrder);
-      }
+      logger.log('📡 새 주문 생성 요청:', newOrder);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.ORDERS, newOrder)
+      );
+      
+      logger.log('✅ 주문 생성 성공:', response.data);
+      return response.data;
     } catch (error) {
-      logger.error('주문 생성 실패:', error);
+      logger.error('❌ 주문 생성 실패:', error);
+      
+      // 백엔드 에러 메시지 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 422) {
+        error.message = '주문 정보를 확인해주세요.';
+      } else if (error.statusCode === 409) {
+        error.message = '이미 진행 중인 주문이 있습니다.';
+      } else {
+        error.message = '주문 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      }
+      
       throw error;
     }
   },
 
   // 주문 목록 조회
   getOrders: async (params = {}) => {
-    const { page = 0, size = 100, ...rest } = params;
+    const { page = 0, size = 20, status, ...rest } = params;
 
     try {
-      if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: Redux store의 주문 데이터 사용
-        const state = store.getState();
-        const orders = state.order?.orders || [];
-        return { data: { orders, hasNext: false, currentPage: 0 }};
-      } else {
-        const response = await apiClient.get('/orders', { params: { page, size, ...rest } });
-        return response.data;
-      }
+      const queryParams = { 
+        page, 
+        size, 
+        ...(status && { orderStatus: status }),
+        ...rest 
+      };
+      
+      logger.log('📡 주문 목록 조회 요청:', queryParams);
+      
+      const response = await retryRequest(() => 
+        apiClient.get(API_ENDPOINTS.ORDERS, { params: queryParams })
+      );
+      
+      logger.log('✅ 주문 목록 조회 성공:', response.data);
+      return response.data;
     } catch (error) {
-      logger.error('주문 목록 조회 실패:', error);
+      logger.error('❌ 주문 목록 조회 실패:', error);
+      
+      if (error.statusCode === 401) {
+        error.message = '로그인이 필요합니다.';
+      } else {
+        error.message = '주문 목록을 불러오는데 실패했습니다.';
+      }
+      
       throw error;
     }
   },
@@ -99,19 +147,25 @@ export const orderAPI = {
   // 특정 주문 조회
   getOrderById: async (orderId) => {
     try {
-      if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: Redux store의 주문 데이터 사용
-        const state = store.getState();
-        const order = state.order?.orders?.find(order => order.id === orderId);
-        if (!order) {
-          throw new Error('주문을 찾을 수 없습니다.');
-        }
-        return { data: order };
-      } else {
-        return await apiClient.get(`/orders/${orderId}`);
-      }
+      logger.log(`📡 주문 조회 요청 (ID: ${orderId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.get(API_ENDPOINTS.ORDER_BY_ID(orderId))
+      );
+      
+      logger.log(`✅ 주문 조회 성공 (ID: ${orderId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error(`주문 조회 실패 (ID: ${orderId}):`, error);
+      logger.error(`❌ 주문 조회 실패 (ID: ${orderId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '로그인이 필요합니다.';
+      } else {
+        error.message = '주문 정보를 불러오는데 실패했습니다.';
+      }
+      
       throw error;
     }
   },
@@ -119,29 +173,23 @@ export const orderAPI = {
   // 실시간 주문 상태 추적
   trackOrder: async (orderId) => {
     try {
-      if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: mockOrders에서 주문 데이터 사용
-        const order = mockOrders.get(orderId) || store.getState().order?.orders?.find(order => order.id === orderId);
-        
-        if (!order) {
-          throw new Error('주문을 찾을 수 없습니다.');
-        }
-
-        // 테스트 주문의 상태 변화를 감지하기 위해 새로운 객체 생성
-        const trackedOrder = {
-          ...order,
-          lastChecked: new Date().toISOString()
-        };
-
-        logger.log(`🔄 주문 ${orderId} 추적 시작 (초기 상태: ${trackedOrder.orderStatus})`);
-        return { data: trackedOrder };
-      } else {
-        // 운영 환경: 재시도 로직이 포함된 API 호출
-        const response = await retryOrderTracking(orderId, () => apiClient.get(`/orders/${orderId}/status`));
-        return response.data;
-      }
+      logger.log(`📡 주문 추적 요청 (ID: ${orderId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.get(API_ENDPOINTS.ORDER_STATUS(orderId))
+      );
+      
+      logger.log(`✅ 주문 추적 성공 (ID: ${orderId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error(`주문 추적 실패 (ID: ${orderId}):`, error);
+      logger.error(`❌ 주문 추적 실패 (ID: ${orderId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else {
+        error.message = '주문 상태를 확인하는데 실패했습니다.';
+      }
+      
       throw error;
     }
   },
@@ -153,51 +201,28 @@ export const orderAPI = {
         throw new Error(`유효하지 않은 주문 상태: ${orderStatus}`);
       }
 
-      if (ENV_CONFIG.isDevelopment) {
-        // 개발 환경: 주문 찾기 (mockOrders 또는 Redux store)
-        let order = mockOrders.get(orderId);
-        
-        if (!order) {
-          // mockOrders에 없으면 Redux store에서 찾기
-          const state = store.getState();
-          order = state.order?.orders?.find(order => order.id === orderId);
-          
-          if (!order) {
-            throw new Error('주문을 찾을 수 없습니다.');
-          }
-        }
-
-        // 주문 업데이트
-        const updatedOrder = {
-          ...order,
-          orderStatus,
-          statusHistory: [
-            ...(order.statusHistory || []),
-            {
-              orderStatus,
-              timestamp: new Date().toISOString(),
-              message: message || `주문 상태가 ${orderStatus}로 변경되었습니다.`
-            }
-          ]
-        };
-
-        // mockOrders 업데이트
-        mockOrders.set(orderId, updatedOrder);
-
-        // Redux store 업데이트
-        store.dispatch(updateOrder(updatedOrder));
-
-        logger.log(`🔄 주문 상태 업데이트 - 주문 ID: ${orderId}, 상태: ${orderStatus}`);
-        return { data: updatedOrder };
-      } else {
-        const response = await apiClient.put(`/orders/${orderId}/status`, {
+      logger.log(`📡 주문 상태 업데이트 요청 (ID: ${orderId}, Status: ${orderStatus})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.put(API_ENDPOINTS.ORDER_STATUS(orderId), {
           orderStatus,
           message
-        });
-        return response;
-      }
+        })
+      );
+      
+      logger.log(`✅ 주문 상태 업데이트 성공 (ID: ${orderId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error(`주문 상태 업데이트 실패 (ID: ${orderId}):`, error);
+      logger.error(`❌ 주문 상태 업데이트 실패 (ID: ${orderId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '주문 상태 변경이 불가능합니다.';
+      } else {
+        error.message = '주문 상태 업데이트에 실패했습니다.';
+      }
+      
       throw error;
     }
   },
@@ -205,9 +230,27 @@ export const orderAPI = {
   // 주문 취소
   cancelOrder: async (orderId, reason = '') => {
     try {
-      return await orderAPI.updateOrderStatus(orderId, ORDER_STATUS.CANCELED, reason || '주문이 취소되었습니다.');
+      logger.log(`📡 주문 취소 요청 (ID: ${orderId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.ORDER_CANCEL(orderId), {
+          reason: reason || '고객 요청으로 취소'
+        })
+      );
+      
+      logger.log(`✅ 주문 취소 성공 (ID: ${orderId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error(`주문 취소 실패 (ID: ${orderId}):`, error);
+      logger.error(`❌ 주문 취소 실패 (ID: ${orderId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '취소할 수 없는 주문입니다.';
+      } else {
+        error.message = '주문 취소에 실패했습니다.';
+      }
+      
       throw error;
     }
   },
@@ -215,9 +258,62 @@ export const orderAPI = {
   // 주문 완료 처리
   completeOrder: async (orderId) => {
     try {
-      return await orderAPI.updateOrderStatus(orderId, ORDER_STATUS.COMPLETED, '주문이 완료되었습니다.');
+      logger.log(`📡 주문 완료 요청 (ID: ${orderId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.ORDER_COMPLETE(orderId))
+      );
+      
+      logger.log(`✅ 주문 완료 성공 (ID: ${orderId}):`, response.data);
+      return response.data;
     } catch (error) {
-      logger.error(`주문 완료 처리 실패 (ID: ${orderId}):`, error);
+      logger.error(`❌ 주문 완료 처리 실패 (ID: ${orderId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 422) {
+        error.message = '완료 처리할 수 없는 주문입니다.';
+      } else {
+        error.message = '주문 완료 처리에 실패했습니다.';
+      }
+      
+      throw error;
+    }
+  },
+
+  // 토스페이먼츠 결제 승인 (백엔드 API 호출)
+  confirmPayment: async (paymentData) => {
+    const { orderId, amount, paymentKey } = paymentData;
+    
+    try {
+      const requestData = {
+        orderId,
+        amount: Number(amount),
+        paymentKey
+      };
+      
+      logger.log('📡 백엔드 결제 승인 요청:', requestData);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, requestData)
+      );
+      
+      logger.log('✅ 백엔드 결제 승인 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      logger.error('❌ 백엔드 결제 승인 실패:', error);
+      
+      // 백엔드 에러 응답 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 422) {
+        error.message = '결제 정보를 확인해주세요.';
+      } else if (error.statusCode === 409) {
+        error.message = '이미 처리된 결제입니다.';
+      } else {
+        error.message = '결제 승인 처리 중 오류가 발생했습니다.';
+      }
+      
       throw error;
     }
   },

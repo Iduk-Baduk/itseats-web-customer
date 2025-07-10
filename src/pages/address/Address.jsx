@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useAddressRedux from "../../hooks/useAddressRedux";
 import { getIconByLabel } from "../../utils/addressUtils";
 import Header from "../../components/common/Header";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 import styles from "./Address.module.css";
-
 
 export default function Address() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addresses, selectedAddressId, selectAddress } = useAddressRedux();
+  const { addresses, selectedAddressId, selectAddress, isLoading, error, refreshAddresses } = useAddressRedux();
   const [keyword, setKeyword] = useState("");
 
   const handleSearch = () => {
@@ -29,6 +29,7 @@ export default function Address() {
 
   const hasHomeAddress = addresses.some((addr) => addr.label === "집");
   const hasCompanyAddress = addresses.some((addr) => addr.label === "회사");
+  const hasTemporaryAddresses = addresses.some((addr) => addr.isTemporary);
 
   const sortedAddresses = [...addresses].sort((a, b) => {
     const order = { 집: 1, 회사: 2 };
@@ -103,54 +104,94 @@ export default function Address() {
         )}
       </div>
 
+      {/* 임시 주소 알림 */}
+      {hasTemporaryAddresses && (
+        <div className={styles.temporaryNotice}>
+          <p>⚠️ 일부 주소가 서버 연결 오류로 로컬에 임시 저장되었습니다.</p>
+          <button onClick={refreshAddresses} className={styles.retryButton}>
+            다시 시도
+          </button>
+        </div>
+      )}
+
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <div className={styles.loadingContainer}>
+          <LoadingSpinner />
+          <p>주소 목록을 불러오는 중...</p>
+        </div>
+      )}
+
+      {/* 에러 상태 */}
+      {error && !isLoading && (
+        <div className={styles.errorContainer}>
+          <p>주소 목록을 불러오는데 실패했습니다.</p>
+          <button onClick={refreshAddresses} className={styles.retryButton}>
+            다시 시도
+          </button>
+        </div>
+      )}
+
       {/* 📦 주소 리스트 */}
-      <div className={styles.addressList}>
-        {sortedAddresses.map((addr, index) => (
-          <div key={addr.id}>
-            <div
-              className={`${styles.addressBox} ${
-                selectedAddressId === addr.id ? styles.selected : ""
-              }`}
-              onClick={() => handleAddressSelect(addr.id)}
-            >
-              <div className={styles.addressHeader}>
-                <div className={styles.iconWithContent}>
-                  <img
-                    src={getIconByLabel(addr.label)}
-                    alt="type-icon"
-                    className={styles.icon}
-                  />
-                  <div>
-                    <div className={styles.label}>{addr.label}</div>
-                    <div className={styles.address}>{addr.address}</div>
-                    {addr.wowZone && (
-                      <div>
-                        <span className={styles.wow}>WOW</span>
-                        <span className={styles.wowText}>
-                          무료배달 가능 지역
-                        </span>
+      {!isLoading && !error && (
+        <div className={styles.addressList}>
+          {sortedAddresses.map((addr, index) => (
+            <div key={addr.id}>
+              <div
+                className={`${styles.addressBox} ${
+                  selectedAddressId === addr.id ? styles.selected : ""
+                } ${addr.isTemporary ? styles.temporary : ""}`}
+                onClick={() => handleAddressSelect(addr.id)}
+              >
+                <div className={styles.addressHeader}>
+                  <div className={styles.iconWithContent}>
+                    <img
+                      src={getIconByLabel(addr.label)}
+                      alt="type-icon"
+                      className={styles.icon}
+                    />
+                    <div>
+                      <div className={styles.label}>
+                        {addr.label}
+                        {addr.isTemporary && (
+                          <span className={styles.temporaryBadge}>임시</span>
+                        )}
                       </div>
-                    )}
+                      <div className={styles.address}>{addr.address}</div>
+                      {addr.isTemporary && (
+                        <div className={styles.temporaryMessage}>
+                          서버 연결 오류로 로컬에 저장됨
+                        </div>
+                      )}
+                      {addr.wowZone && (
+                        <div>
+                          <span className={styles.wow}>WOW</span>
+                          <span className={styles.wowText}>
+                            무료배달 가능 지역
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  <button
+                    className={styles.editBtn}
+                    onClick={(e) => {
+                      e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
+                      navigate(`/address/edit/${addr.id}`, { replace: true });
+                    }}
+                  >
+                    <img
+                      src={getIconByLabel("수정")}
+                      alt="edit-icon"
+                      className={styles.icon}
+                    />
+                  </button>
                 </div>
-                <button
-                  className={styles.editBtn}
-                  onClick={(e) => {
-                    e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
-                    navigate(`/address/edit/${addr.id}`, { replace: true });
-                  }}
-                >
-                  <img
-                    src={getIconByLabel("수정")}
-                    alt="edit-icon"
-                    className={styles.icon}
-                  />
-                </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

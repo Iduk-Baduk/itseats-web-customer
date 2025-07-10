@@ -15,12 +15,16 @@ export default function CartCouponSection() {
   const coupons = useSelector(selectNormalizedCoupons);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
   
+  // 안전성을 위한 배열 체크
+  const couponsArray = Array.isArray(coupons) ? coupons : [];
+  const selectedCouponIdsArray = Array.isArray(selectedCouponIds) ? selectedCouponIds : [];
+  
   // 주문 금액 및 배달비 계산
   const orderPrice = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
   const deliveryFee = currentStore?.deliveryFee || 0;
   
   // 적용된 쿠폰 목록 계산
-  const appliedCoupons = coupons.filter(c => selectedCouponIds.includes(c.id));
+  const appliedCoupons = couponsArray.filter(c => selectedCouponIdsArray.includes(c.id));
   
   // 다중 쿠폰 할인 금액 계산
   const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);

@@ -229,7 +229,7 @@ export class PaymentTestUtils {
   getSessionId() {
     let sessionId = sessionStorage.getItem('payment_session_id');
     if (!sessionId) {
-      sessionId = securityUtils.generateSecureSessionId('payment');
+      sessionId = securityUtils.generateClientSubId('payment');
       sessionStorage.setItem('payment_session_id', sessionId);
     }
     return sessionId;
