@@ -63,6 +63,9 @@ export const API_ENDPOINTS = {
   AUTH_REFRESH: '/auths/reissue',          // ✅ GET /api/auths/reissue?memberId={memberId}
   AUTH_REGISTER: '/members/sign-up',       // ✅ POST /api/members/sign-up
   AUTH_ME: '/members/me',                  // ✅ GET /api/members/me (인증 필요)
+
+  // 리뷰 관련
+  REVIEW_BY_ORDER_ID: (orderId) => `/reviews/${orderId}`,
 };
 
 export default API_CONFIG; 
