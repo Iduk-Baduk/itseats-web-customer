@@ -30,9 +30,10 @@ export default defineConfig(() => {
       // 프록시 설정
       proxy: {
         "/api": {
-          target: "http://localhost:3001", // JSON Server 포트
+          target: "http://localhost:8080", // 백엔드 서버 포트
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, "")
+          secure: false,
+          logLevel: 'debug' // 프록시 로그 활성화
         }
       }
     },

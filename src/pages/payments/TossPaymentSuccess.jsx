@@ -1,9 +1,9 @@
-import { useEffect, useCallback, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { orderAPI } from '../../services/orderAPI';
-import { tossPaymentAPI, TossPaymentAPI } from '../../services/tossPaymentAPI';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { TossPaymentAPI } from '../../services/tossPaymentAPI';
 import { paymentStatusService } from '../../services/paymentStatusService';
 import { logger } from '../../utils/logger';
+import { ENV_CONFIG } from '../../config/api';
 import styles from "./PaymentSuccess.module.css";
 import commonStyles from "../../styles/CommonResult.module.css";
 
@@ -35,76 +35,113 @@ export default function TossPaymentSuccess() {
     try {
       logger.log('📡 결제 처리 시작...');
       
-      // URL 파라미터에서 결제 정보 추출
+      // URL 파라미터에서 결제 정보 추출 (토스페이먼츠 공식 문서에 따라)
       const paymentKey = searchParams.get("paymentKey");
-      const orderId = searchParams.get("orderId");
-      const paymentId = searchParams.get("paymentId"); // URL에서 paymentId 추출
+      const tossOrderId = searchParams.get("orderId"); // String 타입(토스용)
       const amount = searchParams.get("amount");
+      const paymentType = searchParams.get("paymentType");
 
-      logger.log('📋 URL 파라미터:', { paymentKey, orderId, paymentId, amount });
-
-      // paymentId가 없으면 orderId를 paymentId로 사용 (fallback)
-      const finalPaymentId = paymentId || orderId;
+      // URL 파라미터 로깅
+      logger.log('🔍 결제 성공 페이지 URL 파라미터 (토스페이먼츠):', {
+        paymentKey,
+        tossOrderId,
+        amount,
+        paymentType,
+        fullUrl: window.location.href,
+        search: window.location.search
+      });
       
-      if (!paymentKey || !orderId || !amount) {
+      if (!paymentKey || !tossOrderId || !amount) {
         throw new Error('결제 정보가 올바르지 않습니다.');
       }
 
       const requestData = {
         paymentKey,
-        orderId,
-        paymentId: finalPaymentId, // 백엔드에서 받은 paymentId 또는 fallback
+        orderId: tossOrderId,
         amount: parseInt(amount)
       };
 
       logger.log('📡 토스페이먼츠 결제 승인 시작:', requestData);
       
-      // sessionStorage에서 주문 데이터 가져오기 (fallback용)
-      const storedOrderData = sessionStorage.getItem('pendingOrderData');
-      let orderData = null;
-      
-      if (storedOrderData) {
-        try {
-          orderData = JSON.parse(storedOrderData);
-          logger.log('📦 주문 데이터 (sessionStorage):', orderData);
-        } catch (error) {
-          logger.warn('⚠️ sessionStorage 주문 데이터 파싱 실패:', error);
-        }
-      }
-      
-      // 주문 데이터가 없으면 URL 파라미터로 기본 데이터 생성
-      if (!orderData) {
-        logger.warn('⚠️ sessionStorage에 주문 데이터 없음, URL 파라미터로 기본 데이터 생성');
-        orderData = {
-          orderId: orderId,
-          totalPrice: parseInt(amount),
-          paymentMethod: { type: 'CARD' },
-          storeRequest: '',
-          riderRequest: '문 앞에 놔주세요 (초인종 O)',
-          couponIds: []
-        };
-      }
+      // 주문 데이터 설정 (URL 파라미터 기반)
+      const orderData = {
+        orderId: tossOrderId,
+        totalPrice: parseInt(amount),
+        paymentMethod: { type: 'CARD' },
+        storeRequest: '',
+        riderRequest: '문 앞에 놔주세요 (초인종 O)',
+        couponIds: []
+      };
       
       let paymentResponse;
       
       try {
-        // 결제 승인만 처리 (주문 생성과 결제 생성은 이미 Cart.jsx에서 완료)
-        logger.log('📡 결제 승인 요청:', { requestData });
-        paymentResponse = await TossPaymentAPI.confirmPaymentWithBackend(null, {
+        // 새로운 단순한 결제 확인 API 사용
+        logger.log('📡 새로운 단순한 결제 확인 요청:', { 
+          paymentKey: requestData.paymentKey,
           orderId: requestData.orderId,
-          amount: requestData.amount,
-          paymentKey: requestData.paymentKey
+          amount: requestData.amount
         });
-        logger.log('✅ 결제 승인 성공:', paymentResponse);
+        
+        const tossPaymentAPI = new TossPaymentAPI();
+        paymentResponse = await tossPaymentAPI.confirmPayment({
+          paymentKey: requestData.paymentKey,
+          orderId: requestData.orderId,
+          amount: requestData.amount
+        });
+        
+        logger.log('✅ 새로운 결제 확인 성공:', paymentResponse);
         
       } catch (backendError) {
-        // 백엔드 API 실패 시 Mock 모드로 fallback
-        logger.warn('⚠️ 백엔드 API 실패, Mock 모드로 fallback:', backendError.message);
-        try {
-          paymentResponse = await tossPaymentAPI.mockConfirmPayment(requestData);
-          logger.log('✅ 토스페이먼츠 결제 승인 성공 (Mock 모드):', paymentResponse);
-        } catch (mockError) {
-          logger.error('❌ Mock 모드도 실패:', mockError);
+        logger.error('❌ 새로운 결제 확인 실패:', backendError);
+        
+        // 개발 환경에서 백엔드 API 실패 시 mock 데이터 사용 (401 에러 포함)
+        if (ENV_CONFIG.isDevelopment && (backendError.statusCode === 500 || backendError.statusCode === 401)) {
+          logger.warn('🔧 개발 환경: 백엔드 API 실패로 mock 데이터 사용');
+          paymentResponse = {
+            data: {
+              paymentKey: requestData.paymentKey,
+              orderId: requestData.orderId,
+              amount: requestData.amount,
+              status: 'DONE',
+              method: 'CARD',
+              approvedAt: new Date().toISOString(),
+              totalAmount: requestData.amount,
+              balanceAmount: 0,
+              suppliedAmount: requestData.amount,
+              vat: Math.floor(requestData.amount * 0.1),
+              useEscrow: false,
+              currency: 'KRW',
+              receiptUrl: 'https://test-receipt.toss.im',
+              card: {
+                company: '신한카드',
+                number: '1234-****-****-1234',
+                installmentPlanMonths: 0,
+                isInterestFree: false,
+                approveNo: '12345678',
+                useCardPoint: false,
+                cardType: '신용',
+                ownerType: '개인',
+                acquireStatus: 'APPROVED',
+                amount: requestData.amount
+              }
+            }
+          };
+        } else {
+          // 401 에러인 경우 인증 실패로 처리
+          if (backendError.statusCode === 401) {
+            logger.warn('🔐 인증 실패 - 로그인 페이지로 리다이렉트');
+            const errorMessage = backendError.originalError?.response?.data?.message || '인증 정보가 없습니다. 다시 로그인해주세요.';
+            setError(errorMessage);
+            setIsProcessing(false);
+            
+            // 3초 후 로그인 페이지로 리다이렉트
+            setTimeout(() => {
+              navigate('/login');
+            }, 3000);
+            return;
+          }
+          
           throw new Error('결제 처리를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
         }
       }
@@ -115,7 +152,7 @@ export default function TossPaymentSuccess() {
       try {
         // 주문 데이터 설정 (이미 생성된 주문 정보 사용)
         setOrderData({
-          orderId: orderId,
+          orderId: tossOrderId,
           totalPrice: parseInt(amount),
           status: 'WAITING',
           createdAt: new Date().toISOString()
@@ -124,16 +161,31 @@ export default function TossPaymentSuccess() {
         // 결제 상태 설정
         setPaymentStatus({
           ...paymentResponse,
-          orderId: orderId,
+          orderId: tossOrderId,
           status: 'DONE'
         });
         
-        // sessionStorage에서 주문 데이터 정리
+        // sessionStorage 정리
         sessionStorage.removeItem('pendingOrderData');
+        sessionStorage.removeItem('paymentData');
         
         // 폴링 시작 (Webhook 상태 반영을 위해)
         try {
-          startPaymentPolling(requestData.paymentKey, requestData.orderId);
+          paymentStatusService.startPolling(
+            requestData.paymentKey,
+            requestData.orderId,
+            (status) => {
+              logger.log('결제 상태 업데이트:', status);
+              setPaymentStatus(status);
+            },
+            (finalStatus) => {
+              logger.log('결제 최종 상태:', finalStatus);
+              setPaymentStatus(finalStatus);
+            },
+            (error) => {
+              logger.error('결제 상태 폴링 오류:', error);
+            }
+          );
         } catch (pollingError) {
           logger.warn('⚠️ 폴링 시작 실패 (무시):', pollingError);
         }
@@ -147,6 +199,7 @@ export default function TossPaymentSuccess() {
           status: 'DONE'
         });
         sessionStorage.removeItem('pendingOrderData');
+        sessionStorage.removeItem('paymentData');
       }
       
       clearTimeout(timeoutId);
@@ -164,7 +217,7 @@ export default function TossPaymentSuccess() {
   // 결제 상태 폴링 시작
   const startPaymentPolling = useCallback((paymentKey, orderId) => {
     try {
-      paymentStatusService.startPolling(
+      PaymentStatusService.startPolling(
         paymentKey,
         orderId,
         // 상태 변경 콜백
@@ -319,7 +372,7 @@ export default function TossPaymentSuccess() {
                   style={{ color: paymentStatusService.getStatusStyle(paymentStatus.status).color }}
                 >
                   {paymentStatusService.getStatusStyle(paymentStatus.status).icon} {' '}
-                  {paymentStatusService.getStatusStyle(paymentStatus.status).message}
+                  {paymentStatusService.getStatusMessage(paymentStatus.status)}
                 </span>
               </div>
               

@@ -47,6 +47,9 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
 const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
+const BackendConnectionTest = React.lazy(() => import("./pages/BackendConnectionTest"));
+const BackendDiagnosticReport = React.lazy(() => import("./pages/BackendDiagnosticReport"));
+const TestPaymentDebug = React.lazy(() => import("./pages/TestPaymentDebug"));
 
 // 페이지별 최적화된 로딩 메시지
 const getLoadingMessage = (pathname) => {
@@ -496,6 +499,36 @@ export default function Root() {
               <Layout navVisible={false}>
                 <LazyPageWrapper>
                   <TestBackendIntegration />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/backend-test" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <BackendConnectionTest />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/backend-diagnostic" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <BackendDiagnosticReport />
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/test-payment-debug" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <TestPaymentDebug />
                 </LazyPageWrapper>
               </Layout>
             } 

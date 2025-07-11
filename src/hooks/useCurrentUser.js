@@ -4,6 +4,7 @@ import { userAPI } from '../services/userAPI';
 import { ENV_CONFIG } from '../config/api';
 import { DEFAULT_USER, generateDevToken } from '../config/development';
 import { STORAGE_KEYS, logger } from '../utils/logger';
+import AuthService from '../services/authService';
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -48,8 +49,10 @@ export default function useCurrentUser() {
             const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
             const defaultToken = generateDevToken(defaultUser.id);
-            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, defaultToken);
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
+            // AuthService를 사용하여 토큰과 사용자 정보 저장
+            AuthService.setToken(defaultToken);
+            AuthService.setUserInfo(defaultUser);
+            logger.log('🔧 개발 환경: 기본 사용자 설정 완료');
           }
           return;
         }
@@ -73,7 +76,9 @@ export default function useCurrentUser() {
             // 개발 환경에서만 기본 사용자 설정
             const defaultUser = DEFAULT_USER;
             setUser(defaultUser);
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
+            // AuthService를 사용하여 사용자 정보 저장
+            AuthService.setUserInfo(defaultUser);
+            logger.log('🔧 개발 환경: API 실패로 인한 기본 사용자 설정');
           } else {
             throw authError;
           }

@@ -21,15 +21,25 @@ export default function TossPayment() {
   
   // URL 파라미터에서 결제 정보 추출
   const orderId = searchParams.get('orderId');
-  const paymentId = searchParams.get('paymentId'); // paymentId 추가
   const amount = searchParams.get('amount');
   const orderName = searchParams.get('orderName');
   const customerName = searchParams.get('customerName');
   const customerEmail = searchParams.get('customerEmail');
 
   useEffect(() => {
+    // URL 파라미터 로깅
+    logger.log('🔍 토스페이먼츠 결제 페이지 URL 파라미터:', {
+      orderId,
+      amount,
+      orderName,
+      customerName,
+      customerEmail,
+      fullUrl: window.location.href
+    });
+    
     // 필수 파라미터 검증
-    if (!orderId || !paymentId || !amount) {
+    if (!orderId || !amount) {
+      logger.error('❌ 필수 파라미터 누락:', { orderId, amount });
       setError('주문 정보가 올바르지 않습니다.');
       setIsLoading(false);
       return;
@@ -53,14 +63,13 @@ export default function TossPayment() {
 
   const handlePaymentSuccess = async (paymentKey) => {
     try {
-      // 결제 성공 시 paymentId와 함께 성공 페이지로 이동
+      // 새로운 단순한 플로우: paymentId 없이 토스페이먼츠 정보만으로 결제 확인
       const successParams = new URLSearchParams({
         paymentKey: paymentKey,
         orderId: orderId,
-        paymentId: paymentId, // paymentId 전달
         amount: amount
       });
-      
+      logger.log('🔗 결제 성공 페이지로 이동:', `/payments/toss-success?${successParams}`);
       navigate(`/payments/toss-success?${successParams}`);
     } catch (error) {
       logger.error('결제 성공 처리 실패:', error);
@@ -137,7 +146,6 @@ export default function TossPayment() {
           <h2>주문 정보</h2>
           <div className={styles.orderDetails}>
             <p><strong>주문번호:</strong> {orderId}</p>
-            <p><strong>결제번호:</strong> {paymentId}</p>
             <p><strong>주문명:</strong> {orderName}</p>
             <p><strong>결제금액:</strong> {parseInt(amount).toLocaleString()}원</p>
           </div>
@@ -152,6 +160,7 @@ export default function TossPayment() {
             customerEmail={customerEmail}
             onPaymentSuccess={handlePaymentSuccess}
             onPaymentError={handlePaymentError}
+            successUrl={`${window.location.origin}/payments/toss-success`}
           />
         </div>
       </div>

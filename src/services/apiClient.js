@@ -31,7 +31,24 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       logger.log(`🔐 요청에 토큰 추가: ${config.method?.toUpperCase()} ${config.url}`);
+      logger.log(`🔐 토큰 정보: ${token.substring(0, 20)}...`);
+    } else {
+      logger.warn(`⚠️ 토큰 없음: ${config.method?.toUpperCase()} ${config.url}`);
     }
+    
+    // 요청 헤더 로깅 (디버깅용)
+    logger.log(`📡 API 요청 상세 정보:`, {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: {
+        'Content-Type': config.headers['Content-Type'],
+        'Authorization': config.headers.Authorization ? 'Bearer ***' : '없음',
+        'withCredentials': config.withCredentials
+      },
+      data: config.data
+    });
 
     return config;
   },

@@ -1,10 +1,11 @@
 import { API_ENDPOINTS, API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
+import { STORAGE_KEYS } from '../utils/logger';
 
-// 토큰 저장 키
-const TOKEN_KEY = 'itseats_access_token';
+// 토큰 저장 키 - STORAGE_KEYS와 일치하도록 수정
+const TOKEN_KEY = STORAGE_KEYS.AUTH_TOKEN;
 const REFRESH_TOKEN_KEY = 'itseats_refresh_token';
-const USER_KEY = 'itseats_user_info';
+const USER_KEY = STORAGE_KEYS.CURRENT_USER;
 
 class AuthService {
   /**
@@ -89,6 +90,8 @@ class AuthService {
         if (payload.exp && payload.exp < currentTime) {
           logger.warn('토큰이 만료됨');
           AuthService.removeToken();
+          // 토큰 만료 시 로그인 페이지로 리다이렉트
+          AuthService.redirectToLogin();
           return false;
         }
       }

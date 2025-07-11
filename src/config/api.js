@@ -28,7 +28,7 @@ export const API_ENDPOINTS = {
   ORDER_TRACK: (id) => `/orders/${id}/track`,
   ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
   ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
-  ORDER_CONFIRM: '/orders/confirm', // 결제 승인 엔드포인트 수정
+  ORDER_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 결제 승인 엔드포인트 (기존 호환성)
   
   // 결제 관련
   CARDS: '/cards',

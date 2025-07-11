@@ -1,9 +1,9 @@
 // src/config/development.js
 export const DEFAULT_USER = {
-  id: "user-001",
-  name: "송준경",
-  email: "user@example.com",
-  phone: "010-1234-6888"
+  id: "2",
+  name: "어드민",
+  email: "admin@test.com",
+  phone: "010-1234-1234"
 };
 
 export function generateDevToken(userId) {

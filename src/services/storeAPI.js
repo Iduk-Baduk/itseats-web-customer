@@ -1,6 +1,6 @@
 import apiClient from "./apiClient";
 import { logger } from "../utils/logger";
-import { API_ENDPOINTS } from "../config/api";
+import { API_ENDPOINTS, ENV_CONFIG } from "../config/api";
 import AuthService from "./authService";
 
 // 재시도 설정
@@ -109,6 +109,27 @@ const StoreAPI = {
 
   // 매장 상세 정보 조회 API
   getStoreById: async (storeId) => {
+    // 개발 환경에서 바로 mock 데이터 반환
+    if (ENV_CONFIG.isDevelopment) {
+      logger.warn('🔧 개발 환경: mock 데이터 사용');
+      return {
+        storeId: storeId,
+        name: `테스트 매장 ${storeId}`,
+        isLiked: false,
+        reviewRating: 4.5,
+        reviewCount: 128,
+        images: ["/samples/food1.jpg"],
+        storeImage: "/samples/food1.jpg",
+        rating: 4.5,
+        description: "맛있는 음식을 제공하는 테스트 매장입니다.",
+        address: "서울시 강남구 테스트로 123",
+        phone: "02-1234-5678",
+        deliveryTime: "30-40분",
+        deliveryFee: 3000,
+        minimumOrder: 12000
+      };
+    }
+
     try {
       logger.log(`📡 매장 상세 정보 조회 요청 (ID: ${storeId})`);
       

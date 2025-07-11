@@ -144,7 +144,8 @@ export function TossPaymentWidget({
   customerName, 
   customerMobilePhone,
   onPaymentSuccess,
-  onPaymentError 
+  onPaymentError,
+  successUrl 
 }) {
   // 고유한 DOM ID 생성 (더 강력한 고유성 보장)
   const widgetId = useMemo(() => {
@@ -536,12 +537,18 @@ export function TossPaymentWidget({
       // 결제 성능 측정
       const paymentResult = await paymentTestUtils.measurePerformance('결제 요청', async () => {
         // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-        // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
+        // 새로운 단순한 플로우: paymentId 없이 토스페이먼츠 정보만으로 결제 확인
+        const finalSuccessUrl = successUrl || `${window.location.origin}/payments/toss-success`;
+        
+        logger.log('🔗 토스페이먼츠 success URL:', finalSuccessUrl);
+        logger.log('🔍 successUrl prop:', successUrl);
+        logger.log('🔍 window.location.origin:', window.location.origin);
+        
         // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
         return await widgetsRef.current.requestPayment({
           orderId: orderId,
           orderName: orderName,
-          successUrl: window.location.origin + "/payments/toss-success",
+          successUrl: finalSuccessUrl,
           failUrl: window.location.origin + "/payments/failure?redirect=/cart",
           customerEmail: customerEmail,
           customerName: customerName,

@@ -173,41 +173,69 @@ export const getTokenData = () => {
     const tokenData = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (!tokenData) return null;
 
-    const parsed = JSON.parse(tokenData);
-    
-    // 기존 형식 호환성 (문자열로 저장된 경우)
-    if (typeof parsed === 'string') {
+    // JWT 토큰인지 확인 (eyJ로 시작하는지)
+    if (tokenData.startsWith('eyJ')) {
       return {
-        token: parsed,
+        token: tokenData,
         expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
         issuedAt: Date.now()
       };
     }
 
-    // 객체 구조 검증
-    if (typeof parsed === 'object' && parsed !== null) {
-      if (!parsed.token || typeof parsed.token !== 'string') {
-        throw new Error('잘못된 토큰 형식');
-      }
-      if (!parsed.expiresAt || typeof parsed.expiresAt !== 'number') {
-        throw new Error('잘못된 만료 시간 형식');
-      }
-      if (!parsed.issuedAt || typeof parsed.issuedAt !== 'number') {
-        throw new Error('잘못된 발급 시간 형식');
-      }
-      
-      // 추가 검증: 시간 값의 유효성 확인
-      if (parsed.expiresAt <= 0 || parsed.issuedAt <= 0) {
-        throw new Error('잘못된 시간 값');
-      }
-      if (parsed.issuedAt > parsed.expiresAt) {
-        throw new Error('발급 시간이 만료 시간보다 늦습니다');
-      }
-      
-      return parsed;
+    // 개발 환경 토큰인지 확인 (token_로 시작하는지)
+    if (tokenData.startsWith('token_')) {
+      return {
+        token: tokenData,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+        issuedAt: Date.now()
+      };
     }
 
-    throw new Error('알 수 없는 토큰 데이터 형식');
+    // JSON 형식인지 확인
+    try {
+      const parsed = JSON.parse(tokenData);
+      
+      // 기존 형식 호환성 (문자열로 저장된 경우)
+      if (typeof parsed === 'string') {
+        return {
+          token: parsed,
+          expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+          issuedAt: Date.now()
+        };
+      }
+
+      // 객체 구조 검증
+      if (typeof parsed === 'object' && parsed !== null) {
+        if (!parsed.token || typeof parsed.token !== 'string') {
+          throw new Error('잘못된 토큰 형식');
+        }
+        if (!parsed.expiresAt || typeof parsed.expiresAt !== 'number') {
+          throw new Error('잘못된 만료 시간 형식');
+        }
+        if (!parsed.issuedAt || typeof parsed.issuedAt !== 'number') {
+          throw new Error('잘못된 발급 시간 형식');
+        }
+        
+        // 추가 검증: 시간 값의 유효성 확인
+        if (parsed.expiresAt <= 0 || parsed.issuedAt <= 0) {
+          throw new Error('잘못된 시간 값');
+        }
+        if (parsed.issuedAt > parsed.expiresAt) {
+          throw new Error('발급 시간이 만료 시간보다 늦습니다');
+        }
+        
+        return parsed;
+      }
+
+      throw new Error('알 수 없는 토큰 데이터 형식');
+    } catch (parseError) {
+      // JSON 파싱 실패 시 문자열로 처리
+      return {
+        token: tokenData,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+        issuedAt: Date.now()
+      };
+    }
   } catch (error) {
     console.error('토큰 데이터 조회 실패:', error);
     // 오류 발생 시 토큰 데이터 삭제

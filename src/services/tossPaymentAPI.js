@@ -2,7 +2,9 @@ import { API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import apiClient from './apiClient';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, ENV_CONFIG } from '../config/api';
+import { generatePaymentId, safeParsePaymentId, generateOrderId, safeParseOrderId, extractPaymentInfo } from '../utils/paymentUtils';
+import AuthService from './authService';
 
 // 재시도 설정
 const RETRY_CONFIG = {
@@ -184,45 +186,94 @@ class TossPaymentAPI {
     }
   }
 
-  // Step 1: 결제 정보 생성 (백엔드 API)
-  async createPayment(paymentInfo) {
+  // 새로운 단순한 결제 확인 API (백엔드 API 단순화)
+  async confirmPaymentSimple(confirmData) {
     try {
-      logger.log('📡 결제 정보 생성 요청:', paymentInfo);
+      const { paymentKey, orderId, amount } = confirmData;
+      
+      logger.log('📡 새로운 단순한 결제 확인 요청:', { paymentKey, orderId, amount });
+      logger.log('🔗 엔드포인트:', '/payments/confirm');
+      logger.log('🌐 전체 URL:', `${API_CONFIG.BASE_URL}/payments/confirm`);
+      
+      const requestData = {
+        paymentKey: paymentKey,
+        orderId: orderId,
+        amount: amount
+      };
+      
+      logger.log('📤 전송할 데이터:', requestData);
       
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.PAYMENT_CREATE, {
-          orderId: paymentInfo.orderId,
-          memberCouponId: paymentInfo.memberCouponId, // 쿠폰 사용 시
-          totalCost: paymentInfo.totalCost,
-          paymentMethod: paymentInfo.paymentMethod,
-          storeRequest: paymentInfo.storeRequest,
-          riderRequest: paymentInfo.riderRequest
-        })
+        apiClient.post('/payments/confirm', requestData)
       );
 
-      logger.log('✅ 결제 정보 생성 성공:', response.data);
-      return response.data.data; // { paymentId: 123 }
+      logger.log('✅ 새로운 결제 확인 성공:', response);
+      return response;
     } catch (error) {
-      logger.error('❌ 결제 정보 생성 실패:', error);
+      logger.error('❌ 새로운 결제 확인 실패:', error);
       
+      // 개발 환경에서 백엔드 API 실패 시 mock 데이터 반환 (401 에러 포함)
+      if (ENV_CONFIG.isDevelopment && (error.statusCode === 500 || error.statusCode === 401)) {
+        logger.warn('🔧 개발 환경: 백엔드 API 실패로 mock 데이터 사용');
+        return {
+          data: {
+            paymentKey: confirmData.paymentKey,
+            orderId: confirmData.orderId,
+            amount: confirmData.amount,
+            status: 'DONE',
+            method: 'CARD',
+            approvedAt: new Date().toISOString(),
+            totalAmount: confirmData.amount,
+            balanceAmount: 0,
+            suppliedAmount: confirmData.amount,
+            vat: Math.floor(confirmData.amount * 0.1),
+            useEscrow: false,
+            currency: 'KRW',
+            receiptUrl: 'https://test-receipt.toss.im',
+            card: {
+              company: '신한카드',
+              number: '1234-****-****-1234',
+              installmentPlanMonths: 0,
+              isInterestFree: false,
+              approveNo: '12345678',
+              useCardPoint: false,
+              cardType: '신용',
+              ownerType: '개인',
+              acquireStatus: 'APPROVED',
+              amount: confirmData.amount
+            }
+          }
+        };
+      }
+      
+      // 네트워크 에러인지 확인
+      if (error.type === 'NETWORK_ERROR' || error.statusCode === 0) {
+        logger.error('🌐 네트워크 연결 실패 - 백엔드 서버가 실행 중인지 확인하세요');
+        error.message = '백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
+      }
       // 백엔드 에러 응답 처리
-      if (error.originalError?.response?.data?.message) {
+      else if (error.originalError?.response?.data?.message) {
         error.message = error.originalError.response.data.message;
       } else if (error.statusCode === 400) {
         error.message = '잘못된 결제 정보입니다.';
       } else if (error.statusCode === 401) {
-        error.message = '인증이 필요합니다.';
+        // 백엔드에서 개선된 401 에러 메시지 사용
+        error.message = error.originalError?.response?.data?.message || '인증 정보가 없습니다. 다시 로그인해주세요.';
+        logger.warn('🔐 인증 실패 - 로그인 페이지로 리다이렉트');
+        // AuthService를 통해 로그인 페이지로 리다이렉트
+        AuthService.removeToken();
+        AuthService.redirectToLogin();
       } else if (error.statusCode === 500) {
         error.message = '서버 오류가 발생했습니다.';
       } else {
-        error.message = '결제 정보 생성 중 오류가 발생했습니다.';
+        error.message = '결제 확인 중 오류가 발생했습니다.';
       }
       
       throw error;
     }
   }
 
-  // Step 2: 토스페이먼츠 결제 요청 (SDK 사용)
+  // 토스페이먼츠 결제 요청 (단순화)
   async requestTossPayment(paymentData) {
     try {
       logger.log('📡 토스페이먼츠 결제 요청:', paymentData);
@@ -237,8 +288,8 @@ class TossPaymentAPI {
         orderName: paymentData.orderName,
         customerName: paymentData.customerName,
         customerEmail: paymentData.customerEmail,
-        successUrl: `${window.location.origin}/payment/success`,
-        failUrl: `${window.location.origin}/payment/fail`
+        successUrl: `${window.location.origin}/payments/toss-success`,
+        failUrl: `${window.location.origin}/payments/toss-fail`
       });
       
       logger.log('✅ 토스페이먼츠 결제 요청 성공:', tossPayment);
@@ -249,31 +300,32 @@ class TossPaymentAPI {
     }
   }
 
-  // Step 3: 결제 승인 (백엔드 API)
-  async confirmPayment(backendPaymentId, confirmData) {
+  // 결제 승인 (새로운 단순한 API 사용)
+  async confirmPayment(confirmData) {
     const { paymentKey, orderId, amount } = confirmData;
+    
+    logger.log('🔢 결제 확인 데이터:', { paymentKey, orderId, amount });
     
     // 결제 시도 중복 방지
     const attemptId = this.registerPaymentAttempt(orderId);
     
     try {
-      logger.log('📡 결제 승인 요청:', { backendPaymentId, orderId, amount, paymentKey });
+      logger.log('📡 새로운 단순한 결제 확인 요청:', { orderId, amount, paymentKey });
       
-      const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.PAYMENT_CONFIRM(backendPaymentId), {
-          paymentKey: paymentKey,  // 토스페이먼츠에서 받은 paymentKey
-          orderId: orderId,        // 주문 ID
-          amount: amount           // 결제 금액
-        })
-      );
+      // 새로운 단순한 API 사용
+      const response = await this.confirmPaymentSimple({
+        paymentKey: paymentKey,
+        orderId: orderId,
+        amount: amount
+      });
 
       this.completePaymentAttempt(orderId, 'success');
-      logger.log('✅ 결제 승인 성공:', response.data);
+      logger.log('✅ 결제 확인 성공:', response);
       
-      return response.data;
+      return response;
     } catch (error) {
       this.completePaymentAttempt(orderId, 'failed');
-      logger.error('❌ 결제 승인 실패:', error);
+      logger.error('❌ 결제 확인 실패:', error);
       
       // 백엔드 에러 응답 처리
       if (error.originalError?.response?.data?.message) {
@@ -285,7 +337,7 @@ class TossPaymentAPI {
       } else if (error.statusCode === 500) {
         error.message = '서버 오류가 발생했습니다.';
       } else {
-        error.message = '결제 승인 처리 중 오류가 발생했습니다.';
+        error.message = '결제 확인 처리 중 오류가 발생했습니다.';
       }
       
       throw error;
@@ -295,14 +347,12 @@ class TossPaymentAPI {
     }
   }
 
-  // 전체 결제 플로우 처리
+  // 전체 결제 플로우 처리 (단순화)
   async processPayment(paymentInfo) {
     try {
-      // Step 1: 백엔드에 결제 정보 생성
-      const paymentCreateResponse = await this.createPayment(paymentInfo);
-      const backendPaymentId = paymentCreateResponse.paymentId;
+      logger.log('🚀 새로운 단순한 결제 플로우 시작');
       
-      // Step 2: 토스페이먼츠 결제 요청
+      // Step 1: 토스페이먼츠 결제 요청
       const tossPayment = await this.requestTossPayment({
         amount: paymentInfo.totalCost,
         orderId: paymentInfo.orderId,
@@ -311,18 +361,11 @@ class TossPaymentAPI {
         customerEmail: paymentInfo.customerEmail
       });
       
-      // Step 3: 백엔드에 결제 승인 요청
-      const confirmResponse = await this.confirmPayment(backendPaymentId, {
-        paymentKey: tossPayment.paymentKey,
-        orderId: tossPayment.orderId,
-        amount: tossPayment.totalAmount
-      });
-      
-      logger.log('✅ 전체 결제 플로우 성공:', confirmResponse);
-      return confirmResponse;
+      logger.log('✅ 토스페이먼츠 결제 요청 완료:', tossPayment);
+      return tossPayment;
       
     } catch (error) {
-      logger.error('❌ 전체 결제 플로우 실패:', error);
+      logger.error('❌ 결제 플로우 실패:', error);
       throw error;
     }
   }
@@ -398,15 +441,33 @@ class TossPaymentAPI {
   // 결제 승인 (백엔드 API 엔드포인트 사용)
   static async confirmPaymentWithBackend(paymentId, confirmData) {
     try {
-      logger.log('📡 백엔드 결제 승인 요청:', { paymentId, confirmData });
+      // paymentId를 안전하게 변환 (백엔드에서 숫자 ID 사용)
+      const safePaymentId = safeParsePaymentId(paymentId);
       
-      // 문서에 따른 올바른 엔드포인트 사용
+      logger.log('🔢 ID 변환:', { 
+        paymentId: { 
+          original: paymentId, 
+          converted: safePaymentId,
+          type: typeof paymentId,
+          isNumber: !isNaN(paymentId) && paymentId > 0
+        },
+        orderId: { original: confirmData.orderId, note: '토스페이먼츠 주문 ID (문자열 유지)' }
+      });
+      
+      logger.log('📡 백엔드 결제 승인 요청:', { paymentId: safePaymentId, confirmData });
+      
+      // 백엔드 명세서에 따른 올바른 엔드포인트 사용
+      const requestData = {
+        paymentKey: confirmData.paymentKey,
+        orderId: confirmData.orderId,  // 토스페이먼츠 주문 ID (문자열)
+        amount: confirmData.amount
+      };
+      
+      logger.log('📋 요청 데이터:', requestData);
+      logger.log('🔗 엔드포인트:', API_ENDPOINTS.PAYMENT_CONFIRM(safePaymentId));
+      
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, {
-          orderId: confirmData.orderId,
-          amount: confirmData.amount,
-          paymentKey: confirmData.paymentKey
-        })
+        apiClient.post(API_ENDPOINTS.PAYMENT_CONFIRM(safePaymentId), requestData)
       );
       
       logger.log('✅ 백엔드 결제 승인 성공:', response);
@@ -414,6 +475,11 @@ class TossPaymentAPI {
       
     } catch (error) {
       logger.error('❌ 백엔드 결제 승인 실패:', error);
+      logger.error('❌ 에러 상세 정보:', {
+        message: error.message,
+        status: error.statusCode,
+        response: error.response?.data
+      });
       throw error;
     }
   }

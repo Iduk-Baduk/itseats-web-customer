@@ -6,9 +6,11 @@ export const generateUniqueId = (prefix = 'id') => {
   return `${prefix}_${timestamp}_${uniqueStr}`;
 };
 
-// 주문 ID 생성
+// 주문 ID 생성 (숫자 형식)
 export const generateOrderId = () => {
-  return generateUniqueId('order');
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 10000);
+  return timestamp + random; // 숫자 형식으로 변경
 };
 
 // 결제 ID 생성

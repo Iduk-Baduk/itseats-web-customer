@@ -138,20 +138,36 @@ export default function Login() {
             <small style={{ color: '#666', marginBottom: '10px', display: 'block' }}>
               개발용 테스트 계정
             </small>
-            <Button 
-              onClick={() => {
-                setUserId('test@example.com');
-                setPassword('Test123!@#');
-              }}
-              style={{ 
-                backgroundColor: '#f0f0f0', 
-                color: '#333',
-                fontSize: '12px',
-                padding: '8px 16px'
-              }}
-            >
-              테스트 계정 입력
-            </Button>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              <Button 
+                onClick={() => {
+                  setUserId('test@example.com');
+                  setPassword('Test123!@#');
+                }}
+                style={{ 
+                  backgroundColor: '#f0f0f0', 
+                  color: '#333',
+                  fontSize: '12px',
+                  padding: '8px 16px'
+                }}
+              >
+                테스트 계정
+              </Button>
+              <Button 
+                onClick={() => {
+                  setUserId('admin');
+                  setPassword('password1!');
+                }}
+                style={{ 
+                  backgroundColor: '#007bff', 
+                  color: '#fff',
+                  fontSize: '12px',
+                  padding: '8px 16px'
+                }}
+              >
+                Admin 계정
+              </Button>
+            </div>
           </div>
         )}
         
