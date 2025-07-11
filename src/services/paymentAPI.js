@@ -143,7 +143,7 @@ export const paymentAPI = {
 
   // 토스페이먼츠 결제 승인 (백엔드 API 호출)
   confirmPayment: async (paymentData) => {
-    const { paymentKey, orderId, amount } = paymentData;
+    const { paymentId, paymentKey, orderId, amount } = paymentData;
     
     try {
       const requestData = {
@@ -152,10 +152,16 @@ export const paymentAPI = {
         amount: Number(amount)
       };
       
-      logger.log('📡 토스페이먼츠 결제 승인 요청:', requestData);
+      logger.log('📡 토스페이먼츠 결제 승인 요청:', { paymentId, requestData });
       
+      // paymentId 유효성 검사 (문자열로 처리)
+      if (!paymentId || typeof paymentId !== 'string' || !/^\d+$/.test(paymentId)) {
+        throw new Error('유효하지 않은 paymentId입니다.');
+      }
+      
+      // 백엔드 명세에 따른 올바른 엔드포인트 사용 (문자열 paymentId)
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.PAYMENTS, requestData)
+        apiClient.post(API_ENDPOINTS.PAYMENT_CONFIRM(paymentId), requestData)
       );
       
       logger.log('✅ 토스페이먼츠 결제 승인 성공:', response.data);
@@ -168,8 +174,6 @@ export const paymentAPI = {
         error.message = error.originalError.response.data.message;
       } else if (error.statusCode === 400) {
         error.message = '잘못된 금액이 입력되었습니다.';
-      } else if (error.statusCode === 401) {
-        error.message = '인증이 필요합니다.';
       } else if (error.statusCode === 500) {
         error.message = '토스 서버 오류가 발생했습니다.';
       } else {

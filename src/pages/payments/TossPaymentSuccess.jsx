@@ -38,14 +38,28 @@ export default function TossPaymentSuccess() {
       // URL 파라미터에서 결제 정보 추출
       const paymentKey = searchParams.get("paymentKey");
       const orderId = searchParams.get("orderId");
-      const paymentId = searchParams.get("paymentId"); // URL에서 paymentId 추출
+      const paymentIdParam = searchParams.get("paymentId"); // URL에서 paymentId 추출
       const amount = searchParams.get("amount");
 
-      logger.log('📋 URL 파라미터:', { paymentKey, orderId, paymentId, amount });
+      logger.log('📋 URL 파라미터:', { paymentKey, orderId, paymentId: paymentIdParam, amount });
 
-      // paymentId가 없으면 orderId를 paymentId로 사용 (fallback)
-      const finalPaymentId = paymentId || orderId;
+      // paymentId 유효성 검증 강화
+      if (!paymentIdParam || paymentIdParam === 'null' || paymentIdParam === 'undefined' || paymentIdParam.trim() === '') {
+        logger.error('❌ URL에서 paymentId가 누락되었습니다:', paymentIdParam);
+        throw new Error('결제 정보가 올바르지 않습니다. 장바구니에서 다시 시도해주세요.');
+      }
+
+      // paymentId를 문자열로 처리 (JavaScript Number 타입 한계 문제 해결)
+      const finalPaymentId = paymentIdParam.trim();
       
+      // paymentId가 숫자 형태인지 검증 (하지만 변환하지 않음)
+      if (!/^\d+$/.test(finalPaymentId)) {
+        logger.error('❌ paymentId가 숫자 형태가 아닙니다:', paymentIdParam);
+        throw new Error('유효하지 않은 결제 ID입니다.');
+      }
+      
+      logger.log('✅ paymentId 검증 통과:', { original: paymentIdParam, final: finalPaymentId });
+
       if (!paymentKey || !orderId || !amount) {
         throw new Error('결제 정보가 올바르지 않습니다.');
       }
@@ -90,7 +104,7 @@ export default function TossPaymentSuccess() {
       try {
         // 결제 승인만 처리 (주문 생성과 결제 생성은 이미 Cart.jsx에서 완료)
         logger.log('📡 결제 승인 요청:', { requestData });
-        paymentResponse = await TossPaymentAPI.confirmPaymentWithBackend(null, {
+        paymentResponse = await TossPaymentAPI.confirmPaymentWithBackend(requestData.paymentId, {
           orderId: requestData.orderId,
           amount: requestData.amount,
           paymentKey: requestData.paymentKey

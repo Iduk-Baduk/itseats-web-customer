@@ -53,7 +53,7 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
 
   // 3. 매장을 찾지 못한 경우 기본 매장 정보 생성
   if (!currentStoreInfo) {
-    currentStoreId = firstMenu.storeId ? String(firstMenu.storeId) : "1";
+    currentStoreId = firstMenu.storeId ? String(firstMenu.storeId) : "2"; // 존재하는 매장 ID로 변경
     currentStoreInfo = {
       id: currentStoreId,
       name: firstMenu.storeId ? `매장 ${currentStoreId}` : "도미노피자 구름점",

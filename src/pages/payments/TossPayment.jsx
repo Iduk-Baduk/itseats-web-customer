@@ -30,7 +30,16 @@ export default function TossPayment() {
   useEffect(() => {
     // 필수 파라미터 검증
     if (!orderId || !paymentId || !amount) {
+      logger.error('❌ 필수 파라미터 누락:', { orderId, paymentId, amount });
       setError('주문 정보가 올바르지 않습니다.');
+      setIsLoading(false);
+      return;
+    }
+    
+    // paymentId 유효성 검증 강화
+    if (paymentId === 'null' || paymentId === 'undefined' || paymentId.trim() === '') {
+      logger.error('❌ 유효하지 않은 paymentId:', paymentId);
+      setError('결제 정보가 올바르지 않습니다. 장바구니에서 다시 시도해주세요.');
       setIsLoading(false);
       return;
     }
@@ -38,10 +47,13 @@ export default function TossPayment() {
     // amount 숫자 검증
     const parsedAmount = parseInt(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      logger.error('❌ 유효하지 않은 결제 금액:', amount);
       setError('결제 금액이 올바르지 않습니다.');
       setIsLoading(false);
       return;
     }
+
+    logger.log('✅ 파라미터 검증 통과:', { orderId, paymentId, amount: parsedAmount });
 
     // 잠시 후 로딩 상태 해제
     const timer = setTimeout(() => {

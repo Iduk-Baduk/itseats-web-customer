@@ -6,8 +6,8 @@ import { STORAGE_KEYS, logger } from './logger';
 // 테스트용 주문 데이터
 const sampleOrders = [
   {
-    storeId: "1",
-    storeName: "도미노피자 구름점",
+    storeId: "2", // 존재하는 매장 ID로 변경
+    storeName: "BHC 구름점",
     storeImage: "/samples/food1.jpg",
     status: "delivered",
     orderDate: "2024-01-15T18:30:00.000Z",
@@ -17,10 +17,10 @@ const sampleOrders = [
     orderMenus: [
       {
         menuId: 1,
-        menuName: "페퍼로니 피자 L",
+        menuName: "허니콤보",
         price: 24900,
         quantity: 1,
-        options: ["엑스트라 치즈", "씬 도우"]
+        options: ["엑스트라 치즈", "콜라"]
       }
     ],
     deliveryAddress: "경기 성남시 판교로 242 PDC A동 902호",
@@ -75,8 +75,8 @@ const sampleOrders = [
     review: "허니콤보 정말 맛있네요! 또 주문할게요."
   },
   {
-    storeId: "1",
-    storeName: "도미노피자 구름점",
+    storeId: "2", // 존재하는 매장 ID로 변경
+    storeName: "BHC 구름점",
     storeImage: "/samples/food1.jpg",
     status: "delivered",
     orderDate: "2024-01-05T20:00:00.000Z",
@@ -86,7 +86,7 @@ const sampleOrders = [
     orderMenus: [
       {
         menuId: 1,
-        menuName: "페퍼로니 피자 L",
+        menuName: "허니콤보",
         price: 24900,
         quantity: 1,
         options: ["엑스트라 치즈"]

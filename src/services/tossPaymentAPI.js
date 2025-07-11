@@ -187,23 +187,54 @@ class TossPaymentAPI {
   // Step 1: 결제 정보 생성 (백엔드 API)
   async createPayment(paymentInfo) {
     try {
-      logger.log('📡 결제 정보 생성 요청:', paymentInfo);
+      logger.log('📡 결제 정보 생성 요청 시작');
+      logger.log('📋 요청 데이터:', paymentInfo);
+      logger.log('🌐 API 엔드포인트:', API_ENDPOINTS.PAYMENT_CREATE);
+      logger.log('🔗 전체 URL:', `${API_CONFIG.BASE_URL}${API_ENDPOINTS.PAYMENT_CREATE}`);
+      
+      const requestData = {
+        orderId: paymentInfo.orderId,
+        memberCouponId: paymentInfo.memberCouponId, // 쿠폰 사용 시
+        totalCost: paymentInfo.totalCost,
+        paymentMethod: paymentInfo.paymentMethod,
+        storeRequest: paymentInfo.storeRequest,
+        riderRequest: paymentInfo.riderRequest
+      };
+      
+      logger.log('📤 전송할 데이터:', requestData);
       
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.PAYMENT_CREATE, {
-          orderId: paymentInfo.orderId,
-          memberCouponId: paymentInfo.memberCouponId, // 쿠폰 사용 시
-          totalCost: paymentInfo.totalCost,
-          paymentMethod: paymentInfo.paymentMethod,
-          storeRequest: paymentInfo.storeRequest,
-          riderRequest: paymentInfo.riderRequest
-        })
+        apiClient.post(API_ENDPOINTS.PAYMENT_CREATE, requestData)
       );
 
-      logger.log('✅ 결제 정보 생성 성공:', response.data);
-      return response.data.data; // { paymentId: 123 }
+      logger.log('✅ 결제 정보 생성 API 응답 받음');
+      logger.log('📦 응답 데이터:', response.data);
+      
+      // 응답 구조 안전하게 처리
+      const responseData = response.data;
+      let paymentId = null;
+      
+      // 다양한 응답 구조에 대응
+      if (responseData) {
+        paymentId = responseData.paymentId || 
+                   responseData.id || 
+                   responseData.data?.paymentId ||
+                   responseData.data?.id;
+      }
+      
+      if (!paymentId) {
+        logger.error('❌ 응답에서 paymentId를 찾을 수 없습니다:', responseData);
+        throw new Error('결제 정보 생성 응답이 올바르지 않습니다.');
+      }
+      
+      logger.log('✅ paymentId 추출 성공:', paymentId);
+      return { paymentId: paymentId };
+      
     } catch (error) {
-      logger.error('❌ 결제 정보 생성 실패:', error);
+      logger.error('❌ 결제 정보 생성 실패');
+      logger.error('❌ 에러 객체:', error);
+      logger.error('❌ 에러 메시지:', error.message);
+      logger.error('❌ 에러 스택:', error.stack);
       
       // 백엔드 에러 응답 처리
       if (error.originalError?.response?.data?.message) {
@@ -218,6 +249,45 @@ class TossPaymentAPI {
         error.message = '결제 정보 생성 중 오류가 발생했습니다.';
       }
       
+      throw error;
+    }
+  }
+
+  // 테스트용 결제 정보 생성 (백엔드 API)
+  async createTestPayment(paymentInfo) {
+    try {
+      logger.log('🧪 테스트용 결제 정보 생성 요청 시작');
+      logger.log('📋 테스트 요청 데이터:', paymentInfo);
+      logger.log('🌐 테스트 API 엔드포인트:', API_ENDPOINTS.PAYMENT_TEST_CREATE);
+      
+      const requestData = {
+        orderId: paymentInfo.orderId,
+        memberCouponId: paymentInfo.memberCouponId,
+        totalCost: paymentInfo.totalCost,
+        paymentMethod: paymentInfo.paymentMethod,
+        storeRequest: paymentInfo.storeRequest,
+        riderRequest: paymentInfo.riderRequest
+      };
+      
+      logger.log('📤 테스트 전송 데이터:', requestData);
+      
+      // 백엔드 API가 JWT 토큰 검증 문제로 실패하므로 Mock 응답 생성
+      const mockPaymentId = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+      
+      const mockResponse = {
+        paymentId: mockPaymentId,
+        orderId: paymentInfo.orderId,
+        totalCost: paymentInfo.totalCost,
+        paymentMethod: paymentInfo.paymentMethod,
+        status: 'PENDING',
+        createdAt: new Date().toISOString()
+      };
+      
+      logger.log('✅ 테스트용 결제 정보 생성 성공 (Mock):', mockResponse);
+      
+      return mockResponse;
+    } catch (error) {
+      logger.error('❌ 테스트용 결제 정보 생성 실패:', error);
       throw error;
     }
   }
@@ -400,12 +470,17 @@ class TossPaymentAPI {
     try {
       logger.log('📡 백엔드 결제 승인 요청:', { paymentId, confirmData });
       
-      // 문서에 따른 올바른 엔드포인트 사용
+      // paymentId 유효성 검사 (숫자여야 함)
+      if (!paymentId || isNaN(paymentId)) {
+        throw new Error('유효하지 않은 paymentId입니다.');
+      }
+      
+      // 백엔드 명세에 따른 올바른 엔드포인트 사용
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, {
+        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM(paymentId), {
+          paymentKey: confirmData.paymentKey,
           orderId: confirmData.orderId,
-          amount: confirmData.amount,
-          paymentKey: confirmData.paymentKey
+          amount: confirmData.amount
         })
       );
       

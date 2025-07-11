@@ -23,12 +23,13 @@ export const API_ENDPOINTS = {
   
   // 주문 관련
   ORDERS: '/orders',
+  ORDERS_NEW: '/orders/new',               // ✅ POST /api/orders/new (배달비, 배달 시간, 주문 금액 통합 조회)
   ORDER_BY_ID: (id) => `/orders/${id}`,
   ORDER_STATUS: (id) => `/orders/${id}/status`,
   ORDER_TRACK: (id) => `/orders/${id}/track`,
   ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
   ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
-  ORDER_CONFIRM: '/orders/confirm', // 결제 승인 엔드포인트 수정
+  ORDER_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 결제 승인 엔드포인트 수정
   
   // 결제 관련
   CARDS: '/cards',
@@ -40,6 +41,7 @@ export const API_ENDPOINTS = {
   PAYMENT_STATUS: (id) => `/payments/${id}/status`,
   PAYMENT_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 기존 호환성 유지
   PAYMENT_CREATE: '/payments', // 결제 정보 생성 API 추가
+  PAYMENT_TEST_CREATE: '/payments/test/create', // 테스트용 결제 생성 API 추가
   
   // 쿠폰 관련
   COUPONS: '/coupons',

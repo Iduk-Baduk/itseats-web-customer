@@ -8,7 +8,7 @@ import { orderAPI } from "../services/orderAPI";
 // 기본 테스트 주문 데이터 템플릿
 const BASE_TEST_ORDER_DATA = {
   storeName: "도미노피자 구름톤점",
-  storeId: "1",
+      storeId: "2", // 존재하는 매장 ID로 변경
   orderNumber: "14NKFA",
   orderPrice: 15900,
   orderMenuCount: 2,

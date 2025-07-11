@@ -1,5 +1,6 @@
 import { API_ENDPOINTS, API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
+import { getDevToken, getBackendCompatibleTokenAsync } from '../utils/tokenUtils';
 
 // 토큰 저장 키
 const TOKEN_KEY = 'itseats_access_token';
@@ -19,11 +20,34 @@ class AuthService {
   }
 
   /**
-   * 액세스 토큰 가져오기
+   * 액세스 토큰 가져오기 (동기)
    * @returns {string|null} 저장된 액세스 토큰
    */
   static getToken() {
     return localStorage.getItem(TOKEN_KEY);
+  }
+
+  /**
+   * 액세스 토큰 가져오기 (비동기, 개발 환경에서 자동 생성)
+   * @returns {Promise<string|null>} 액세스 토큰
+   */
+  static async getTokenAsync() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    
+    // 개발 환경에서 토큰이 없으면 백엔드 호환 토큰 생성
+    if (!token && import.meta.env.DEV) {
+      try {
+        const backendToken = await getBackendCompatibleTokenAsync();
+        logger.log('🧪 개발 환경: 백엔드 호환 JWT 토큰 생성');
+        AuthService.setToken(backendToken);
+        return backendToken;
+      } catch (error) {
+        logger.error('JWT 토큰 생성 실패:', error);
+        return null;
+      }
+    }
+    
+    return token;
   }
 
   /**
@@ -142,18 +166,26 @@ class AuthService {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        
-        // 새로운 액세스 토큰 저장
+        // 새로운 액세스 토큰 저장 (헤더에서 가져오기)
         const newAccessToken = response.headers.get('Access-Token') || 
-                             response.headers.get('access-token') ||
-                             data.accessToken;
+                             response.headers.get('access-token');
                              
         if (newAccessToken) {
           AuthService.setToken(newAccessToken);
           logger.log('🔄 토큰 갱신 성공');
           return true;
         } else {
+          // 헤더에 토큰이 없으면 개발 환경에서 새 토큰 생성
+          if (import.meta.env.DEV) {
+            try {
+              const backendToken = await getBackendCompatibleTokenAsync();
+              AuthService.setToken(backendToken);
+              logger.log('🧪 개발 환경: 토큰 갱신 실패로 새 토큰 생성');
+              return true;
+            } catch (error) {
+              logger.error('개발 환경 토큰 생성 실패:', error);
+            }
+          }
           logger.warn('새로운 액세스 토큰을 받지 못함');
           return false;
         }
