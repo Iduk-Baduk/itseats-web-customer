@@ -30,9 +30,18 @@ export default function Order() {
     dispatch(fetchOrdersAsync({ page: 0, keyword }));
   }, [dispatch, keyword]);
 
-  const handleWriteReview = useCallback((order) => {
-  navigate(`/orders/${order.orderId}/review`, { state: { order } }); // 주문 정보 같이 전달
-}, [navigate]);
+  const refreshOrders = useCallback(() => {
+    dispatch(fetchOrdersAsync({ page: 0, keyword }));
+  }, [dispatch, keyword]);
+
+  const handleWriteReview = useCallback(
+    (order) => {
+      navigate(`/orders/${order.orderId}/review`, {
+        state: { order },
+      });
+    },
+    [navigate]
+  );
 
   const handleViewReview = useCallback(
     (order) => {
@@ -65,11 +74,11 @@ export default function Order() {
     return {
       ...order,
       price: order.orderPrice || order.price || 0,
-      date: order.createdAt ? new Date(order.createdAt).toLocaleString("ko-KR") : order.date,
+      date: order.createdAt
+        ? new Date(order.createdAt).toLocaleString("ko-KR")
+        : order.date,
       isCompleted,
-      showReviewButton: isCompleted && !order.hasReview,
-      hasReview: order.hasReview,
-      rating: order.rating || 5,
+      hasReview: !!order.hasReview,
     };
   }, []);
 
@@ -97,7 +106,9 @@ export default function Order() {
               key={order.orderId}
               order={order}
               className={styles.orderCard}
-              onWriteReview={() => handleWriteReview(order)}
+              onWriteReview={() => {
+                handleWriteReview(order);
+              }}
               onViewReview={() => handleViewReview(order)}
               onReorder={() => handleReorder(order)}
             />

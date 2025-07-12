@@ -42,7 +42,8 @@ export default function Review({ className }) {
         content,
       });
       alert('리뷰가 제출되었습니다!');
-      navigate('/orders'); // 작성 후 주문 목록으로 이동
+      navigate('/orders');
+      window.location.reload(); // ✅ 작성 후 목록 새로고침 (버튼 상태 최신화)
     } catch (err) {
       alert(err.message || '리뷰 제출에 실패했습니다. 다시 시도해주세요.');
     }
@@ -62,11 +63,12 @@ export default function Review({ className }) {
     );
   }
 
-  // ✅ 사진 우선 순위
+  // ✅ 이미지와 메뉴 정보
   const storeImage = currentOrder.storeImage || '/samples/food1.jpg';
-  const menuImage = currentOrder.orderMenus?.[0]?.menuImage || '/samples/food1.jpg';
-  const menuName = currentOrder.orderMenus?.[0]?.menuName || '메뉴 이름 없음';
-  const menuOptions = currentOrder.orderMenus?.[0]?.options?.join(', ') || '';
+  const firstMenu = currentOrder.orderMenus?.[0];
+  const menuImage = firstMenu?.menuImage || '/samples/food1.jpg';
+  const menuName = firstMenu?.menuName || '메뉴 이름 없음';
+  const menuOptions = firstMenu?.options?.join(', ') || '';
 
   // 🚨 리뷰 작성 가능 조건 확인
   if (currentOrder.orderStatus !== 'COMPLETED' || currentOrder.hasReview) {
@@ -101,7 +103,7 @@ export default function Review({ className }) {
           placeholder={`${currentOrder.storeName}에서의 식사는 어떠셨나요?`}
         />
 
-        {/* ✅ 사진 추가 버튼 활성화 */}
+        {/* ✅ 사진 업로드 버튼 (활성화) */}
         <PhotoButton onClick={() => alert('사진 업로드 기능은 추후 구현 예정입니다.')} />
       </div>
 
