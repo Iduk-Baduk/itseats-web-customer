@@ -14,6 +14,7 @@ import { fetchCoupons } from "../../store/couponSlice";
 import { fetchPaymentMethods } from "../../store/paymentSlice";
 import { fetchStores, fetchStoreById } from "../../store/storeSlice";
 import { paymentAPI, tossPaymentAPI, orderAPI } from "../../services";
+import { TossPaymentWidget } from "../../components/payment/TossPaymentWidget";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
@@ -83,14 +84,14 @@ export default function Cart() {
     price: 0,
   });
 
-  // 배달 정보 상태 추가
-  const [deliveryInfo, setDeliveryInfo] = useState(null);
-  const [isLoadingDeliveryInfo, setIsLoadingDeliveryInfo] = useState(false);
-
   const [isDelivery, setIsDelivery] = useState("delivery");
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  
+  // 토스 결제 위젯 상태
+  const [showTossWidget, setShowTossWidget] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
 
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
   const cartInfo = useMemo(() => {
@@ -133,57 +134,49 @@ export default function Cart() {
     setToast({ show: false, message: "" });
   };
 
-  // 배달 정보 가져오기
-  const fetchDeliveryInfo = async () => {
-    if (!selectedAddress?.id || !storeInfo?.storeId || orderMenus.length === 0) {
-      logger.log('⚠️ 배달 정보 가져오기 조건 미충족:', {
-        hasAddress: !!selectedAddress?.id,
-        hasStore: !!storeInfo?.storeId,
-        menuCount: orderMenus.length
-      });
-      return;
-    }
-
+  // 토스 결제 위젯 콜백 함수들
+  const handlePaymentSuccess = async (paymentResult) => {
     try {
-      setIsLoadingDeliveryInfo(true);
-      logger.log('📡 배달 정보 요청 시작');
-
-      const orderRequestData = {
-        storeId: storeInfo.storeId,
-        addrId: selectedAddress.id,
-        orderMenus: orderMenus.map(menu => ({
-          menuId: menu.menuId,
-          menuName: menu.menuName,
-          quantity: menu.quantity,
-          menuTotalPrice: calculateCartTotal(menu),
-          menuOptions: Array.isArray(menu.menuOptions) ? menu.menuOptions : []
-        })),
-        deliveryType: 'DEFAULT'
-      };
-
-      const response = await orderAPI.createOrderWithDeliveryInfo(orderRequestData);
+      logger.log('✅ 토스 결제 위젯 성공:', paymentResult);
       
-      if (response?.data) {
-        setDeliveryInfo(response.data);
-        logger.log('✅ 배달 정보 가져오기 성공:', response.data);
-        
-        // 기본 배달 옵션으로 설정
-        const defaultOption = {
-          label: '무료배달',
-          description: `${response.data.defaultTimeMin || 33}~${response.data.defaultTimeMax || 48}분`,
-          price: response.data.defaultFee || 0,
-          benefit: response.data.defaultFee === 0 ? '무료' : `+${response.data.defaultFee?.toLocaleString()}원`,
-          wow: response.data.defaultFee === 0,
-          type: 'DEFAULT'
-        };
-        
-        setDeliveryOption(defaultOption);
-      }
+      // 4단계: 백엔드에 결제 승인 요청
+      logger.log('📡 Step 4: 백엔드 결제 승인 요청');
+      const confirmRes = await tossPaymentAPI.confirmPayment(paymentData.backendPaymentId, {
+        paymentKey: paymentResult.paymentKey,
+        orderId: paymentData.backendOrderId, // 백엔드 주문 ID 사용
+        amount: paymentResult.totalAmount
+      });
+      
+      logger.log('✅ 백엔드 결제 승인 성공:', confirmRes);
+      
+      // 토스 위젯 닫기
+      setShowTossWidget(false);
+      setPaymentData(null);
+      
+      // 결제 성공 후 페이지 이동
+      showToast('결제가 성공적으로 완료되었습니다!');
+      navigate('/payments/success');
+      
     } catch (error) {
-      logger.error('❌ 배달 정보 가져오기 실패:', error);
-      // 에러가 발생해도 기본 옵션 사용
-    } finally {
-      setIsLoadingDeliveryInfo(false);
+      logger.error('❌ 백엔드 결제 승인 실패:', error);
+      showToast(`결제 승인 실패: ${error.message}`);
+      setShowTossWidget(false);
+      setPaymentData(null);
+    }
+  };
+
+  const handlePaymentError = (error) => {
+    logger.error('❌ 토스 결제 위젯 실패:', error);
+    
+    // 토스 위젯 닫기
+    setShowTossWidget(false);
+    setPaymentData(null);
+    
+    // 결제 실패 시 처리
+    if (error.message.includes('PAY_PROCESS_CANCELED')) {
+      showToast('결제가 취소되었습니다.');
+    } else {
+      showToast(`결제 실패: ${error.message}`);
     }
   };
 
@@ -219,13 +212,6 @@ export default function Cart() {
       });
     }
   }, [dispatch, storeId]);
-
-  // 배달 정보 가져오기
-  useEffect(() => {
-    if (selectedAddress?.id && storeInfo?.storeId && orderMenus.length > 0) {
-      fetchDeliveryInfo();
-    }
-  }, [selectedAddress?.id, storeInfo?.storeId, orderMenus]);
 
   // 매장 정보 검증 및 복구
   useEffect(() => {
@@ -289,8 +275,9 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 전역 변수로 함수 시작 시 초기화
-    let orderResponse = null;
+    let orderId = null;
+    let paymentId = null;
+    let deliveryInfo = null;
     
     // 중복 결제 방지 강화
     if (isProcessingPayment) {
@@ -390,19 +377,22 @@ export default function Cart() {
     let remainingAmount = cartInfo.totalPrice;
     let usedCoupayAmount = 0;
 
-    // 백엔드 명세에 맞는 주문 데이터 생성
+    // 백엔드 명세에 맞는 주문 데이터 생성 (불필요한 필드 제거)
     const orderRequestData = {
       storeId: currentStoreId,  // 실제 매장 ID
-      addrId: selectedAddress?.id || 3,   // 선택된 주소 또는 기본 주소
+      addrId: selectedAddress?.id,   // 선택된 주소
       deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE",
       orderMenus: orderMenus.map(menu => ({
         menuId: menu.menuId,
         menuName: menu.menuName,
         quantity: menu.quantity,
         menuTotalPrice: calculateCartTotal(menu),
-        menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions : []  // 백엔드 명세에 맞게 menuOption으로 변경
-      })),
-      memberCouponId: selectedCouponIds?.[0] || null  // 선택된 쿠폰 ID
+        menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions.map(option => ({
+          optionName: option.name || option,
+          optionPrice: option.price || 0
+        })) : []
+      }))
+      // memberCouponId는 주문 생성 시에는 불필요, 결제 생성 시에만 사용
     };
 
     // 주문 데이터 준비 전 디버깅
@@ -419,433 +409,122 @@ export default function Cart() {
     // 주소 ID 검증 및 안전한 처리
     const addrId = selectedAddress?.id || 3; // 기본값으로 admin 사용자의 주소 ID 사용
     
-    // 서버로 전송할 최종 주문 데이터 (orderAPI.js 스펙에 맞춤)
-    const finalOrderData = {
-      // orderAPI.js에서 요구하는 필수 필드들
-      storeId: currentStoreId,
-      addrId: addrId, // 안전한 주소 ID 사용
-      storeName: currentStoreInfo?.name || "알 수 없는 매장",
-      totalPrice: cartInfo?.totalPrice || 0,
-      paymentMethod: paymentMethod,
-      orderMenus: orderMenus.map(menu => ({
-        menuId: menu.menuId,
-        menuName: menu.menuName,
-        menuOptions: Array.isArray(menu.menuOptions) ? menu.menuOptions : [], // 빈 배열로 안전하게 처리
-        menuTotalPrice: calculateCartTotal(menu),
-        quantity: menu.quantity
-      })),
-      
-      // 배송 정보
-      deliveryAddress: selectedAddress?.address || "주소 미설정",
-      deliveryFee: deliveryOption?.price || 0,
-      
-      // 추가 정보
-      storeRequest: requestInfo?.storeRequest || "",
-      riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
-      
-      // 결제 관련 정보
-      paymentStatus: "PENDING",
-      coupayAmount: usedCoupayAmount || 0,
-      remainingAmount: remainingAmount || 0
-    };
-
-    logger.log('📦 최종 주문 데이터:', finalOrderData);
-    logger.log('📦 백엔드 명세에 맞는 주문 요청 데이터:', orderRequestData);
-
     try {
-      // 🔄 결제 처리 시작
       dispatch(setPaymentProcessing(true));
       dispatch(clearPaymentResult());
 
-      // 한 번의 결제 요청에 대해 고유한 orderId 생성 (중복 방지)
-      const uniqueOrderId = generateOrderId();
-      logger.log('🆔 고유 주문 ID 생성:', uniqueOrderId);
-
-      // 이미 동일한 orderId로 생성된 주문이 있는지 체크
-      const existingOrderCheck = orders.find(order => 
-        order.orderId === uniqueOrderId || order.id === uniqueOrderId
-      );
+      // 1단계: 주문 생성 (백엔드 명세에 맞게 정리)
+      logger.log('📡 Step 1: 주문 생성 요청');
+      const orderCreateReq = {
+        addrId: selectedAddress?.id,
+        storeId: currentStoreId,
+        orderMenus: orderMenus.map(menu => ({
+          menuId: menu.menuId,
+          menuName: menu.menuName, // 백엔드 명세에 맞게 menuName 추가
+          quantity: menu.quantity,
+          menuTotalPrice: calculateCartTotal(menu),
+          menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions.map(option => ({
+            optionName: option.name || option,
+            optionPrice: option.price || 0
+          })) : [] // 백엔드 명세에 맞게 menuOption 구조 변경
+        })),
+        deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
+      };
       
-      if (existingOrderCheck) {
-        logger.log('🔄 이미 존재하는 주문 발견, 기존 주문 사용:', existingOrderCheck);
-        orderResponse = { data: existingOrderCheck };
-      } else {
-        // ✅ 새로운 주문 생성 (명세서 기반 배달 정보 포함)
-        const useLocalStorage = false; // 실제 API 호출 테스트
-        
-        if (useLocalStorage) {
-          // 🎯 로컬 저장소 모드: Redux에만 저장
-          logger.log('📦 로컬 저장소 모드로 주문 생성...');
-          const localOrderData = {
-            ...finalOrderData,
-            price: finalOrderData.totalPrice,
-            orderPrice: finalOrderData.totalPrice,
-            items: finalOrderData.orderMenus.map(menu => ({
-              menuName: menu.menuName,
-              quantity: menu.quantity,
-              price: menu.menuTotalPrice || 0,
-              menuOptions: menu.menuOptions || []
-            })),
-            storeName: currentStoreInfo?.name || "알 수 없는 매장",
-            deliveryAddress: selectedAddress?.address || "주소 미설정",
-            menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-            date: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            status: ORDER_STATUS.WAITING,
-            orderId: uniqueOrderId,
-            isLocalStorage: true // 로컬 저장소 주문 표시
-          };
-          
-          dispatch(addOrder(localOrderData));
-          orderResponse = { data: localOrderData };
-          logger.log('✅ 로컬 저장소 주문 생성 성공:', orderResponse);
-          
-        } else {
-          // 🎯 메인 모드: DB에 주문 저장 (명세서 기반)
-          try {
-            logger.log('📡 API를 통한 배달 정보 포함 주문 생성 시도...');
-            
-            // 명세서에 맞는 배달 정보 포함 주문 생성
-            const apiResult = await orderAPI.createOrderWithDeliveryInfo(orderRequestData);
-            
-            if (apiResult && apiResult.data && apiResult.data.data) {
-              orderResponse = apiResult;
-              logger.log('✅ DB 배달 정보 포함 주문 생성 성공:', {
-                httpStatus: orderResponse.data.httpStatus,
-                message: orderResponse.data.message,
-                orderId: orderResponse.data.data.orderId,
-                totalCost: orderResponse.data.data.totalCost
-              });
-              
-              // 배달 정보 응답에서 추가 정보 추출 (백엔드 응답 구조에 맞게 수정)
-              const deliveryInfo = apiResult.data.data;
-              logger.log('📦 배달 정보 응답:', {
-                orderId: deliveryInfo.orderId,
-                defaultTimeMin: deliveryInfo.defaultTimeMin,
-                defaultTimeMax: deliveryInfo.defaultTimeMax,
-                onlyOneTimeMin: deliveryInfo.onlyOneTimeMin,
-                onlyOneTimeMax: deliveryInfo.onlyOneTimeMax,
-                orderPrice: deliveryInfo.orderPrice,
-                defaultFee: deliveryInfo.defaultFee,
-                onlyOneFee: deliveryInfo.onlyOneFee,
-                discountValue: deliveryInfo.discountValue,
-                totalCost: deliveryInfo.totalCost
-              });
-              
-              // DB 저장 성공 시 Redux에도 캐시용으로 압축 저장
-              const cacheOrderData = {
-                ...orderResponse.data,
-                items: finalOrderData.orderMenus.map(menu => ({
-                  menuName: menu.menuName,
-                  quantity: menu.quantity,
-                  price: menu.menuTotalPrice || 0,
-                  menuOptions: menu.menuOptions || []
-                })),
-                menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-                // 배달 정보 추가
-                deliveryInfo: {
-                  defaultTimeMin: deliveryInfo.defaultTimeMin,
-                  defaultTimeMax: deliveryInfo.defaultTimeMax,
-                  onlyOneTimeMin: deliveryInfo.onlyOneTimeMin,
-                  onlyOneTimeMax: deliveryInfo.onlyOneTimeMax,
-                  defaultFee: deliveryInfo.defaultFee,
-                  onlyOneFee: deliveryInfo.onlyOneFee,
-                  discountValue: deliveryInfo.discountValue
-                }
-              };
-              dispatch(addOrder(cacheOrderData));
-            } else {
-              throw new Error('API 응답 데이터가 잘못되었습니다.');
-            }
-          } catch (apiError) {
-            logger.error('❌ API 주문 생성 실패, 백업 모드로 전환:', apiError);
-            
-            // API 실패 시 백업으로 로컬 저장
-            const backupOrderData = {
-              ...finalOrderData,
-              price: finalOrderData.totalPrice,
-              orderPrice: finalOrderData.totalPrice,
-              items: finalOrderData.orderMenus.map(menu => ({
-                menuName: menu.menuName,
-                quantity: menu.quantity,
-                price: menu.menuTotalPrice || 0,
-                menuOptions: menu.menuOptions || []
-              })),
-              storeName: currentStoreInfo?.name || "알 수 없는 매장",
-              deliveryAddress: selectedAddress?.address || "주소 미설정",
-              menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-              date: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              status: ORDER_STATUS.WAITING,
-              orderId: uniqueOrderId,
-              isBackup: true // 백업 주문 표시
-            };
-            
-            dispatch(addOrder(backupOrderData));
-            orderResponse = { data: backupOrderData };
-            
-            // 사용자에게 알림
-            showToast('주문이 임시 저장되었습니다. 네트워크 연결을 확인해주세요.');
-          }
-        }
-      }
-
-      // 주문 생성 검증 (백엔드 응답 구조에 맞게 수정)
-      logger.log('🔍 주문 생성 결과 검증:', { 
-        hasOrderResponse: !!orderResponse,
-        hasData: !!(orderResponse && orderResponse.data),
-        hasOrderId: !!(orderResponse && orderResponse.data && orderResponse.data.orderId),
-        orderResponse: orderResponse
-      });
+      logger.log('📡 주문 생성 요청:', orderCreateReq);
+      logger.log('🔍 orderMenus 상세 정보:', orderMenus.map(menu => ({
+        menuId: menu.menuId,
+        menuName: menu.menuName,
+        hasMenuName: !!menu.menuName
+      })));
+      const orderRes = await orderAPI.createOrderWithDeliveryInfo(orderCreateReq);
       
-      if (!orderResponse || !orderResponse.data || !orderResponse.data.orderId) {
-        throw new Error('주문 생성에 실패했습니다. 다시 시도해주세요.');
+      // 백엔드 실제 응답 구조에 맞게 파싱 (response.data.orderId, tossOrderId)
+      if (!orderRes?.data?.orderId || !orderRes?.data?.tossOrderId) {
+        logger.error('❌ 주문 생성 응답 구조 오류:', orderRes);
+        throw new Error('주문 생성 실패: orderId 또는 tossOrderId가 없습니다');
       }
-
-      // 백엔드 가이드에 따른 올바른 결제 플로우
+      orderId = orderRes.data.orderId;
+      const tossOrderId = orderRes.data.tossOrderId;
+      logger.log('✅ 주문 생성 성공:', { orderId, tossOrderId });
+      
+      // 주문 상세 정보 조회 (배달팁, 시간, 할인금액 등) - 선택적
+      // 현재 백엔드에서 menu_name null 문제가 있어서 임시로 비활성화
+      /*
       try {
-        // Step 1: 주문 생성 (먼저 주문을 생성하여 orderId 확보) - 명세서 기반
-        logger.log('📡 Step 1: 배달 정보 포함 주문 생성 요청');
-        const orderResponse = await orderAPI.createOrderWithDeliveryInfo(orderRequestData);
-        const orderId = orderResponse.data.orderId; // 백엔드 응답 구조에 맞게 수정
-        logger.log('✅ Step 1: 배달 정보 포함 주문 생성 성공, orderId:', orderId);
-        
-        // 배달 정보 응답에서 추가 정보 추출 (백엔드 응답 구조에 맞게 수정)
-        const deliveryInfo = orderResponse.data;
-        logger.log('📦 배달 정보 응답:', {
-          orderId: deliveryInfo.orderId,
-          defaultTimeMin: deliveryInfo.defaultTimeMin,
-          defaultTimeMax: deliveryInfo.defaultTimeMax,
-          onlyOneTimeMin: deliveryInfo.onlyOneTimeMin,
-          onlyOneTimeMax: deliveryInfo.onlyOneTimeMax,
-          orderPrice: deliveryInfo.orderPrice,
-          defaultFee: deliveryInfo.defaultFee,
-          onlyOneFee: deliveryInfo.onlyOneFee,
-          discountValue: deliveryInfo.discountValue,
-          totalCost: deliveryInfo.totalCost
+        const orderDetails = await orderAPI.getOrderDetails(orderId, {
+          couponId: selectedCouponIds?.[0] || null,
+          orderPrice: cartInfo.totalPrice
         });
+        logger.log('✅ 주문 상세 정보 조회 성공:', orderDetails);
         
-        // Step 2: 결제 정보 생성 (orderId를 사용하여 결제 정보 생성)
-        const paymentInfo = {
-          orderId: orderId,
-          memberCouponId: selectedCouponIds?.[0] || null, // 첫 번째 쿠폰 사용
-          totalCost: deliveryInfo.totalCost, // 배달 정보에서 받은 총 금액 사용
-          paymentMethod: 'CARD',
-          storeRequest: requestInfo?.storeRequest || '',
-          riderRequest: requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)'
-        };
-        
-        logger.log('📡 Step 2: 결제 정보 생성 요청 시작');
-        logger.log('📋 결제 정보:', paymentInfo);
-        
-        try {
-          // JWT 인증이 해결되었으므로 실제 백엔드 API 사용
-          const useMockMode = false; // 실제 백엔드 API 사용
-          // const isTestMode = import.meta.env.DEV && import.meta.env.VITE_USE_TEST_PAYMENT_API === 'true';
-          
-          let paymentCreateResponse;
-          if (useMockMode) {
-            logger.log('🧪 Mock 모드: 테스트용 결제 생성 API 사용');
-            paymentCreateResponse = await tossPaymentAPI.createTestPayment(paymentInfo);
-          } else {
-            logger.log('🚀 프로덕션 모드: 실제 결제 생성 API 사용');
-            paymentCreateResponse = await tossPaymentAPI.createPayment(paymentInfo);
-          }
-          
-          logger.log('✅ Step 2: 결제 정보 생성 API 호출 성공');
-          
-          // paymentId 추출 시 안전한 처리 추가
-          let backendPaymentId = null;
-          if (paymentCreateResponse) {
-            logger.log('📦 결제 생성 응답 데이터:', paymentCreateResponse);
-            // 다양한 응답 구조에 대응
-            backendPaymentId = paymentCreateResponse.paymentId || 
-                              paymentCreateResponse.id || 
-                              paymentCreateResponse.data?.paymentId ||
-                              paymentCreateResponse.data?.id;
-          }
-          
-          if (!backendPaymentId) {
-            logger.error('❌ 결제 정보 생성 응답에서 paymentId를 찾을 수 없습니다:', paymentCreateResponse);
-            throw new Error('결제 정보 생성에 실패했습니다. 다시 시도해주세요.');
-          }
-          
-          // paymentId를 문자열로 변환 (JavaScript Number 타입 한계 문제 해결)
-          const paymentIdString = String(backendPaymentId);
-          logger.log('✅ Step 2: 결제 정보 생성 성공, paymentId:', paymentIdString);
-          
-        } catch (createPaymentError) {
-          logger.error('❌ 결제 정보 생성 API 호출 실패:', createPaymentError);
-          logger.error('❌ 에러 상세 정보:', {
-            message: createPaymentError.message,
-            statusCode: createPaymentError.statusCode,
-            response: createPaymentError.originalError?.response?.data
-          });
-          throw createPaymentError;
-        }
-        
-        // Step 3: 토스페이먼츠 결제 페이지로 이동 (paymentId 포함)
-        const tossParams = new URLSearchParams({
-          orderId: orderId,
-          paymentId: paymentIdString, // 문자열로 전달
-          amount: deliveryInfo.totalCost.toString(), // 배달 정보에서 받은 총 금액 사용
-          orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
-          customerName: user?.name || '고객',
-          customerEmail: user?.email || 'customer@example.com'
-        });
-        
-        logger.log('📋 토스페이먼츠 파라미터:', {
-          orderId,
-          paymentId: paymentIdString,
-          amount: deliveryInfo.totalCost,
-          orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`
-        });
-        
-        // 토스페이먼츠 결제 페이지로 이동
-        logger.log('📡 Step 3: 토스페이먼츠 결제 페이지로 이동');
-        
-        // 주문 데이터를 sessionStorage에 저장 (결제 성공 후 주문 정보 유지용)
-        const orderDataForPayment = {
-          orderId: orderId,
-          storeId: currentStoreId,
-          storeName: currentStoreInfo?.name || "알 수 없는 매장",
-          totalPrice: deliveryInfo.totalCost,
-          deliveryFee: deliveryInfo.defaultFee || deliveryInfo.onlyOneFee || 0,
-          orderMenus: orderMenus.map(menu => ({
-            menuId: menu.menuId,
-            menuName: menu.menuName,
-            quantity: menu.quantity,
-            price: menu.menuTotalPrice || 0,
-            options: menu.menuOptions || []
-          })),
-          deliveryAddress: {
-            roadAddress: selectedAddress?.address || "",
-            detailAddress: selectedAddress?.detailAddress || "",
-            lat: selectedAddress?.lat,
-            lng: selectedAddress?.lng
-          },
-          paymentMethod: {
-            type: 'CARD',
-            id: 'toss'
-          },
-          storeRequest: requestInfo?.storeRequest || "",
-          riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-          couponIds: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
-          // 배달 정보 추가
-          deliveryInfo: {
-            defaultTimeMin: deliveryInfo.defaultTimeMin,
-            defaultTimeMax: deliveryInfo.defaultTimeMax,
-            onlyOneTimeMin: deliveryInfo.onlyOneTimeMin,
-            onlyOneTimeMax: deliveryInfo.onlyOneTimeMax,
-            defaultFee: deliveryInfo.defaultFee,
-            onlyOneFee: deliveryInfo.onlyOneFee,
-            discountValue: deliveryInfo.discountValue
-          }
-        };
-        
-        // sessionStorage에 주문 데이터 저장
-        sessionStorage.setItem('pendingOrderData', JSON.stringify(orderDataForPayment));
-        logger.log('💾 주문 데이터 sessionStorage 저장:', orderDataForPayment);
-        
-        navigate(`/payments/toss?${tossParams}`);
-        
-      } catch (paymentError) {
-        logger.error('❌ 결제 처리 실패:', paymentError);
-        
-        // 결제 실패 시 Mock 모드로 fallback
-        try {
-          logger.warn('⚠️ 백엔드 결제 실패, Mock 모드로 fallback');
-          
-          // Mock 주문 데이터 생성
-          const mockOrderData = {
-            orderId: `mock_${Date.now()}`,
-            storeId: currentStoreId,
-            storeName: currentStoreInfo?.name || "알 수 없는 매장",
-            totalPrice: cartInfo.totalPrice,
-            deliveryFee: cartInfo.deliveryFee || 0,
-            orderMenus: orderMenus.map(menu => ({
-              menuId: menu.menuId,
-              menuName: menu.menuName,
-              quantity: menu.quantity,
-              price: menu.menuTotalPrice || 0,
-              options: menu.menuOptions || []
-            })),
-            deliveryAddress: {
-              roadAddress: selectedAddress?.address || "",
-              detailAddress: selectedAddress?.detailAddress || "",
-              lat: selectedAddress?.lat,
-              lng: selectedAddress?.lng
-            },
-            paymentMethod: {
-              type: 'CARD',
-              id: 'toss'
-            },
-            storeRequest: requestInfo?.storeRequest || "",
-            riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-            couponIds: Array.isArray(selectedCouponIds) ? selectedCouponIds : []
-          };
-          
-          // Mock 결제 데이터 생성
-          const mockPaymentData = {
-            orderId: mockOrderData.orderId,
-            amount: cartInfo.totalPrice,
-            paymentKey: `mock_${Date.now()}`
-          };
-          
-          const mockPaymentResponse = await tossPaymentAPI.mockConfirmPayment(mockPaymentData);
-          logger.log('✅ Mock 결제 성공:', mockPaymentResponse);
-          
-          // 결제 성공 페이지로 이동
-          navigate('/payments/success', { 
-            state: { 
-              orderData: mockOrderData,
-              paymentData: mockPaymentData 
-            } 
-          });
-          
-        } catch (mockError) {
-          logger.error('❌ Mock 결제도 실패:', mockError);
-          throw paymentError; // 원래 에러를 다시 던짐
-        }
+        // 배달팁, 시간, 할인금액 등 추가 정보 사용 가능
+        const deliveryFee = orderDetails.data?.defaultDeliveryFee || 0;
+        const discountValue = orderDetails.data?.discountValue || 0;
+        logger.log('📦 배달 정보:', { deliveryFee, discountValue });
+      } catch (error) {
+        logger.warn('⚠️ 주문 상세 정보 조회 실패 (계속 진행):', error.message);
+        // 주문 상세 정보 조회 실패해도 주문 생성은 성공했으므로 계속 진행
       }
+      */
+      logger.log('⏭️ 주문 상세 정보 조회 건너뛰기 (백엔드 menu_name 문제)');
+
+      // 2단계: 결제 생성
+      logger.log('📡 Step 2: 결제 생성 요청');
+      const paymentCreateReq = {
+        orderId,
+        memberCouponId: selectedCouponIds?.[0] || null,
+        totalCost: cartInfo.totalPrice,
+        paymentMethod: 'CARD',
+        storeRequest: requestInfo?.storeRequest || '',
+        riderRequest: requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)'
+      };
+      logger.log('📡 결제 생성 요청:', paymentCreateReq);
+      const paymentRes = await paymentAPI.createPayment(paymentCreateReq);
       
-      // 중복 방지 해시 초기화
-      handlePayment.lastCartHash = null;
+      // 백엔드 응답 구조에 맞게 파싱 (response.data.paymentId)
+      if (!paymentRes?.data?.paymentId) {
+        logger.error('❌ 결제 생성 응답 구조 오류:', paymentRes);
+        throw new Error('결제 생성 실패: paymentId가 없습니다');
+      }
+      paymentId = paymentRes.data.paymentId;
+      logger.log('✅ 결제 생성 성공:', paymentId);
+
+      // 3단계: 토스 결제 위젯 실행
+      logger.log('📡 Step 3: 토스 결제 위젯 실행');
       
+      // 토스 결제 위젯을 위한 데이터 설정
+      const paymentDataForWidget = {
+        amount: Number(cartInfo.totalPrice), // 숫자로 명시적 변환
+        orderId: tossOrderId, // 토스페이먼츠용 UUID 사용
+        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.length}개 메뉴`,
+        customerName: '고객', // TODO: 실제 사용자 이름으로 변경
+        customerEmail: 'customer@example.com', // TODO: 실제 사용자 이메일로 변경
+        backendPaymentId: paymentId, // 백엔드 결제 ID 추가
+        backendOrderId: orderId // 백엔드 주문 ID (내부 관리용)
+      };
+      
+      // sessionStorage에 결제 데이터 저장 (결제 성공 페이지에서 사용)
+      sessionStorage.setItem('paymentData', JSON.stringify(paymentDataForWidget));
+      
+      setPaymentData(paymentDataForWidget);
+      
+      // 토스 결제 위젯 모달 열기
+      setShowTossWidget(true);
     } catch (error) {
-      logger.error("❌ 주문/결제 실패:", error);
-      
-      // 결제 실패 상태 업데이트
+      logger.error('❌ 주문/결제 실패:', error);
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
-      
-      // 결제 처리 상태 해제
       dispatch(setPaymentProcessing(false));
-      
-      // 결제 실패 페이지로 이동
-      const failureParams = new URLSearchParams({
-        error: 'processing_failed',
-        message: error.message || '알 수 없는 오류가 발생했습니다.',
-        orderId: (orderResponse && orderResponse.data && orderResponse.data.orderId) 
-          ? orderResponse.data.orderId 
-          : `temp_${Date.now()}`
-      });
-      
-      // 결제 실패 페이지로 이동 (3초 후)
-      setTimeout(() => {
-        navigate(`/payments/failure?${failureParams}`);
-      }, 3000);
-      
-      // 사용자에게 에러 알림
       showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다.'}`);
+      // 결제 실패 페이지 이동 등 기존 코드 활용
+      setTimeout(() => {
+        navigate('/payments/failure');
+      }, 2000);
     } finally {
-      // 결제 처리 완료 후 상태 정리
       dispatch(setPaymentProcessing(false));
-      
-      // 중복 방지 해시 초기화 (실패 시에도)
       setTimeout(() => {
         handlePayment.lastCartHash = null;
-      }, 5000); // 5초 후 해시 초기화
+      }, 5000);
     }
   };
 
@@ -875,8 +554,6 @@ export default function Cart() {
           <CartDeliveryOptionSection
             selected={deliveryOption}
             onChange={setDeliveryOption}
-            deliveryInfo={deliveryInfo}
-            isLoading={isLoadingDeliveryInfo}
           />
           <CartMenuListSection />
           <CartCouponSection />
@@ -920,6 +597,65 @@ export default function Cart() {
           message={toast.message}
           onClose={hideToast}
         />
+      )}
+      
+      {/* 토스 결제 위젯 팝업 */}
+      {showTossWidget && paymentData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => {
+                setShowTossWidget(false);
+                setPaymentData(null);
+              }}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666',
+                zIndex: 10
+              }}
+            >
+              ×
+            </button>
+            
+            <TossPaymentWidget
+              amount={paymentData.amount}
+              orderId={paymentData.orderId}
+              orderName={paymentData.orderName}
+              customerName={paymentData.customerName}
+              customerEmail={paymentData.customerEmail}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

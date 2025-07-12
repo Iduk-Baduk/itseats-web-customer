@@ -293,8 +293,15 @@ class AuthService {
     const currentPath = window.location.pathname;
     const loginPath = '/login';
     
+    // 임시로 리다이렉트 비활성화 (디버깅용)
+    console.log('🚨 redirectToLogin 호출됨!', {
+      currentPath,
+      loginPath,
+      stack: new Error().stack
+    });
+    
     // 현재 페이지 정보를 state로 전달
-    window.location.href = `${loginPath}?redirect=${encodeURIComponent(currentPath)}`;
+    // window.location.href = `${loginPath}?redirect=${encodeURIComponent(currentPath)}`;
   }
 
   /**
@@ -303,14 +310,27 @@ class AuthService {
    * @returns {boolean} 인증 필요 여부
    */
   static requiresAuthForEndpoint(endpoint) {
+    // 백엔드 API 명세에 따른 공개 엔드포인트 목록
     const publicEndpoints = [
-      '/api/auth/login',
-      '/api/auth/register',
-      '/api/stores',
-      '/api/menus',
-      '/api/search',
-      '/api/categories',
-      '/api/banners'
+      // 인증 관련 (인증 불필요)
+      '/login',
+      '/members/sign-up',
+      
+      // 공개 API (인증 불필요)
+      '/stores/list',
+      '/stores/search',
+      '/menus',
+      '/reviews',
+      
+      // 기타 공개 API (하위 호환성)
+      '/stores',
+      '/search',
+      '/categories',
+      '/banners',
+      
+      // Swagger 문서
+      '/v3/api-docs',
+      '/swagger-ui'
     ];
     
     return !publicEndpoints.some(path => endpoint.startsWith(path));

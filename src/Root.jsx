@@ -461,9 +461,7 @@ export default function Root() {
             element={
               <Layout navVisible={false}>
                 <LazyPageWrapper>
-                  <ProtectedRoute requireAuth={false}>
-                    <Register />
-                  </ProtectedRoute>
+                  <Register />
                 </LazyPageWrapper>
               </Layout>
             } 

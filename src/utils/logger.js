@@ -20,7 +20,7 @@ export const logger = {
 // localStorage 키 상수
 export const STORAGE_KEYS = {
   CURRENT_USER: 'currentUser',
-  AUTH_TOKEN: 'authToken',
+  AUTH_TOKEN: 'itseats_access_token',
   ORDERS: 'itseats-orders',
   FAVORITES: 'itseats-favorites',
   RECENT_SEARCHES: 'itseats-recent-searches',

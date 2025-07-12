@@ -298,23 +298,33 @@ class TossPaymentAPI {
       logger.log('📡 토스페이먼츠 결제 요청:', paymentData);
       
       // 토스페이먼츠 SDK 로드
-      const TossPayments = await this.loadTossPaymentsSDK();
+      const tossPayments = await this.loadTossPaymentsSDK();
       
-      // 결제 요청
-      const tossPayment = await TossPayments.requestPayment('카드', {
-        amount: paymentData.amount,
-        orderId: paymentData.orderId,
+      // 결제 요청 데이터 검증 및 정리 (토스페이먼츠 공식 문서 기준)
+      const requestData = {
+        amount: Number(paymentData.amount),
+        orderId: paymentData.orderId.toString(),
         orderName: paymentData.orderName,
-        customerName: paymentData.customerName,
-        customerEmail: paymentData.customerEmail,
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`
-      });
+      };
+      
+      logger.log('📋 토스페이먼츠 요청 데이터:', requestData);
+      logger.log('🔧 TossPayments 인스턴스:', tossPayments);
+      logger.log('🔧 requestPayment 메서드:', typeof tossPayments.requestPayment);
+      
+      // 결제 요청
+      const tossPayment = await tossPayments.requestPayment('카드', requestData);
       
       logger.log('✅ 토스페이먼츠 결제 요청 성공:', tossPayment);
       return tossPayment;
     } catch (error) {
       logger.error('❌ 토스페이먼츠 결제 요청 실패:', error);
+      logger.error('❌ 에러 상세 정보:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -399,21 +409,44 @@ class TossPaymentAPI {
 
   // 토스페이먼츠 SDK 로드
   async loadTossPaymentsSDK() {
-    if (window.TossPayments) {
-      return window.TossPayments;
+    logger.log('📡 토스페이먼츠 SDK 로드 시작');
+    logger.log('🔑 클라이언트 키:', this.clientKey);
+    
+    // 기존 인스턴스와 스크립트 제거 (새로 시작)
+    if (window.tossPaymentsInstance) {
+      delete window.tossPaymentsInstance;
+      logger.log('🗑️ 기존 토스페이먼츠 인스턴스 제거');
+    }
+    
+    const existingScript = document.querySelector('script[src="https://js.tosspayments.com/v1"]');
+    if (existingScript) {
+      existingScript.remove();
+      logger.log('🗑️ 기존 토스페이먼츠 스크립트 제거');
     }
     
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://js.tosspayments.com/v1';
       script.onload = () => {
-        if (window.TossPayments) {
-          resolve(window.TossPayments);
-        } else {
-          reject(new Error('토스페이먼츠 SDK 로드 실패'));
+        try {
+          logger.log('📦 토스페이먼츠 SDK 스크립트 로드 완료');
+          logger.log('🔧 TossPayments 생성자:', typeof window.TossPayments);
+          
+          // TossPayments 인스턴스 생성 (클라이언트 키 필요)
+          const tossPayments = new window.TossPayments(this.clientKey);
+          window.tossPaymentsInstance = tossPayments;
+          
+          logger.log('✅ 토스페이먼츠 인스턴스 생성 성공');
+          resolve(tossPayments);
+        } catch (error) {
+          logger.error('❌ 토스페이먼츠 SDK 초기화 실패:', error);
+          reject(new Error(`토스페이먼츠 SDK 초기화 실패: ${error.message}`));
         }
       };
-      script.onerror = () => reject(new Error('토스페이먼츠 SDK 로드 실패'));
+      script.onerror = (error) => {
+        logger.error('❌ 토스페이먼츠 SDK 스크립트 로드 실패:', error);
+        reject(new Error('토스페이먼츠 SDK 로드 실패'));
+      };
       document.head.appendChild(script);
     });
   }
@@ -522,48 +555,187 @@ class TossPaymentAPI {
     }
   }
 
-  // 결제 취소
+  // 결제 취소 API (공식 문서 권장 방식)
   async cancelPayment(paymentKey, cancelReason, cancelAmount = null) {
     try {
-      const cancelData = {
+      logger.log('📡 결제 취소 요청 시작:', { paymentKey, cancelReason, cancelAmount });
+      
+      // 멱등성 키 생성
+      const idempotencyKey = uuidv4();
+      
+      // 요청 데이터 구성
+      const requestData = {
         cancelReason,
         ...(cancelAmount && { cancelAmount })
       };
-
-      const result = await this.makeRequest(
-        `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`,
+      
+      logger.log('📋 취소 요청 데이터:', requestData);
+      
+      const response = await this.makeRequest(
+        `${this.baseURL}/api/payments/${paymentKey}/cancel`,
         {
           method: 'POST',
-          headers: this.getHeaders('application/json'),
-          body: JSON.stringify(cancelData)
-        }
+          headers: this.getHeaders('application/json', idempotencyKey),
+          body: JSON.stringify(requestData)
+        },
+        { maxRetries: 2, delay: 1000, backoff: 2 }
       );
-
-      logger.log('토스페이먼츠 결제 취소 성공:', result);
-      return result;
+      
+      logger.log('✅ 결제 취소 성공:', response);
+      return response;
+      
     } catch (error) {
-      logger.error('토스페이먼츠 결제 취소 오류:', error);
+      logger.error('❌ 결제 취소 실패:', error);
+      
+      // 사용자 친화적인 에러 메시지
+      const userMessage = this.getCancelErrorMessage(error);
+      throw new Error(userMessage);
+    }
+  }
+
+  // 결제 취소 에러 메시지 변환
+  getCancelErrorMessage(error) {
+    const errorMessages = {
+      'PAYMENT_NOT_FOUND': '결제 정보를 찾을 수 없습니다.',
+      'ALREADY_CANCELED': '이미 취소된 결제입니다.',
+      'CANCEL_AMOUNT_EXCEEDED': '취소 금액이 결제 금액을 초과합니다.',
+      'INVALID_CANCEL_AMOUNT': '유효하지 않은 취소 금액입니다.',
+      'CANCEL_NOT_ALLOWED': '취소가 허용되지 않는 결제입니다.',
+      'REFUND_NOT_AVAILABLE': '환불이 불가능한 결제입니다.',
+      'NETWORK_ERROR': '네트워크 연결을 확인해주세요.',
+      'TIMEOUT': '요청 시간이 초과되었습니다.',
+      'UNKNOWN_ERROR': '결제 취소 중 오류가 발생했습니다.'
+    };
+
+    return errorMessages[error.code] || error.message || '결제 취소 중 오류가 발생했습니다.';
+  }
+
+  // 부분 취소 API
+  async partialCancel(paymentKey, cancelAmount, cancelReason) {
+    try {
+      logger.log('📡 부분 취소 요청 시작:', { paymentKey, cancelAmount, cancelReason });
+      
+      return await this.cancelPayment(paymentKey, cancelReason, cancelAmount);
+      
+    } catch (error) {
+      logger.error('❌ 부분 취소 실패:', error);
       throw error;
     }
   }
 
-  // 결제 상태 조회
+  // 결제 상태 조회 (개선된 버전)
   async getPaymentStatus(paymentKey) {
     try {
-      const result = await this.makeRequest(
-        `https://api.tosspayments.com/v1/payments/${paymentKey}`,
+      logger.log('📡 결제 상태 조회:', paymentKey);
+      
+      const response = await this.makeRequest(
+        `${this.baseURL}/api/payments/${paymentKey}`,
+        {
+          method: 'GET',
+          headers: this.getHeaders()
+        },
+        { maxRetries: 2, delay: 1000, backoff: 2 }
+      );
+      
+      logger.log('✅ 결제 상태 조회 성공:', response);
+      return response;
+      
+    } catch (error) {
+      logger.error('❌ 결제 상태 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  // 결제 이력 조회
+  async getPaymentHistory(paymentKey) {
+    try {
+      logger.log('📡 결제 이력 조회:', paymentKey);
+      
+      const response = await this.makeRequest(
+        `${this.baseURL}/api/payments/${paymentKey}/history`,
         {
           method: 'GET',
           headers: this.getHeaders()
         }
       );
-
-      logger.log('토스페이먼츠 결제 상태 조회 성공:', result);
-      return result;
+      
+      logger.log('✅ 결제 이력 조회 성공:', response);
+      return response;
+      
     } catch (error) {
-      logger.error('토스페이먼츠 결제 상태 조회 오류:', error);
+      logger.error('❌ 결제 이력 조회 실패:', error);
       throw error;
     }
+  }
+
+  // 결제 승인 (개선된 버전)
+  async confirmPayment(backendPaymentId, confirmData) {
+    try {
+      logger.log('📡 결제 승인 요청 시작:', { backendPaymentId, confirmData });
+      
+      // 멱등성 키 생성
+      const idempotencyKey = uuidv4();
+      
+      // 요청 데이터 검증
+      if (!confirmData.paymentKey || !confirmData.orderId || !confirmData.amount) {
+        throw new Error('필수 결제 정보가 누락되었습니다.');
+      }
+      
+      const requestData = {
+        paymentKey: confirmData.paymentKey,
+        orderId: confirmData.orderId,
+        amount: Number(confirmData.amount)
+      };
+      
+      logger.log('📋 승인 요청 데이터:', requestData);
+      
+      const response = await this.makeRequest(
+        `${this.baseURL}/api/orders/confirm`,
+        {
+          method: 'POST',
+          headers: this.getHeaders('application/json', idempotencyKey),
+          body: JSON.stringify({
+            paymentId: backendPaymentId,
+            ...requestData
+          })
+        },
+        { maxRetries: 3, delay: 1000, backoff: 2 }
+      );
+      
+      logger.log('✅ 결제 승인 성공:', response);
+      
+      // 결제 시도 완료 처리
+      this.completePaymentAttempt(confirmData.orderId, 'completed');
+      
+      return response;
+      
+    } catch (error) {
+      logger.error('❌ 결제 승인 실패:', error);
+      
+      // 결제 시도 실패 처리
+      this.completePaymentAttempt(confirmData.orderId, 'failed');
+      
+      // 사용자 친화적인 에러 메시지
+      const userMessage = this.getConfirmErrorMessage(error);
+      throw new Error(userMessage);
+    }
+  }
+
+  // 결제 승인 에러 메시지 변환
+  getConfirmErrorMessage(error) {
+    const errorMessages = {
+      'PAYMENT_NOT_FOUND': '결제 정보를 찾을 수 없습니다.',
+      'ALREADY_PROCESSED_PAYMENT': '이미 처리된 결제입니다.',
+      'INVALID_AMOUNT': '유효하지 않은 결제 금액입니다.',
+      'ORDER_NOT_FOUND': '주문 정보를 찾을 수 없습니다.',
+      'PAYMENT_EXPIRED': '결제 유효기간이 만료되었습니다.',
+      'DUPLICATE_ORDER_ID': '중복된 주문번호입니다.',
+      'NETWORK_ERROR': '네트워크 연결을 확인해주세요.',
+      'TIMEOUT': '요청 시간이 초과되었습니다.',
+      'UNKNOWN_ERROR': '결제 승인 중 오류가 발생했습니다.'
+    };
+
+    return errorMessages[error.code] || error.message || '결제 승인 중 오류가 발생했습니다.';
   }
 
   // Mock 모드용 결제 승인 (개발 환경)

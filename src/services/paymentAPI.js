@@ -31,8 +31,67 @@ const retryRequest = async (requestFn, retryCount = 0) => {
   }
 };
 
-// 결제 수단 API 서비스
+  // 결제 수단 API 서비스
 export const paymentAPI = {
+  // 결제 생성 API (백엔드 명세에 맞게 추가)
+  createPayment: async (paymentData) => {
+    try {
+      logger.log('📡 결제 생성 요청:', paymentData);
+      
+      const response = await retryRequest(() => 
+        apiClient.post('/payments', paymentData)
+      );
+      
+      logger.log('✅ 결제 생성 성공:', response.data);
+      return response;
+    } catch (error) {
+      logger.error('❌ 결제 생성 실패:', error);
+      
+      // 백엔드 에러 응답 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 400) {
+        error.message = '잘못된 결제 정보입니다.';
+      } else if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 500) {
+        error.message = '서버 내부 오류가 발생했습니다.';
+      } else {
+        error.message = '결제 생성 중 오류가 발생했습니다.';
+      }
+      
+      throw error;
+    }
+  },
+
+  // 결제 확인 API (백엔드 명세에 맞게 추가)
+  confirmPayment: async (paymentId) => {
+    try {
+      logger.log('📡 결제 확인 요청:', paymentId);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(`/payments/${paymentId}/confirm`)
+      );
+      
+      logger.log('✅ 결제 확인 성공:', response.data);
+      return response;
+    } catch (error) {
+      logger.error('❌ 결제 확인 실패:', error);
+      
+      // 백엔드 에러 응답 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 404) {
+        error.message = '결제를 찾을 수 없습니다.';
+      } else if (error.statusCode === 500) {
+        error.message = '서버 내부 오류가 발생했습니다.';
+      } else {
+        error.message = '결제 확인 중 오류가 발생했습니다.';
+      }
+      
+      throw error;
+    }
+  },
   // 결제 수단 목록 조회 (백엔드 미구현으로 목업 데이터 사용)
   getPaymentMethods: async () => {
     try {
@@ -142,7 +201,7 @@ export const paymentAPI = {
   },
 
   // 토스페이먼츠 결제 승인 (백엔드 API 호출)
-  confirmPayment: async (paymentData) => {
+  confirmTossPayment: async (paymentData) => {
     const { paymentId, paymentKey, orderId, amount } = paymentData;
     
     try {

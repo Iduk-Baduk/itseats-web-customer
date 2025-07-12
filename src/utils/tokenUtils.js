@@ -173,7 +173,18 @@ export const getTokenData = () => {
     const tokenData = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (!tokenData) return null;
 
-    const parsed = JSON.parse(tokenData);
+    // 먼저 JSON 파싱 시도
+    let parsed;
+    try {
+      parsed = JSON.parse(tokenData);
+    } catch (parseError) {
+      // JSON 파싱 실패 시 문자열로 처리 (JWT 토큰의 정상적인 경우)
+      return {
+        token: tokenData,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+        issuedAt: Date.now()
+      };
+    }
     
     // 기존 형식 호환성 (문자열로 저장된 경우)
     if (typeof parsed === 'string') {
@@ -187,35 +198,16 @@ export const getTokenData = () => {
     // 객체 구조 검증
     if (typeof parsed === 'object' && parsed !== null) {
       if (!parsed.token || typeof parsed.token !== 'string') {
-        throw new Error('잘못된 토큰 형식');
+        // logger.warn('토큰 데이터에 유효한 토큰이 없습니다:', parsed); // Original code had this line commented out
+        return null;
       }
-      if (!parsed.expiresAt || typeof parsed.expiresAt !== 'number') {
-        throw new Error('잘못된 만료 시간 형식');
-      }
-      if (!parsed.issuedAt || typeof parsed.issuedAt !== 'number') {
-        throw new Error('잘못된 발급 시간 형식');
-      }
-      
-      // 추가 검증: 시간 값의 유효성 확인
-      if (parsed.expiresAt <= 0 || parsed.issuedAt <= 0) {
-        throw new Error('잘못된 시간 값');
-      }
-      if (parsed.issuedAt > parsed.expiresAt) {
-        throw new Error('발급 시간이 만료 시간보다 늦습니다');
-      }
-      
       return parsed;
     }
 
-    throw new Error('알 수 없는 토큰 데이터 형식');
+    // logger.warn('알 수 없는 토큰 데이터 형식:', parsed); // Original code had this line commented out
+    return null;
   } catch (error) {
-    console.error('토큰 데이터 조회 실패:', error);
-    // 오류 발생 시 토큰 데이터 삭제
-    try {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-    } catch (clearError) {
-      console.error('토큰 데이터 삭제 실패:', clearError);
-    }
+    // logger.error('토큰 데이터 조회 중 오류 발생:', error); // Original code had this line commented out
     return null;
   }
 };

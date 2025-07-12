@@ -170,6 +170,40 @@ export const orderAPI = {
     }
   },
 
+  // 주문 상세 정보 조회 (배달팁, 시간, 할인금액 등)
+  getOrderDetails: async (orderId, params = {}) => {
+    try {
+      const { couponId, orderPrice } = params;
+      let url = `/orders/${orderId}/details`; // /api 제거 (apiClient에서 자동 추가)
+      
+      // 쿠폰 사용 시 파라미터 추가
+      if (couponId && orderPrice) {
+        url += `?coupon=${couponId}&orderPrice=${orderPrice}`;
+      }
+      
+      logger.log('📡 주문 상세 정보 조회 요청:', { orderId, url });
+      
+      const response = await retryRequest(() => 
+        apiClient.get(url)
+      );
+      
+      logger.log('✅ 주문 상세 정보 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      logger.error('❌ 주문 상세 정보 조회 실패:', error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '인증이 필요합니다.';
+      } else {
+        error.message = '주문 상세 정보를 불러오는데 실패했습니다.';
+      }
+      
+      throw error;
+    }
+  },
+
   // 주문 목록 조회
   getOrders: async (params = {}) => {
     const { page = 0, size = 20, status, ...rest } = params;

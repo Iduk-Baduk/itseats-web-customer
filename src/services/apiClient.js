@@ -64,6 +64,12 @@ apiClient.interceptors.response.use(
     if (error.response.status === 401) {
       logger.warn('401 에러 발생, 토큰 갱신 시도');
       
+      // 개발 환경에서는 401 에러 시 자동 로그아웃 비활성화
+      if (import.meta.env.DEV) {
+        logger.warn('개발 환경: 401 에러 발생했지만 자동 로그아웃을 건너뜁니다.');
+        return Promise.reject(error);
+      }
+      
       const refreshSuccess = await AuthService.refreshToken();
       if (refreshSuccess) {
         // 토큰 갱신 성공 시 원래 요청 재시도

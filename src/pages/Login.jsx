@@ -132,29 +132,6 @@ export default function Login() {
           {loading ? "로그인 중..." : "로그인"}
         </Button>
         
-        {/* 개발 환경에서만 테스트 버튼 표시 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div style={{ marginTop: '10px', textAlign: 'center' }}>
-            <small style={{ color: '#666', marginBottom: '10px', display: 'block' }}>
-              개발용 테스트 계정
-            </small>
-            <Button 
-              onClick={() => {
-                setUserId('test@example.com');
-                setPassword('Test123!@#');
-              }}
-              style={{ 
-                backgroundColor: '#f0f0f0', 
-                color: '#333',
-                fontSize: '12px',
-                padding: '8px 16px'
-              }}
-            >
-              테스트 계정 입력
-            </Button>
-          </div>
-        )}
-        
         <hr />
         <LineButton className={styles.grayButton} onClick={handleRegister}>회원가입</LineButton>
       </div>
