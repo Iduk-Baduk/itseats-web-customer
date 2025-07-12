@@ -67,6 +67,9 @@ export const API_ENDPOINTS = {
   USER_FAVORITES: '/members/favorites',
   USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
   USER_REVIEWS: '/members/reviews',
+
+  // 리뷰 관련
+  REVIEW_BY_ORDER_ID: (orderId) => `/reviews/${orderId}`,
 };
 
 export default API_CONFIG; 
