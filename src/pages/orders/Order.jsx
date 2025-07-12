@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import OrderCard from "../../components/orders/OrderCard";
 import OrderSearch from "../../components/orders/OrderSearch";
@@ -18,6 +18,7 @@ import styles from "./Order.module.css";
 export default function Order() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation(); // 추가
   const [selectedTab, setSelectedTab] = React.useState("past");
   const [keyword, setKeyword] = React.useState("");
 
@@ -29,6 +30,15 @@ export default function Order() {
   useEffect(() => {
     dispatch(fetchOrdersAsync({ page: 0, keyword }));
   }, [dispatch, keyword]);
+
+  // location.state?.refresh가 true면 주문 목록 새로고침
+  useEffect(() => {
+    if (location.state?.refresh) {
+      dispatch(fetchOrdersAsync({ page: 0, keyword }));
+      // 새로고침 후 state 초기화 (중복 새로고침 방지)
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, dispatch, keyword, location.pathname, navigate]);
 
   const refreshOrders = useCallback(() => {
     dispatch(fetchOrdersAsync({ page: 0, keyword }));
