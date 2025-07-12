@@ -12,13 +12,15 @@ const DECREASE = "COUNTER/DECREASE";
 // 액션 생성 함수
 const SET = "COUNTER/SET";
 
-export const { counter: { increase, decrease, set } } = createActions({
+export const counter = createActions({
   COUNTER: {
     INCREASE: () => 1,
     DECREASE: () => 1,
     SET: (value) => value,
   },
-});
+}).counter;
+
+export const { increase, decrease, set } = counter;
 
 const counterReducer = handleActions(
   {
