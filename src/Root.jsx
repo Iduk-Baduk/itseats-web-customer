@@ -8,6 +8,7 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
+
 // 즉시 로딩 (핵심 페이지)
 import Home from "./pages/Home";
 
@@ -47,6 +48,8 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
 const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
+const MyCoupons = React.lazy(() => import("./pages/coupons/MyCoupons"));
+
 
 // 페이지별 최적화된 로딩 메시지
 const getLoadingMessage = (pathname) => {
@@ -500,7 +503,18 @@ export default function Root() {
               </Layout>
             } 
           />
-
+          <Route 
+            path="/mypage/my-coupons"
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <ProtectedRoute>
+                    <MyCoupons />
+                  </ProtectedRoute>
+                </LazyPageWrapper>
+              </Layout>
+            }
+          />
           {/* 404 페이지 */}
           <Route 
             path="*" 

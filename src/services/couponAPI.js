@@ -139,6 +139,54 @@ export const couponAPI = {
       throw error;
     }
   },
+
+  // 쿠폰 발급
+  issueCoupon: async (couponId) => {
+    try {
+      logger.log(`📡 쿠폰 발급 요청 (ID: ${couponId})`);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.COUPON_ISSUE(couponId))
+      );
+      
+      logger.log(`✅ 쿠폰 발급 성공 (ID: ${couponId}):`, response);
+      return response;
+    } catch (error) {
+      logger.error(`❌ 쿠폰 발급 실패 (ID: ${couponId}):`, error);
+      
+      if (error.statusCode === 404) {
+        error.message = '존재하지 않는 쿠폰입니다.';
+      } else if (error.statusCode === 409) {
+        error.message = '이미 발급받은 쿠폰입니다.';
+      } else if (error.statusCode === 400) {
+        error.message = '쿠폰 발급 기간이 아닙니다.';
+      } else if (error.statusCode === 403) {
+        error.message = '쿠폰 발급 권한이 없습니다.';
+      } else {
+        error.message = '쿠폰 발급에 실패했습니다.';
+      }
+      
+      throw error;
+    }
+  },
+
+  getAllCoupons: async () => {
+    try {
+        logger.log('📡 전체 쿠폰 조회 요청');
+
+        const response = await retryRequest(() =>
+            apiClient.get(API_ENDPOINTS.COUPONS_ALL)
+        );
+
+        logger.log('✅ 전체 쿠폰 조회 성공:', response.data);
+        return response.data;
+    } catch (error) {
+        logger.error('❌ 전체 쿠폰 조회 실패:', error);
+
+        error.message = '전체 쿠폰 목록을 불러오는데 실패했습니다.';
+        throw error;
+    }
+},
 };
 
 export default couponAPI; 
