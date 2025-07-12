@@ -18,6 +18,7 @@ const Favorite = React.lazy(() => import("./pages/Favorite"));
 const Order = React.lazy(() => import("./pages/orders/Order"));
 const OrderStatus = React.lazy(() => import("./pages/orders/OrderStatus"));
 const Review = React.lazy(() => import("./pages/orders/Review"));
+const ReviewView = React.lazy(() => import("./pages/orders/ReviewView"));
 const Address = React.lazy(() => import("./pages/address/Address"));
 const AddressSearch = React.lazy(() => import("./pages/address/AddressSearch"));
 const AddressEdit = React.lazy(() => import("./pages/address/AddressEdit"));
@@ -207,6 +208,18 @@ export default function Root() {
                 <LazyPageWrapper>
                   <ProtectedRoute>
                     <Review />
+                  </ProtectedRoute>
+                </LazyPageWrapper>
+              </Layout>
+            } 
+          />
+          <Route 
+            path="/orders/:orderId/review/view" 
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <ProtectedRoute>
+                    <ReviewView />
                   </ProtectedRoute>
                 </LazyPageWrapper>
               </Layout>
