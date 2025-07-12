@@ -1,0 +1,351 @@
+.container {
+    padding: 60px 0 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.map {
+    width: 100%;
+    height: 300px;
+    background-color: var(--border-color-light);
+    box-sizing: border-box;
+}
+
+.statusContainer {
+    min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px);
+    padding: 36px 20px;
+    box-sizing: border-box;
+}
+
+.statusText {
+    display: block;
+    font-size: 14px;
+    color: var(--black-500);
+    margin-bottom: 8px;
+}
+.estimatedTime {
+    font-weight: 600;
+    font-size: 20px;
+}
+.estimatedTime>span {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--black-500);
+    margin-left: 4px;
+}
+
+.statusPerson {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid var(--unchecked-icon-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+.statusPerson span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--black-500);
+}
+.statusPerson>img {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+
+.orderDetails {
+    margin-top: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--unchecked-icon-color);
+    box-sizing: border-box;
+    color: var(--black-700)
+}
+.orderInfo {
+    padding: 16px;
+    border-bottom: 1px solid var(--unchecked-icon-color);
+    box-sizing: border-box;
+}
+.storeName {
+    font-size: 18px;
+    font-weight: 600;
+}
+.orderInfo span, .deliveryInfo span {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 15px;
+}
+.orderInfo span:not(:last-child)::after {
+    width: 1px;
+    height: 12px;
+    content: '';
+    display: inline-block;
+    margin: 0 8px;
+    background-color: var(--border-color);
+}
+
+.deliveryInfo {
+    padding: 16px;
+    border-bottom: 1px solid var(--unchecked-icon-color);
+    box-sizing: border-box;
+}
+.riderRequest {
+    margin-top: 12px;
+    padding-top: 8px;
+    color: var(--black-500);
+    border-top: 1px solid var(--unchecked-icon-color);
+}
+.riderRequest span {
+    display: inline-block;
+    margin-right: 12px;
+}
+
+.helpButton {
+    width: 100%;
+    margin-top: 24px;
+    color: var(--black-700);
+    border-color: var(--border-color);
+}
+
+/* 메뉴 상세 정보 스타일 */
+.menuDetails {
+    padding: 16px;
+    border-bottom: 1px solid var(--unchecked-icon-color);
+    box-sizing: border-box;
+}
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--black-700);
+}
+
+.menuList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.menuItem {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.menuHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.menuInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.menuName {
+    font-size: 15px;
+    color: var(--black-700);
+    font-weight: 600;
+}
+
+.menuQuantity {
+    font-size: 13px;
+    color: #666;
+    background-color: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.menuPrice {
+    font-size: 15px;
+    color: var(--black-700);
+    font-weight: 600;
+}
+
+.menuOptions {
+    padding-left: 8px;
+    border-left: 2px solid #e9ecef;
+}
+
+.optionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.optionName {
+    color: #666;
+}
+
+.optionPrice {
+    color: var(--theme-color);
+    font-weight: 500;
+}
+
+/* 에러 상태 스타일 */
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px);
+}
+
+.errorIcon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.errorContainer h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.errorContainer p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.5;
+    max-width: 400px;
+}
+
+.errorActions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.primaryButton,
+.secondaryButton,
+.retryButton {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.primaryButton {
+    background-color: var(--theme-color);
+    color: white;
+    border: none;
+}
+
+.primaryButton:hover {
+    background-color: var(--theme-color-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.secondaryButton {
+    background-color: transparent;
+    color: var(--black-700);
+    border: 1px solid var(--border-color);
+}
+
+.secondaryButton:hover {
+    background-color: var(--border-color-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+    .errorContainer {
+        padding: 32px 16px;
+    }
+    
+    .errorIcon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    
+    .errorContainer h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .errorContainer p {
+        font-size: 13px;
+        margin-bottom: 24px;
+        max-width: 350px;
+    }
+    
+    .errorActions {
+        gap: 10px;
+    }
+    
+    .primaryButton,
+    .secondaryButton {
+        padding: 10px 20px;
+        font-size: 13px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .errorContainer {
+        padding: 24px 12px;
+    }
+    
+    .errorIcon {
+        font-size: 36px;
+        margin-bottom: 12px;
+    }
+    
+    .errorContainer h2 {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .errorContainer p {
+        font-size: 12px;
+        margin-bottom: 20px;
+        max-width: 300px;
+    }
+    
+    .errorActions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .primaryButton,
+    .secondaryButton {
+        padding: 12px 16px;
+        font-size: 12px;
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+.progressContainer {
+    margin: 20px 0;
+    padding: 0 20px;
+}

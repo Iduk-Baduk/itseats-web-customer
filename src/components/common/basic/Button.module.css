@@ -1,0 +1,165 @@
+/* ===== 기본 버튼 스타일 ===== */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== 사이즈 변형 ===== */
+.button.small {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.button.medium {
+  padding: 14px 28px;
+  font-size: 14px;
+  min-height: 44px;
+}
+
+.button.large {
+  padding: 16px 32px;
+  font-size: 16px;
+  min-height: 48px;
+  width: 100%;
+}
+
+/* ===== 변형별 스타일 ===== */
+
+/* Primary 버튼 (기본) */
+.button.primary {
+  background-color: var(--theme-color);
+  color: #fff;
+}
+
+.button.primary:hover {
+  background-color: var(--theme-hover-color);
+  transform: translateY(-1px);
+}
+
+.button.primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary 버튼 */
+.button.secondary {
+  background-color: #ffffff;
+  color: var(--black-700);
+  border: 1px solid var(--border-color);
+}
+
+.button.secondary:hover {
+  background-color: var(--background-color-secondary);
+  border-color: var(--theme-color);
+  color: var(--theme-color);
+}
+
+/* Line 버튼 (테두리만) */
+.button.line {
+  background-color: transparent;
+  color: var(--theme-color);
+  border: 1px solid var(--theme-color);
+}
+
+.button.line:hover {
+  background-color: var(--theme-color);
+  color: #fff;
+}
+
+/* Submit 버튼 (강조용) */
+.button.submit {
+  background-color: var(--theme-color);
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(var(--theme-color-rgb, 0, 175, 255), 0.3);
+}
+
+.button.submit:hover {
+  background-color: var(--theme-hover-color);
+  box-shadow: 0 4px 12px rgba(var(--theme-color-rgb, 0, 175, 255), 0.4);
+  transform: translateY(-2px);
+}
+
+/* ===== 상태별 스타일 ===== */
+
+/* 비활성화 상태 */
+.button.disabled,
+.button:disabled {
+  background-color: var(--background-disabled-color, #e0e0e0) !important;
+  color: var(--disabled-color, #999) !important;
+  border-color: var(--background-disabled-color, #e0e0e0) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 로딩 상태 */
+.button.loading {
+  cursor: wait;
+  pointer-events: none;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .button.large {
+    padding: 14px 24px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  
+  .button.medium {
+    padding: 12px 20px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+  
+  .button.small {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-height: 28px;
+  }
+}
+
+/* ===== 접근성 ===== */
+.button:focus-visible {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+.button:focus:not(:focus-visible) {
+  outline: none;
+}

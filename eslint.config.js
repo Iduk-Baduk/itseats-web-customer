@@ -28,6 +28,33 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      
+      // 보안 관련 규칙
+      // deprecated 메서드 사용 금지
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'securityUtils',
+          property: 'generateClientToken',
+          message: '클라이언트 토큰 생성이 보안상 제거되었습니다. 서버에서 JWT를 발급받으세요.'
+        },
+        {
+          object: 'securityUtils',
+          property: 'verifyClientToken',
+          message: '클라이언트 토큰 검증이 보안상 제거되었습니다. 서버에서 토큰을 검증하세요.'
+        },
+        {
+          object: 'Math',
+          property: 'random',
+          message: '보안상 crypto.getRandomValues()를 사용하세요.'
+        }
+      ],
+      
+      // eval() 사용 금지 (보안상)
+      'no-eval': 'error',
+      
+      // console.log 사용 제한 (프로덕션 환경)
+      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
     },
   },
 ]

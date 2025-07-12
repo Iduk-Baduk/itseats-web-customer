@@ -1,0 +1,88 @@
+.container {
+  width: 100%;
+  padding: 36px 0;
+  box-sizing: border-box;
+}
+
+.lineContainer {
+  position: relative;
+  height: 2px;
+  background-color: var(--color-primary-light, #E6EEF8);
+  margin: 0 18px;
+}
+
+.fullLine {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-primary-light, #E6EEF8);
+  top: 0;
+  left: 0;
+}
+
+.progressLine {
+  position: absolute;
+  height: 2px;
+  background-color: var(--color-primary, #2D7FF9);
+  top: 0;
+  left: 0;
+  transition: width 0.3s ease;
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -12px; /* overlap circles on line */
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-primary-light, #E6EEF8);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.completed {
+  background-color: var(--color-primary, #2D7FF9);
+}
+
+.current {
+  background-color: var(--color-primary, #2D7FF9);
+}
+
+.innerCircle {
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-white, #FFFFFF);
+  border-radius: 50%;
+}
+
+.check {
+  width: 16px;
+  height: 16px;
+  color: var(--color-white, #FFFFFF);
+}
+
+.label {
+  margin-top: 6px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-secondary, #4A4A4A);
+}
+
+/* 현재 단계 라벨 강조 */
+.step.current .label {
+  color: var(--color-primary, #2D7FF9);
+  font-weight: 500;
+}

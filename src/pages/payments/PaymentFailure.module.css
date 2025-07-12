@@ -1,0 +1,244 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  color: #6c757d;
+}
+
+.content {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 실패 섹션 */
+.failureSection {
+  text-align: center;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.failureIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: shake 0.8s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+.failureTitle {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #dc3545;
+  margin: 0 0 1rem 0;
+}
+
+.failureMessage {
+  color: #6c757d;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 카드 공통 스타일 */
+.errorInfoCard,
+.solutionCard {
+  margin-bottom: 2rem;
+}
+
+.cardHeader {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* 오류 정보 */
+.errorDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.errorRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.errorRow:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.value {
+  font-weight: 600;
+  color: #495057;
+  text-align: right;
+}
+
+/* 해결 방법 */
+.solutionList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.solutionItem {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.solutionIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.solutionItem h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.solutionItem p {
+  margin: 0;
+  color: #6c757d;
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+/* 액션 버튼들 */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.primaryButton {
+  width: 100%;
+}
+
+.secondaryButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.secondaryButtons button {
+  font-size: 0.875rem;
+}
+
+/* 추가 정보 */
+.additionalInfo {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.additionalInfo p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+.additionalInfo p:last-child {
+  margin-bottom: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+  
+  .failureTitle {
+    font-size: 1.5rem;
+  }
+  
+  .secondaryButtons {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .errorRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .failureIcon {
+    font-size: 3rem;
+  }
+  
+  .failureTitle {
+    font-size: 1.25rem;
+  }
+  
+  .solutionItem {
+    gap: 0.75rem;
+  }
+  
+  .solutionIcon {
+    font-size: 1.25rem;
+  }
+} 
+
+/* 실패 전용 스타일 */
+.failureTitle {
+  color: #d32f2f;
+}
+
+.failureMessage {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+/* 에러 코드 스타일 */
+.errorCode {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #6c757d;
+  margin: 8px 0;
+}
+
+/* 실패 사유 스타일 */
+.failureReason {
+  color: #dc3545;
+  font-weight: 500;
+  margin: 8px 0;
+} 

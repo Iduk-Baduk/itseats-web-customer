@@ -1,0 +1,39 @@
+.searchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.searchInput {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  padding: 0 16px;
+  background-color: #f5f6f7;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+.iconButton:hover {
+  background-color: var(--background-hover-color);
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.icon:hover {
+  color: #333;
+}

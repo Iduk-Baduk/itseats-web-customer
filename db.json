@@ -1,0 +1,869 @@
+{
+  "cards": [
+    {
+      "id": "1",
+      "cardNumber": "**** **** **** 1234",
+      "name": "신한카드",
+      "cardType": "신용카드",
+      "bank": "신한은행",
+      "last4": "1234",
+      "image": "/icons/logos/shinhan.png",
+      "isDefault": true
+    },
+    {
+      "id": "ff13",
+      "cardNumber": "2222222222222222",
+      "expiryMonth": "12",
+      "expiryYear": "25",
+      "cvc": "123",
+      "password": "31"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "1",
+      "bankName": "신한은행",
+      "bankId": "shinhan",
+      "accountNumber": "110-***-****12",
+      "accountName": "홍길동",
+      "last4": "4012",
+      "image": "/icons/logos/shinhan.png",
+      "isDefault": true
+    },
+    {
+      "id": "4547",
+      "bankName": "국민은행",
+      "bankId": "kb",
+      "accountNumber": "123-***-****123",
+      "accountName": "송준경",
+      "last4": "4123",
+      "image": "/icons/logos/kbbank.jpg",
+      "isDefault": false
+    }
+  ],
+  "coupayMoney": 25000,
+  "orders": [
+    {
+      "id": "ORDER-001",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "delivered",
+      "orderDate": "2024-01-15T18:30:00.000Z",
+      "deliveryTime": "2024-01-15T19:15:00.000Z",
+      "totalPrice": 28900,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "price": 24900,
+          "quantity": 1,
+          "options": [
+            "엑스트라 치즈",
+            "씬 도우"
+          ]
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "card",
+      "rating": 5,
+      "review": "맛있게 잘 먹었습니다!"
+    },
+    {
+      "id": "ORDER-002",
+      "storeId": 2,
+      "storeName": "맘스터치 판교점",
+      "orderStatus": "cooking",
+      "orderDate": "2024-01-15T19:45:00.000Z",
+      "totalPrice": 15500,
+      "deliveryFee": 2000,
+      "orderMenus": [
+        {
+          "menuId": 5,
+          "menuName": "싸이버거 세트",
+          "price": 8900,
+          "quantity": 1,
+          "options": [
+            "콜라",
+            "감자튀김"
+          ]
+        },
+        {
+          "menuId": 6,
+          "menuName": "치킨버거",
+          "price": 6600,
+          "quantity": 1,
+          "options": []
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "coupay"
+    },
+    {
+      "id": "ORDER-003",
+      "storeId": 2,
+      "storeName": "맘스터치 판교점",
+      "orderStatus": "delivered",
+      "orderDate": "2024-01-10T18:00:00.000Z",
+      "deliveryTime": "2024-01-10T18:45:00.000Z",
+      "totalPrice": 17800,
+      "deliveryFee": 2000,
+      "orderMenus": [
+        {
+          "menuId": 5,
+          "menuName": "싸이버거 세트",
+          "price": 8900,
+          "quantity": 2,
+          "options": [
+            "콜라",
+            "감자튀김"
+          ]
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "card",
+      "rating": 4,
+      "review": "버거가 맛있어요. 배달도 빨랐습니다."
+    },
+    {
+      "id": "ORDER-004",
+      "storeId": 4,
+      "storeName": "교촌치킨 구름점",
+      "orderStatus": "delivered",
+      "orderDate": "2024-01-08T19:30:00.000Z",
+      "deliveryTime": "2024-01-08T20:15:00.000Z",
+      "totalPrice": 22400,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 8,
+          "menuName": "허니콤보",
+          "price": 19900,
+          "quantity": 1,
+          "options": []
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "card",
+      "rating": 5,
+      "review": "허니콤보 정말 맛있네요! 또 주문할게요."
+    },
+    {
+      "id": "ORDER-005",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "delivered",
+      "orderDate": "2024-01-05T20:00:00.000Z",
+      "deliveryTime": "2024-01-05T20:45:00.000Z",
+      "totalPrice": 31400,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "price": 24900,
+          "quantity": 1,
+          "options": [
+            "엑스트라 치즈"
+          ]
+        },
+        {
+          "menuId": 3,
+          "menuName": "콜라 1.25L",
+          "price": 2500,
+          "quantity": 2,
+          "options": []
+        }
+      ],
+      "deliveryAddress": "경기 성남시 판교로 242 PDC A동 902호",
+      "paymentMethod": "coupay"
+    },
+    {
+      "id": "ORDER-TEST-123",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "placed",
+      "orderDate": "2024-01-20T12:00:00.000Z",
+      "totalPrice": 25000,
+      "deliveryFee": 2500,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "price": 22500,
+          "quantity": 1,
+          "options": [
+            "엑스트라 치즈"
+          ]
+        }
+      ],
+      "deliveryAddress": "테스트 주소",
+      "paymentMethod": "card"
+    },
+    {
+      "id": "order_1751136657501_t56inkqhl",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "placed",
+      "orderDate": "2025-06-28T18:50:57.501Z",
+      "totalPrice": 21200,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "coupay",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": [
+        "3"
+      ]
+    },
+    {
+      "id": "order_1751136892638_36la6n6qy",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "placed",
+      "orderDate": "2025-06-28T18:54:52.638Z",
+      "totalPrice": 24900,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "card",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": []
+    },
+    {
+      "id": "order_1751136906055_kez7z2fnu",
+      "storeId": 1,
+      "storeName": "도미노피자 구름점",
+      "orderStatus": "placed",
+      "orderDate": "2025-06-28T18:55:06.055Z",
+      "totalPrice": 24900,
+      "deliveryFee": 0,
+      "orderMenus": [
+        {
+          "menuId": 1,
+          "menuName": "페퍼로니 피자 L",
+          "menuOptions": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ],
+              "options": [
+                {
+                  "optionName": "오리지널 도우",
+                  "optionPrice": 0
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ],
+              "options": []
+            }
+          ],
+          "menuTotalPrice": 24900,
+          "quantity": 1
+        }
+      ],
+      "deliveryAddress": "서울 영등포구 영등포동3가 26",
+      "paymentMethod": "card",
+      "storeRequest": "",
+      "riderRequest": "문 앞에 놔주세요 (초인종 O)",
+      "coupons": []
+    }
+  ],
+  "coupons": [
+    {
+      "id": "1",
+      "name": "첫 주문 할인",
+      "discount": 3000,
+      "type": "general",
+      "description": "첫 주문 시 3,000원 할인",
+      "minOrderAmount": 15000,
+      "validDate": "2026-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": true
+    },
+    {
+      "id": "2",
+      "name": "배달비 무료",
+      "discount": 2500,
+      "type": "delivery",
+      "description": "배달비 무료 쿠폰",
+      "minOrderAmount": 10000,
+      "validDate": "2026-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": true
+    },
+    {
+      "id": "3",
+      "name": "주말 특가 15% 할인",
+      "discount": 15,
+      "type": "percentage",
+      "description": "주말 한정 전 메뉴 15% 할인 (최대 5,000원)",
+      "minOrderAmount": 20000,
+      "maxDiscount": 5000,
+      "validDate": "2025-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": false
+    },
+    {
+      "id": "4",
+      "name": "신규 가입 축하",
+      "discount": 5000,
+      "type": "general",
+      "description": "신규 가입 축하 5,000원 할인",
+      "minOrderAmount": 25000,
+      "validDate": "2026-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": false
+    },
+    {
+      "id": "5",
+      "name": "테스트 쿠폰",
+      "discount": 1000,
+      "type": "general",
+      "description": "테스트용 1,000원 할인",
+      "minOrderAmount": 5000,
+      "validDate": "2026-12-31T23:59:59.000Z",
+      "isUsed": false,
+      "isExpired": false,
+      "isStackable": true
+    }
+  ],
+  "stores": [
+    {
+      "storeId": "1",
+      "name": "도미노피자 구름점",
+      "category": "피자",
+      "location": {
+        "lat": 37.4979,
+        "lng": 127.0276
+      },
+      "address": "경기 성남시 분당구 구미로 42",
+      "phone": "031-1234-5678",
+      "rating": 4.5,
+      "reviewCount": 128,
+      "deliveryTime": "30-40분",
+      "deliveryFee": 2500,
+      "minOrderAmount": 15000,
+      "isOpen": true,
+      "images": ["/samples/food1.jpg"],
+      "menus": [
+        {
+          "menuId": 1,
+          "name": "페퍼로니 피자 L",
+          "price": 24900,
+          "originalPrice": 27900,
+          "description": "클래식한 페퍼로니 피자",
+          "imageUrl": "/samples/food1.jpg",
+          "category": "피자",
+          "options": [
+            {
+              "name": "도우 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "오리지널 도우",
+                  "price": 0
+                },
+                {
+                  "name": "씬 도우",
+                  "price": 0
+                },
+                {
+                  "name": "치즈크러스트",
+                  "price": 2000
+                }
+              ]
+            },
+            {
+              "name": "토핑 추가",
+              "type": "checkbox",
+              "required": false,
+              "choices": [
+                {
+                  "name": "엑스트라 치즈",
+                  "price": 2000
+                },
+                {
+                  "name": "베이컨",
+                  "price": 2500
+                },
+                {
+                  "name": "파인애플",
+                  "price": 1500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "menuId": 2,
+          "name": "불고기 피자 L",
+          "price": 26900,
+          "description": "한국인이 사랑하는 불고기 피자",
+          "imageUrl": "/samples/food2.jpg",
+          "category": "피자"
+        },
+        {
+          "menuId": 3,
+          "name": "콜라 1.25L",
+          "price": 2500,
+          "description": "시원한 콜라",
+          "imageUrl": "/samples/food3.jpg",
+          "category": "음료"
+        },
+        {
+          "menuId": 4,
+          "name": "테스트 메뉴",
+          "price": 6000,
+          "description": "테스트용 간단한 메뉴",
+          "imageUrl": "/samples/food1.jpg",
+          "category": "테스트"
+        }
+      ]
+    },
+    {
+      "storeId": "2",
+      "name": "맘스터치 판교점",
+      "category": "햄버거",
+      "location": {
+        "lat": 37.5012,
+        "lng": 127.0396
+      },
+      "address": "경기 성남시 분당구 판교역로 235",
+      "phone": "031-2345-6789",
+      "rating": 4.3,
+      "reviewCount": 89,
+      "deliveryTime": "25-35분",
+      "deliveryFee": 2000,
+      "minOrderAmount": 12000,
+      "isOpen": true,
+      "images": ["/samples/food2.jpg"],
+      "menus": [
+        {
+          "menuId": 5,
+          "name": "싸이버거 세트",
+          "price": 8900,
+          "description": "대표 메뉴 싸이버거 세트",
+          "imageUrl": "/samples/food2.jpg",
+          "category": "세트메뉴",
+          "options": [
+            {
+              "name": "음료 선택",
+              "type": "radio",
+              "required": true,
+              "choices": [
+                {
+                  "name": "콜라",
+                  "price": 0
+                },
+                {
+                  "name": "사이다",
+                  "price": 0
+                },
+                {
+                  "name": "오렌지주스",
+                  "price": 500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "menuId": 6,
+          "name": "치킨버거",
+          "price": 6600,
+          "description": "바삭한 치킨 패티 버거",
+          "imageUrl": "/samples/food3.jpg",
+          "category": "버거"
+        }
+      ]
+    },
+    {
+      "storeId": "3",
+      "name": "굽네치킨 판교점",
+      "category": "치킨",
+      "location": {
+        "lat": 37.4996,
+        "lng": 127.0356
+      },
+      "address": "경기 성남시 분당구 대왕판교로 477",
+      "phone": "031-3456-7890",
+      "rating": 4.7,
+      "reviewCount": 203,
+      "deliveryTime": "35-45분",
+      "deliveryFee": 3000,
+      "minOrderAmount": 18000,
+      "isOpen": false,
+      "images": ["/samples/food1.jpg"],
+      "menus": [
+        {
+          "menuId": 7,
+          "name": "굽네 볼케이노",
+          "price": 19900,
+          "description": "매콤한 볼케이노 치킨",
+          "imageUrl": "/samples/food1.jpg",
+          "category": "치킨"
+        }
+      ]
+    },
+    {
+      "storeId": "4",
+      "name": "교촌치킨 구름점",
+      "category": "치킨",
+      "location": {
+        "lat": 37.4985,
+        "lng": 127.0298
+      },
+      "address": "경기 성남시 분당구 구미로 56",
+      "phone": "031-4567-8901",
+      "rating": 4.4,
+      "reviewCount": 156,
+      "deliveryTime": "30-40분",
+      "deliveryFee": 2500,
+      "minOrderAmount": 16000,
+      "isOpen": true,
+      "images": ["/samples/food2.jpg"]
+    },
+    {
+      "storeId": "5",
+      "name": "미스터피자 판교점",
+      "category": "피자",
+      "location": {
+        "lat": 37.5001,
+        "lng": 127.0389
+      },
+      "address": "경기 성남시 분당구 판교로 289",
+      "phone": "031-5678-9012",
+      "rating": 4.2,
+      "reviewCount": 94,
+      "deliveryTime": "35-45분",
+      "deliveryFee": 3000,
+      "minOrderAmount": 20000,
+      "isOpen": true,
+      "images": ["/samples/food3.jpg"]
+    }
+  ],
+  "addresses": [
+    {
+      "id": "1",
+      "name": "집",
+      "address": "경기 성남시 판교로 242 PDC A동 902호",
+      "roadAddress": "경기 성남시 수정구 판교로 242",
+      "lat": 37.501887,
+      "lng": 127.039252,
+      "isDefault": true,
+      "addressType": "home"
+    },
+    {
+      "id": "2",
+      "name": "회사",
+      "address": "경기 성남시 분당구 대왕판교로 645 카카오 판교아지트",
+      "roadAddress": "경기 성남시 분당구 대왕판교로 645",
+      "lat": 37.402056,
+      "lng": 127.108212,
+      "isDefault": false,
+      "addressType": "company"
+    },
+    {
+      "id": "3",
+      "name": "친구집",
+      "address": "서울 강남구 테헤란로 212 멀티캠퍼스",
+      "roadAddress": "서울 강남구 테헤란로 212",
+      "lat": 37.501087,
+      "lng": 127.039154,
+      "isDefault": false,
+      "addressType": "other"
+    }
+  ],
+  "user": {
+    "id": "user-001",
+    "name": "송준경",
+    "email": "user@example.com",
+    "phone": "010-1234-6888",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "profileImage": "/icons/mypage/people.svg"
+  },
+  "userStats": {
+    "reviewCount": 3,
+    "helpCount": 0,
+    "favoriteCount": 4,
+    "orderCount": 12,
+    "totalSpent": 285400
+  },
+  "favorites": [
+    {
+      "id": "1",
+      "userId": "user-001",
+      "storeId": "1",
+      "createdAt": "2024-01-10T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "userId": "user-001",
+      "storeId": "2",
+      "createdAt": "2024-01-12T15:30:00.000Z"
+    },
+    {
+      "id": "3",
+      "userId": "user-001",
+      "storeId": "4",
+      "createdAt": "2024-01-14T20:15:00.000Z"
+    },
+    {
+      "id": "4",
+      "userId": "user-001",
+      "storeId": "5",
+      "createdAt": "2024-01-15T11:45:00.000Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-001",
+      "userId": "user-001",
+      "orderId": "ORDER-001",
+      "storeId": "1",
+      "storeName": "도미노피자 구름점",
+      "rating": 5,
+      "content": "맛있게 잘 먹었습니다!",
+      "images": [],
+      "createdAt": "2024-01-15T20:00:00.000Z",
+      "helpCount": 0
+    },
+    {
+      "id": "review-002",
+      "userId": "user-001",
+      "orderId": "ORDER-003",
+      "storeId": "2",
+      "storeName": "맘스터치 판교점",
+      "rating": 4,
+      "content": "버거가 맛있어요. 배달도 빨랐습니다.",
+      "images": [],
+      "createdAt": "2024-01-10T19:30:00.000Z",
+      "helpCount": 2
+    },
+    {
+      "id": "review-003",
+      "userId": "user-001",
+      "orderId": "ORDER-004",
+      "storeId": "4",
+      "storeName": "교촌치킨 구름점",
+      "rating": 5,
+      "content": "허니콤보 정말 맛있네요! 또 주문할게요.",
+      "images": [],
+      "createdAt": "2024-01-08T21:00:00.000Z",
+      "helpCount": 1
+    }
+  ],
+  "users": [
+    {
+      "id": "user-001",
+      "username": "test@example.com",
+      "password": "password123",
+      "name": "송준경",
+      "email": "test@example.com",
+      "phone": "010-1234-6888",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-002",
+      "username": "admin@itseats.com",
+      "password": "admin123",
+      "name": "관리자",
+      "email": "admin@itseats.com",
+      "phone": "010-9999-0000",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "test-user-123",
+      "username": "test123@example.com",
+      "password": "testpass",
+      "name": "테스트유저",
+      "email": "test123@example.com",
+      "phone": "010-1111-2222",
+      "usertype": "customer",
+      "createdAt": "2024-01-20T00:00:00.000Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751121698637",
+      "username": "testwnsrud",
+      "password": "123123",
+      "name": "테스트용",
+      "email": "test11@example.com",
+      "phone": "010-1234-1233",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T14:41:38.637Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751121956418",
+      "username": "test1111",
+      "password": "123123",
+      "name": "qqq",
+      "email": "qqq@example.com",
+      "phone": "123123123123",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T14:45:56.418Z",
+      "profileImage": "/icons/mypage/people.svg"
+    },
+    {
+      "id": "user-1751130406900",
+      "username": "test1",
+      "password": "test",
+      "name": "테스트1번",
+      "email": "test1@example.com",
+      "phone": "01011111111",
+      "usertype": "CUSTOMER",
+      "createdAt": "2025-06-28T17:06:46.900Z",
+      "profileImage": "/icons/mypage/people.svg"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "testCards": {
+    "success": {
+      "number": "5200-0000-0000-1001",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 정상 승인 테스트 카드",
+      "expectedResult": "결제 성공"
+    },
+    "insufficient": {
+      "number": "5200-0000-0000-1019",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 잔액 부족 테스트 카드",
+      "expectedResult": "잔액 부족 오류"
+    },
+    "expired": {
+      "number": "5200-0000-0000-1027",
+      "expiry": "12/20",
+      "cvc": "123",
+      "description": "토스페이먼츠 유효기간 만료 테스트 카드",
+      "expectedResult": "카드 만료 오류"
+    },
+    "invalid": {
+      "number": "5200-0000-0000-1035",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 유효하지 않은 카드 테스트 카드",
+      "expectedResult": "유효하지 않은 카드 오류"
+    },
+    "timeout": {
+      "number": "5200-0000-0000-1043",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 타임아웃 테스트 카드",
+      "expectedResult": "요청 타임아웃"
+    },
+    "network": {
+      "number": "5200-0000-0000-1051",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 네트워크 오류 테스트 카드",
+      "expectedResult": "네트워크 오류"
+    },
+    "canceled": {
+      "number": "5200-0000-0000-1069",
+      "expiry": "12/25",
+      "cvc": "123",
+      "description": "토스페이먼츠 결제 취소 테스트 카드",
+      "expectedResult": "결제 취소"
+    }
+  },
+  "metadata": {
+    "provider": "TossPayments",
+    "version": "1.0.0",
+    "lastUpdated": "2024-01-01",
+    "description": "토스페이먼츠 공식 테스트 카드 번호 목록",
+    "source": "https://docs.tosspayments.com/reference/testing",
+    "notes": [
+      "이 카드들은 테스트 환경에서만 사용해야 합니다.",
+      "실제 결제에는 사용하지 마세요.",
+      "각 카드는 특정 시나리오를 시뮬레이션합니다."
+    ]
+  },
+  "testScenarios": {
+    "success": "정상적인 결제 승인 시나리오",
+    "insufficient": "카드 잔액 부족 시나리오",
+    "expired": "카드 유효기간 만료 시나리오",
+    "invalid": "유효하지 않은 카드 시나리오",
+    "timeout": "결제 요청 타임아웃 시나리오",
+    "network": "네트워크 오류 시나리오",
+    "canceled": "사용자 결제 취소 시나리오"
+  }
+} 

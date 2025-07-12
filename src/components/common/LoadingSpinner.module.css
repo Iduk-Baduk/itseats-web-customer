@@ -1,0 +1,118 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px 20px;
+  background-color: var(--background-color);
+}
+
+.spinner {
+  border: 4px solid var(--border-color-light);
+  border-top: 4px solid var(--theme-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+/* 사이즈 변형 */
+.spinner.small {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  margin-bottom: 8px;
+}
+
+.spinner.medium {
+  width: 40px;
+  height: 40px;
+  border-width: 4px;
+  margin-bottom: 16px;
+}
+
+.spinner.large {
+  width: 56px;
+  height: 56px;
+  border-width: 6px;
+  margin-bottom: 20px;
+}
+
+/* 변형 스타일 */
+.spinner.minimal {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--theme-color);
+}
+
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+.message {
+  font-size: 14px;
+  color: var(--black-500);
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 전체 화면 로딩용 변형 */
+.fullScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  min-height: 100vh;
+}
+
+/* 페이지 내 로딩용 변형 */
+.pageLoading {
+  min-height: calc(100vh - 120px);
+  padding-top: 80px;
+}
+
+/* Minimal 변형용 컨테이너 */
+.minimalContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+/* Skeleton 변형 */
+.skeletonContainer {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.skeletonLine {
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.skeletonLine:last-child {
+  margin-bottom: 0;
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+} 

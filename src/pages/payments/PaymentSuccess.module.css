@@ -1,0 +1,403 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.content {
+  padding: 24px 16px;
+}
+
+.successSection {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.successIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #212529;
+  text-align: center;
+}
+
+.successMessage {
+  font-size: 16px;
+  color: #6c757d;
+  line-height: 1.5;
+  color: #4caf50;
+  font-weight: 600;
+  margin: 20px 0;
+}
+
+.progressSection {
+  margin-bottom: 24px;
+  padding: 0 8px;
+}
+
+.orderInfoCard {
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.cardHeader h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #212529;
+}
+
+.orderNumber {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.orderDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detailRow span {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.detailRow strong {
+  color: #212529;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statusButton {
+  width: 100%;
+  height: 52px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.homeButton {
+  width: 100%;
+  height: 52px;
+  font-size: 16px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 24px;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.errorContainer h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #212529;
+}
+
+.errorContainer p {
+  font-size: 16px;
+  color: #6c757d;
+  margin-bottom: 24px;
+}
+
+/* 매장 정보 */
+.storeInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.storeImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.storeInfo h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.storeInfo p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* 금액 정보 */
+.amountInfo {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.amountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--theme-color, #007bff);
+}
+
+/* 배달 정보 */
+.deliveryInfo h5,
+.timeInfo h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.deliveryInfo p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.detailAddress {
+  font-size: 0.875rem;
+  margin-top: 0.25rem !important;
+}
+
+.estimatedTime {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--theme-color, #007bff);
+}
+
+/* 액션 버튼들 */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.primaryButton {
+  width: 100%;
+}
+
+.secondaryButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.secondaryButtons button {
+  flex: 1;
+}
+
+/* 추가 정보 */
+.additionalInfo {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.additionalInfo p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+.additionalInfo p:last-child {
+  margin-bottom: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+  
+  .successTitle {
+    font-size: 1.5rem;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .secondaryButtons {
+    flex-direction: column;
+  }
+} 
+
+/* 성공 전용 스타일 */
+.successTitle {
+  color: #2e7d32;
+}
+
+.successMessage {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* 로딩 상태 */
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 
+
+/* 폴링 상태 스타일 */
+.pollingStatus {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.pollingStatus p {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #2196f3;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 결제 상태 표시 스타일 */
+.paymentStatus {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.statusInfo, .paymentMethod {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.statusInfo:last-child, .paymentMethod:last-child {
+  margin-bottom: 0;
+}
+
+.statusLabel, .methodLabel {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.statusValue, .methodValue {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.statusValue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 폴링 완료 상태 */
+.pollingComplete {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.pollingComplete p {
+  margin: 0;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .statusInfo, .paymentMethod {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .statusValue, .methodValue {
+    font-size: 13px;
+  }
+  
+  .pollingStatus, .paymentStatus {
+    padding: 12px;
+  }
+} 
