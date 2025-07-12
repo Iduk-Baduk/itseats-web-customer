@@ -195,3 +195,14 @@ export function validateCoupon(coupon, orderPrice = 0) {
 export function isCouponStackable(coupon) {
   return coupon && coupon.isStackable === true;
 } 
+
+/**
+ * 할인값을 일관성 있게 포맷팅하는 함수 (비즈니스 로직: 100 미만은 % 할인, 그 외는 원 할인)
+ * @param {number} discountValue
+ * @returns {string}
+ */
+export function formatDiscountValue(discountValue) {
+  return discountValue < 100
+    ? `${discountValue}% 할인`
+    : `${discountValue.toLocaleString()}원 할인`;
+} 

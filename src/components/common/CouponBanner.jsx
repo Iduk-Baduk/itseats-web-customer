@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { couponAPI } from "../../services/couponAPI";
 import styles from "./CouponBanner.module.css";
+import { formatDiscountValue } from '../../utils/couponUtils';
 
 const CouponBanner = ({ couponId, discountValue, title, minPrice, isIssued }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,9 +26,7 @@ const CouponBanner = ({ couponId, discountValue, title, minPrice, isIssued }) =>
     <div className={styles.couponContainer}>
       <div className={styles.couponInfo}>
         <div className={styles.discountAmount}>
-          {discountValue >= 10 && discountValue <= 99
-            ? `${discountValue}% 할인`
-            : `${discountValue.toLocaleString()}원 할인`}
+          {formatDiscountValue(discountValue)}
         </div>
         <div className={styles.couponTitle}>{title}</div>
         <div className={styles.minOrderPrice}>

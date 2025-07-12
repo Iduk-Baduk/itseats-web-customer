@@ -5,6 +5,7 @@ import Header from "../../components/common/Header";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import EmptyState from "../../components/common/EmptyState";
 import styles from "./MyCoupons.module.css";
+import { formatDiscountValue } from '../../utils/couponUtils';
 
 export default function MyCoupons() {
   const navigate = useNavigate();
@@ -26,12 +27,6 @@ export default function MyCoupons() {
 
     fetchCoupons();
   }, []);
-
-  const formatDiscount = (discountValue) => {
-    return discountValue < 100
-      ? `${discountValue}% 할인`
-      : `${discountValue.toLocaleString()}원 할인`;
-  };
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -78,7 +73,7 @@ export default function MyCoupons() {
       {coupons.map((coupon) => (
         <div key={coupon.couponId || `${coupon.discountValue}-${coupon.validDate}`} className={styles.couponCard}>
           <div className={styles.left}>
-            <div className={styles.discount}>{formatDiscount(coupon.discountValue)}</div>
+            <div className={styles.discount}>{formatDiscountValue(coupon.discountValue)}</div>
             <div className={styles.category}>배달</div>
             <div className={styles.name}>{coupon.name || "쿠폰 이름 없음"}</div>
             <div className={styles.minOrder}>

@@ -18,10 +18,8 @@ export default function Coupons() {
       try {
         setLoading(true);
         const response = await couponAPI.getAllCoupons();
-        console.log("전체 쿠폰 데이터:", response);
         setCoupons(Array.isArray(response) ? response : []);
       } catch (err) {
-        console.error("전체 쿠폰 데이터 fetch 에러:", err);
         setError(err.message);
       } finally {
         setLoading(false);
