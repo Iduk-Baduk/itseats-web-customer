@@ -28,25 +28,11 @@ class AuthService {
   }
 
   /**
-   * 액세스 토큰 가져오기 (비동기, 개발 환경에서 자동 생성)
+   * 액세스 토큰 가져오기 (비동기, 개발 환경에서 자동 생성 제거)
    * @returns {Promise<string|null>} 액세스 토큰
    */
   static async getTokenAsync() {
     const token = localStorage.getItem(TOKEN_KEY);
-    
-    // 개발 환경에서 토큰이 없으면 백엔드 호환 토큰 생성
-    if (!token && import.meta.env.DEV) {
-      try {
-        const backendToken = await getBackendCompatibleTokenAsync();
-        logger.log('🧪 개발 환경: 백엔드 호환 JWT 토큰 생성');
-        AuthService.setToken(backendToken);
-        return backendToken;
-      } catch (error) {
-        logger.error('JWT 토큰 생성 실패:', error);
-        return null;
-      }
-    }
-    
     return token;
   }
 
@@ -292,16 +278,8 @@ class AuthService {
   static redirectToLogin() {
     const currentPath = window.location.pathname;
     const loginPath = '/login';
-    
-    // 임시로 리다이렉트 비활성화 (디버깅용)
-    console.log('🚨 redirectToLogin 호출됨!', {
-      currentPath,
-      loginPath,
-      stack: new Error().stack
-    });
-    
     // 현재 페이지 정보를 state로 전달
-    // window.location.href = `${loginPath}?redirect=${encodeURIComponent(currentPath)}`;
+    window.location.href = `${loginPath}?redirect=${encodeURIComponent(currentPath)}`;
   }
 
   /**

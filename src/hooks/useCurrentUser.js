@@ -47,7 +47,7 @@ export default function useCurrentUser() {
           return;
         }
 
-        // API에서 최신 사용자 정보 가져오기
+        // API에서 최신 사용자 정보 가져오기 (항상 백엔드 연동)
         try {
           const currentUser = await getCurrentUser();
           setUser(currentUser);
