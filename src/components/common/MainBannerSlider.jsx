@@ -52,21 +52,23 @@ const MainBannerSlider = ({ bannerConfig }) => {
 
         {/* 쿠폰 페이지 이동 배너 */}
         <SwiperSlide>
-          <div 
-            className={styles.couponBanner}
-            onClick={() => navigate('/coupons')}
-          >
-            <OptimizedImage
-              src="/samples/coupon-page-banner.jpg"
-              alt="사용 가능한 쿠폰 보기"
-              className={styles.bannerImage}
-            />
-            <div className={styles.bannerOverlay}>
-              <h2>할인 쿠폰 받기</h2>
-              <p>다양한 할인 혜택을 만나보세요</p>
+            <div 
+                className={styles.couponBanner}
+                onClick={() => navigate('/coupons')}
+            >
+                <div className={styles.imageWrapper}>
+                <OptimizedImage
+                    src="/samples/coupon-page-banner.jpg"
+                    alt="사용 가능한 쿠폰 보기"
+                    className={styles.bannerImage}
+                />
+                <div className={styles.bannerOverlay}>
+                    <h2>할인 쿠폰 받기</h2>
+                    <p>다양한 할인 혜택을 만나보세요</p>
+                </div>
+                </div>
             </div>
-          </div>
-        </SwiperSlide>
+            </SwiperSlide>
       </Swiper>
     </div>
   );
