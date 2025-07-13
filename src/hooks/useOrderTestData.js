@@ -69,7 +69,7 @@ export const useOrderTestData = () => {
 };
 
 // 브라우저 콘솔에서 접근할 수 있도록 window 객체에 추가 (비활성화됨)
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   // Redux store에 접근하기 위한 함수들 (비활성화됨)
   window.orderTest = {
     // 테스트 주문 추가 (비활성화됨)

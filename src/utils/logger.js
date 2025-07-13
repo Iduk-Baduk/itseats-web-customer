@@ -1,17 +1,17 @@
 // 환경에 따른 로깅 유틸리티
 export const logger = {
   log: (...args) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(...args);
     }
   },
   warn: (...args) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn(...args);
     }
   },
   error: (...args) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error(...args);
     }
   }

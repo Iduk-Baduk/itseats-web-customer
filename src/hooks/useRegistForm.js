@@ -43,7 +43,7 @@ export default function useRegistForm() {
     const { name, value, type, checked } = e.target;
     const fieldValue = type === 'checkbox' ? checked : value;
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log("🔄 폼 필드 변경:", { name, type, value, checked, fieldValue });
     }
     
@@ -79,14 +79,14 @@ export default function useRegistForm() {
     }
 
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         const safeFormData = { ...form, password: '[REDACTED]', confirmPassword: '[REDACTED]' };
         console.log("🚀 회원가입 데이터 전송:", safeFormData);
       }
       
       const result = await regist(form);
       
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log("✅ 회원가입 응답:", result);
         console.log("✅ 응답 타입:", typeof result);
         console.log("✅ 응답 구조:", Object.keys(result || {}));
@@ -111,7 +111,7 @@ export default function useRegistForm() {
       alert("회원가입이 완료되었습니다! 로그인 화면으로 이동합니다.");
       setError("");
       
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log("🎉 회원가입 성공! 3초 후 로그인 페이지로 이동합니다.");
       }
       
@@ -125,7 +125,7 @@ export default function useRegistForm() {
       //   });
       // }, 3000); // 3초 지연으로 사용자가 확인할 수 있도록
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error("❌ 회원가입 실패:", err);
         console.error("에러 타입:", err.type);
         console.error("상태 코드:", err.statusCode);
