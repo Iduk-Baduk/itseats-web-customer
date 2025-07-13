@@ -103,7 +103,7 @@ export default function useCurrentUser() {
       
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
     } catch (error) {
-      console.error('사용자 정보 새로고침 실패:', error);
+      logger.error('사용자 정보 새로고침 실패:', error);
       setError(error.message);
     } finally {
       setLoading(false);
