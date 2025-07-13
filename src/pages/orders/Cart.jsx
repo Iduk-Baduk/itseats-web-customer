@@ -155,7 +155,7 @@ export default function Cart() {
       
       // 결제 성공 후 페이지 이동
       showToast('결제가 성공적으로 완료되었습니다!');
-      navigate('/payments/success');
+      navigate('/payments/toss-success');
       
     } catch (error) {
       logger.error('❌ 백엔드 결제 승인 실패:', error);
