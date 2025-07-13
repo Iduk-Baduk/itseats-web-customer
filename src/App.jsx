@@ -30,15 +30,20 @@ export default function App() {
   });
 
   // 카카오맵 전역 로딩 (앱 시작 시 미리 로드)
-  const [kakaoLoading, kakaoError] = useKakaoLoader({
-    appkey: import.meta.env.VITE_APP_KAKAOMAP_KEY || "fallback_key",
-    libraries: ["services", "clusterer"],
-  });
+  const kakaoMapKey = import.meta.env.VITE_APP_KAKAOMAP_KEY;
+  const [kakaoLoading, kakaoError] = kakaoMapKey
+    ? useKakaoLoader({
+        appkey: kakaoMapKey,
+        libraries: ["services", "clusterer"],
+      })
+    : [false, null];
 
   // 카카오맵 로딩 상태 로그 (개발 환경에서만)
   useEffect(() => {
     if (import.meta.env.DEV) {
-      if (kakaoLoading) {
+      if (!kakaoMapKey) {
+        console.warn("카카오맵 API 키가 설정되어 있지 않습니다. 지도 기능이 제한됩니다.");
+      } else if (kakaoLoading) {
         console.log("🔄 카카오맵 전역 로딩 중...");
         logKakaoMapDebugInfo();
       } else if (kakaoError) {
@@ -49,7 +54,7 @@ export default function App() {
         logKakaoMapDebugInfo();
       }
     }
-  }, [kakaoLoading, kakaoError]);
+  }, [kakaoLoading, kakaoError, kakaoMapKey]);
 
   // 토큰 상태 로그 (개발 환경에서만) - 무한 루프 방지를 위해 제거
   // useEffect(() => {
