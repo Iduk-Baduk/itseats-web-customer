@@ -379,10 +379,43 @@
 }
 
 .pollingComplete p {
-  margin: 0;
-  color: #2e7d32;
+  color: #4caf50;
   font-weight: 600;
+  margin: 0;
+  padding: 8px 16px;
+  background-color: #e8f5e8;
+  border-radius: 8px;
+  border: 1px solid #4caf50;
+}
+
+/* 주문 정보 스타일 */
+.orderInfo {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.orderInfo h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #212529;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.orderInfo p {
+  margin: 8px 0;
   font-size: 14px;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.orderInfo p:first-of-type {
+  font-weight: 600;
+  color: #212529;
 }
 
 /* 반응형 디자인 */
@@ -394,7 +427,7 @@
   }
   
   .statusValue, .methodValue {
-    font-size: 13px;
+    font-size: 14px;
   }
   
   .pollingStatus, .paymentStatus {

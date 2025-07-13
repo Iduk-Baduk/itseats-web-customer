@@ -36,7 +36,66 @@ const retryRequest = async (requestFn, retryCount = 0) => {
 
 // 주문 API 서비스
 export const orderAPI = {
-  // 새 주문 생성
+  // 새 주문 생성 (배달비, 배달 시간, 주문 금액 통합 조회) - 명세서 기반
+  createOrderWithDeliveryInfo: async (orderData) => {
+    try {
+      const {
+        addrId,
+        storeId,
+        orderMenus = [],
+        coupons = [],
+        deliveryType = 'DEFAULT'
+      } = orderData;
+
+      // 필수 필드 검증
+      if (!addrId || !storeId || !orderMenus.length) {
+        throw new Error("필수 주문 정보가 누락되었습니다.");
+      }
+
+      // 명세서에 맞는 주문 데이터 구성
+      const newOrderRequest = {
+        addrId: parseInt(addrId),
+        storeId: parseInt(storeId),
+        orderMenus: orderMenus.map(menu => ({
+          menuId: menu.menuId,
+          menuName: menu.menuName,
+          menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions : [], // 백엔드 명세에 맞게 menuOption으로 변경
+          menuTotalPrice: menu.menuTotalPrice || 0,
+          quantity: menu.quantity
+        })),
+        coupons: Array.isArray(coupons) ? coupons : [],
+        deliveryType: deliveryType // 'DEFAULT' 또는 'ONLY_ONE'
+      };
+
+      logger.log('📡 배달 정보 포함 주문 생성 요청:', newOrderRequest);
+      
+      const response = await retryRequest(() => 
+        apiClient.post(API_ENDPOINTS.ORDERS_NEW, newOrderRequest)
+      );
+      
+      logger.log('✅ 배달 정보 포함 주문 생성 성공:', response.data);
+      return response; // 전체 응답 객체 반환 (httpStatus, message, data 포함)
+    } catch (error) {
+      logger.error('❌ 배달 정보 포함 주문 생성 실패:', error);
+      
+      // 백엔드 에러 메시지 처리
+      if (error.originalError?.response?.data?.message) {
+        error.message = error.originalError.response.data.message;
+      } else if (error.statusCode === 422) {
+        error.message = '주문 정보를 확인해주세요.';
+      } else if (error.statusCode === 409) {
+        error.message = '이미 진행 중인 주문이 있습니다.';
+      } else if (error.statusCode === 404) {
+        error.message = '요청한 주소, 가맹점, 메뉴, 쿠폰을 찾을 수 없습니다.';
+      } else {
+        error.message = '주문 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      }
+      
+      throw error;
+    }
+  },
+
+  // 새 주문 생성 (기존 메서드 - 호환성 유지)
   createOrder: async (orderData) => {
     try {
       const {
@@ -105,6 +164,40 @@ export const orderAPI = {
         error.message = '이미 진행 중인 주문이 있습니다.';
       } else {
         error.message = '주문 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      }
+      
+      throw error;
+    }
+  },
+
+  // 주문 상세 정보 조회 (배달팁, 시간, 할인금액 등)
+  getOrderDetails: async (orderId, params = {}) => {
+    try {
+      const { couponId, orderPrice } = params;
+      let url = `/orders/${orderId}/details`; // /api 제거 (apiClient에서 자동 추가)
+      
+      // 쿠폰 사용 시 파라미터 추가
+      if (couponId && orderPrice) {
+        url += `?coupon=${couponId}&orderPrice=${orderPrice}`;
+      }
+      
+      logger.log('📡 주문 상세 정보 조회 요청:', { orderId, url });
+      
+      const response = await retryRequest(() => 
+        apiClient.get(url)
+      );
+      
+      logger.log('✅ 주문 상세 정보 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      logger.error('❌ 주문 상세 정보 조회 실패:', error);
+      
+      if (error.statusCode === 404) {
+        error.message = '주문을 찾을 수 없습니다.';
+      } else if (error.statusCode === 401) {
+        error.message = '인증이 필요합니다.';
+      } else {
+        error.message = '주문 상세 정보를 불러오는데 실패했습니다.';
       }
       
       throw error;
@@ -281,21 +374,27 @@ export const orderAPI = {
     }
   },
 
-  // 토스페이먼츠 결제 승인 (백엔드 API 호출)
+  // 토스페이먼츠 결제 승인 (백엔드 API 호출) - DEPRECATED: paymentAPI.confirmPayment 사용 권장
   confirmPayment: async (paymentData) => {
-    const { orderId, amount, paymentKey } = paymentData;
+    const { paymentId, orderId, amount, paymentKey } = paymentData;
     
     try {
       const requestData = {
+        paymentKey,
         orderId,
-        amount: Number(amount),
-        paymentKey
+        amount: Number(amount)
       };
       
       logger.log('📡 백엔드 결제 승인 요청:', requestData);
       
+      // paymentId 유효성 검사 (숫자여야 함)
+      if (!paymentId || isNaN(paymentId)) {
+        throw new Error('유효하지 않은 paymentId입니다.');
+      }
+      
+      // 백엔드 명세에 따른 올바른 엔드포인트 사용
       const response = await retryRequest(() => 
-        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM, requestData)
+        apiClient.post(API_ENDPOINTS.ORDER_CONFIRM(paymentId), requestData)
       );
       
       logger.log('✅ 백엔드 결제 승인 성공:', response.data);

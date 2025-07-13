@@ -603,6 +603,20 @@ line-height: 1.5;
   margin-top: 4px;
 }
 
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  min-height: 80px;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+}
+
 /* 요청사항 스타일 */
 .requestSection {
   font-weight: 700;
@@ -779,6 +793,86 @@ line-height: 1.5;
 .tossPaymentButton:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* 결제수단 카드 스타일 */
+.paymentMethodCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.paymentMethodInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.paymentMethodIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9ff;
+  border-radius: 8px;
+}
+
+.paymentIcon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.paymentMethodDetails h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black-700);
+  margin: 0 0 4px 0;
+}
+
+.paymentMethodDetails p {
+  font-size: 14px;
+  color: var(--black-500);
+  margin: 0;
+}
+
+.paymentMethodStatus {
+  display: flex;
+  align-items: center;
+}
+
+.selectedBadge {
+  background-color: #2196f3;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 결제 안내 메시지 */
+.paymentNotice {
+  background-color: #f8f9ff;
+  border: 1px solid #e3f2fd;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.paymentNotice p {
+  font-size: 13px;
+  color: var(--black-500);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.paymentNotice p:last-child {
+  margin-bottom: 0;
 }
 
 /* 토스페이먼츠 위젯 내부 스타일 */

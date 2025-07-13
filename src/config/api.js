@@ -14,14 +14,22 @@ export const ENV_CONFIG = {
 
 // API 엔드포인트 상수
 export const API_ENDPOINTS = {
+  // 인증 관련 (백엔드 팀 제공 명세에 맞게 수정)
+  AUTH_LOGIN: '/login',                    // ✅ POST /api/login (baseURL에 이미 /api 포함)
+  AUTH_LOGOUT: '/auths/logout',            // ✅ POST /api/auths/logout?memberId={memberId}
+  AUTH_REFRESH: '/auths/reissue',          // ✅ GET /api/auths/reissue?memberId={memberId}
+  AUTH_REGISTER: '/members/sign-up',       // ✅ POST /api/members/sign-up
+  AUTH_ME: '/members/me',                  // ✅ GET /api/members/me (인증 필요)
+  
   // 주문 관련
   ORDERS: '/orders',
+  ORDERS_NEW: '/orders/new',               // ✅ POST /api/orders/new (배달비, 배달 시간, 주문 금액 통합 조회)
   ORDER_BY_ID: (id) => `/orders/${id}`,
   ORDER_STATUS: (id) => `/orders/${id}/status`,
   ORDER_TRACK: (id) => `/orders/${id}/track`,
   ORDER_CANCEL: (id) => `/orders/${id}/cancel`,
   ORDER_COMPLETE: (id) => `/orders/${id}/complete`,
-  ORDER_CONFIRM: '/orders/confirm',
+  ORDER_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 결제 승인 엔드포인트 수정
   
   // 결제 관련
   CARDS: '/cards',
@@ -31,9 +39,14 @@ export const API_ENDPOINTS = {
   PAYMENTS: '/payments',
   PAYMENT_BY_ID: (id) => `/payments/${id}`,
   PAYMENT_STATUS: (id) => `/payments/${id}/status`,
+  PAYMENT_CONFIRM: (paymentId) => `/payments/${paymentId}/confirm`, // 기존 호환성 유지
+  PAYMENT_CREATE: '/payments', // 결제 정보 생성 API 추가
+  PAYMENT_TEST_CREATE: '/payments/test/create', // 테스트용 결제 생성 API 추가
   
   // 쿠폰 관련
   COUPONS: '/coupons',
+  COUPONS_ALL: '/coupons/all',
+  COUPON_ISSUE: (id) => `/coupons/${id}/issue`,
   COUPON_USE: (id) => `/coupons/${id}/use`,
   COUPON_AVAILABLE: '/coupons/available',
   COUPON_REGISTER: '/coupons/register',
@@ -56,13 +69,9 @@ export const API_ENDPOINTS = {
   USER_FAVORITES: '/members/favorites',
   USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
   USER_REVIEWS: '/members/reviews',
-  
-  // 인증 관련 (백엔드 팀 제공 명세에 맞게 수정)
-  AUTH_LOGIN: '/login',                    // ✅ POST /api/login (baseURL에 이미 /api 포함)
-  AUTH_LOGOUT: '/auths/logout',            // ✅ POST /api/auths/logout?memberId={memberId}
-  AUTH_REFRESH: '/auths/reissue',          // ✅ GET /api/auths/reissue?memberId={memberId}
-  AUTH_REGISTER: '/members/sign-up',       // ✅ POST /api/members/sign-up
-  AUTH_ME: '/members/me',                  // ✅ GET /api/members/me (인증 필요)
+
+  // 리뷰 관련
+  REVIEW_BY_ORDER_ID: (orderId) => `/reviews/${orderId}`,
 };
 
 export default API_CONFIG; 

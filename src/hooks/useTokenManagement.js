@@ -149,6 +149,11 @@ export const useTokenManagement = (options = {}) => {
   // 토큰이 만료되면 자동 로그아웃
   useEffect(() => {
     if (autoLogout && !isValid && token) {
+      // 개발 환경에서는 자동 로그아웃 비활성화
+      if (import.meta.env.DEV) {
+        console.warn('개발 환경: 토큰이 만료되었지만 자동 로그아웃을 건너뜁니다.');
+        return;
+      }
       console.warn('토큰이 만료되어 자동 로그아웃됩니다.');
       handleLogout();
     }

@@ -1,22 +1,14 @@
-// src/config/development.js
-export const DEFAULT_USER = {
-  id: "user-001",
-  name: "송준경",
-  email: "user@example.com",
-  phone: "010-1234-6888"
+// 개발 환경 설정
+export const ENV_CONFIG = {
+  isDevelopment: import.meta.env.DEV,
+  isProduction: import.meta.env.PROD,
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000
 };
-
-export function generateDevToken(userId) {
-  return `token_${userId}_${Date.now()}`;
-}
 
 export const DEV_CONFIG = {
   isDevelopment: import.meta.env.DEV,
-  apiBaseUrl: 'http://localhost:3000',
-  mockApiEnabled: true,
-  defaultSimulationInterval: 1000,
-  maxSimulationInterval: 10000,
-  minSimulationInterval: 1000,
+  apiBaseUrl: 'http://localhost:8080/api',
   localStoragePrefix: 'itseats_dev_',
   maxOrderHistory: 50,
   cleanupThreshold: 100

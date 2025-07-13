@@ -13,7 +13,8 @@ import {
 import { fetchCoupons } from "../../store/couponSlice";
 import { fetchPaymentMethods } from "../../store/paymentSlice";
 import { fetchStores, fetchStoreById } from "../../store/storeSlice";
-import { paymentAPI } from "../../services";
+import { paymentAPI, tossPaymentAPI, orderAPI } from "../../services";
+import { TossPaymentWidget } from "../../components/payment/TossPaymentWidget";
 import calculateCartTotal from "../../utils/calculateCartTotal";
 import { createMenuOptionHash } from "../../utils/hashUtils";
 import { calculateCouponDiscount, calculateMultipleCouponsDiscount } from "../../utils/couponUtils";
@@ -87,6 +88,10 @@ export default function Cart() {
   const [riderRequest, setRiderRequest] = useState("직접 받을게요 (부재 시 문 앞)");
   const [isRiderRequestSheetOpen, setRiderRequestSheetOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  
+  // 토스 결제 위젯 상태
+  const [showTossWidget, setShowTossWidget] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
 
   // ✅ 실시간 계산 (구조 B 방식) - useMemo로 성능 최적화
   const cartInfo = useMemo(() => {
@@ -127,6 +132,52 @@ export default function Cart() {
 
   const hideToast = () => {
     setToast({ show: false, message: "" });
+  };
+
+  // 토스 결제 위젯 콜백 함수들
+  const handlePaymentSuccess = async (paymentResult) => {
+    try {
+      logger.log('✅ 토스 결제 위젯 성공:', paymentResult);
+      
+      // 4단계: 백엔드에 결제 승인 요청
+      logger.log('📡 Step 4: 백엔드 결제 승인 요청');
+      const confirmRes = await tossPaymentAPI.confirmPayment(paymentData.backendPaymentId, {
+        TossPaymentKey: paymentResult.paymentKey,
+        TossOrderId: paymentData.backendOrderId, // 백엔드 주문 ID 사용
+        amount: paymentResult.totalAmount
+      });
+      
+      logger.log('✅ 백엔드 결제 승인 성공:', confirmRes);
+      
+      // 토스 위젯 닫기
+      setShowTossWidget(false);
+      setPaymentData(null);
+      
+      // 결제 성공 후 페이지 이동
+      showToast('결제가 성공적으로 완료되었습니다!');
+      navigate('/payments/toss-success');
+      
+    } catch (error) {
+      logger.error('❌ 백엔드 결제 승인 실패:', error);
+      showToast(`결제 승인 실패: ${error.message}`);
+      setShowTossWidget(false);
+      setPaymentData(null);
+    }
+  };
+
+  const handlePaymentError = (error) => {
+    logger.error('❌ 토스 결제 위젯 실패:', error);
+    
+    // 토스 위젯 닫기
+    setShowTossWidget(false);
+    setPaymentData(null);
+    
+    // 결제 실패 시 처리
+    if (error.message.includes('PAY_PROCESS_CANCELED')) {
+      showToast('결제가 취소되었습니다.');
+    } else {
+      showToast(`결제 실패: ${error.message}`);
+    }
   };
 
   // 컴포넌트 마운트 시 필요한 데이터 로딩
@@ -204,8 +255,8 @@ export default function Cart() {
         } else if (firstMenu.menuId === 1 || firstMenu.menuId === "1") {
           logger.log('✅ 기본 매장 정보 설정');
           dispatch(updateCurrentStore({
-            storeId: "1",
-            storeName: "도미노피자 구름점",
+            storeId: "2", // 존재하는 매장 ID로 변경
+            storeName: "BHC 구름점",
             storeImage: "/samples/food1.jpg"
           }));
         }
@@ -224,8 +275,9 @@ export default function Cart() {
   };
 
   const handlePayment = async () => {
-    // 전역 변수로 함수 시작 시 초기화
-    let orderResponse = null;
+    let orderId = null;
+    let paymentId = null;
+    let deliveryInfo = null;
     
     // 중복 결제 방지 강화
     if (isProcessingPayment) {
@@ -325,20 +377,22 @@ export default function Cart() {
     let remainingAmount = cartInfo.totalPrice;
     let usedCoupayAmount = 0;
 
-    // API 스펙에 맞는 주문 데이터 구조 생성
+    // 백엔드 명세에 맞는 주문 데이터 생성 (불필요한 필드 제거)
     const orderRequestData = {
-      // 주문 기본 정보
-      addrId: selectedAddress?.id || null,
-      storeId: currentStoreId,
+      storeId: currentStoreId,  // 실제 매장 ID
+      addrId: selectedAddress?.id,   // 선택된 주소
+      deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE",
       orderMenus: orderMenus.map(menu => ({
         menuId: menu.menuId,
         menuName: menu.menuName,
-        menuOptions: menu.menuOptions || [], // API 스펙에 맞는 구조 사용
+        quantity: menu.quantity,
         menuTotalPrice: calculateCartTotal(menu),
-        quantity: menu.quantity
-      })),
-      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
-      deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
+        menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions.map(option => ({
+          optionName: option.name || option,
+          optionPrice: option.price || 0
+        })) : []
+      }))
+      // memberCouponId는 주문 생성 시에는 불필요, 결제 생성 시에만 사용
     };
 
     // 주문 데이터 준비 전 디버깅
@@ -352,229 +406,130 @@ export default function Cart() {
       selectedCouponIds
     });
 
-    // 서버로 전송할 최종 주문 데이터 (orderAPI.js 스펙에 맞춤)
-    const finalOrderData = {
-      // orderAPI.js에서 요구하는 필수 필드들
-      storeId: currentStoreId,
-      storeName: currentStoreInfo?.name || "알 수 없는 매장",
-      totalPrice: cartInfo?.totalPrice || 0,
-      paymentMethod: paymentMethod,
-      orderMenus: orderMenus.map(menu => ({
-        menuId: menu.menuId,
-        menuName: menu.menuName,
-        menuOptions: menu.menuOptions || [],
-        menuTotalPrice: calculateCartTotal(menu),
-        quantity: menu.quantity
-      })),
-      
-      // 배송 정보
-      deliveryAddress: selectedAddress?.address || "주소 미설정",
-      deliveryFee: deliveryOption?.price || 0,
-      
-      // 추가 정보
-      storeRequest: requestInfo?.storeRequest || "",
-      riderRequest: requestInfo?.deliveryRequest || "문 앞에 놔주세요 (초인종 O)",
-      coupons: Array.isArray(selectedCouponIds) ? selectedCouponIds : [],
-      
-      // 결제 관련 정보
-      paymentStatus: "PENDING",
-      coupayAmount: usedCoupayAmount || 0,
-      remainingAmount: remainingAmount || 0
-    };
-
-    logger.log('📦 최종 주문 데이터:', finalOrderData);
-
+    // 주소 ID 검증 및 안전한 처리
+    const addrId = selectedAddress?.id;
+    if (!addrId) {
+      showToast("배송 주소가 선택되지 않았습니다. 주소를 먼저 설정해주세요.");
+      logger.error('배송 주소가 선택되지 않았습니다.');
+      return;
+    }
+    
     try {
-      // 🔄 결제 처리 시작
       dispatch(setPaymentProcessing(true));
       dispatch(clearPaymentResult());
 
-      // 한 번의 결제 요청에 대해 고유한 orderId 생성 (중복 방지)
-      const uniqueOrderId = generateOrderId();
-      logger.log('🆔 고유 주문 ID 생성:', uniqueOrderId);
-
-      // 이미 동일한 orderId로 생성된 주문이 있는지 체크
-      const existingOrderCheck = orders.find(order => 
-        order.orderId === uniqueOrderId || order.id === uniqueOrderId
-      );
-      
-      if (existingOrderCheck) {
-        logger.log('🔄 이미 존재하는 주문 발견, 기존 주문 사용:', existingOrderCheck);
-        orderResponse = { data: existingOrderCheck };
-      } else {
-        // ✅ 새로운 주문 생성
-        const useLocalStorage = true; // 임시로 로컬 저장소 모드 사용
-        
-        if (useLocalStorage) {
-          // 백업 모드: 로컬 저장
-          logger.warn('⚠️ 백업 모드: 로컬 저장 사용');
-          
-          const localOrderData = {
-            ...finalOrderData,
-            price: finalOrderData.totalPrice,
-            orderPrice: finalOrderData.totalPrice,
-            totalAmount: finalOrderData.totalPrice,
-            items: finalOrderData.orderMenus.map(menu => ({
-              menuName: menu.menuName,
-              quantity: menu.quantity,
-              price: menu.menuTotalPrice || 0,
-              menuOptions: menu.menuOptions || []
-            })),
-            storeName: currentStoreInfo?.name || "알 수 없는 매장",
-            deliveryAddress: selectedAddress?.address || "주소 미설정",
-            menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-            storeImage: currentStoreInfo?.imageUrl || "/samples/food1.jpg",
-            date: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            status: ORDER_STATUS.WAITING,
-            orderMenuCount: orderMenus.length,
-            orderId: uniqueOrderId // 고유 orderId 사용
-          };
-          
-          // 로컬스토리지 과부하 방지를 위해 압축된 데이터만 Redux에 추가
-          dispatch(addOrder(localOrderData));
-          orderResponse = { data: localOrderData };
-        } else {
-          // 🎯 메인 모드: DB에 주문 저장
-          try {
-            logger.log('📡 API를 통한 주문 생성 시도...');
-            const apiResult = await dispatch(createOrderAsync({
-              ...finalOrderData,
-              orderId: uniqueOrderId
-            })).unwrap();
-            
-            if (apiResult && apiResult.data) {
-              orderResponse = apiResult;
-              logger.log('✅ DB 주문 생성 성공:', orderResponse);
-              
-              // DB 저장 성공 시 Redux에도 캐시용으로 압축 저장
-              const cacheOrderData = {
-                ...orderResponse.data,
-                items: finalOrderData.orderMenus.map(menu => ({
-                  menuName: menu.menuName,
-                  quantity: menu.quantity,
-                  price: menu.menuTotalPrice || 0,
-                  menuOptions: menu.menuOptions || []
-                })),
-                menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-              };
-              dispatch(addOrder(cacheOrderData));
-            } else {
-              throw new Error('API 응답 데이터가 잘못되었습니다.');
-            }
-          } catch (apiError) {
-            logger.error('❌ API 주문 생성 실패, 백업 모드로 전환:', apiError);
-            
-            // API 실패 시 백업으로 로컬 저장
-            const backupOrderData = {
-              ...finalOrderData,
-              price: finalOrderData.totalPrice,
-              orderPrice: finalOrderData.totalPrice,
-              items: finalOrderData.orderMenus.map(menu => ({
-                menuName: menu.menuName,
-                quantity: menu.quantity,
-                price: menu.menuTotalPrice || 0,
-                menuOptions: menu.menuOptions || []
-              })),
-              storeName: currentStoreInfo?.name || "알 수 없는 매장",
-              deliveryAddress: selectedAddress?.address || "주소 미설정",
-              menuSummary: orderMenus.map(menu => menu.menuName).join(", "),
-              date: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              status: ORDER_STATUS.WAITING,
-              orderId: uniqueOrderId,
-              isBackup: true // 백업 주문 표시
-            };
-            
-            dispatch(addOrder(backupOrderData));
-            orderResponse = { data: backupOrderData };
-            
-            // 사용자에게 알림
-            showToast('주문이 임시 저장되었습니다. 네트워크 연결을 확인해주세요.');
-          }
-        }
-      }
-
-      // 주문 생성 검증
-      logger.log('🔍 주문 생성 결과 검증:', { 
-        hasOrderResponse: !!orderResponse,
-        hasData: !!(orderResponse && orderResponse.data),
-        hasOrderId: !!(orderResponse && orderResponse.data && orderResponse.data.orderId),
-        orderResponse: orderResponse
-      });
-      
-      if (!orderResponse || !orderResponse.data || !orderResponse.data.orderId) {
-        throw new Error('주문 생성에 실패했습니다. 다시 시도해주세요.');
-      }
-
-      // 💳 토스페이먼츠 결제 처리
-      const paymentData = {
-        orderId: orderResponse.data.orderId,
-        paymentMethod: 'toss',
-        amount: cartInfo.totalPrice,
-        coupayAmount: usedCoupayAmount,
-        remainingAmount: remainingAmount,
-        customerInfo: {
-          address: selectedAddress
-        }
+      // 1단계: 주문 생성 (백엔드 명세에 맞게 정리)
+      logger.log('📡 Step 1: 주문 생성 요청');
+      const orderCreateReq = {
+        addrId: selectedAddress?.id,
+        storeId: currentStoreId,
+        orderMenus: orderMenus.map(menu => ({
+          menuId: menu.menuId,
+          menuName: menu.menuName, // 백엔드 명세에 맞게 menuName 추가
+          quantity: menu.quantity,
+          menuTotalPrice: calculateCartTotal(menu),
+          menuOption: Array.isArray(menu.menuOptions) ? menu.menuOptions.map(option => ({
+            optionName: option.name || option,
+            optionPrice: option.price || 0
+          })) : [] // 백엔드 명세에 맞게 menuOption 구조 변경
+        })),
+        deliveryType: isDelivery === "delivery" ? "DEFAULT" : "ONLY_ONE"
       };
+      
+      logger.log('📡 주문 생성 요청:', orderCreateReq);
+      logger.log('🔍 orderMenus 상세 정보:', orderMenus.map(menu => ({
+        menuId: menu.menuId,
+        menuName: menu.menuName,
+        hasMenuName: !!menu.menuName
+      })));
+      const orderRes = await orderAPI.createOrderWithDeliveryInfo(orderCreateReq);
+      
+      // 백엔드 실제 응답 구조에 맞게 파싱 (response.data.orderId, tossOrderId)
+      if (!orderRes?.data?.orderId || !orderRes?.data?.tossOrderId) {
+        logger.error('❌ 주문 생성 응답 구조 오류:', orderRes);
+        throw new Error('주문 생성 실패: orderId 또는 tossOrderId가 없습니다');
+      }
+      orderId = orderRes.data.orderId;
+      const tossOrderId = orderRes.data.tossOrderId;
+      logger.log('✅ 주문 생성 성공:', { orderId, tossOrderId });
+      
+      // 주문 상세 정보 조회 (배달팁, 시간, 할인금액 등) - 선택적
+      // 현재 백엔드에서 menu_name null 문제가 있어서 임시로 비활성화
+      /*
+      try {
+        const orderDetails = await orderAPI.getOrderDetails(orderId, {
+          couponId: selectedCouponIds?.[0] || null,
+          orderPrice: cartInfo.totalPrice
+        });
+        logger.log('✅ 주문 상세 정보 조회 성공:', orderDetails);
+        
+        // 배달팁, 시간, 할인금액 등 추가 정보 사용 가능
+        const deliveryFee = orderDetails.data?.defaultDeliveryFee || 0;
+        const discountValue = orderDetails.data?.discountValue || 0;
+        logger.log('📦 배달 정보:', { deliveryFee, discountValue });
+      } catch (error) {
+        logger.warn('⚠️ 주문 상세 정보 조회 실패 (계속 진행):', error.message);
+        // 주문 상세 정보 조회 실패해도 주문 생성은 성공했으므로 계속 진행
+      }
+      */
+      logger.log('⏭️ 주문 상세 정보 조회 건너뛰기 (백엔드 menu_name 문제)');
 
-      let paymentResult = null; // 결제 결과 초기화
+      // 2단계: 결제 생성
+      logger.log('📡 Step 2: 결제 생성 요청');
+      const paymentCreateReq = {
+        orderId,
+        memberCouponId: selectedCouponIds?.[0] || null,
+        totalCost: cartInfo.totalPrice,
+        paymentMethod: 'CARD',
+        storeRequest: requestInfo?.storeRequest || '',
+        riderRequest: requestInfo?.deliveryRequest || '문 앞에 놔주세요 (초인종 O)'
+      };
+      logger.log('📡 결제 생성 요청:', paymentCreateReq);
+      const paymentRes = await paymentAPI.createPayment(paymentCreateReq);
       
-      // 토스페이먼츠 결제 페이지로 이동
-      logger.log('🔄 토스페이먼츠 결제 페이지로 이동:', paymentData);
+      // 백엔드 응답 구조에 맞게 파싱 (response.data.paymentId)
+      if (!paymentRes?.data?.paymentId) {
+        logger.error('❌ 결제 생성 응답 구조 오류:', paymentRes);
+        throw new Error('결제 생성 실패: paymentId가 없습니다');
+      }
+      paymentId = paymentRes.data.paymentId;
+      logger.log('✅ 결제 생성 성공:', paymentId);
+
+      // 3단계: 토스 결제 위젯 실행
+      logger.log('📡 Step 3: 토스 결제 위젯 실행');
       
-      // 토스페이먼츠 결제 위젯 페이지로 이동
-      const tossParams = new URLSearchParams({
-        orderId: orderResponse.data.orderId,
-        amount: paymentData.amount.toString(),
-        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.map(m => m.menuName).join(', ')}`,
-        customerName: user?.name || '고객',
-        customerEmail: user?.email || 'customer@example.com'
-      });
+      // 토스 결제 위젯을 위한 데이터 설정
+      const paymentDataForWidget = {
+        amount: Number(cartInfo.totalPrice), // 숫자로 명시적 변환
+        orderId: tossOrderId, // 토스페이먼츠용 UUID 사용
+        orderName: `${currentStoreInfo?.name || '주문'} - ${orderMenus.length}개 메뉴`,
+        customerName: '고객', // TODO: 실제 사용자 이름으로 변경
+        customerEmail: 'customer@example.com', // TODO: 실제 사용자 이메일로 변경
+        backendPaymentId: paymentId, // 백엔드 결제 ID 추가
+        backendOrderId: orderId // 백엔드 주문 ID (내부 관리용)
+      };
       
-      navigate(`/payments/toss?${tossParams}`);
-      return; // 여기서 함수 종료
+      // sessionStorage에 결제 데이터 저장 (결제 성공 페이지에서 사용)
+      sessionStorage.setItem('paymentData', JSON.stringify(paymentDataForWidget));
       
-      // 토스페이먼츠 결제는 별도 페이지에서 처리되므로 여기서는 주문 생성만 완료
-      logger.log('✅ 주문 생성 완료, 토스페이먼츠 결제 페이지로 이동됨');
+      setPaymentData(paymentDataForWidget);
       
-      // 중복 방지 해시 초기화
-      handlePayment.lastCartHash = null;
-      
+      // 토스 결제 위젯 모달 열기
+      setShowTossWidget(true);
     } catch (error) {
-      logger.error("❌ 주문/결제 실패:", error);
-      
-      // 결제 실패 상태 업데이트
+      logger.error('❌ 주문/결제 실패:', error);
       dispatch(setPaymentError(error.message || '주문 처리 중 오류가 발생했습니다.'));
-      
-      // 결제 처리 상태 해제
       dispatch(setPaymentProcessing(false));
-      
-      // 결제 실패 페이지로 이동
-      const failureParams = new URLSearchParams({
-        error: 'processing_failed',
-        message: error.message || '알 수 없는 오류가 발생했습니다.',
-        orderId: (orderResponse && orderResponse.data && orderResponse.data.orderId) 
-          ? orderResponse.data.orderId 
-          : `temp_${Date.now()}`
-      });
-      
-      // 결제 실패 페이지로 이동 (3초 후)
-      setTimeout(() => {
-        navigate(`/payments/failure?${failureParams}`);
-      }, 3000);
-      
-      // 사용자에게 에러 알림
       showToast(`결제 실패: ${error.message || '주문 처리 중 오류가 발생했습니다.'}`);
+      // 결제 실패 페이지 이동 등 기존 코드 활용
+      setTimeout(() => {
+        navigate('/payments/failure');
+      }, 2000);
     } finally {
-      // 결제 처리 완료 후 상태 정리
       dispatch(setPaymentProcessing(false));
-      
-      // 중복 방지 해시 초기화 (실패 시에도)
       setTimeout(() => {
         handlePayment.lastCartHash = null;
-      }, 5000); // 5초 후 해시 초기화
+      }, 5000);
     }
   };
 
@@ -647,6 +602,65 @@ export default function Cart() {
           message={toast.message}
           onClose={hideToast}
         />
+      )}
+      
+      {/* 토스 결제 위젯 팝업 */}
+      {showTossWidget && paymentData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => {
+                setShowTossWidget(false);
+                setPaymentData(null);
+              }}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666',
+                zIndex: 10
+              }}
+            >
+              ×
+            </button>
+            
+            <TossPaymentWidget
+              amount={paymentData.amount}
+              orderId={paymentData.orderId}
+              orderName={paymentData.orderName}
+              customerName={paymentData.customerName}
+              customerEmail={paymentData.customerEmail}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

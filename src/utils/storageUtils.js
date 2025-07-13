@@ -1,9 +1,8 @@
 import { logger } from './logger';
-import { DEV_CONFIG } from '../config/development';
 
 // 로컬스토리지 최대 주문 보관 개수
-const MAX_ORDERS_IN_STORAGE = DEV_CONFIG.maxOrderHistory || 50;
-const CLEANUP_THRESHOLD = DEV_CONFIG.cleanupThreshold || 100;
+const MAX_ORDERS_IN_STORAGE = 50;
+const CLEANUP_THRESHOLD = 100;
 
 // 로컬스토리지 비우기 (선택적)
 export const clearLocalStorage = () => {

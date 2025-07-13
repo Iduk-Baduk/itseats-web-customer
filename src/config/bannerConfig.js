@@ -84,7 +84,7 @@ export const heightPresets = {
 const handleBannerClick = (onClick) => {
   // 입력 유효성 검증
   if (!onClick || typeof onClick !== 'object') {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('handleBannerClick: onClick 설정이 유효하지 않습니다');
     }
     return undefined;
@@ -94,7 +94,7 @@ const handleBannerClick = (onClick) => {
   
   // 필수 필드 검증
   if (!onClick.action || !onClick.target) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('handleBannerClick: action 또는 target이 누락되었습니다', onClick);
     }
     return undefined;
@@ -105,14 +105,14 @@ const handleBannerClick = (onClick) => {
       // 클릭 액션 처리
       if (onClick.action === 'navigate') {
         // 네비게이션 처리
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.log(`배너 클릭: ${onClick.target}`);
         }
         // TODO: 실제 네비게이션 로직 구현
       } else if (onClick.action === 'external') {
         // 외부 링크 처리
         handleExternalLink(onClick.target);
-      } else if (process.env.NODE_ENV === 'development') {
+      } else if (import.meta.env.DEV) {
         console.warn(`지원하지 않는 액션: ${onClick.action}`);
       }
       
@@ -162,7 +162,7 @@ const handleExternalLink = (target) => {
       return;
     }
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(`외부 링크 열기 성공: ${url.href}`);
     }
   } catch (error) {
@@ -188,7 +188,7 @@ const handleAnalytics = (analytics) => {
         event_category: analytics.category,
         event_label: analytics.label
       });
-    } else if (process.env.NODE_ENV === 'development') {
+    } else if (import.meta.env.DEV) {
       console.log('Analytics event:', analytics);
     }
   } catch (error) {
