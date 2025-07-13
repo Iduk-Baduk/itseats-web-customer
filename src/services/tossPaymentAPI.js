@@ -1,6 +1,5 @@
 import { API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
-import { v4 as uuidv4 } from 'uuid';
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -74,20 +73,13 @@ class TossPaymentAPI {
   }
 
   // 공통 헤더 생성 (멱등성 키 포함)
-  getHeaders(contentType = 'application/json', idempotencyKey = null) {
+  getHeaders(contentType = 'application/json') {
     const headers = {
       ...this.getAuthHeaders(),
     };
-    
     if (contentType) {
       headers['Content-Type'] = contentType;
     }
-
-    // 멱등성 키 추가
-    if (idempotencyKey) {
-      headers['Idempotency-Key'] = idempotencyKey;
-    }
-    
     return headers;
   }
 
@@ -153,7 +145,7 @@ class TossPaymentAPI {
       throw new Error('이미 진행 중인 결제가 있습니다. 잠시 후 다시 시도해주세요.');
     }
     
-    const attemptId = uuidv4();
+    const attemptId = Date.now().toString(); // 멱등성 키 대신 타임스탬프 사용
     this.paymentAttempts.set(orderId, {
       id: attemptId,
       timestamp: Date.now(),
@@ -421,7 +413,7 @@ class TossPaymentAPI {
     const existingScript = document.querySelector('script[src="https://js.tosspayments.com/v1"]');
     if (existingScript) {
       existingScript.remove();
-      logger.log('��️ 기존 토스페이먼츠 스크립트 제거');
+      logger.log('🗑️ 기존 토스페이먼츠 스크립트 제거');
     }
     
     return new Promise((resolve, reject) => {
@@ -559,34 +551,25 @@ class TossPaymentAPI {
   async cancelPayment(paymentKey, cancelReason, cancelAmount = null) {
     try {
       logger.log('📡 결제 취소 요청 시작:', { paymentKey, cancelReason, cancelAmount });
-      
-      // 멱등성 키 생성
-      const idempotencyKey = uuidv4();
-      
       // 요청 데이터 구성
       const requestData = {
         cancelReason,
         ...(cancelAmount && { cancelAmount })
       };
-      
       logger.log('📋 취소 요청 데이터:', requestData);
-      
       const response = await this.makeRequest(
         `${this.baseURL}/api/payments/${paymentKey}/cancel`,
         {
           method: 'POST',
-          headers: this.getHeaders('application/json', idempotencyKey),
+          headers: this.getHeaders('application/json'),
           body: JSON.stringify(requestData)
         },
         { maxRetries: 2, delay: 1000, backoff: 2 }
       );
-      
       logger.log('✅ 결제 취소 성공:', response);
       return response;
-      
     } catch (error) {
       logger.error('❌ 결제 취소 실패:', error);
-      
       // 사용자 친화적인 에러 메시지
       const userMessage = this.getCancelErrorMessage(error);
       throw new Error(userMessage);
@@ -672,28 +655,21 @@ class TossPaymentAPI {
   async confirmPayment(backendPaymentId, confirmData) {
     try {
       logger.log('📡 결제 승인 요청 시작:', { backendPaymentId, confirmData });
-      
-      // 멱등성 키 생성
-      const idempotencyKey = uuidv4();
-      
       // 요청 데이터 검증
       if (!confirmData.paymentKey || !confirmData.orderId || !confirmData.amount) {
         throw new Error('필수 결제 정보가 누락되었습니다.');
       }
-      
       const requestData = {
         paymentKey: confirmData.paymentKey,
         orderId: confirmData.orderId,
         amount: Number(confirmData.amount)
       };
-      
       logger.log('📋 승인 요청 데이터:', requestData);
-      
       const response = await this.makeRequest(
         `${this.baseURL}/api/orders/confirm`,
         {
           method: 'POST',
-          headers: this.getHeaders('application/json', idempotencyKey),
+          headers: this.getHeaders('application/json'),
           body: JSON.stringify({
             paymentId: backendPaymentId,
             ...requestData
@@ -701,20 +677,14 @@ class TossPaymentAPI {
         },
         { maxRetries: 3, delay: 1000, backoff: 2 }
       );
-      
       logger.log('✅ 결제 승인 성공:', response);
-      
       // 결제 시도 완료 처리
       this.completePaymentAttempt(confirmData.orderId, 'completed');
-      
       return response;
-      
     } catch (error) {
       logger.error('❌ 결제 승인 실패:', error);
-      
       // 결제 시도 실패 처리
       this.completePaymentAttempt(confirmData.orderId, 'failed');
-      
       // 사용자 친화적인 에러 메시지
       const userMessage = this.getConfirmErrorMessage(error);
       throw new Error(userMessage);
