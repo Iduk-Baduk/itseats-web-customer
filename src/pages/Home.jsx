@@ -16,6 +16,7 @@ import StoreListItem from "../components/stores/StoreListItem";
 import BottomButton from "../components/common/BottomButton";
 import VideoBanner from "../components/common/VideoBanner";
 import { renderBanner, heightPresets } from "../config/bannerConfig";
+import MainBannerSlider from '../components/common/MainBannerSlider';
 
 function HomeHeader() {
   const navigate = useNavigate();
@@ -196,27 +197,7 @@ export default function Home() {
           showIcon={true}
         />
         <MenuGrid />
-        {(() => {
-          const bannerConfig = renderBanner('home');
-          if (bannerConfig?.component === 'VideoBanner') {
-            // 더 컴팩트한 높이 설정
-            const heightSettings = {
-              height: "180px",
-              minHeight: "150px",
-              maxHeight: "250px"
-            };
-            
-            const handleVideoError = (error) => {
-              console.error('홈 화면 비디오 배너 에러:', error);
-              // 에러 발생 시 로깅 또는 분석 도구에 전송
-            };
-            
-            return <VideoBanner {...bannerConfig.props} {...heightSettings} onVideoError={handleVideoError} />;
-          } else if (bannerConfig?.component === 'OptimizedImage') {
-            return <OptimizedImage {...bannerConfig.props} />;
-          }
-          return null;
-        })()}
+        <MainBannerSlider bannerConfig={renderBanner('home')} />
       </div>
 
       <div className={styles.section}>

@@ -1,0 +1,73 @@
+.container {
+  padding: 20px;
+  padding-top: 80px; /* 상단 여백 늘림 */
+}
+
+.couponCard {
+  display: flex;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.left {
+  flex: 1;
+}
+
+.discount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.category {
+  background: #f1f1f1;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.name {
+  font-weight: 600;
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.minOrder {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.validDate {
+  font-size: 14px;
+  color: #555;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.storeButton {
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.noStore {
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+

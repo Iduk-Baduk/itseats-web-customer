@@ -45,6 +45,8 @@ export const API_ENDPOINTS = {
   
   // 쿠폰 관련
   COUPONS: '/coupons',
+  COUPONS_ALL: '/coupons/all',
+  COUPON_ISSUE: (id) => `/coupons/${id}/issue`,
   COUPON_USE: (id) => `/coupons/${id}/use`,
   COUPON_AVAILABLE: '/coupons/available',
   COUPON_REGISTER: '/coupons/register',
