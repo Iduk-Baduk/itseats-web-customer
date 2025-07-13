@@ -48,7 +48,7 @@
 // 로그인 성공 후
 const accessToken = response.headers.get('Access-Token');
 // 개발 환경에서만 사용 권장
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   localStorage.setItem('accessToken', accessToken);
 } else {
   // 프로덕션에서는 httpOnly 쿠키 사용 권장
@@ -64,7 +64,7 @@ API 요청에 토큰을 자동으로 추가하는 인터셉터 설정:
 axios.interceptors.request.use(
   (config) => {
     // 개발 환경: localStorage에서 토큰 가져오기
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       const token = localStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -212,7 +212,7 @@ console.log('Request Data:', config.data);
 ### 7.3 토큰 상태 확인
 ```javascript
 // 개발 환경에서만 사용 권장
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   const token = localStorage.getItem('accessToken');
   console.log('Current Token:', token);
 } else {

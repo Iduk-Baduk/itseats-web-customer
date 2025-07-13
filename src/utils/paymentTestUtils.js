@@ -13,7 +13,7 @@ export class PaymentTestUtils {
 
   // 테스트 모드 확인
   isTestEnvironment() {
-    return this.isTestMode || import.meta.env.NODE_ENV === 'development';
+    return this.isTestMode || import.meta.env.DEV;
   }
 
   // 테스트 카드 정보 반환
