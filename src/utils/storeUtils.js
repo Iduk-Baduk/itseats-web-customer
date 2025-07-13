@@ -53,17 +53,12 @@ export const findOrCreateStoreInfo = (orderMenus, allStores, logger) => {
 
   // 3. 매장을 찾지 못한 경우 기본 매장 정보 생성
   if (!currentStoreInfo) {
-    // 1) orderMenus의 storeId가 있으면 그 매장
-    if (firstMenu.storeId) {
-      currentStoreId = String(firstMenu.storeId);
-      currentStoreInfo = allStores.find(store => String(store.storeId) === String(firstMenu.storeId));
-    }
-    // 2) allStores의 첫 번째 매장
-    if (!currentStoreInfo && allStores.length > 0) {
+    // 1) allStores의 첫 번째 매장으로 폴백
+    if (allStores.length > 0) {
       currentStoreId = String(allStores[0].storeId || allStores[0].id);
       currentStoreInfo = allStores[0];
     }
-    // 3) 그래도 없으면 null 반환
+    // 2) 그래도 없으면 null 반환
     if (!currentStoreInfo) {
       logger?.log('❌ 기본 매장 정보 생성 실패: 매장 정보 없음');
       return null;
