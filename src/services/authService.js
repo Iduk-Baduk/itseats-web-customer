@@ -1,6 +1,5 @@
 import { API_ENDPOINTS, API_CONFIG } from '../config/api';
 import { logger } from '../utils/logger';
-import { getDevToken, getBackendCompatibleTokenAsync } from '../utils/tokenUtils';
 
 // 토큰 저장 키
 const TOKEN_KEY = 'itseats_access_token';
@@ -164,8 +163,9 @@ class AuthService {
           // 헤더에 토큰이 없으면 개발 환경에서 새 토큰 생성
           if (import.meta.env.DEV) {
             try {
-              const backendToken = await getBackendCompatibleTokenAsync();
-              AuthService.setToken(backendToken);
+              // getDevToken 함수가 tokenUtils.js에 없으므로 이 부분은 주석 처리 또는 제거
+              // const backendToken = getDevToken(); 
+              // AuthService.setToken(backendToken);
               logger.log('🧪 개발 환경: 토큰 갱신 실패로 새 토큰 생성');
               return true;
             } catch (error) {
