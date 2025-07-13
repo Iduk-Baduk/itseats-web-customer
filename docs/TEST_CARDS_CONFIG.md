@@ -168,7 +168,7 @@ VITE_PAYMENT_TEST_MODE=true
 ### 3. 프로덕션 환경 확인
 ```javascript
 // 프로덕션 환경에서는 테스트 카드 사용 불가
-if (process.env.NODE_ENV === 'production') {
+if (import.meta.env.PROD) {
   console.error('프로덕션 환경에서는 테스트 카드를 사용할 수 없습니다.');
 }
 ```
