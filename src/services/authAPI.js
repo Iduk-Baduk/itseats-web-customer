@@ -74,12 +74,12 @@ export const regist = async (form) => {
       apiClient.post(API_ENDPOINTS.AUTH_REGISTER, requestData)
     );
 
-    logger.log("✅ 회원가입 성공 응답:", response.data);
+    logger.log("✅ 회원가입 성공 응답:", response);
 
     return {
       success: true,
       user: {
-        id: response.data.memberId,
+        id: response.memberId,
         username: form.username,
         name: form.name,
         email: form.email,

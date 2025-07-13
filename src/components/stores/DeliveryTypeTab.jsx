@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./DeliveryTypeTab.module.css";
 
 export default function DeliveryTypeTab({
-  storeId = 1,
+  storeId = 2, // 존재하는 매장 ID로 변경
   defaultTime = 0,
   takeoutTime = 0,
   minimumOrderPrice = 0,

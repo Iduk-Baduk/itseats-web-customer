@@ -16,7 +16,7 @@ const apiClient = axios.create({
 
 // 요청 인터셉터 - 토큰 자동 추가
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // 인증이 필요한 API 엔드포인트인지 확인
     const requiresAuth = AuthService.requiresAuthForEndpoint(config.url || '');
     
@@ -26,11 +26,15 @@ apiClient.interceptors.request.use(
       return Promise.reject(new Error('로그인이 필요합니다.'));
     }
 
-    // 토큰 추가
-    const token = AuthService.getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      logger.log(`🔐 요청에 토큰 추가: ${config.method?.toUpperCase()} ${config.url}`);
+    // 토큰 추가 (비동기 처리)
+    try {
+      const token = await AuthService.getTokenAsync();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        logger.log(`🔐 요청에 토큰 추가: ${config.method?.toUpperCase()} ${config.url}`);
+      }
+    } catch (error) {
+      logger.error('토큰 가져오기 실패:', error);
     }
 
     return config;
@@ -59,6 +63,12 @@ apiClient.interceptors.response.use(
     // 401 에러 시 토큰 갱신 시도
     if (error.response.status === 401) {
       logger.warn('401 에러 발생, 토큰 갱신 시도');
+      
+      // 개발 환경에서는 401 에러 시 자동 로그아웃 비활성화
+      if (import.meta.env.DEV) {
+        logger.warn('개발 환경: 401 에러 발생했지만 자동 로그아웃을 건너뜁니다.');
+        return Promise.reject(error);
+      }
       
       const refreshSuccess = await AuthService.refreshToken();
       if (refreshSuccess) {

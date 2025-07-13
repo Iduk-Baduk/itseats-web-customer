@@ -38,7 +38,7 @@ VITE_TOSS_CLIENT_KEY=your_toss_client_key_here
 VITE_TOSS_CUSTOMER_KEY=your_toss_customer_key_here
 
 # API 설정
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:8080
 VITE_API_TIMEOUT=10000
 ```
 

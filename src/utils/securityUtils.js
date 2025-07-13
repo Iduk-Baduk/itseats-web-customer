@@ -27,7 +27,7 @@ export class SecurityUtils {
       console.error('지원 여부: crypto=' + !!crypto + ', getRandomValues=' + !!(crypto?.getRandomValues));
       
       // 개발 환경에서는 에러 발생, 프로덕션에서는 기능 제한
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         throw new Error('암호학적 난수 미지원 환경입니다. 보안상 안전하지 않은 난수 생성을 사용할 수 없습니다.');
       } else {
         // 프로덕션에서는 기능 제한 (빈 문자열 반환)
@@ -48,7 +48,7 @@ export class SecurityUtils {
     } catch (error) {
       console.error('암호학적 난수 생성 실패:', error);
       
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         throw new Error(`암호학적 난수 생성 실패: ${error.message}`);
       } else {
         console.warn('프로덕션 환경에서 암호학적 난수 생성 실패로 인한 기능 제한');
@@ -255,7 +255,7 @@ export class SecurityUtils {
    * @param {string[]} newKeys - 새로운 민감한 키워드 목록
    */
   updateSensitiveKeys(newKeys) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('민감한 키워드 목록이 런타임에 업데이트되었습니다:', newKeys);
       sensitiveKeysConfig.sensitiveKeys = newKeys;
     } else {

@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { couponAPI } from '../services';
 
 // 쿠폰 유효성 검사 함수
@@ -160,22 +160,22 @@ const couponSlice = createSlice({
 
 export const { applyCoupon, clearCoupon, clearAllCoupons, applyCoupons, removeCoupon } = couponSlice.actions;
 
-// 정규화된 쿠폰 데이터 선택자
-export const selectNormalizedCoupons = (state) => {
-  const coupons = state.coupon?.coupons;
-  // coupons가 배열이 아닐 경우 빈 배열 반환
-  if (!Array.isArray(coupons)) {
-    return [];
+// 정규화된 쿠폰 데이터 selector (메모이제이션 적용)
+export const selectNormalizedCoupons = createSelector(
+  state => state.coupon?.coupons,
+  (coupons) => {
+    if (!Array.isArray(coupons)) {
+      return [];
+    }
+    return coupons.map(coupon => ({
+      ...coupon,
+      id: String(coupon.id),
+      discount: Number(coupon.discount || 0),
+      minOrderAmount: Number(coupon.minOrderAmount || 0),
+      isStackable: Boolean(coupon.isStackable)
+    }));
   }
-  
-  return coupons.map(coupon => ({
-    ...coupon,
-    id: String(coupon.id), // ID를 항상 문자열로 정규화
-    discount: Number(coupon.discount || 0),
-    minOrderAmount: Number(coupon.minOrderAmount || 0),
-    isStackable: Boolean(coupon.isStackable) // 기본값: false
-  }));
-};
+);
 
 // 유효한 쿠폰만 반환하는 선택자
 export const selectValidCoupons = (state, cartTotal = 0) =>

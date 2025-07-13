@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser } from '../services/authAPI';
 import { userAPI } from '../services/userAPI';
 import { ENV_CONFIG } from '../config/api';
-import { DEFAULT_USER, generateDevToken } from '../config/development';
 import { STORAGE_KEYS, logger } from '../utils/logger';
 
 export default function useCurrentUser() {
@@ -17,13 +16,13 @@ export default function useCurrentUser() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 로컬스토리지에서 사용자 정보 가져오기
+  // 캐시된 사용자 정보 가져오기
   const getCachedUser = () => {
     try {
-      const cachedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-      return cachedUser ? JSON.parse(cachedUser) : null;
+      const cached = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      return cached ? JSON.parse(cached) : null;
     } catch (error) {
-      console.warn('캐시된 사용자 정보 파싱 실패:', error);
+      logger.error('캐시된 사용자 정보 파싱 실패:', error);
       return null;
     }
   };
@@ -41,20 +40,14 @@ export default function useCurrentUser() {
           setUser(cachedUser);
         }
 
-        // 토큰이 없으면 개발 환경에서만 기본 사용자 설정
+        // 토큰이 없으면 사용자 정보 로드하지 않음
         const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
         if (!token) {
-          if (ENV_CONFIG.isDevelopment) {
-            const defaultUser = DEFAULT_USER;
-            setUser(defaultUser);
-            const defaultToken = generateDevToken(defaultUser.id);
-            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, defaultToken);
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
-          }
+          setLoading(false);
           return;
         }
 
-        // API에서 최신 사용자 정보 가져오기
+        // API에서 최신 사용자 정보 가져오기 (항상 백엔드 연동)
         try {
           const currentUser = await getCurrentUser();
           setUser(currentUser);
@@ -68,28 +61,19 @@ export default function useCurrentUser() {
 
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         } catch (authError) {
-          if (ENV_CONFIG.isDevelopment) {
-            logger.warn('API 사용자 정보 조회 실패, 기본 사용자 설정:', authError);
-            // 개발 환경에서만 기본 사용자 설정
-            const defaultUser = DEFAULT_USER;
-            setUser(defaultUser);
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(defaultUser));
-          } else {
-            throw authError;
-          }
+          logger.error('API 사용자 정보 조회 실패:', authError);
+          setError(authError.message);
         }
 
       } catch (error) {
-        if (ENV_CONFIG.isDevelopment) {
-          logger.error('사용자 데이터 로딩 실패:', error);
-        }
+        logger.error('사용자 데이터 로딩 실패:', error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    // 컴포넌트 마운트 시 사용자 정보 로드 (토큰 없거나 조회 실패 시 개발 환경에서만 기본 사용자로 설정)
+    // 컴포넌트 마운트 시 사용자 정보 로드
     loadUserData();
   }, []);
 
@@ -119,7 +103,7 @@ export default function useCurrentUser() {
       
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
     } catch (error) {
-      console.error('사용자 정보 새로고침 실패:', error);
+      logger.error('사용자 정보 새로고침 실패:', error);
       setError(error.message);
     } finally {
       setLoading(false);
