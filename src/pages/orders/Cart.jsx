@@ -407,7 +407,12 @@ export default function Cart() {
     });
 
     // 주소 ID 검증 및 안전한 처리
-    const addrId = selectedAddress?.id || 3; // 기본값으로 admin 사용자의 주소 ID 사용
+    const addrId = selectedAddress?.id;
+    if (!addrId) {
+      showToast("배송 주소가 선택되지 않았습니다. 주소를 먼저 설정해주세요.");
+      logger.error('배송 주소가 선택되지 않았습니다.');
+      return;
+    }
     
     try {
       dispatch(setPaymentProcessing(true));
