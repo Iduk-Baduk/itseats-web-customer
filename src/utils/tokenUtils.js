@@ -179,18 +179,44 @@ export const getTokenData = () => {
       parsed = JSON.parse(tokenData);
     } catch (parseError) {
       // JSON 파싱 실패 시 문자열로 처리 (JWT 토큰의 정상적인 경우)
+      // JWT 토큰에서 만료 시간 추출 시도
+      let expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 기본값: 24시간
+      try {
+        const parts = tokenData.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload.exp) {
+            expiresAt = payload.exp * 1000; // JWT exp는 초 단위
+          }
+        }
+      } catch (e) {
+        // JWT 파싱 실패 시 기본값 사용
+      }
       return {
         token: tokenData,
-        expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+        expiresAt: expiresAt,
         issuedAt: Date.now()
       };
     }
     
     // 기존 형식 호환성 (문자열로 저장된 경우)
     if (typeof parsed === 'string') {
+      // JWT 토큰에서 만료 시간 추출 시도
+      let expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 기본값: 24시간
+      try {
+        const parts = parsed.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload.exp) {
+            expiresAt = payload.exp * 1000; // JWT exp는 초 단위
+          }
+        }
+      } catch (e) {
+        // JWT 파싱 실패 시 기본값 사용
+      }
       return {
         token: parsed,
-        expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료로 가정
+        expiresAt: expiresAt,
         issuedAt: Date.now()
       };
     }
