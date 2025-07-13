@@ -25,7 +25,7 @@ export default function CartPaymentMethodSection({ cartInfo = { totalPrice: 0, i
             <div className={styles.paymentMethodInfo}>
               <div className={styles.paymentMethodIcon}>
                 <img 
-                  src="/icons/logos/kakao.png" 
+                  src="/icons/logos/toss.png" 
                   alt="토스페이먼츠" 
                   className={styles.paymentIcon}
                 />
