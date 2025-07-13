@@ -70,14 +70,14 @@ export default function TossPaymentSuccess() {
       logger.log('📡 결제 처리 시작...');
       
       // URL 파라미터에서 결제 정보 추출
-      const paymentKey = searchParams.get("paymentKey");
-      const orderId = searchParams.get("orderId");
+      const TossPaymentKey = searchParams.get("paymentKey");
+      const TossOrderId = searchParams.get("orderId");
       const amount = searchParams.get("amount");
 
-      logger.log('📋 URL 파라미터:', { paymentKey, orderId, amount });
+      logger.log('📋 URL 파라미터:', { TossPaymentKey, TossOrderId, amount });
 
       // 필수 파라미터 검증
-      if (!paymentKey || !orderId || !amount) {
+      if (!TossPaymentKey || !TossOrderId || !amount) {
         throw new Error('결제 정보가 올바르지 않습니다.');
       }
 
@@ -85,8 +85,8 @@ export default function TossPaymentSuccess() {
       const paymentId = getPaymentId(searchParams);
       
       const requestData = {
-        paymentKey,
-        orderId,
+        TossPaymentKey,
+        TossOrderId,
         paymentId,
         amount: parseInt(amount)
       };
@@ -110,7 +110,7 @@ export default function TossPaymentSuccess() {
       if (!orderData) {
         logger.warn('⚠️ sessionStorage에 주문 데이터 없음, URL 파라미터로 기본 데이터 생성');
         orderData = {
-          orderId: orderId,
+          orderId: TossOrderId,
           totalPrice: parseInt(amount),
           paymentMethod: { type: 'CARD' },
           storeRequest: '',
@@ -125,9 +125,9 @@ export default function TossPaymentSuccess() {
         // 결제 승인만 처리 (주문 생성과 결제 생성은 이미 Cart.jsx에서 완료)
         logger.log('📡 결제 승인 요청:', { requestData });
         paymentResponse = await TossPaymentAPI.confirmPaymentWithBackend(requestData.paymentId, {
-          orderId: requestData.orderId,
+          TossOrderId: requestData.TossOrderId,
           amount: requestData.amount,
-          paymentKey: requestData.paymentKey
+          TossPaymentKey: requestData.TossPaymentKey
         });
         logger.log('✅ 결제 승인 성공:', paymentResponse);
         
@@ -149,7 +149,7 @@ export default function TossPaymentSuccess() {
       try {
         // 주문 데이터 설정 (이미 생성된 주문 정보 사용)
         setOrderData({
-          orderId: orderId,
+          orderId: TossOrderId,
           totalPrice: parseInt(amount),
           status: 'WAITING',
           createdAt: new Date().toISOString()
@@ -158,7 +158,7 @@ export default function TossPaymentSuccess() {
         // 결제 상태 설정
         setPaymentStatus({
           ...paymentResponse,
-          orderId: orderId,
+          orderId: TossOrderId,
           status: 'DONE'
         });
         
@@ -168,7 +168,7 @@ export default function TossPaymentSuccess() {
         
         // 폴링 시작 (Webhook 상태 반영을 위해)
         try {
-          startPaymentPolling(requestData.paymentKey, requestData.orderId);
+          startPaymentPolling(requestData.TossPaymentKey, requestData.TossOrderId);
         } catch (pollingError) {
           logger.warn('⚠️ 폴링 시작 실패 (무시):', pollingError);
         }
@@ -178,7 +178,7 @@ export default function TossPaymentSuccess() {
         // 주문 데이터 설정 실패해도 결제는 성공했으므로 성공으로 처리
         setPaymentStatus({
           ...paymentResponse,
-          orderId: requestData.orderId,
+          orderId: requestData.TossOrderId,
           status: 'DONE'
         });
         sessionStorage.removeItem('pendingOrderData');

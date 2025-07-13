@@ -331,28 +331,28 @@ class TossPaymentAPI {
 
   // Step 3: 결제 승인 (백엔드 API)
   async confirmPayment(backendPaymentId, confirmData) {
-    const { paymentKey, orderId, amount } = confirmData;
+    const { TossPaymentKey, TossOrderId, amount } = confirmData;
     
     // 결제 시도 중복 방지
-    const attemptId = this.registerPaymentAttempt(orderId);
+    const attemptId = this.registerPaymentAttempt(TossOrderId);
     
     try {
-      logger.log('📡 결제 승인 요청:', { backendPaymentId, orderId, amount, paymentKey });
+      logger.log('📡 결제 승인 요청:', { backendPaymentId, TossOrderId, amount, TossPaymentKey });
       
       const response = await retryRequest(() => 
         apiClient.post(API_ENDPOINTS.PAYMENT_CONFIRM(backendPaymentId), {
-          paymentKey: paymentKey,  // 토스페이먼츠에서 받은 paymentKey
-          orderId: orderId,        // 주문 ID
+          TossPaymentKey: TossPaymentKey,  // 토스페이먼츠에서 받은 paymentKey
+          TossOrderId: TossOrderId,        // 주문 ID
           amount: amount           // 결제 금액
         })
       );
 
-      this.completePaymentAttempt(orderId, 'success');
+      this.completePaymentAttempt(TossOrderId, 'success');
       logger.log('✅ 결제 승인 성공:', response.data);
       
       return response.data;
     } catch (error) {
-      this.completePaymentAttempt(orderId, 'failed');
+      this.completePaymentAttempt(TossOrderId, 'failed');
       logger.error('❌ 결제 승인 실패:', error);
       
       // 백엔드 에러 응답 처리
@@ -421,7 +421,7 @@ class TossPaymentAPI {
     const existingScript = document.querySelector('script[src="https://js.tosspayments.com/v1"]');
     if (existingScript) {
       existingScript.remove();
-      logger.log('🗑️ 기존 토스페이먼츠 스크립트 제거');
+      logger.log('��️ 기존 토스페이먼츠 스크립트 제거');
     }
     
     return new Promise((resolve, reject) => {
@@ -511,8 +511,8 @@ class TossPaymentAPI {
       // 백엔드 명세에 따른 올바른 엔드포인트 사용
       const response = await retryRequest(() => 
         apiClient.post(API_ENDPOINTS.ORDER_CONFIRM(paymentId), {
-          paymentKey: confirmData.paymentKey,
-          orderId: confirmData.orderId,
+          TossPaymentKey: confirmData.TossPaymentKey,
+          TossOrderId: confirmData.TossOrderId,
           amount: confirmData.amount
         })
       );

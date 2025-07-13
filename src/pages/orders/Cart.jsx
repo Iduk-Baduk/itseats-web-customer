@@ -142,8 +142,8 @@ export default function Cart() {
       // 4단계: 백엔드에 결제 승인 요청
       logger.log('📡 Step 4: 백엔드 결제 승인 요청');
       const confirmRes = await tossPaymentAPI.confirmPayment(paymentData.backendPaymentId, {
-        paymentKey: paymentResult.paymentKey,
-        orderId: paymentData.backendOrderId, // 백엔드 주문 ID 사용
+        TossPaymentKey: paymentResult.paymentKey,
+        TossOrderId: paymentData.backendOrderId, // 백엔드 주문 ID 사용
         amount: paymentResult.totalAmount
       });
       
