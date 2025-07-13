@@ -494,24 +494,20 @@ class TossPaymentAPI {
   static async confirmPaymentWithBackend(paymentId, confirmData) {
     try {
       logger.log('📡 백엔드 결제 승인 요청:', { paymentId, confirmData });
-      
       // paymentId 유효성 검사 (숫자여야 함)
       if (!paymentId || isNaN(paymentId)) {
         throw new Error('유효하지 않은 paymentId입니다.');
       }
-      
       // 백엔드 명세에 따른 올바른 엔드포인트 사용
       const response = await retryRequest(() => 
         apiClient.post(API_ENDPOINTS.ORDER_CONFIRM(paymentId), {
-          TossPaymentKey: confirmData.TossPaymentKey,
-          TossOrderId: confirmData.TossOrderId,
+          paymentKey: confirmData.TossPaymentKey,
+          orderId: confirmData.TossOrderId,
           amount: confirmData.amount
         })
       );
-      
       logger.log('✅ 백엔드 결제 승인 성공:', response);
       return response;
-      
     } catch (error) {
       logger.error('❌ 백엔드 결제 승인 실패:', error);
       throw error;
