@@ -22,33 +22,6 @@ export const generateUserId = () => {
 };
 
 /**
- * UUID를 Long 타입으로 변환
- * @param {string} uuid - UUID 문자열
- * @returns {number} Long 타입 숫자
- */
-export const uuidToLong = (uuid) => {
-  if (!uuid || typeof uuid !== 'string') {
-    return null;
-  }
-  
-  try {
-    // UUID에서 하이픈 제거
-    const cleanUuid = uuid.replace(/-/g, '');
-    
-    // 첫 16자리를 사용하여 숫자로 변환 (JavaScript의 Number.MAX_SAFE_INTEGER 제한 고려)
-    const hexPart = cleanUuid.substring(0, 16);
-    const longValue = parseInt(hexPart, 16);
-    
-    // 안전한 범위 내로 조정 (Java Long.MAX_VALUE = 9223372036854775807)
-    const maxLong = 9223372036854775807;
-    return longValue % maxLong;
-  } catch (error) {
-    console.warn('UUID를 Long으로 변환 실패:', error);
-    return null;
-  }
-};
-
-/**
  * UUID가 유효한지 확인
  * @param {string} uuid - UUID 문자열
  * @returns {boolean} 유효한 UUID 여부
