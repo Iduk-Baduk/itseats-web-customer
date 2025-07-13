@@ -57,7 +57,7 @@ export const API_ENDPOINTS = {
   USER_STATS: '/members/stats',
   USER_FAVORITES: '/members/favorites',
   USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
-  USER_REVIEWS: '/members/reviews',
+  USER_REVIEWS: '/reviews/my',
   
   // 인증 관련 (백엔드 팀 제공 명세에 맞게 수정)
   AUTH_LOGIN: '/login',                    // ✅ POST /api/login (baseURL에 이미 /api 포함)

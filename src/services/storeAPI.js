@@ -121,8 +121,8 @@ const StoreAPI = {
       );
       
       // 백엔드 API 응답 구조에 맞춰 데이터 처리
-      if (response.data && response.data.httpStatus === 200) {
-        const storeData = response.data.data;
+      if (response.data) {
+        const storeData = response.data;
         logger.log("✅ 매장 상세 정보 조회 성공:", storeData);
         return {
           storeId: storeId,
@@ -201,6 +201,19 @@ const StoreAPI = {
       throw error;
     }
   },
+
+  getReviewsByStoreId: async (storeId) => {
+    try {
+      const response = await apiClient.get(`/reviews/${storeId}`);
+      logger.log("✅ 매장 리뷰 조회 성공:", response.data);
+      return response.data;  // ✅ data로 바꿈
+    } catch (error) {
+      logger.error("❌ 매장 리뷰 조회 실패:", error);
+      throw error;
+    }
+  },
+
+
 };
 
 export default StoreAPI;

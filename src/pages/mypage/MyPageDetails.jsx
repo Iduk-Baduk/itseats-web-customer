@@ -1,62 +1,43 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useCallback, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchStores } from "../../store/storeSlice";
+import { useState } from "react";
 import useMyPageDetails from "../../hooks/useMyPageDetails";
 import SlideInFromRight from "../../components/animation/SlideInFromRight";
 import Header from "../../components/common/Header";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorState from "../../components/common/ErrorState";
-import { logger } from "../../utils/logger";
 import styles from "./MyPageDetails.module.css";
 
 export default function MyPageDetails() {
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  // Redux에서 stores 상태 직접 확인
-  const stores = useSelector(state => state.store?.stores || []);
-  const storeLoading = useSelector(state => state.store?.loading || false);
-  
-  logger.log('🏪 MyPageDetails - Redux stores 상태:', {
-    storesCount: stores.length,
-    storeLoading,
-    firstStore: stores[0]
-  });
-
-  // stores 데이터가 없으면 직접 로드
-  useEffect(() => {
-    if (stores.length === 0 && !storeLoading) {
-      logger.log('🔄 MyPageDetails에서 fetchStores 호출');
-      dispatch(fetchStores());
-    }
-  }, [stores.length, storeLoading, dispatch]);
-
-  // 기본 사용자 정보 (MyPage에서 전달받음)
-  const { user: defaultUser } = location.state || {
-    user: { reviewCount: 0, helpCount: 0, favoriteCount: 0, name: "이름없음" },
-  };
-
-  const { 
-    reviewData, 
-    orderData, 
-    favoriteData, 
-    userStats, 
-    loading, 
-    error, 
+  const {
+    reviewData,
+    orderData,
+    favoriteData,
+    userStats,
+    loading,
+    error,
     handleFavoriteClick,
     handleOrderClick,
-    refreshFavorites
   } = useMyPageDetails();
+
   const [activeTab, setActiveTab] = useState("review");
 
-  // 실제 통계 데이터가 있으면 사용, 없으면 기본값 사용
+  const defaultUser = location.state?.user || {
+    name: "이름없음",
+    reviewCount: 0,
+    helpCount: 0,
+    favoriteCount: 0,
+  };
+
   const user = {
     name: defaultUser.name,
     reviewCount: userStats.reviewCount || defaultUser.reviewCount,
     helpCount: userStats.helpCount || defaultUser.helpCount,
     favoriteCount: userStats.favoriteCount || defaultUser.favoriteCount,
+    orderCount: userStats.orderCount || 0,
+    totalSpent: userStats.totalSpent || 0,
   };
 
   const tabContentMap = {
@@ -105,17 +86,41 @@ export default function MyPageDetails() {
       );
     }
 
+    if (activeTab === "review") {
+      console.log('🔥 리뷰 데이터:', current.data);
+      return (
+        <div className={styles.reviewList}>
+          {current.data.map((item, idx) => (
+            <div key={item.reviewId || idx} className={styles.reviewItem}>
+              <div className={styles.reviewHeader}>
+                <strong>{item.storeName}</strong>
+                <span>{new Date(item.createdAt).toLocaleDateString('ko-KR')}</span>
+              </div>
+              <div className={styles.reviewStars}>
+                {"⭐".repeat(item.rating)}
+                <span className={styles.ratingNumber}>{item.rating}</span>
+              </div>
+              <p className={styles.reviewContent}>{item.content}</p>
+            </div>
+          ))}
+        </div>
+
+      );
+    }
+
+
+
     if (activeTab === "orders") {
       return (
         <div className={styles.cards}>
           {current.data.map((item) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className={styles.card}
               onClick={() => handleOrderClick(item.id)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
             >
-              <img src={item.image} alt={item.title} />
+              <img src={item.image} alt={item.title} /> {/* ⭐ 이미지 추가 */}
               <p>{item.title}</p>
               <span>{item.date}</span>
               {item.totalPrice && (
@@ -129,26 +134,24 @@ export default function MyPageDetails() {
       );
     }
 
+
     if (activeTab === "favorites") {
       return (
         <div className={styles.favoriteList}>
           {current.data.map((item) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className={styles.favoriteItem}
               onClick={() => handleFavoriteClick(item.id)}
             >
-              <img src={item.image} alt={item.title} />
-              <div className={styles.favoriteInfo}>
-                <h3>{item.title}</h3>
-                <div className={styles.favoriteDetails}>
-                  <span className={styles.rating}>⭐ {item.rating}</span>
-                  <span className={styles.category}>{item.category}</span>
-                </div>
-                <div className={styles.deliveryInfo}>
-                  <span>{item.deliveryTime}</span>
-                  <span>배달비 {item.deliveryFee?.toLocaleString()}원</span>
-                </div>
+              <h3>{item.title}</h3>
+              <div className={styles.favoriteDetails}>
+                <span className={styles.rating}>⭐ {item.rating}</span>
+                <span className={styles.category}>{item.category}</span>
+              </div>
+              <div className={styles.deliveryInfo}>
+                <span>{item.deliveryTime}</span>
+                <span>배달비 {item.deliveryFee?.toLocaleString()}원</span>
               </div>
             </div>
           ))}
@@ -156,32 +159,13 @@ export default function MyPageDetails() {
       );
     }
 
-    return (
-      <ul className={styles.list}>
-        {current.data.map((item, idx) => (
-          <li key={idx}>{item.title}</li>
-        ))}
-      </ul>
-    );
+    return null;
   };
-
-  // 개발 환경에서 상태 디버그 출력
-  logger.log('🔍 MyPageDetails 상태:', {
-    loading,
-    error,
-    reviewDataCount: reviewData.length,
-    orderDataCount: orderData.length,
-    favoriteDataCount: favoriteData.length,
-    userStats,
-    favoriteData: favoriteData.slice(0, 2) // 처음 2개만 출력
-  });
 
   return (
     <SlideInFromRight>
       <Header
-        leftButtonAction={() => {
-          navigate(-1);
-        }}
+        leftButtonAction={() => navigate(-1)}
         shadow={false}
         title=""
         rightIcon=""

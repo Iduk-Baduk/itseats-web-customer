@@ -31,12 +31,13 @@ export default function StoreDetail() {
   const [menuTabFixed, setMenuTabFixed] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Redux에서 장바구니 정보 가져오기
   const cartItemCount = useSelector(selectCartItemCount);
-  const cartItems = useSelector(state => state.cart.orderMenus);
-  const cartTotalPrice = cartItems.reduce((total, item) => total + calculateCartTotal(item), 0);
+  const cartItems = useSelector((state) => state.cart.orderMenus);
+  const cartTotalPrice = cartItems.reduce(
+    (total, item) => total + calculateCartTotal(item),
+    0
+  );
 
-  // 토스트 메시지 타이머 정리를 위한 useEffect
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(""), 3000);
@@ -44,25 +45,22 @@ export default function StoreDetail() {
     }
   }, [toastMessage]);
 
-  // Redux에서 매장 데이터 가져오기
-  const store = useSelector(state => state.store?.currentStore);
-  const stores = useSelector(state => state.store?.stores || []);
-  const storeLoading = useSelector(state => state.store?.loading || false);
-  const storeError = useSelector(state => state.store?.error || null);
-  
-  // 현재 매장 데이터 (Redux에서 우선, 없으면 전체 목록에서 검색)
-  const currentStore = store || stores.find(s => s.id === storeId || s.id === parseInt(storeId));
+  const store = useSelector((state) => state.store?.currentStore);
+  const stores = useSelector((state) => state.store?.stores || []);
+  const storeLoading = useSelector((state) => state.store?.loading || false);
+  const storeError = useSelector((state) => state.store?.error || null);
 
-  // UI 상태 관리
+  const currentStore =
+    store || stores.find((s) => s.id === storeId || s.id === parseInt(storeId));
+
   const uiState = useUIState({
     isLoading: storeLoading,
     error: storeError,
     hasData: Boolean(currentStore),
     loadingMessage: "매장 정보를 불러오는 중...",
-    emptyMessage: "매장 정보를 찾을 수 없습니다"
+    emptyMessage: "매장 정보를 찾을 수 없습니다",
   });
-  
-  // 매장 데이터 로딩
+
   useEffect(() => {
     if (storeId) {
       dispatch(fetchStoreById(storeId));
@@ -74,16 +72,14 @@ export default function StoreDetail() {
     if (store && store.liked) {
       setIsFavorite(store.storeId, store.liked);
     }
-  }, [store])
+  }, [store]);
 
-  // 아래로 스크롤 되었을 때 헤더 배경을 흰색으로 변경
   useEffect(() => {
     const onScroll = () => {
       const target = document.getElementById("intro");
       if (!target) return;
 
       const rect = target.getBoundingClientRect();
-      // intro가 화면 밖으로 완전히 가려졌는지 확인
       setTransparent(rect.bottom > 0);
     };
     const onScroll2 = () => {
@@ -102,7 +98,6 @@ export default function StoreDetail() {
     };
   }, []);
 
-  // 에러 핸들러
   const handleRetry = () => {
     dispatch(fetchStoreById(storeId));
     dispatch(fetchMenusByStoreId(storeId));
@@ -116,18 +111,16 @@ export default function StoreDetail() {
     navigate("/");
   };
 
-  // 장바구니 페이지로 이동
   const handleCartClick = () => {
     navigate("/cart");
   };
 
-  // UI 상태별 렌더링
   const renderContent = () => {
     if (uiState.isLoading) {
       return (
         <div className={styles.container}>
-          <LoadingSpinner 
-            message="매장 정보를 불러오는 중..." 
+          <LoadingSpinner
+            message="매장 정보를 불러오는 중..."
             size="large"
             pageLoading
           />
@@ -166,7 +159,6 @@ export default function StoreDetail() {
       );
     }
 
-    // 성공 상태: 매장 상세 정보 표시
     return (
       <div className={styles.container}>
         <HeaderStoreDetail
@@ -184,18 +176,26 @@ export default function StoreDetail() {
             if (!currentStore?.storeId) return;
             const wasAlreadyFavorite = currentStore.liked || false;
             toggleFavorite(currentStore.storeId);
-            // 토스트 메시지 표시
-            const message = wasAlreadyFavorite ? '즐겨찾기에서 제거되었습니다!' : '즐겨찾기에 추가되었습니다!';
+            const message = wasAlreadyFavorite
+              ? "즐겨찾기에서 제거되었습니다!"
+              : "즐겨찾기에 추가되었습니다!";
             setToastMessage(message);
           }}
         />
         <div id="intro" className={styles.intro}>
-          <PhotoSlider images={currentStore.images || ['/samples/food1.jpg']} />
+          <PhotoSlider images={currentStore.images || ["/samples/food1.jpg"]} />
           <div className={styles.introContent}>
             <h1>{currentStore.name}</h1>
-            <div className={styles.storeInfoButton}>
+            <div
+              className={styles.storeInfoButton}
+              onClick={() =>
+                navigate(`/stores/${currentStore.storeId}/reviews`)
+              }
+              style={{ cursor: "pointer" }}
+            >
               <span>
-                ⭐ {currentStore.review?.toFixed(1)} ({currentStore.reviewCount})
+                ⭐ {currentStore.review?.toFixed(1)} (
+                {currentStore.reviewCount})
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -213,8 +213,10 @@ export default function StoreDetail() {
         </div>
         <DeliveryTypeTab
           storeId={storeId}
-          defaultTime={parseInt(currentStore.deliveryTime?.split('-')[0]) || 30}
-          takeoutTime={15} // 기본값
+          defaultTime={parseInt(
+            currentStore.deliveryTime?.split("-")[0]
+          ) || 30}
+          takeoutTime={15}
           minimumOrderPrice={currentStore.minOrderAmount || 10000}
           deliveryFeeMin={currentStore.defaultDeliveryFee}
           deliveryFeeMax={currentStore.onlyOneDeliveryFee}
@@ -239,12 +241,10 @@ export default function StoreDetail() {
           cartInfo={{
             itemCount: cartItemCount,
             totalPrice: cartTotalPrice,
-            orderPrice: cartTotalPrice
+            orderPrice: cartTotalPrice,
           }}
         />
       )}
     </SlideInFromRight>
   );
 }
-
-
