@@ -1,11 +1,6 @@
 // 카카오맵 관련 유틸리티 함수들
 
-/**
- * 카카오맵 API 키가 설정되어 있는지 확인
- */
-export const isKakaoApiKeySet = () => {
-  return !!(import.meta.env.VITE_APP_KAKAOMAP_KEY);
-};
+import { isKakaoApiKeySet } from './kakaoApiKey';
 
 /**
  * 카카오맵이 로드되었는지 확인
