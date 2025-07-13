@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { orderAPI } from '../../services/orderAPI';
 import { tossPaymentAPI, TossPaymentAPI } from '../../services/tossPaymentAPI';
@@ -49,6 +49,7 @@ export default function TossPaymentSuccess() {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [pollingStatus, setPollingStatus] = useState(null);
   const [orderData, setOrderData] = useState(null);
+  const pollingCleanupRef = useRef(null);
 
   const confirmPayment = useCallback(async () => {
     logger.log('🔄 confirmPayment 시작, isProcessing:', isProcessing);
@@ -168,7 +169,8 @@ export default function TossPaymentSuccess() {
         
         // 폴링 시작 (Webhook 상태 반영을 위해)
         try {
-          startPaymentPolling(requestData.TossPaymentKey, requestData.TossOrderId);
+          if (pollingCleanupRef.current) pollingCleanupRef.current();
+          pollingCleanupRef.current = await startPaymentPolling(requestData.TossPaymentKey, requestData.TossOrderId);
         } catch (pollingError) {
           logger.warn('⚠️ 폴링 시작 실패 (무시):', pollingError);
         }
@@ -199,6 +201,7 @@ export default function TossPaymentSuccess() {
 
   // 결제 상태 폴링 시작
   const startPaymentPolling = useCallback(async (paymentKey, orderId) => {
+    let pollInterval = null;
     try {
       logger.log('🔄 결제 상태 폴링 시작:', { paymentKey, orderId });
       
@@ -214,7 +217,7 @@ export default function TossPaymentSuccess() {
       updatePollingStatus();
       
       // 폴링 시작 (5초마다, 최대 2분)
-      const pollInterval = setInterval(async () => {
+      pollInterval = setInterval(async () => {
         try {
           const status = await paymentStatusService.getPaymentStatus(paymentKey);
           logger.log('📊 폴링 상태 업데이트:', status);
@@ -251,12 +254,24 @@ export default function TossPaymentSuccess() {
       
     } catch (error) {
       logger.error('❌ 폴링 시작 실패:', error);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
     }
+    // 정리 함수 반환
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
   }, []);
 
   // 컴포넌트 마운트 시 결제 확인 시작
   useEffect(() => {
     confirmPayment();
+    return () => {
+      if (pollingCleanupRef.current) pollingCleanupRef.current();
+    };
   }, [confirmPayment]);
 
   // 홈으로 이동
