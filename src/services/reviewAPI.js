@@ -25,3 +25,10 @@ export async function getMyReviews() {
     throw error;
   }
 }
+
+const reviewAPI = {
+  submitReview,
+  getMyReviews,
+};
+
+export default reviewAPI;
