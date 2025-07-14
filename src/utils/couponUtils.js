@@ -12,7 +12,6 @@ export function calculateCouponDiscount(coupon, orderPrice = 0, deliveryFee = 0)
       discountAmount = Math.min(discountAmount, orderPrice);
       break;
 
-    case 'AMOUNT':
     default:
       discountAmount = Math.min(coupon.discountValue, orderPrice);
       break;
@@ -64,7 +63,6 @@ export function getCouponDisplayText(coupon, orderPrice = 0, deliveryFee = 0) {
     case 'RATE':
       return `${coupon.discountValue}% 할인`;
 
-    case 'AMOUNT':
     default:
       return `${coupon.discountValue.toLocaleString()}원 할인`;
   }

@@ -2,31 +2,25 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import { couponAPI } from '../services';
 
 function isValidCoupon(coupon, cartTotal) {
-  console.log('🧪 isValidCoupon 검사 시작:', coupon, cartTotal);
 
   if (!coupon.canUsed) {
-    console.log('❌ canUsed false');
     return false;
   }
 
   const now = new Date();
   const validDate = new Date(coupon.validDate);
   if (now > validDate) {
-    console.log('❌ validDate expired', now, validDate);
     return false;
   }
 
   if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
-    console.log('❌ minOrderAmount 부족', cartTotal, coupon.minOrderAmount);
     return false;
   }
 
   if (coupon.isUsed || coupon.isExpired) {
-    console.log('❌ 이미 사용됨 or 만료됨');
     return false;
   }
 
-  console.log('✅ isValidCoupon 통과');
   return true;
 }
 
@@ -64,29 +58,21 @@ const couponSlice = createSlice({
   reducers: {
     applyCoupon(state, action) {
   const { couponId, cartTotal } = action.payload;
-  console.log('🚀 [reducer] applyCoupon called with:', couponId, cartTotal);
-
-  console.log('🗂️ [reducer] state.coupons:', state.coupons);
 
   const coupon = state.coupons.find(c => String(c.id) === String(couponId));
-  console.log('🔍 [reducer] coupon found:', coupon);
 
   if (coupon && isValidCoupon(coupon, cartTotal)) {
     const alreadySelected = state.selectedCouponIds.includes(String(couponId));
-    console.log('✅ [reducer] alreadySelected:', alreadySelected);
 
     if (alreadySelected) {
       state.selectedCouponIds = state.selectedCouponIds.filter(id => id !== String(couponId));
-      console.log('❎ [reducer] coupon removed, selectedCouponIds:', state.selectedCouponIds);
     } else {
       const selectedCoupons = state.coupons.filter(c =>
         state.selectedCouponIds.includes(String(c.id))
       );
       const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
-      console.log('🔗 [reducer] hasNonStackable:', hasNonStackable);
 
       if (hasNonStackable && coupon.isStackable) {
-        console.log('⛔ [reducer] skip adding stackable because non-stackable selected');
         return;
       }
 
@@ -95,22 +81,13 @@ const couponSlice = createSlice({
       }
 
       state.selectedCouponIds.push(String(couponId));
-      console.log('✅ [reducer] coupon added, selectedCouponIds:', state.selectedCouponIds);
     }
-  } else {
-    console.log('⚠️ [reducer] coupon invalid or not found');
-  }
+  } 
 }
 ,
     removeCoupon(state, action) {
       const { couponId } = action.payload;
       state.selectedCouponIds = state.selectedCouponIds.filter(id => String(id) !== String(couponId));
-
-      if (state.selectedCouponIds.length === 0) {
-        state.selectedCouponId = null;
-      } else if (state.selectedCouponId === couponId) {
-        state.selectedCouponId = state.selectedCouponIds[0];
-      }
     },
     clearCoupon(state) {
       state.selectedCouponIds = [];
@@ -123,7 +100,6 @@ const couponSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCoupons.fulfilled, (state, action) => {
-        console.log('✅ [fetchCoupons.fulfilled] payload:', action.payload);
         state.loading = false;
         state.coupons = action.payload;
       })
