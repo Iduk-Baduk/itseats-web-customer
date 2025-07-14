@@ -21,7 +21,7 @@ export default function Review({ className }) {
 
   const [storeStar, setStoreStar] = useState(0);
   const [riderStar, setRiderStar] = useState(0);
-  const [menuLiked, setMenuLiked] = useState('NONE'); // GOOD, BAD, NONE
+  const [menuLiked, setMenuLiked] = useState('NONE');
   const [content, setContent] = useState('');
   const [errors, setErrors] = useState({});
 
@@ -34,7 +34,7 @@ export default function Review({ className }) {
     if (riderStar === 0) newErrors.riderStar = '배달 평점을 선택해주세요!';
     if (menuLiked === 'NONE') newErrors.menuLiked = '좋아요 또는 별로를 선택해주세요!';
     if (content.trim().length < 10) newErrors.content = '리뷰 내용을 최소 10자 이상 작성해주세요.';
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -57,10 +57,17 @@ export default function Review({ className }) {
   if (!currentOrder) {
     return (
       <div className={className}>
-        <Header title="평가 및 리뷰 작성" rightIcon="none" leftIcon="close" leftButtonAction={() => navigate('/orders')} />
+        <Header
+          title="평가 및 리뷰 작성"
+          leftIcon="close"
+          leftButtonAction={() => navigate('/orders')}
+        />
         <div style={{ padding: '40px 20px', textAlign: 'center' }}>
           <p>주문 정보를 찾을 수 없습니다.</p>
-          <button onClick={() => navigate('/orders')} style={{ marginTop: '20px', padding: '10px 20px' }}>
+          <button
+            onClick={() => navigate('/orders')}
+            style={{ marginTop: '20px', padding: '10px 20px' }}
+          >
             주문 목록으로 이동
           </button>
         </div>
@@ -68,36 +75,40 @@ export default function Review({ className }) {
     );
   }
 
-  // ✅ 이미지와 메뉴 정보
   const storeImage = currentOrder.storeImage || '/samples/food1.jpg';
-  const firstMenu = currentOrder.orderMenus?.[0];
-  const menuImage = firstMenu?.menuImage || '/samples/food1.jpg';
-  const menuName = firstMenu?.menuName || '메뉴 이름 없음';
-  const menuOptions = firstMenu?.options?.join(', ') || '';
+  const menuName = currentOrder.menuSummary || '메뉴 정보 없음';
+  const menuOptions = '';
 
-  // 🚨 리뷰 작성 가능 조건 확인
   if (currentOrder.orderStatus !== 'COMPLETED' || currentOrder.hasReview) {
-    alert(currentOrder.hasReview ? '이미 리뷰를 작성하셨습니다.' : '완료된 주문만 리뷰를 작성할 수 있습니다.');
+    alert(
+      currentOrder.hasReview
+        ? '이미 리뷰를 작성하셨습니다.'
+        : '완료된 주문만 리뷰를 작성할 수 있습니다.'
+    );
     navigate('/orders');
     return null;
   }
 
   return (
     <div className={className}>
-      <Header title="평가 및 리뷰 작성" rightIcon="none" leftIcon="close" leftButtonAction={() => navigate('/orders')} />
+      <Header
+        title="평가 및 리뷰 작성"
+        leftIcon="close"
+        leftButtonAction={() => navigate('/orders')}
+      />
+
       <div className={styles.reviewContainer}>
         <div className={styles.reviewCard}>
           <ReviewCard
             object="음식"
-            image={storeImage}
+            image={{ url: storeImage }}
             onSelect={setStoreStar}
-            storeStar={storeStar}
-            setStoreStar={setStoreStar}
           />
           {errors.storeStar && <div className={styles.error}>{errors.storeStar}</div>}
+
           <ReviewCard
             object="배달"
-            image="/icons/order/rider.jpg"
+            image={{ url: '/icons/order/rider.jpg' }}
             onSelect={setRiderStar}
           />
           {errors.riderStar && <div className={styles.error}>{errors.riderStar}</div>}
@@ -106,7 +117,6 @@ export default function Review({ className }) {
 
         <p className={styles.text}>메뉴에 대해 평가해주세요 (좋아요/별로)</p>
         <ReviewItem
-          imageUrl={menuImage}
           name={menuName}
           option={menuOptions}
           selected={menuLiked}
@@ -123,7 +133,6 @@ export default function Review({ className }) {
         />
         {errors.content && <div className={styles.error}>{errors.content}</div>}
 
-        {/* ✅ 사진 업로드 버튼 (활성화) */}
         <PhotoButton onClick={() => alert('사진 업로드 기능은 추후 구현 예정입니다.')} />
       </div>
 
