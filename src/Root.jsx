@@ -334,6 +334,7 @@ export default function Root() {
           />
 
           {/* 지연 로딩 - 결제 관련 (인증 필요) */}
+          {/*
           <Route 
             path="/payments" 
             element={
@@ -424,6 +425,7 @@ export default function Root() {
               </Layout>
             } 
           />
+          */}
 
           {/* 지연 로딩 - 기타 페이지들 */}
           <Route 
