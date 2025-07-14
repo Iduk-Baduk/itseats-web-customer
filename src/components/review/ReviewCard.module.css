@@ -37,6 +37,13 @@
   filter: brightness(0.8);
 }
 
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .image {
   width: 80px;
   height: 80px;
@@ -46,6 +53,13 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+.storeThumbnail {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .riderIcon {
@@ -75,4 +89,8 @@
     height: 24px;
   }
 
+  .storeThumbnail {
+    width: 28px;
+    height: 28px;
+  }
 }
