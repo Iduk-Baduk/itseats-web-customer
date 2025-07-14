@@ -137,12 +137,11 @@ const StoreAPI = {
             images: storeData.images || [],
             // 기존 프론트엔드 호환성을 위한 추가 필드
             storeImage: storeData.images?.[0] || "/samples/food1.jpg",
-            rating: storeData.reviewRating || 0
+            rating: storeData.reviewRating || 0,
           };
         }
         // 백엔드에서 직접 데이터를 반환하는 경우
         else if (response.data.name) {
-          logger.log("✅ 매장 상세 정보 조회 성공 (직접 데이터):", response.data);
           return {
             storeId: storeId,
             name: response.data.name,
@@ -153,7 +152,15 @@ const StoreAPI = {
             // 기존 프론트엔드 호환성을 위한 추가 필드
             storeImage: response.data.images?.[0] || "/samples/food1.jpg",
             rating: response.data.review || 0,
-            description: response.data.description || ""
+            description: response.data.description || "",
+            address: response.data.address || "",
+            location: {
+              lat: response.data.location?.lat || 37.4979,
+              lng: response.data.location?.lng || 127.0276,
+            },
+            orderable: response.data.orderable || false,
+            defaultDeliveryFee: response.data.defaultDeliveryFee || 0,
+            onlyOneDeliveryFee: response.data.onlyOneDeliveryFee || 0,
           };
         }
       // 응답 구조가 예상과 다른 경우
