@@ -76,8 +76,8 @@ export default function Review({ className }) {
   const menuOptions = firstMenu?.options?.join(', ') || '';
 
   // 🚨 리뷰 작성 가능 조건 확인
-  if (currentOrder.orderStatus !== 'COMPLETED' || currentOrder.hasReview) {
-    alert(currentOrder.hasReview ? '이미 리뷰를 작성하셨습니다.' : '완료된 주문만 리뷰를 작성할 수 있습니다.');
+  if ((currentOrder.orderStatus !== 'COMPLETED' && currentOrder.orderStatus !== 'DELIVERED') || currentOrder.hasReview) {
+    alert(currentOrder.hasReview ? '이미 리뷰를 작성하셨습니다.' : '배달 완료된 주문만 리뷰를 작성할 수 있습니다.');
     navigate('/orders');
     return null;
   }
