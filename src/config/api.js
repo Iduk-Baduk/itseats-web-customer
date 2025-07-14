@@ -70,13 +70,6 @@ export const API_ENDPOINTS = {
   USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
   USER_REVIEWS: '/reviews/my',
   
-  // 인증 관련 (백엔드 팀 제공 명세에 맞게 수정)
-  AUTH_LOGIN: '/login',                    // ✅ POST /api/login (baseURL에 이미 /api 포함)
-  AUTH_LOGOUT: '/auths/logout',            // ✅ POST /api/auths/logout?memberId={memberId}
-  AUTH_REFRESH: '/auths/reissue',          // ✅ GET /api/auths/reissue?memberId={memberId}
-  AUTH_REGISTER: '/members/sign-up',       // ✅ POST /api/members/sign-up
-  AUTH_ME: '/members/me',                  // ✅ GET /api/members/me (인증 필요)
-  
   // 리뷰 관련
   REVIEW_BY_ORDER_ID: (orderId) => `/reviews/${orderId}`,
 };
