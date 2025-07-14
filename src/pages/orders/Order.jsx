@@ -88,7 +88,8 @@ export default function Order() {
         ? new Date(order.createdAt).toLocaleString("ko-KR")
         : order.date,
       isCompleted,
-      hasReview: !!order.hasReview,
+      hasReview: Boolean(order.hasReview),
+
     };
   }, []);
 

@@ -123,9 +123,7 @@ const StoreAPI = {
       // 백엔드 응답 데이터 로깅
       logger.log("📦 백엔드 응답 데이터:", response.data);
       logger.log("📦 백엔드 응답 상태:", response.status);
-      
-      // 백엔드 API 응답 구조에 맞춰 데이터 처리
-      if (response.data) {
+     
         // 백엔드에서 httpStatus 필드가 있는 경우
         if (response.data.httpStatus === 200) {
           const storeData = response.data.data;
@@ -158,8 +156,6 @@ const StoreAPI = {
             description: response.data.description || ""
           };
         }
-      }
-      
       // 응답 구조가 예상과 다른 경우
       throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
     } catch (error) {
@@ -225,6 +221,25 @@ const StoreAPI = {
       throw error;
     }
   },
+
+  getReviewsByStoreId: async (storeId) => {
+    try {
+      const response = await retryRequest(() => apiClient.get(`/reviews/${storeId}`));
+      logger.log("✅ 매장 리뷰 조회 성공:", response.data);
+      return response.data;  // ✅ data로 바꿈
+    } catch (error) {
+      logger.error("❌ 매장 리뷰 조회 실패:", error);
+
+      if (error.statusCode === 404) {
+        error.message = '매장 리뷰를 찾을 수 없습니다.';
+      } else{
+        error.message = '매장 리뷰를 불러오는데 실패했습니다.';
+      }
+      throw error;
+    }
+  },
+
+
 };
 
 export default StoreAPI;
