@@ -15,7 +15,6 @@ export const fetchStores = createAsyncThunk(
 export const fetchStoresByCategory = createAsyncThunk(
   "store/fetchStoresByCategory",
   async ({ category, sort, page, addressId, next }) => {
-    console.log("Fetching stores by category:", { category, sort, page, addressId, next });
     // 카테고리별 매장
     const data = await StoreAPI.getStoresByCategory({
       category,
@@ -31,13 +30,14 @@ export const fetchStoresByCategory = createAsyncThunk(
 // 매장 검색 API 연동
 export const fetchStoresByKeyword = createAsyncThunk(
   "store/fetchStoresByKeyword",
-  async ({ keyword, sort, page, addressId }) => {
+  async ({ keyword, sort, page, addressId, next }) => {
     const data = await StoreAPI.searchStores({
       keyword,
       sort,
       page,
       addressId,
     });
+    data.next = next; // 무한스크롤로 다음페이지를 조회하는지 여부
     return data;
   }
 );
@@ -116,7 +116,31 @@ const storeSlice = createSlice({
       .addCase(fetchStoresByCategory.fulfilled, (state, action) => {
         const newStores = action.payload.stores || [];
 
-        console.log("fetchStoresByCategory.fulfilled: ", action.payload);
+        // 기존 매장 목록과 새로 가져온 매장 목록 병합
+        if (action.payload.next) {
+          if (state.currentPage < action.payload.currentPage) { // 중복 방지
+            state.stores = mergeUniqueStores(state.stores, newStores);
+            state.currentPage = action.payload.currentPage || 0;
+            state.hasNext = action.payload.hasNext || false;
+          }
+        } else {
+          state.stores = newStores;
+          state.currentPage = action.payload.currentPage || 0;
+          state.hasNext = action.payload.hasNext || false;
+        }
+        state.loading = false;
+      })
+      .addCase(fetchStoresByCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // 매장 검색
+      .addCase(fetchStoresByKeyword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStoresByKeyword.fulfilled, (state, action) => {
+        const newStores = action.payload.stores || [];
 
         // 기존 매장 목록과 새로 가져온 매장 목록 병합
         if (action.payload.next) {
@@ -130,22 +154,6 @@ const storeSlice = createSlice({
           state.currentPage = action.payload.currentPage || 0;
           state.hasNext = action.payload.hasNext || false;
         }
-        console.log("Current page:", state.currentPage, "Has next:", state.hasNext);
-        state.loading = false;
-      })
-      .addCase(fetchStoresByCategory.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      // 매장 검색
-      .addCase(fetchStoresByKeyword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchStoresByKeyword.fulfilled, (state, action) => {
-        state.stores = action.payload.stores || [];
-        state.currentPage = action.payload.page || 0;
-        state.hasNext = action.payload.hasNext || false;
         state.loading = false;
       })
       .addCase(fetchStoresByKeyword.rejected, (state, action) => {
