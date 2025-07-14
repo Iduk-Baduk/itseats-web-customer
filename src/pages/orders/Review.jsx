@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import useSubmitReview from '../../hooks/useSubmitReview';
 
@@ -10,6 +10,7 @@ import ReviewItem from '../../components/review/ReviewItem';
 import PhotoButton from '../../components/review/ReviewPhotoButton';
 
 import styles from './Review.module.css';
+import { orderAPI } from '../../services/orderAPI';
 
 export default function Review({ className }) {
   const navigate = useNavigate();
@@ -17,7 +18,16 @@ export default function Review({ className }) {
   const location = useLocation();
   const { handleSubmitReview, isSubmitting } = useSubmitReview();
 
-  const currentOrder = location.state?.order;
+  const [currentOrder, setCurrentOrder] = useState(location.state?.order);
+
+  // orderMenus가 없으면 주문 상세 API로 보완
+  useEffect(() => {
+    if (currentOrder && !currentOrder.orderMenus && orderId) {
+      orderAPI.getOrderById(orderId).then((orderDetail) => {
+        setCurrentOrder(orderDetail);
+      });
+    }
+  }, [currentOrder, orderId]);
 
   const [storeStar, setStoreStar] = useState(0);
   const [riderStar, setRiderStar] = useState(0);
