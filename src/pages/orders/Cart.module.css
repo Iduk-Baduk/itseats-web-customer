@@ -132,12 +132,12 @@ text-align: right;
 .couponHeader {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: space-between;  /* 🔥 왼쪽-오른쪽 정렬로 바꿈 */
   cursor: pointer;
 }
+
 .couponHeader span {
-  flex: 1;
+  flex: unset;
 }
 
 /* 쿠폰 섹션 스타일 */
