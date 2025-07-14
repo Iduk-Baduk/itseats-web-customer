@@ -2,7 +2,6 @@ import apiClient from "./apiClient";
 import { logger } from "../utils/logger";
 import { API_ENDPOINTS } from "../config/api";
 import AuthService from "./authService";
-import { address, desc } from "motion/react-client";
 
 // 재시도 설정
 const RETRY_CONFIG = {

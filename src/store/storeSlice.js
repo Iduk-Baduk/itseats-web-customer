@@ -172,7 +172,6 @@ const storeSlice = createSlice({
           state.currentStore.storeId !== action.payload.storeId
         ) {
           state.currentStore = action.payload;
-          console.log("Updating current store with new data:", action.payload);
         } else if (state.currentStore.storeId === action.payload.storeId) {
           // 이미 같은 매장이라면 기존 메뉴를 유지
           state.currentStore = {

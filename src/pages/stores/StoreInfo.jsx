@@ -99,7 +99,7 @@ export default function StoreInfo() {
           </div>
           <div className={styles.businessStatus}>
             <h2>영업상태</h2>
-            <p>{getBusinessStatus(store.orderable || true)}</p>
+            <p>{getBusinessStatus(store.orderable)}</p>
           </div>
           <div className={styles.storeDescription}>
             <h2>매장 소개</h2>
@@ -112,12 +112,13 @@ export default function StoreInfo() {
 }
 
 function getBusinessStatus(orderable) {
+  if (orderable === undefined) {
+    return "영업 상태 알 수 없음";
+  }
   switch (orderable) {
     case true:
       return "영업 중";
     case false:
       return "영업 종료";
-    default:
-      return "영업 상태 알 수 없음";
   }
 }
