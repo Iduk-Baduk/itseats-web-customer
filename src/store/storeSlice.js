@@ -111,7 +111,11 @@ const storeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStoresByCategory.fulfilled, (state, action) => {
-        state.stores = action.payload.stores || [];
+        if (action.payload.page === 0) {
+          state.stores = action.payload.stores || [];
+        } else {
+          state.stores = [...state.stores, ...(action.payload.stores || [])];
+        }
         state.currentPage = action.payload.page || 0;
         state.hasNext = action.payload.hasNext || false;
         state.loading = false;
