@@ -14,13 +14,16 @@ export const fetchStores = createAsyncThunk(
 // 카테고리별 매장 목록 조회 API 연동
 export const fetchStoresByCategory = createAsyncThunk(
   "store/fetchStoresByCategory",
-  async ({ category, sort, page, addressId }) => {
+  async ({ category, sort, page, addressId, next }) => {
+    console.log("Fetching stores by category:", { category, sort, page, addressId, next });
+    // 카테고리별 매장
     const data = await StoreAPI.getStoresByCategory({
       category,
       sort,
       page,
       addressId,
     });
+    data.next = next; // 무한스크롤로 다음페이지를 조회하는지 여부
     return data;
   }
 );
@@ -111,13 +114,23 @@ const storeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStoresByCategory.fulfilled, (state, action) => {
-        if (action.payload.page === 0) {
-          state.stores = action.payload.stores || [];
+        const newStores = action.payload.stores || [];
+
+        console.log("fetchStoresByCategory.fulfilled: ", action.payload);
+
+        // 기존 매장 목록과 새로 가져온 매장 목록 병합
+        if (action.payload.next) {
+          if (state.currentPage < action.payload.currentPage) { // 중복 방지
+            state.stores = mergeUniqueStores(state.stores, newStores);
+            state.currentPage = action.payload.currentPage || 0;
+            state.hasNext = action.payload.hasNext || false;
+          }
         } else {
-          state.stores = [...state.stores, ...(action.payload.stores || [])];
+          state.stores = newStores;
+          state.currentPage = action.payload.currentPage || 0;
+          state.hasNext = action.payload.hasNext || false;
         }
-        state.currentPage = action.payload.page || 0;
-        state.hasNext = action.payload.hasNext || false;
+        console.log("Current page:", state.currentPage, "Has next:", state.hasNext);
         state.loading = false;
       })
       .addCase(fetchStoresByCategory.rejected, (state, action) => {
@@ -214,6 +227,24 @@ const storeSlice = createSlice({
       });
   },
 });
+
+// 유틸리티 함수: 매장 목록 병합
+export function mergeUniqueStores(existingStores, newStores) {
+  const storeMap = new Map();
+
+  // 기존 매장 추가
+  existingStores.forEach((store) => {
+    storeMap.set(store.storeId, store);
+  });
+
+  // 새 매장 추가 (동일 ID가 있으면 덮어씀)
+  newStores.forEach((store) => {
+    storeMap.set(store.storeId, store);
+  });
+
+  return Array.from(storeMap.values());
+}
+
 
 export const { setCurrentStore, clearCurrentStore } = storeSlice.actions;
 export default storeSlice.reducer;

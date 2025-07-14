@@ -58,6 +58,7 @@ export default function StoreList() {
               sort,
               page: currentPage + 1,
               addressId: selectedAddressId,
+              next: true,
             })
           );
         }
