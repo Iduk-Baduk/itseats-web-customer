@@ -51,6 +51,8 @@ const TestOrder = React.lazy(() => import("./pages/TestOrder"));
 const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
 const MyCoupons = React.lazy(() => import("./pages/coupons/MyCoupons"));
 const ReviewListPage = React.lazy(() => import("./pages/stores/ReviewListPage"));
+const CartCouponsPage = React.lazy(() => import("./pages/coupons/CartCouponsPage"));
+
 
 
 
@@ -540,6 +542,20 @@ export default function Root() {
               </Layout>
             }
           />
+
+          <Route 
+            path="/coupons/cart"
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <ProtectedRoute>
+                    <CartCouponsPage />
+                  </ProtectedRoute>
+                </LazyPageWrapper>
+              </Layout>
+            }
+          />
+
 
           {/* 404 페이지 */}
           <Route 

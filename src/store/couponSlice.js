@@ -1,52 +1,53 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { couponAPI } from '../services';
 
-// 쿠폰 유효성 검사 함수
 function isValidCoupon(coupon, cartTotal) {
-  // 1. 유효기간 체크
-  if (coupon.validDate) {
-    const now = new Date();
-    const validDate = new Date(coupon.validDate);
-    
-    if (now > validDate) {
-      return false;
-    }
+  console.log('🧪 isValidCoupon 검사 시작:', coupon, cartTotal);
+
+  if (!coupon.canUsed) {
+    console.log('❌ canUsed false');
+    return false;
   }
 
-  // 2. 최소 주문 금액 체크
+  const now = new Date();
+  const validDate = new Date(coupon.validDate);
+  if (now > validDate) {
+    console.log('❌ validDate expired', now, validDate);
+    return false;
+  }
+
   if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
+    console.log('❌ minOrderAmount 부족', cartTotal, coupon.minOrderAmount);
     return false;
   }
 
-  // 3. 사용 가능 여부 체크
   if (coupon.isUsed || coupon.isExpired) {
+    console.log('❌ 이미 사용됨 or 만료됨');
     return false;
   }
 
+  console.log('✅ isValidCoupon 통과');
   return true;
 }
 
-// 쿠폰 목록 API 연동 Thunk - Axios 기반으로 변경
+
 export const fetchCoupons = createAsyncThunk(
   'coupon/fetchCoupons',
   async () => {
-    return await couponAPI.getCoupons();
-  }
-);
-
-// 사용 가능한 쿠폰 조회 Thunk
-export const fetchAvailableCoupons = createAsyncThunk(
-  'coupon/fetchAvailableCoupons',
-  async (orderData) => {
-    return await couponAPI.getAvailableCoupons(orderData);
-  }
-);
-
-// 쿠폰 사용 Thunk
-export const useCouponAsync = createAsyncThunk(
-  'coupon/useCoupon',
-  async ({ couponId, orderData }) => {
-    return await couponAPI.useCoupon(couponId, orderData);
+    const res = await couponAPI.getCoupons();
+    const rawCoupons = res.myCouponDtos;
+    return rawCoupons.map(c => ({
+      id: String(c.couponId),
+      storeId: c.storeId ? String(c.storeId) : null,
+      discountValue: c.discountValue,
+      minOrderAmount: c.minPrice,
+      couponType: c.couponType,
+      validDate: c.validDate,
+      isStackable: c.isStackable ?? false,
+      canUsed: c.canUsed !== undefined ? c.canUsed : true,
+      isUsed: c.isUsed || false,
+      isExpired: c.isExpired || false,
+    }));
   }
 );
 
@@ -54,8 +55,7 @@ const initialState = {
   coupons: [],
   loading: false,
   error: null,
-  selectedCouponId: null,
-  selectedCouponIds: [], // 다중 쿠폰 선택 (API 스펙 대응)
+  selectedCouponIds: [],
 };
 
 const couponSlice = createSlice({
@@ -63,82 +63,57 @@ const couponSlice = createSlice({
   initialState,
   reducers: {
     applyCoupon(state, action) {
-      const { couponId, cartTotal } = action.payload;
-      
-      // cartTotal 검증
-      if (cartTotal === undefined || cartTotal === null) {
-        return;
-      }
-      
-      // 쿠폰 찾기 (ID 타입 안전성 고려)
-      const coupon = state.coupons.find(c => String(c.id) === String(couponId));
-      
-      if (coupon && isValidCoupon(coupon, cartTotal)) {
-        // 이미 선택된 쿠폰인지 확인 (토글 방식)
-        const alreadySelected = state.selectedCouponIds.some(id => String(id) === String(couponId));
-        
-        if (alreadySelected) {
-          // 쿠폰 제거
-          state.selectedCouponIds = state.selectedCouponIds.filter(id => String(id) !== String(couponId));
-        } else {
-          // 새 쿠폰 추가 로직
-          const selectedCoupons = state.coupons.filter(c => 
-            state.selectedCouponIds.some(id => String(id) === String(c.id))
-          );
-          const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
-          
-          // 이미 비중복 쿠폰이 선택되어 있으면 다른 쿠폰 선택 불가
-          if (hasNonStackable && coupon.isStackable) {
-            return;
-          }
-          
-          // 현재 쿠폰이 비중복이면 기존 쿠폰들을 모두 제거
-          if (!coupon.isStackable) {
-            state.selectedCouponIds = [];
-          }
-          
-          state.selectedCouponIds.push(String(couponId));
-        }
+  const { couponId, cartTotal } = action.payload;
+  console.log('🚀 [reducer] applyCoupon called with:', couponId, cartTotal);
 
-        // 단일 쿠폰 선택 호환성 유지
-        state.selectedCouponId = state.selectedCouponIds.length > 0 ? state.selectedCouponIds[0] : null;
-      }
-    },
-    
-    clearCoupon(state) {
-      state.selectedCouponId = null;
-      state.selectedCouponIds = [];
-    },
-    
-    clearAllCoupons(state) {
-      state.selectedCouponIds = [];
-      state.selectedCouponId = null;
-    },
-    
-    applyCoupons(state, action) {
-      const { couponIds, cartTotal } = action.payload;
-      
-      if (!Array.isArray(couponIds) || couponIds.length === 0) {
+  console.log('🗂️ [reducer] state.coupons:', state.coupons);
+
+  const coupon = state.coupons.find(c => String(c.id) === String(couponId));
+  console.log('🔍 [reducer] coupon found:', coupon);
+
+  if (coupon && isValidCoupon(coupon, cartTotal)) {
+    const alreadySelected = state.selectedCouponIds.includes(String(couponId));
+    console.log('✅ [reducer] alreadySelected:', alreadySelected);
+
+    if (alreadySelected) {
+      state.selectedCouponIds = state.selectedCouponIds.filter(id => id !== String(couponId));
+      console.log('❎ [reducer] coupon removed, selectedCouponIds:', state.selectedCouponIds);
+    } else {
+      const selectedCoupons = state.coupons.filter(c =>
+        state.selectedCouponIds.includes(String(c.id))
+      );
+      const hasNonStackable = selectedCoupons.some(c => !c.isStackable);
+      console.log('🔗 [reducer] hasNonStackable:', hasNonStackable);
+
+      if (hasNonStackable && coupon.isStackable) {
+        console.log('⛔ [reducer] skip adding stackable because non-stackable selected');
         return;
       }
-      
-      const validCouponIds = couponIds.filter(couponId => {
-        const coupon = state.coupons.find(c => String(c.id) === String(couponId));
-        return coupon && isValidCoupon(coupon, cartTotal);
-      });
-      
-      state.selectedCouponIds = validCouponIds.map(id => String(id));
-      state.selectedCouponId = validCouponIds.length > 0 ? validCouponIds[0] : null;
-    },
-    
+
+      if (!coupon.isStackable) {
+        state.selectedCouponIds = [];
+      }
+
+      state.selectedCouponIds.push(String(couponId));
+      console.log('✅ [reducer] coupon added, selectedCouponIds:', state.selectedCouponIds);
+    }
+  } else {
+    console.log('⚠️ [reducer] coupon invalid or not found');
+  }
+}
+,
     removeCoupon(state, action) {
       const { couponId } = action.payload;
       state.selectedCouponIds = state.selectedCouponIds.filter(id => String(id) !== String(couponId));
-      
-      // 제거된 쿠폰이 메인 선택 쿠폰이었다면 업데이트
-      if (String(state.selectedCouponId) === String(couponId)) {
-        state.selectedCouponId = state.selectedCouponIds.length > 0 ? state.selectedCouponIds[0] : null;
+
+      if (state.selectedCouponIds.length === 0) {
+        state.selectedCouponId = null;
+      } else if (state.selectedCouponId === couponId) {
+        state.selectedCouponId = state.selectedCouponIds[0];
       }
+    },
+    clearCoupon(state) {
+      state.selectedCouponIds = [];
     },
   },
   extraReducers: (builder) => {
@@ -148,6 +123,7 @@ const couponSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCoupons.fulfilled, (state, action) => {
+        console.log('✅ [fetchCoupons.fulfilled] payload:', action.payload);
         state.loading = false;
         state.coupons = action.payload;
       })
@@ -158,27 +134,11 @@ const couponSlice = createSlice({
   },
 });
 
-export const { applyCoupon, clearCoupon, clearAllCoupons, applyCoupons, removeCoupon } = couponSlice.actions;
+export const { applyCoupon, removeCoupon, clearCoupon } = couponSlice.actions;
 
-// 정규화된 쿠폰 데이터 selector (메모이제이션 적용)
 export const selectNormalizedCoupons = createSelector(
   state => state.coupon?.coupons,
-  (coupons) => {
-    if (!Array.isArray(coupons)) {
-      return [];
-    }
-    return coupons.map(coupon => ({
-      ...coupon,
-      id: String(coupon.id),
-      discount: Number(coupon.discount || 0),
-      minOrderAmount: Number(coupon.minOrderAmount || 0),
-      isStackable: Boolean(coupon.isStackable)
-    }));
-  }
+  (coupons) => Array.isArray(coupons) ? coupons : []
 );
-
-// 유효한 쿠폰만 반환하는 선택자
-export const selectValidCoupons = (state, cartTotal = 0) =>
-  selectNormalizedCoupons(state).filter(coupon => isValidCoupon(coupon, cartTotal));
 
 export default couponSlice.reducer;
