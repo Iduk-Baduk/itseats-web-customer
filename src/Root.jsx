@@ -50,6 +50,8 @@ const Counter = React.lazy(() => import("./components/Counter"));
 const TestOrder = React.lazy(() => import("./pages/TestOrder"));
 const TestBackendIntegration = React.lazy(() => import("./pages/TestBackendIntegration"));
 const MyCoupons = React.lazy(() => import("./pages/coupons/MyCoupons"));
+const ReviewListPage = React.lazy(() => import("./pages/stores/ReviewListPage"));
+
 
 
 // 페이지별 최적화된 로딩 메시지
@@ -528,6 +530,17 @@ export default function Root() {
               </Layout>
             }
           />
+          <Route 
+            path="/stores/:storeId/reviews"
+            element={
+              <Layout navVisible={false}>
+                <LazyPageWrapper>
+                  <ReviewListPage />
+                </LazyPageWrapper>
+              </Layout>
+            }
+          />
+
           {/* 404 페이지 */}
           <Route 
             path="*" 

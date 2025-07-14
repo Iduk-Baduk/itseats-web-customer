@@ -213,3 +213,54 @@
   padding: 12px 0;
   border-bottom: 1px solid #eee;
 }
+
+/* 리뷰 리스트 */
+.reviewList {
+  padding: 0 20px;
+}
+
+.reviewItem {
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.reviewItem:last-child {
+  border-bottom: none;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.reviewHeader strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.reviewHeader span {
+  font-size: 12px;
+  color: var(--black-500);
+}
+
+.reviewStars {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--orange-500);
+  margin-bottom: 4px;
+}
+
+.ratingNumber {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--black-500);
+}
+
+.reviewContent {
+  font-size: 14px;
+  color: var(--black-800);
+  white-space: pre-wrap;
+}

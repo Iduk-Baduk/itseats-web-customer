@@ -2,9 +2,9 @@ import React from "react";
 import OptimizedImage from "../common/OptimizedImage";
 import styles from "./StoreListItem.module.css";
 
-const StoreListItem = React.memo(({ store, onClick }) => {
+const StoreListItem = React.memo(React.forwardRef(({ store, onClick }, ref) => {
   return (
-    <div className={styles.storeListItem} onClick={onClick}>
+    <div className={styles.storeListItem} onClick={onClick} ref={ref}>
       <div className={styles.storeImageContainer}>
         <OptimizedImage
           src={store.images[0] || "/samples/banner.jpg"}
@@ -46,7 +46,7 @@ const StoreListItem = React.memo(({ store, onClick }) => {
       </div>
     </div>
   );
-});
+}));
 
 StoreListItem.displayName = 'StoreListItem';
 

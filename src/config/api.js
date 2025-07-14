@@ -68,8 +68,8 @@ export const API_ENDPOINTS = {
   USER_STATS: '/members/stats',
   USER_FAVORITES: '/members/favorites',
   USER_FAVORITE_BY_ID: (storeId) => `/members/favorites/${storeId}`,
-  USER_REVIEWS: '/members/reviews',
-
+  USER_REVIEWS: '/reviews/my',
+  
   // 리뷰 관련
   REVIEW_BY_ORDER_ID: (orderId) => `/reviews/${orderId}`,
 };

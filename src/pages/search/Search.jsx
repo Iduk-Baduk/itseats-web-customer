@@ -61,7 +61,7 @@ export default function Search() {
       />
       
       {/* 인기 검색어 및 날짜 */}
-      <div>
+      {/* <div>
         <div className={styles.keywordHeader}>
           <span className={styles.title}>인기 검색어</span>
           <span className={styles.subTextRight}>오후 4:10 업데이트</span>
@@ -69,7 +69,7 @@ export default function Search() {
         <div style={{ height: "160px" }}></div>
       </div>
 
-      <hr className={styles.separator}/>
+      <hr className={styles.separator}/> */}
 
       {/* 최근 검색어 */}
       <div>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import SearchHeaderBar from "../../components/common/SearchHeaderBar";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -31,6 +31,8 @@ export default function SearchResult() {
   const stores = useSelector((state) => state.store?.stores || []);
   const storeLoading = useSelector((state) => state.store?.loading || false);
   const storeError = useSelector((state) => state.store?.error || null);
+  const currentPage = useSelector((state) => state.store?.currentPage || 0);
+  const hasNext = useSelector((state) => state.store?.hasNext || false);
   const { selectedAddressId } = useAddressRedux();
 
   // UI 상태 관리
@@ -57,6 +59,28 @@ export default function SearchResult() {
       addressId: selectedAddressId,
     }));
   }, [dispatch, initialKeyword, sort, keyword, selectedAddressId]);
+
+  // 무한 스크롤 구현
+  const observer = useRef();
+  const lastStoreElementRef = useCallback(
+    (node) => {
+      if (uiState.isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNext) {
+          dispatch(fetchStoresByKeyword({
+            keyword,
+            sort,
+            page: currentPage + 1,
+            addressId: selectedAddressId,
+            next: true,
+          }));
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [uiState.isLoading, hasNext, currentPage, dispatch, keyword, sort, selectedAddressId]
+  );
 
   // 에러 핸들러
   const handleRetry = () => {
@@ -99,10 +123,6 @@ export default function SearchResult() {
 
   // UI 상태별 렌더링
   const renderContent = () => {
-    if (uiState.isLoading) {
-      return <LoadingSpinner message="검색 중..." size="medium" pageLoading />;
-    }
-
     if (uiState.hasError) {
       return (
         <ErrorState
@@ -136,23 +156,35 @@ export default function SearchResult() {
           </span>
         </div>
 
-        {stores.map((store) => (
-          <StoreListItem
-            key={store.storeId}
-            store={{
-              storeId: store.storeId,
-              name: store.name,
-              review: store.review,
-              reviewCount: store.reviewCount,
-              images: store.images || ["/samples/food1.jpg"],
-              distance: store.distance || 1,
-              minOrderPrice: store.minOrderPrice || 10000,
-              minutesToDelivery:
-                parseInt(store.deliveryTime?.split("-")[0]) || 30,
-            }}
-            onClick={() => navigate(`/stores/${store.storeId}`)}
-          />
-        ))}
+        {stores.map((store, index) => {
+          const isLastElement = index === stores.length - 1;
+
+          return (
+            <StoreListItem
+              key={store.storeId}
+              store={{
+                storeId: store.storeId,
+                name: store.name,
+                review: store.review,
+                reviewCount: store.reviewCount,
+                images: store.images || ["/samples/food1.jpg"],
+                distance: store.distance || 1,
+                minOrderPrice: store.minOrderPrice || 10000,
+                minutesToDelivery:
+                  parseInt(store.deliveryTime?.split("-")[0]) || 30,
+              }}
+              onClick={() => navigate(`/stores/${store.storeId}`)}
+              ref={isLastElement ? lastStoreElementRef : null}
+            />
+          );
+        })}
+        {
+          uiState.isLoading && (
+            <div style={{ padding: "20px", textAlign: "center" }}>
+              <LoadingSpinner message="검색 중..." />
+            </div>
+          )
+        }
       </>
     );
   };
