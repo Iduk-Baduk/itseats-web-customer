@@ -120,24 +120,44 @@ const StoreAPI = {
         apiClient.get(API_ENDPOINTS.STORE_BY_ID(storeId))
       );
       
-      // 백엔드 API 응답 구조에 맞춰 데이터 처리
-      if (response.data) {
-        const storeData = response.data;
-        logger.log("✅ 매장 상세 정보 조회 성공:", storeData);
-        return {
-          storeId: storeId,
-          name: storeData.name,
-          isLiked: storeData.isLiked || false,
-          reviewRating: storeData.reviewRating || 0,
-          reviewCount: storeData.reviewCount || 0,
-          images: storeData.images || [],
-          // 기존 프론트엔드 호환성을 위한 추가 필드
-          storeImage: storeData.images?.[0] || "/samples/food1.jpg",
-          rating: storeData.reviewRating || 0
-        };
-      } else {
-        throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
-      }
+      // 백엔드 응답 데이터 로깅
+      logger.log("📦 백엔드 응답 데이터:", response.data);
+      logger.log("📦 백엔드 응답 상태:", response.status);
+     
+        // 백엔드에서 httpStatus 필드가 있는 경우
+        if (response.data.httpStatus === 200) {
+          const storeData = response.data.data;
+          logger.log("✅ 매장 상세 정보 조회 성공 (httpStatus):", storeData);
+          return {
+            storeId: storeId,
+            name: storeData.name,
+            isLiked: storeData.isLiked || false,
+            reviewRating: storeData.reviewRating || 0,
+            reviewCount: storeData.reviewCount || 0,
+            images: storeData.images || [],
+            // 기존 프론트엔드 호환성을 위한 추가 필드
+            storeImage: storeData.images?.[0] || "/samples/food1.jpg",
+            rating: storeData.reviewRating || 0
+          };
+        }
+        // 백엔드에서 직접 데이터를 반환하는 경우
+        else if (response.data.name) {
+          logger.log("✅ 매장 상세 정보 조회 성공 (직접 데이터):", response.data);
+          return {
+            storeId: storeId,
+            name: response.data.name,
+            isLiked: response.data.isLiked || false,
+            reviewRating: response.data.review || 0, // 백엔드에서 'review' 필드 사용
+            reviewCount: response.data.reviewCount || 0,
+            images: response.data.images || [],
+            // 기존 프론트엔드 호환성을 위한 추가 필드
+            storeImage: response.data.images?.[0] || "/samples/food1.jpg",
+            rating: response.data.review || 0,
+            description: response.data.description || ""
+          };
+        }
+      // 응답 구조가 예상과 다른 경우
+      throw new Error(response.data?.message || '매장 정보를 불러올 수 없습니다.');
     } catch (error) {
       logger.error(`❌ 매장 상세 정보 조회 실패 (ID: ${storeId}):`, error);
       

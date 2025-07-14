@@ -20,7 +20,7 @@ touch .env
 VITE_TOSS_SECRET_KEY=your_actual_secret_key_here
 
 # API 설정
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:8080
 VITE_API_TIMEOUT=10000
 
 # 개발 환경 설정

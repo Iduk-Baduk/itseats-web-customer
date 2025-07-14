@@ -19,7 +19,7 @@ const RegistForm = ({ className = "" }) => {
       <TextInput
         name="password"
         type="password"
-        placeholder="비밀번호"
+        placeholder="비밀번호 (최소 8자리, 영문자/숫자/특수문자 @$!%*?& 포함)"
         value={form.password}
         onChange={handleChange}
       />
@@ -58,6 +58,7 @@ const RegistForm = ({ className = "" }) => {
         value={form.phone}
         onChange={handleChange}
       />
+      
       {error && <div className={styles.errorMessage}>{error}</div>}
 
       <CheckBox

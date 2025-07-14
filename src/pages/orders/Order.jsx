@@ -65,7 +65,7 @@ export default function Order() {
       if (order.storeId) {
         navigate(`/stores/${order.storeId}`);
       } else {
-        if (process.env.NODE_ENV === "development") {
+        if (import.meta.env.DEV) {
           logger.warn("주문에서 매장 ID를 찾을 수 없습니다:", order);
         }
         const foundStore = allOrders.find((o) => o.storeName === order.storeName);

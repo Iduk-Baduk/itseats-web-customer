@@ -86,7 +86,7 @@ export default function PaymentSuccess() {
             orderId: paymentResult.orderId,
             paymentId: paymentResult.paymentKey,
             storeName: currentStore?.storeName || "매장",
-            storeId: currentStore?.storeId || 1,
+            storeId: currentStore?.storeId || 2, // 존재하는 매장 ID로 변경
             items: cartItems || [],
             totalPrice: paymentResult.amount,
             deliveryAddress: typeof selectedAddress === 'string' 

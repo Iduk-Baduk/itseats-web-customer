@@ -1,4 +1,71 @@
-# 보안 개선 사항
+# 🔒 보안 개선사항
+
+## JWT 시크릿 키 관리
+
+### ⚠️ 중요 보안 주의사항
+
+JWT 시크릿 키는 절대 소스코드에 하드코딩하지 마세요!
+
+#### 1. 시크릿 키 노출 방지
+```javascript
+// ❌ 잘못된 방법 - 절대 하드코딩하지 마세요!
+const secret = '85a25e195b4ab0e8066784a48070334a0aa0cd482304c7b7b9f20b46664a8af46ee6480aaedefd35f02721ab3157baa6de748cdde8b108bfc7eba804f057838c';
+
+// ✅ 올바른 방법 - 환경 변수 사용
+const secret = process.env.JWT_SECRET;
+```
+
+#### 2. .gitignore 설정
+다음 파일들은 반드시 `.gitignore`에 추가하세요:
+```
+# JWT 및 보안 관련 파일들
+jwt.config.js
+jwt.config.json
+security.config.js
+security.config.json
+secrets.json
+secrets.js
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+
+# 민감한 설정 파일들
+config/jwt/
+config/security/
+config/secrets/
+```
+
+#### 3. 환경 변수 사용
+```bash
+# .env 파일 (Git에 커밋되지 않음)
+JWT_SECRET=your_actual_secret_key_here
+JWT_ACCESS_EXPIRATION=900
+JWT_REFRESH_EXPIRATION=2592000
+```
+
+#### 4. 개발 환경 설정
+개발 환경에서는 예시 파일을 사용하세요:
+```javascript
+// jwt.config.example.js (Git에 커밋됨)
+export const jwtConfig = {
+  secret: process.env.JWT_SECRET || 'development_secret_key',
+  expiration: {
+    access: 900,
+    refresh: 2592000
+  }
+};
+```
+
+### 시크릿 키 노출 시 대응 방법
+
+1. **즉시 시크릿 키 변경**: 백엔드에서 새로운 시크릿 키로 변경
+2. **Git 히스토리 정리**: BFG Repo-Cleaner 또는 git filter-branch 사용
+3. **모니터링**: 로그에서 비정상적인 토큰 사용 패턴 확인
+4. **사용자 알림**: 필요시 사용자에게 재로그인 요청
+
+## 기존 보안 개선사항
 
 ## 개요
 이 문서는 프로젝트의 보안 강화를 위해 구현된 개선 사항들과 보안 리뷰 결과를 기록합니다.

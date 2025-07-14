@@ -29,3 +29,26 @@ dist-ssr
 
 .env
 .env.example
+
+# JWT 및 보안 관련 파일들
+jwt.config.js
+jwt.config.json
+security.config.js
+security.config.json
+secrets.json
+secrets.js
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+
+# 백엔드 설정 파일들 (프론트엔드에서 참조용)
+backend-config/
+server-config/
+api-secrets/
+
+# 민감한 설정 파일들
+config/jwt/
+config/security/
+config/secrets/
