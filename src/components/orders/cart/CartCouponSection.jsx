@@ -59,14 +59,7 @@ export default function CartCouponSection() {
               </div>
               <button
                 onClick={() => handleDeselect(coupon.id)}
-                style={{
-                  marginLeft: '10px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#888',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
+                className={styles.deselectButton}
               >
                 ✕ 해제
               </button>

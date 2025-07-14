@@ -25,7 +25,6 @@ export default function CartCouponsPage() {
     : [];
 
   const handleSelect = (couponId) => {
-    console.log('👉 handleSelect called', couponId, cartTotal);
     dispatch(applyCoupon({ couponId: String(couponId), cartTotal }));
   };
 
