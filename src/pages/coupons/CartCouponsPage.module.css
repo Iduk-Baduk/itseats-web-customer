@@ -1,0 +1,78 @@
+.container {
+  padding: 20px;
+  padding-bottom: 80px;
+}
+
+.title {
+  font-size: 20px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.emptyMessage {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.couponCard {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+.couponCard:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.selected {
+  border: 2px solid #007bff;
+  background-color: #f0f8ff;
+}
+
+.discountText {
+  color: #007bff;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.minOrderText,
+.validDateText {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.statusNormal {
+  font-size: 12px;
+  color: #999;
+}
+
+.deselectButton {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.bottomButton {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border: none;
+}

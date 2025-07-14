@@ -1,40 +1,40 @@
+// src/components/orders/cart/CartCouponSection.jsx
+
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { selectNormalizedCoupons } from '../../../store/couponSlice';
+import { selectNormalizedCoupons, removeCoupon } from '../../../store/couponSlice';
 import { calculateMultipleCouponsDiscount } from '../../../utils/couponUtils';
 import calculateCartTotal from '../../../utils/calculateCartTotal';
 import styles from '../../../pages/orders/Cart.module.css';
 
 export default function CartCouponSection() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Redux에서 데이터 가져오기
   const orderMenus = useSelector(state => state.cart.orderMenus);
   const currentStore = useSelector(state => state.store.currentStore);
   const coupons = useSelector(selectNormalizedCoupons);
   const selectedCouponIds = useSelector(state => state.coupon.selectedCouponIds);
-  
-  // 안전성을 위한 배열 체크
+
   const couponsArray = Array.isArray(coupons) ? coupons : [];
   const selectedCouponIdsArray = Array.isArray(selectedCouponIds) ? selectedCouponIds : [];
-  
-  // 주문 금액 및 배달비 계산
+
   const orderPrice = orderMenus.reduce((sum, menu) => sum + calculateCartTotal(menu), 0);
   const deliveryFee = currentStore?.deliveryFee || 0;
-  
-  // 적용된 쿠폰 목록 계산
+
   const appliedCoupons = couponsArray.filter(c => selectedCouponIdsArray.includes(c.id));
-  
-  // 다중 쿠폰 할인 금액 계산
   const discountResult = calculateMultipleCouponsDiscount(appliedCoupons, orderPrice, deliveryFee);
+
+  const handleDeselect = (couponId) => {
+    dispatch(removeCoupon({ couponId }));
+  };
 
   return (
     <section className={styles.section}>
-      {/* 쿠폰 헤더 */}
       <div
         className={styles.couponHeader}
-        onClick={() => navigate('/coupons', { state: { from: 'cart' } })}
+        onClick={() => navigate('/coupons/cart', { state: { from: 'cart' } })}
       >
         <span className={styles.couponIcon}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -46,18 +46,23 @@ export default function CartCouponSection() {
           {appliedCoupons.length > 0 ? `${appliedCoupons.length}개 적용됨` : `${coupons.length}개 보유`} &gt;
         </span>
       </div>
-      
-      {/* 적용된 쿠폰 정보 */}
+
       {appliedCoupons.length > 0 ? (
         <div className={styles.appliedCouponInfo}>
-          {appliedCoupons.map((coupon, index) => (
-            <div key={coupon.id} className={styles.appliedCouponItem}>
-              <span className={styles.couponName}>
-                {coupon.name}
-              </span>
-              <span className={styles.couponDiscount}>
-                -{calculateMultipleCouponsDiscount([coupon], orderPrice, deliveryFee).totalDiscount.toLocaleString()}원
-              </span>
+          {appliedCoupons.map((coupon) => (
+            <div key={coupon.id} className={styles.appliedCouponItem} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className={styles.couponName}>{coupon.name}</span>
+                <span className={styles.couponDiscount}>
+                  -{calculateMultipleCouponsDiscount([coupon], orderPrice, deliveryFee).totalDiscount.toLocaleString()}원
+                </span>
+              </div>
+              <button
+                onClick={() => handleDeselect(coupon.id)}
+                className={styles.deselectButton}
+              >
+                ✕ 해제
+              </button>
             </div>
           ))}
         </div>
