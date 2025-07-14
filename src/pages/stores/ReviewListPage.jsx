@@ -38,8 +38,8 @@ export default function ReviewListPage() {
     fetchReviews();
   }, [storeId]);
 
-  if (loading) return <p className={styles.message}>로딩 중...</p>;
-  if (error) return <p className={styles.message}>{error}</p>;
+  if (loading) return <div className={styles.container}>로딩 중...</div>;
+  if (error) return <div className={styles.container}>{error}</div>;
 
   const ratingCounts = [5, 4, 3, 2, 1].map(
     (score) =>

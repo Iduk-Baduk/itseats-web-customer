@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
-import userAPI from "../services/userAPI";
+import { userAPI } from "../services/userAPI";
 import { STORAGE_KEYS, logger } from "../utils/logger";
 import { useNavigate } from "react-router-dom";
 
@@ -77,7 +77,7 @@ export default function useMyPageDetails() {
             const store = stores.find((s) => String(s.id) === String(id));
             return store
               ? {
-                  id: store.storeId,
+                  id: store.id,
                   title: store.name,
                   image: store.images[0] || "/samples/food1.jpg",
                   rating: store.review,

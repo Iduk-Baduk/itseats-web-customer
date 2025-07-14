@@ -204,11 +204,17 @@ const StoreAPI = {
 
   getReviewsByStoreId: async (storeId) => {
     try {
-      const response = await apiClient.get(`/reviews/${storeId}`);
+      const response = await retryRequest(() => apiClient.get(`/reviews/${storeId}`));
       logger.log("✅ 매장 리뷰 조회 성공:", response.data);
       return response.data;  // ✅ data로 바꿈
     } catch (error) {
       logger.error("❌ 매장 리뷰 조회 실패:", error);
+
+      if (error.statusCode === 404) {
+        error.message = '매장 리뷰를 찾을 수 없습니다.';
+      } else{
+        error.message = '매장 리뷰를 불러오는데 실패했습니다.';
+      }
       throw error;
     }
   },

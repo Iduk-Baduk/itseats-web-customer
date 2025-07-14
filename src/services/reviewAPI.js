@@ -17,7 +17,7 @@ export async function submitReview(orderId, payload) {
 
 export async function getMyReviews() {
   try {
-    const result = await apiClient.get('/reviews/my');
+    const result = await apiClient.get(API_ENDPOINTS.MY_REVIEWS);
     console.log('✅ 내 리뷰 조회 응답:', result);
     return result.data;  // result === { httpStatus, message, data }
   } catch (error) {
