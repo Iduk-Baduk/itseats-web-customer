@@ -20,7 +20,6 @@ const ThumbsUpIcon = ({ className }) => (
 
 export default function ReviewItem({
   className,
-  imageUrl,
   name,
   option,
   selected,
@@ -30,8 +29,6 @@ export default function ReviewItem({
   return (
     <div className={className}>
       <div className={styles.container}>
-        <div className={styles.imageBox}>{imageUrl && <img src={imageUrl} alt="리뷰 대상" />}</div>
-
         <div className={styles.content}>
           <p className={styles.name}>{name}</p>
           <p className={styles.option}>{option}</p>
@@ -42,13 +39,13 @@ export default function ReviewItem({
             className={`${styles.circleButton} ${selected === "BAD" ? styles.selected : ""}`}
             onClick={onDislike}
           >
-            <ThumbsDownIcon className={styles.icon} />
+            <ThumbsDownIcon className={selected === "BAD" ? styles.whiteIcon : styles.icon} />
           </button>
           <button
             className={`${styles.circleButton} ${selected === "GOOD" ? styles.selected : ""}`}
             onClick={onLike}
           >
-            <ThumbsUpIcon className={styles.icon} />
+            <ThumbsUpIcon className={selected === "GOOD" ? styles.whiteIcon : styles.icon} />
           </button>
         </div>
       </div>

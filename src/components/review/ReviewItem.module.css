@@ -6,8 +6,8 @@
 }
 
 .imageBox {
-  width: 55px;
-  height: 55px;
+  width: 40px; /* ✅ 조그맣게 보이도록 수정 */
+  height: 40px;
   background-color: #eee;
   border-radius: 4px;
   overflow: hidden;
@@ -30,7 +30,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .option {
@@ -66,6 +66,7 @@
   border-color: var(--theme-color);
   color: #fff;
 }
+
 .selected:hover {
   background-color: var(--theme-hover-color);
 }

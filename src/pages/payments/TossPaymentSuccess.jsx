@@ -281,11 +281,7 @@ export default function TossPaymentSuccess() {
 
   // 주문 상태로 이동
   const handleGoToOrderStatus = () => {
-    if (orderData?.orderId) {
-      navigate(`/orders/${orderData.orderId}/status`);
-    } else {
-      navigate('/orders');
-    }
+    navigate('/orders');
   };
 
   // 장바구니로 이동
