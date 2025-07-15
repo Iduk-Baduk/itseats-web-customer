@@ -111,19 +111,13 @@ export default function useRegistForm() {
       alert("회원가입이 완료되었습니다! 로그인 화면으로 이동합니다.");
       setError("");
       
-      if (import.meta.env.DEV) {
-        console.log("🎉 회원가입 성공! 3초 후 로그인 페이지로 이동합니다.");
-      }
-      
       // 회원가입 성공 후 로그인 화면으로 이동 (가입한 아이디 전달)
-      // setTimeout(() => {
-      //   navigate("/login", { 
-      //     state: { 
-      //       registeredUsername: form.username,
-      //       message: "회원가입이 완료되었습니다! 로그인해주세요."
-      //     } 
-      //   });
-      // }, 3000); // 3초 지연으로 사용자가 확인할 수 있도록
+      navigate("/login", { 
+        state: { 
+          registeredUsername: form.username,
+          message: "회원가입이 완료되었습니다! 로그인해주세요."
+        }
+      });
     } catch (err) {
       if (import.meta.env.DEV) {
         console.error("❌ 회원가입 실패:", err);
