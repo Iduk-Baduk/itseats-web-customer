@@ -30,13 +30,25 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
-      - name: Sync to S3 (upload to root)
+      - name: Upload to MinIO
         run: |
           aws s3 sync dist/ s3://itseats.shop/ \
             --delete \
+            --exact-timestamps \
             --cache-control "no-cache" \
-            --exact-timestamps
+            --endpoint-url http://s3.studio1122.net
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ap-northeast-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          AWS_REGION: ap-northeast-cju-1
+
+      # - name: Sync to S3 (upload to root)
+      #   run: |
+      #     aws s3 sync dist/ s3://itseats.shop/ \
+      #       --delete \
+      #       --cache-control "no-cache" \
+      #       --exact-timestamps
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_REGION: ap-northeast-2
