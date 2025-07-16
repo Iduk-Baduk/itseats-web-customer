@@ -36,7 +36,7 @@ jobs:
             --delete \
             --exact-timestamps \
             --cache-control "no-cache" \
-            --endpoint-url http://s3.studio1122.net
+            --endpoint-url https://s3.studio1122.net
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
