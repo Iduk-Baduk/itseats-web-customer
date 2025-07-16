@@ -32,7 +32,7 @@ jobs:
 
       - name: Upload to MinIO
         run: |
-          aws s3 sync dist/ s3://itseats.shop/ \
+          aws s3 sync dist/ s3://itseats-shop/ \
             --delete \
             --exact-timestamps \
             --cache-control "no-cache" \
@@ -40,7 +40,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          AWS_REGION: ap-northeast-cju-1
+          AWS_REGION: ap-northeast-2
 
       # - name: Sync to S3 (upload to root)
       #   run: |
